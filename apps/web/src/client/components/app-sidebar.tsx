@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { ArchiveX, Command, File, Inbox, Send, Trash2 } from "lucide-react"
+import { useAuth } from "../contexts/AuthContext"
 
 import { NavUser } from "@/components/nav-user"
 import { Label } from "@/components/ui/label"
@@ -149,6 +150,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [activeItem, setActiveItem] = React.useState(data.navMain[0])
   const [mails, setMails] = React.useState(data.mails)
   const { setOpen } = useSidebar()
+  const { user, logout } = useAuth()
+
+  const currentUser = {
+    name: user?.name || "Guest User",
+    email: user?.email || "guest@example.com",
+    avatar: "/avatars/shadcn.jpg",
+  }
 
   return (
     <Sidebar
@@ -215,7 +223,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
-          <NavUser user={data.user} />
+          <NavUser user={currentUser} onLogout={logout} />
         </SidebarFooter>
       </Sidebar>
 
