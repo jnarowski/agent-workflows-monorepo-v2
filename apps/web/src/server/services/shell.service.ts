@@ -1,5 +1,6 @@
 import * as pty from 'node-pty';
 import * as os from 'os';
+import type { FastifyBaseLogger } from 'fastify';
 import { projectService } from './project.service';
 
 /**
@@ -18,6 +19,8 @@ interface ShellSession {
  */
 export class ShellService {
   private sessions = new Map<string, ShellSession>();
+
+  constructor(private logger?: FastifyBaseLogger) {}
 
   /**
    * Generate a unique session ID
@@ -115,7 +118,7 @@ export class ShellService {
       try {
         session.ptyProcess.kill();
       } catch (error) {
-        console.error('Error killing PTY process:', error);
+        this.logger?.error({ err: error, sessionId }, 'Error killing PTY process');
       }
       this.sessions.delete(sessionId);
     }

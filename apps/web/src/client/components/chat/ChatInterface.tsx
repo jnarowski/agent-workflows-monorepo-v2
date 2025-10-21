@@ -3,12 +3,12 @@
  * Displays conversation history with auto-scroll
  */
 
-import { useEffect, useRef } from 'react';
-import { MessageCircle, AlertCircle } from 'lucide-react';
-import { useClaudeSession } from '../../hooks/useClaudeSession';
-import { MessageRenderer } from './MessageRenderer';
-import { ChatSkeleton } from './ChatSkeleton';
-import { Alert, AlertDescription } from '../ui/alert';
+import { useEffect, useRef } from "react";
+import { MessageCircle, AlertCircle } from "lucide-react";
+import { useClaudeSession } from "../../hooks/useClaudeSession";
+import { MessageRenderer } from "./MessageRenderer";
+import { ChatSkeleton } from "./ChatSkeleton";
+import { Alert, AlertDescription } from "../ui/alert";
 
 interface ChatInterfaceProps {
   projectId: string;
@@ -30,7 +30,8 @@ interface ChatInterfaceProps {
  * agent-cli-sdk's event format, so no type mapping is needed.
  */
 export function ChatInterface({ projectId, sessionFile }: ChatInterfaceProps) {
-  const { messages, toolResults, isLoading, error } = useClaudeSession(sessionFile);
+  const { messages, toolResults, isLoading, error } =
+    useClaudeSession(sessionFile);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const previousScrollHeight = useRef(0);
@@ -41,12 +42,16 @@ export function ChatInterface({ projectId, sessionFile }: ChatInterfaceProps) {
 
     const container = containerRef.current;
     const isNearBottom =
-      container.scrollHeight - container.scrollTop - container.clientHeight < 200;
+      container.scrollHeight - container.scrollTop - container.clientHeight <
+      200;
 
     // Only auto-scroll if user is already near the bottom
     // This preserves manual scroll position
     if (isNearBottom || previousScrollHeight.current === 0) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      messagesEndRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
     }
 
     previousScrollHeight.current = container.scrollHeight;
@@ -87,7 +92,7 @@ export function ChatInterface({ projectId, sessionFile }: ChatInterfaceProps) {
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-y-auto p-4 pb-32 space-y-1"
+      className="flex-1 min-h-0 overflow-y-auto p-4 space-y-1"
       data-project-id={projectId}
     >
       {messages.map((message) => (

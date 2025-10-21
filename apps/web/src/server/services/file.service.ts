@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import type { FastifyBaseLogger } from 'fastify';
 import type { FileTreeItem } from '../../shared/types/file.types';
 import { projectService } from './project.service';
 
@@ -18,6 +19,8 @@ export class FileService {
     'coverage',
     '.turbo',
   ]);
+
+  constructor(private logger?: FastifyBaseLogger) {}
 
   /**
    * Get file tree for a project
@@ -100,13 +103,13 @@ export class FileService {
           items.push(item);
         } catch (error) {
           // Skip files/dirs with permission errors
-          console.warn(`Skipping ${fullPath} due to error:`, error);
+          this.logger?.warn({ err: error, path: fullPath }, `Skipping ${fullPath} due to error`);
           continue;
         }
       }
     } catch (error) {
       // Handle permission errors gracefully
-      console.warn(`Cannot read directory ${dirPath}:`, error);
+      this.logger?.warn({ err: error, path: dirPath }, `Cannot read directory ${dirPath}`);
     }
 
     return items;

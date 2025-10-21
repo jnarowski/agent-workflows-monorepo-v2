@@ -8,6 +8,7 @@ import {
   PromptInputFooter,
   PromptInputTools,
   PromptInputSubmit,
+  type PromptInputMessage,
 } from "../../components/ai-elements/prompt-input";
 
 export default function ProjectChat() {
@@ -15,7 +16,7 @@ export default function ProjectChat() {
   const [inputValue, setInputValue] = useState("");
 
   // Handle message submission
-  const handleSubmit = async (message: { text?: string; files?: any[] }) => {
+  const handleSubmit = async (message: PromptInputMessage) => {
     if (!message.text?.trim()) return;
 
     // TODO: Implement actual message sending via WebSocket/API
@@ -25,11 +26,11 @@ export default function ProjectChat() {
   };
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="relative flex h-full w-full flex-col overflow-hidden">
       <ChatInterface projectId={id!} />
 
-      {/* Floating Prompt Input */}
-      <div className="absolute bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 z-10">
+      {/* Prompt Input (anchored at bottom in normal flow) */}
+      <div className="shrink-0 border-t bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 z-10">
         <div className="mx-auto max-w-3xl px-4 py-4">
           <PromptInput onSubmit={handleSubmit}>
             <PromptInputBody>

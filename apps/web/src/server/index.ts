@@ -2,6 +2,13 @@
 import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import fastifyWebsocket from '@fastify/websocket';
+import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
+import {
+  serializerCompiler,
+  validatorCompiler,
+  ZodTypeProvider
+} from 'fastify-type-provider-zod';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { existsSync } from 'fs';
@@ -16,8 +23,40 @@ const __dirname = dirname(__filename);
 export async function createServer() {
   const fastify = Fastify({
     logger: {
-      level: 'info',
+      level: process.env.LOG_LEVEL || 'info',
     },
+  }).withTypeProvider<ZodTypeProvider>();
+
+  // Set up Zod validation
+  fastify.setValidatorCompiler(validatorCompiler);
+  fastify.setSerializerCompiler(serializerCompiler);
+
+  // Custom error handler for Zod validation
+  fastify.setErrorHandler((error, request, reply) => {
+    if (error.validation) {
+      return reply.status(400).send({
+        error: {
+          message: 'Validation failed',
+          code: 'VALIDATION_ERROR',
+          details: error.validation,
+          statusCode: 400,
+        },
+      });
+    }
+
+    const statusCode = error.statusCode || 500;
+    fastify.log.error({
+      err: error,
+      url: request.url,
+      method: request.method,
+    }, 'Request error');
+
+    return reply.status(statusCode).send({
+      error: {
+        message: error.message,
+        statusCode,
+      },
+    });
   });
 
   // Configure JSON parser to allow empty bodies
@@ -34,6 +73,17 @@ export async function createServer() {
       }
     }
   );
+
+  // Register CORS
+  await fastify.register(cors, {
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || 'http://localhost:5173',
+    credentials: true,
+  });
+
+  // Register rate limiting (global: false - only on specific routes)
+  await fastify.register(rateLimit, {
+    global: false,
+  });
 
   // Register auth plugin (JWT)
   await fastify.register(authPlugin);

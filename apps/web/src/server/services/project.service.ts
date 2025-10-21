@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../shared/prisma";
 import type {
   CreateProjectInput,
@@ -64,8 +65,10 @@ export class ProjectService {
       });
     } catch (error) {
       // Return null if project not found
-      if ((error as any).code === "P2025") {
-        return null;
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === "P2025") {
+          return null;
+        }
       }
       throw error;
     }
@@ -83,8 +86,10 @@ export class ProjectService {
       });
     } catch (error) {
       // Return null if project not found
-      if ((error as any).code === "P2025") {
-        return null;
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === "P2025") {
+          return null;
+        }
       }
       throw error;
     }

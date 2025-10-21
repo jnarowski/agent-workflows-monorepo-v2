@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { shellService } from '../services/shell.service';
+import { ShellService } from '../services/shell.service';
 import {
   shellMessageSchema,
   type InitMessage,
@@ -7,8 +7,16 @@ import {
   type ResizeMessage,
 } from '../schemas/shell.schema';
 
+// JWT payload interface (matching auth plugin)
+interface JWTPayload {
+  userId: number;
+  username: string;
+}
+
 export async function registerShellRoute(fastify: FastifyInstance) {
   fastify.register(async (fastify) => {
+    // Create shell service with logger
+    const shellService = new ShellService(fastify.log);
     fastify.get(
       '/shell',
       { websocket: true },
@@ -18,13 +26,12 @@ export async function registerShellRoute(fastify: FastifyInstance) {
           let sessionId: string | null = null;
           let userId: number | null = null;
 
-          // Authenticate the WebSocket connection using JWT from query params or headers
+          // Authenticate the WebSocket connection using JWT
           try {
-            // Try to get token from query params or Authorization header
+            // Get token from query params or Authorization header
+            // Note: Browser WebSocket API doesn't support custom headers, so query param is necessary
             const query = request.query as { token?: string };
-            const token =
-              query.token ||
-              request.headers.authorization?.replace('Bearer ', '');
+            const token = query.token || request.headers.authorization?.replace('Bearer ', '');
 
             if (!token) {
               socket.send(
@@ -37,10 +44,8 @@ export async function registerShellRoute(fastify: FastifyInstance) {
               return;
             }
 
-            // Verify JWT token
-            const decoded = fastify.jwt.verify(token as string) as {
-              userId: number;
-            };
+            // Verify JWT token with proper type
+            const decoded = fastify.jwt.verify<JWTPayload>(token);
             userId = decoded.userId;
 
             fastify.log.info({ userId }, 'Shell WebSocket client authenticated');

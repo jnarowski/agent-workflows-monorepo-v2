@@ -3,9 +3,17 @@ import fastifyJwt from "@fastify/jwt";
 import fastifyPlugin from "fastify-plugin";
 import { prisma } from "../../shared/prisma";
 
-// JWT secret from environment or default for development
-const JWT_SECRET =
-  process.env.JWT_SECRET || "agent-workflows-dev-secret-change-in-production";
+// JWT secret from environment - required for security
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
+
+// JWT payload interface
+interface JWTPayload {
+  userId: number;
+  username: string;
+}
 
 async function authPluginFunction(fastify: FastifyInstance) {
   // Register JWT plugin
@@ -18,10 +26,10 @@ async function authPluginFunction(fastify: FastifyInstance) {
     "authenticate",
     async function (request: FastifyRequest, reply: FastifyReply) {
       try {
-        await request.jwtVerify();
+        const decoded = await request.jwtVerify<JWTPayload>();
 
         // Verify user still exists in database
-        const userId = (request.user as { userId: number }).userId;
+        const userId = decoded.userId;
         const user = await prisma.user.findUnique({
           where: { id: userId },
           select: { id: true, username: true, is_active: true },
@@ -36,7 +44,7 @@ async function authPluginFunction(fastify: FastifyInstance) {
         // Attach user to request
         request.user = user;
       } catch (err) {
-        console.error("err", err);
+        fastify.log.debug({ err }, "Authentication failed");
         return reply.code(401).send({ error: "Invalid or missing token" });
       }
     }

@@ -1,44 +1,19 @@
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyInstance } from 'fastify';
+import { Prisma } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { prisma } from '../../shared/prisma';
-
-// Type augmentation for request.user
-declare module 'fastify' {
-  interface FastifyRequest {
-    user?: {
-      id: number;
-      username: string;
-      is_active: boolean;
-    };
-  }
-}
-
-// Authentication middleware
-async function authenticate(request: FastifyRequest, reply: FastifyReply) {
-  try {
-    await request.jwtVerify();
-
-    // Verify user still exists in database
-    const userId = (request.user as { userId: number }).userId;
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, username: true, is_active: true },
-    });
-
-    if (!user || !user.is_active) {
-      return reply.code(401).send({ error: 'Invalid token. User not found or inactive.' });
-    }
-
-    // Attach user to request
-    request.user = user;
-  } catch (err) {
-    return reply.code(401).send({ error: 'Invalid or missing token' });
-  }
-}
+import { registerSchema, loginSchema } from '../schemas/auth.schema';
+import { authResponseSchema, authStatusResponseSchema, userResponseSchema, errorResponse } from '../schemas/response.schema';
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Check auth status and setup requirements
-  fastify.get('/api/auth/status', async (request, reply) => {
+  fastify.get('/api/auth/status', {
+    schema: {
+      response: {
+        200: authStatusResponseSchema,
+      },
+    },
+  }, async (request, reply) => {
     try {
       const userCount = await prisma.user.count();
       const needsSetup = userCount === 0;
@@ -48,37 +23,49 @@ export async function authRoutes(fastify: FastifyInstance) {
         isAuthenticated: false, // Will be overridden by frontend if token exists
       });
     } catch (error) {
-      fastify.log.error('Auth status error:', error);
-      return reply.code(500).send({ error: 'Internal server error' });
+      fastify.log.error({ err: error }, 'Auth status error');
+      return reply.code(500).send({
+        error: {
+          message: 'Internal server error',
+          statusCode: 500,
+        },
+      });
     }
   });
 
   // User registration (setup) - only allowed if no users exist
   fastify.post<{
     Body: { username: string; password: string };
-  }>('/api/auth/register', async (request, reply) => {
+  }>('/api/auth/register', {
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: '1 minute',
+      },
+    },
+    schema: {
+      body: registerSchema,
+      response: {
+        200: authResponseSchema,
+        403: errorResponse,
+        409: errorResponse,
+      },
+    },
+  }, async (request, reply) => {
+    const { username, password } = request.body;
+
+    // Check if users already exist (only allow one user)
+    const existingUserCount = await prisma.user.count();
+    if (existingUserCount > 0) {
+      return reply.code(403).send({
+        error: {
+          message: 'User already exists. This is a single-user system.',
+          statusCode: 403,
+        },
+      });
+    }
+
     try {
-      const { username, password } = request.body;
-
-      // Validate input
-      if (!username || !password) {
-        return reply.code(400).send({ error: 'Username and password are required' });
-      }
-
-      if (username.length < 3 || password.length < 6) {
-        return reply.code(400).send({
-          error: 'Username must be at least 3 characters, password at least 6 characters',
-        });
-      }
-
-      // Check if users already exist (only allow one user)
-      const existingUserCount = await prisma.user.count();
-      if (existingUserCount > 0) {
-        return reply.code(403).send({
-          error: 'User already exists. This is a single-user system.',
-        });
-      }
-
       // Hash password
       const saltRounds = 12;
       const password_hash = await bcrypt.hash(password, saltRounds);
@@ -111,96 +98,121 @@ export async function authRoutes(fastify: FastifyInstance) {
         token,
       });
     } catch (error) {
-      fastify.log.error('Registration error:', error);
-
-      // Check for unique constraint violation
-      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-        return reply.code(409).send({ error: 'Username already exists' });
+      // Check for unique constraint violation (Prisma error)
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          return reply.code(409).send({
+            error: {
+              message: 'Username already exists',
+              code: 'DUPLICATE_USERNAME',
+              statusCode: 409,
+            },
+          });
+        }
       }
 
-      return reply.code(500).send({ error: 'Internal server error' });
+      throw error;
     }
   });
 
   // User login
   fastify.post<{
     Body: { username: string; password: string };
-  }>('/api/auth/login', async (request, reply) => {
-    try {
-      const { username, password } = request.body;
+  }>('/api/auth/login', {
+    config: {
+      rateLimit: {
+        max: 5,
+        timeWindow: '1 minute',
+      },
+    },
+    schema: {
+      body: loginSchema,
+      response: {
+        200: authResponseSchema,
+        401: errorResponse,
+        403: errorResponse,
+      },
+    },
+  }, async (request, reply) => {
+    const { username, password } = request.body;
 
-      // Validate input
-      if (!username || !password) {
-        return reply.code(400).send({ error: 'Username and password are required' });
-      }
+    // Get user from database
+    const user = await prisma.user.findUnique({
+      where: { username },
+    });
 
-      // Get user from database
-      const user = await prisma.user.findUnique({
-        where: { username },
-      });
-
-      if (!user) {
-        return reply.code(401).send({ error: 'Invalid username or password' });
-      }
-
-      // Verify password
-      const isValidPassword = await bcrypt.compare(password, user.password_hash);
-      if (!isValidPassword) {
-        return reply.code(401).send({ error: 'Invalid username or password' });
-      }
-
-      // Check if user is active
-      if (!user.is_active) {
-        return reply.code(403).send({ error: 'Account is inactive' });
-      }
-
-      // Generate token (no expiration)
-      let token;
-      try {
-        token = fastify.jwt.sign(
-          {
-            userId: user.id,
-            username: user.username,
-          },
-          // No expiration - token lasts forever
-        );
-      } catch (jwtError) {
-        fastify.log.error('JWT signing error:', jwtError);
-        return reply.code(500).send({ error: 'Failed to generate token' });
-      }
-
-      // Update last login
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { last_login: new Date() },
-      });
-
-      return reply.send({
-        success: true,
-        user: {
-          id: user.id,
-          username: user.username,
+    if (!user) {
+      return reply.code(401).send({
+        error: {
+          message: 'Invalid username or password',
+          statusCode: 401,
         },
-        token,
       });
-    } catch (error) {
-      fastify.log.error('Login error:', error);
-      return reply.code(500).send({ error: 'Internal server error' });
     }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    if (!isValidPassword) {
+      return reply.code(401).send({
+        error: {
+          message: 'Invalid username or password',
+          statusCode: 401,
+        },
+      });
+    }
+
+    // Check if user is active
+    if (!user.is_active) {
+      return reply.code(403).send({
+        error: {
+          message: 'Account is inactive',
+          statusCode: 403,
+        },
+      });
+    }
+
+    // Generate token (no expiration)
+    const token = fastify.jwt.sign(
+      {
+        userId: user.id,
+        username: user.username,
+      },
+      // No expiration - token lasts forever
+    );
+
+    // Update last login
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { last_login: new Date() },
+    });
+
+    return reply.send({
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+      },
+      token,
+    });
   });
 
   // Get current user (protected route)
   fastify.get('/api/auth/user', {
-    preHandler: authenticate,
+    preHandler: fastify.authenticate,
+    schema: {
+      response: {
+        200: userResponseSchema,
+      },
+    },
   }, async (request, reply) => {
     return reply.send({
-      user: request.user,
+      data: request.user,
     });
   });
 
   // Logout (client-side token removal, but this endpoint exists for consistency)
   fastify.post('/api/auth/logout', {
-    preHandler: authenticate,
+    preHandler: fastify.authenticate,
   }, async (request, reply) => {
     // In a simple JWT system, logout is mainly client-side
     // This endpoint exists for consistency and potential future logging
