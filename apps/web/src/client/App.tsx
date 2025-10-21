@@ -14,6 +14,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import LayoutExperiment from "./pages/LayoutExperiment";
 import MockAIChat from "./pages/MockAIChat";
+import MockChatTwo from "./pages/MockChatTwo";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
             {/* Experiment routes - no layout */}
             <Route path="/experiment" element={<LayoutExperiment />} />
             <Route path="/mock-chat" element={<MockAIChat />} />
+            <Route path="/mock-chat-two" element={<MockChatTwo />} />
 
             {/* Auth routes */}
             <Route element={<AuthLayout />}>
