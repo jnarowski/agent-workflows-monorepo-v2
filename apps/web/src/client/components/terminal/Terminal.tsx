@@ -1,11 +1,10 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { Terminal as XTerm } from '@xterm/xterm';
-import { FitAddon } from '@xterm/addon-fit';
-import { ClipboardAddon } from '@xterm/addon-clipboard';
-import { useShell } from '../../contexts/ShellContext';
-import { useShellWebSocket } from '../../hooks/useShellWebSocket';
-import '@xterm/xterm/css/xterm.css';
-import './terminal.css';
+import { useEffect, useRef, useCallback } from "react";
+import { Terminal as XTerm } from "@xterm/xterm";
+import { FitAddon } from "@xterm/addon-fit";
+import { ClipboardAddon } from "@xterm/addon-clipboard";
+import { useShell } from "../../contexts/ShellContext";
+import { useShellWebSocket } from "../../hooks/useShellWebSocket";
+import "@xterm/xterm/css/xterm.css";
 
 interface TerminalProps {
   sessionId: string;
@@ -14,7 +13,12 @@ interface TerminalProps {
   onDisconnect?: () => void;
 }
 
-export function Terminal({ sessionId, projectId, onConnect, onDisconnect }: TerminalProps) {
+export function Terminal({
+  sessionId,
+  projectId,
+  onConnect,
+  onDisconnect,
+}: TerminalProps) {
   const { getSession, addSession, updateSession } = useShell();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
@@ -29,17 +33,20 @@ export function Terminal({ sessionId, projectId, onConnect, onDisconnect }: Term
   }, []);
 
   const handleExit = useCallback((exitCode: number) => {
-    xtermRef.current?.writeln(`\r\n\x1b[1;33m[Process exited with code ${exitCode}]\x1b[0m\r\n`);
+    xtermRef.current?.writeln(
+      `\r\n\x1b[1;33m[Process exited with code ${exitCode}]\x1b[0m\r\n`
+    );
   }, []);
 
   // WebSocket connection
-  const { isConnected, connect, disconnect, sendInput, sendResize } = useShellWebSocket({
-    sessionId,
-    projectId,
-    enabled: true,
-    onOutput: handleOutput,
-    onExit: handleExit,
-  });
+  const { isConnected, connect, disconnect, sendInput, sendResize } =
+    useShellWebSocket({
+      sessionId,
+      projectId,
+      enabled: true,
+      onOutput: handleOutput,
+      onExit: handleExit,
+    });
 
   // Initialize terminal on mount
   useEffect(() => {
@@ -66,28 +73,28 @@ export function Terminal({ sessionId, projectId, onConnect, onDisconnect }: Term
         fontFamily: '"Cascadia Code", "Fira Code", "Courier New", monospace',
         scrollback: 10000,
         theme: {
-          background: '#1e1e1e',
-          foreground: '#d4d4d4',
-          cursor: '#ffffff',
-          cursorAccent: '#000000',
-          selectionBackground: '#264f78',
+          background: "#1e1e1e",
+          foreground: "#d4d4d4",
+          cursor: "#ffffff",
+          cursorAccent: "#000000",
+          selectionBackground: "#264f78",
           // ANSI colors (16-color palette)
-          black: '#000000',
-          red: '#cd3131',
-          green: '#0dbc79',
-          yellow: '#e5e510',
-          blue: '#2472c8',
-          magenta: '#bc3fbc',
-          cyan: '#11a8cd',
-          white: '#e5e5e5',
-          brightBlack: '#666666',
-          brightRed: '#f14c4c',
-          brightGreen: '#23d18b',
-          brightYellow: '#f5f543',
-          brightBlue: '#3b8eea',
-          brightMagenta: '#d670d6',
-          brightCyan: '#29b8db',
-          brightWhite: '#ffffff',
+          black: "#000000",
+          red: "#cd3131",
+          green: "#0dbc79",
+          yellow: "#e5e510",
+          blue: "#2472c8",
+          magenta: "#bc3fbc",
+          cyan: "#11a8cd",
+          white: "#e5e5e5",
+          brightBlack: "#666666",
+          brightRed: "#f14c4c",
+          brightGreen: "#23d18b",
+          brightYellow: "#f5f543",
+          brightBlue: "#3b8eea",
+          brightMagenta: "#d670d6",
+          brightCyan: "#29b8db",
+          brightWhite: "#ffffff",
         },
       });
 
@@ -128,7 +135,7 @@ export function Terminal({ sessionId, projectId, onConnect, onDisconnect }: Term
         terminal,
         fitAddon,
         containerElement: null,
-        status: 'disconnected',
+        status: "disconnected",
       });
 
       // Handle user input - send to WebSocket
@@ -139,12 +146,16 @@ export function Terminal({ sessionId, projectId, onConnect, onDisconnect }: Term
       // Keyboard shortcuts
       terminal.attachCustomKeyEventHandler((event) => {
         // Cmd/Ctrl+C for copy (only when text is selected)
-        if ((event.ctrlKey || event.metaKey) && event.code === 'KeyC' && terminal.hasSelection()) {
+        if (
+          (event.ctrlKey || event.metaKey) &&
+          event.code === "KeyC" &&
+          terminal.hasSelection()
+        ) {
           return false; // Let browser handle copy
         }
 
         // Cmd/Ctrl+V for paste
-        if ((event.ctrlKey || event.metaKey) && event.code === 'KeyV') {
+        if ((event.ctrlKey || event.metaKey) && event.code === "KeyV") {
           return false; // Let browser handle paste
         }
 
@@ -155,7 +166,8 @@ export function Terminal({ sessionId, projectId, onConnect, onDisconnect }: Term
 
     // Initial fit - call once after terminal is ready
     const initialFit = () => {
-      if (!fitAddonRef.current || !xtermRef.current || !terminalRef.current) return;
+      if (!fitAddonRef.current || !xtermRef.current || !terminalRef.current)
+        return;
 
       try {
         fitAddonRef.current.fit();
@@ -164,7 +176,7 @@ export function Terminal({ sessionId, projectId, onConnect, onDisconnect }: Term
           lastDimensionsRef.current = { cols: dims.cols, rows: dims.rows };
         }
       } catch (e) {
-        console.warn('[Terminal] Initial fit failed:', e);
+        console.warn("[Terminal] Initial fit failed:", e);
       }
     };
 
@@ -217,8 +229,15 @@ export function Terminal({ sessionId, projectId, onConnect, onDisconnect }: Term
   }, []); // Only run once on mount
 
   return (
-    <div ref={wrapperRef} className="h-full overflow-hidden relative bg-[#1e1e1e]">
-      <div ref={terminalRef} className="h-full w-full" style={{ outline: 'none' }} />
+    <div
+      ref={wrapperRef}
+      className="h-full overflow-hidden relative bg-[#1e1e1e]"
+    >
+      <div
+        ref={terminalRef}
+        className="h-full w-full"
+        style={{ outline: "none" }}
+      />
     </div>
   );
 }

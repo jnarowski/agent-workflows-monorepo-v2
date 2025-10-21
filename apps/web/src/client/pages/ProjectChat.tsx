@@ -1,7 +1,8 @@
+import { useParams } from "react-router-dom";
+import { ChatInterface } from "../components/chat/ChatInterface";
+
 export default function ProjectChat() {
-  return (
-    <div className="flex-1 p-4">
-      <div className="text-muted-foreground">Chat content coming soon...</div>
-    </div>
-  );
+  const { id } = useParams<{ id: string }>();
+
+  return <ChatInterface projectId={id!} />;
 }

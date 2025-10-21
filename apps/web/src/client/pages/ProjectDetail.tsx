@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { Terminal } from "../components/terminal/Terminal";
 import { ShellControls } from "../components/terminal/ShellControls";
 import { useShell } from "../contexts/ShellContext";
+import { ChatInterface } from "../components/chat/ChatInterface";
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
@@ -86,8 +87,8 @@ export default function ProjectDetail() {
           </TabsTrigger>
         </TabsList>
       </div>
-      <TabsContent value="chat" className="flex-1 p-4 m-0">
-        <div className="text-muted-foreground">Chat content coming soon...</div>
+      <TabsContent value="chat" className="flex flex-1 m-0 flex-col">
+        <ChatInterface projectId={id!} />
       </TabsContent>
       <TabsContent value="shell" className="flex flex-1 m-0 flex-col data-[state=inactive]:hidden" forceMount={true}>
         <ShellControls

@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     root: 'src/client',
+    publicDir: path.resolve(__dirname, './public'),
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
