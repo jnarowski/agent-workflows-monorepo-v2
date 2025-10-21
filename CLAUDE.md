@@ -1,0 +1,1 @@
+- Remember when removing a page, to remove it's corresponding route as well

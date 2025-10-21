@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '../../client/components/ui/button';
+import { Button } from '../ui/button';
 
 interface BranchContextType {
   currentBranch: number;

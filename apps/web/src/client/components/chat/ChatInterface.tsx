@@ -95,7 +95,7 @@ export function ChatInterface({ projectId, sessionFile }: ChatInterfaceProps) {
       className="h-full overflow-y-auto"
       data-project-id={projectId}
     >
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
         {messages.map((message) => (
           <MessageRenderer
             key={message.id}

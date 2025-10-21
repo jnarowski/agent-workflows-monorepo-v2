@@ -89,17 +89,18 @@ src/
   client/           # React frontend (Vite root)
     components/     # React components
       ui/           # shadcn/ui components (Radix UI + Tailwind)
+      ai-elements/  # AI chat interface components (Conversation, Message, etc.)
       projects/     # Project-specific components
-    pages/          # Route pages (Dashboard, Projects, Login, etc.)
+    pages/          # Route pages (Dashboard, Projects, Login, Shell, etc.)
     layouts/        # Layout components (ProtectedLayout, AuthLayout)
     contexts/       # React contexts (AuthContext)
     hooks/          # Custom React hooks
     lib/            # Client utilities
   server/           # Fastify backend
-    routes/         # API route handlers (auth, projects)
+    routes/         # API route handlers (auth, projects, shell)
     plugins/        # Fastify plugins (auth/JWT)
     schemas/        # Zod validation schemas
-    services/       # Business logic services
+    services/       # Business logic services (ShellService, etc.)
     websocket.ts    # WebSocket handler
     index.ts        # Server entry point
   shared/           # Code shared between client and server
@@ -123,6 +124,7 @@ src/
 - JWT authentication (@fastify/jwt)
 - Prisma ORM with SQLite
 - bcrypt for password hashing
+- node-pty for terminal/shell sessions
 
 **Build System:**
 - Turborepo for monorepo orchestration
@@ -145,10 +147,11 @@ src/
    - `WorkflowStep` - Individual workflow steps
 
 4. **API Routes**:
-   - `/api/auth/*` - Authentication endpoints
+   - `/api/auth/*` - Authentication endpoints (login, signup)
    - `/api/projects/*` - Project CRUD operations
    - `/api/workflows` - Workflow data (currently mock data)
-   - `/ws` - WebSocket endpoint
+   - `/ws` - WebSocket endpoint for real-time updates
+   - `/shell` - WebSocket endpoint for terminal/shell sessions (JWT authenticated via query param)
 
 5. **Import Aliases**:
    - `@/*` resolves to `src/client/*` (client-side only)
@@ -169,9 +172,18 @@ Currently no test scripts configured in the web app. Tests are configured at the
 
 ## Environment Variables
 
+**Required:**
+- `JWT_SECRET` - Secret key for signing JWT tokens (generate with `openssl rand -base64 32`)
+
+**Optional (with defaults):**
 - `PORT` - Backend server port (default: 3456)
 - `VITE_PORT` - Vite dev server port (default: 5173)
 - `HOST` - Server host (default: 127.0.0.1)
+- `LOG_LEVEL` - Logging level: trace, debug, info, warn, error, fatal (default: info)
+- `ALLOWED_ORIGINS` - Comma-separated CORS origins (default: http://localhost:5173)
+- `NODE_ENV` - Node environment (default: development)
+
+See `.env.example` for complete configuration template.
 
 ## Common Gotchas
 
@@ -184,3 +196,7 @@ Currently no test scripts configured in the web app. Tests are configured at the
 4. **Empty JSON bodies**: Server is configured to handle empty JSON bodies (e.g., DELETE with Content-Type: application/json)
 
 5. **Development workflow**: Use `pnpm dev` from the web app directory to run both client and server together
+
+6. **WebSocket authentication**: The `/shell` endpoint requires JWT authentication passed as a query parameter (`?token=...`) since browser WebSocket API doesn't support custom headers
+
+7. **AI Elements components**: The `ai-elements/` directory contains reusable chat UI components (Conversation, Message, PromptInput, etc.) for building AI chat interfaces

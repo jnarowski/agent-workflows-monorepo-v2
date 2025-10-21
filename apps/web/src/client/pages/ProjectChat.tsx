@@ -14,7 +14,7 @@ export default function ProjectChat() {
 
       {/* Fixed Input Container at Bottom */}
       <div className="pb-4">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-4xl">
           <ChatPromptInput />
         </div>
       </div>
