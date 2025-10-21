@@ -1,0 +1,15 @@
+[
+  {
+    "session_id": "d6e846a0-a792-481a-85df-c586244cf384",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo/d6e846a0-a792-481a-85df-c586244cf384.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd packages/agent-cli-sdk && pnpm check-types",
+      "timeout": 60000,
+      "description": "Check TypeScript types"
+    }
+  }
+]

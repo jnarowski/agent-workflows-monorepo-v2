@@ -1,0 +1,28 @@
+[
+  {
+    "session_id": "da4b44ad-20c9-42f5-b889-86f70935d518",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo/da4b44ad-20c9-42f5-b889-86f70935d518.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk/examples/advanced/interactive-relay.ts",
+      "old_string": "/**\n * Prompt user for input\n */\nfunction promptUser(rl: ReturnType<typeof createReadline>, question: string): Promise<string> {\n  return new Promise((resolve) => {\n    rl.question(question, (answer) => {\n      resolve(answer);\n    });\n  });\n}",
+      "new_string": "/**\n * Prompt user for input\n */\nfunction promptUser(rl: ReturnType<typeof createReadline>, question: string): Promise<string> {\n  return new Promise((resolve) => {\n    rl.question(question, (answer) => {\n      resolve(answer);\n    });\n  });\n}\n\n/**\n * Parse and display only the text content from Claude's JSON output\n */\nfunction createTextOnlyOutput() {\n  return (raw: string) => {\n    try {\n      const parsed = JSON.parse(raw);\n\n      // Extract text from assistant messages\n      if (parsed.type === 'assistant' && parsed.message?.content) {\n        for (const content of parsed.message.content) {\n          if (content.type === 'text' && content.text) {\n            process.stdout.write(content.text);\n          }\n        }\n      }\n      // Optionally show errors\n      else if (parsed.type === 'error') {\n        process.stdout.write(`\\n\u274c Error: ${parsed.error}\\n`);\n      }\n      // Ignore system messages and other JSON output\n    } catch {\n      // If it's not JSON, just write it (in case of non-JSON output)\n      // But skip it to avoid noise - Claude CLI outputs JSON by default\n    }\n  };\n}"
+    }
+  },
+  {
+    "session_id": "da4b44ad-20c9-42f5-b889-86f70935d518",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo/da4b44ad-20c9-42f5-b889-86f70935d518.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk/examples/advanced/interactive-relay.ts",
+      "old_string": "  try {\n    // Create Session 1 - The Questioner\n    console.log('\ud83d\udcdd Creating Session 1 (Questioner)...\\n');\n    const session1 = client.createSession({\n      onOutput: (raw) => {\n        process.stdout.write(raw);\n      },\n    });\n\n    // Create Session 2 - The Processor\n    console.log('\\n\ud83d\udd0d Creating Session 2 (Processor)...\\n');\n    const session2 = client.createSession({\n      onOutput: (raw) => {\n        process.stdout.write(raw);\n      },\n    });",
+      "new_string": "  try {\n    // Create Session 1 - The Questioner\n    console.log('\ud83d\udcdd Creating Session 1 (Questioner)...\\n');\n    const session1 = client.createSession({\n      onOutput: createTextOnlyOutput(),\n    });\n\n    // Create Session 2 - The Processor\n    console.log('\\n\ud83d\udd0d Creating Session 2 (Processor)...\\n');\n    const session2 = client.createSession({\n      onOutput: createTextOnlyOutput(),\n    });"
+    }
+  }
+]

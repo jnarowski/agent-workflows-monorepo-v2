@@ -1,0 +1,117 @@
+[
+  {
+    "session_id": "da4b44ad-20c9-42f5-b889-86f70935d518",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo/da4b44ad-20c9-42f5-b889-86f70935d518.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk/examples/advanced/interactive-relay.ts",
+      "old_string": "/**\n * Prompt user for input\n */\nfunction promptUser(rl: ReturnType<typeof createReadline>, question: string): Promise<string> {\n  return new Promise((resolve) => {\n    rl.question(question, (answer) => {\n      resolve(answer);\n    });\n  });\n}",
+      "new_string": "/**\n * Prompt user for input\n */\nfunction promptUser(rl: ReturnType<typeof createReadline>, question: string): Promise<string> {\n  return new Promise((resolve) => {\n    rl.question(question, (answer) => {\n      resolve(answer);\n    });\n  });\n}\n\n/**\n * Parse and display only the text content from Claude's JSON output\n */\nfunction createTextOnlyOutput() {\n  return (raw: string) => {\n    try {\n      const parsed = JSON.parse(raw);\n\n      // Extract text from assistant messages\n      if (parsed.type === 'assistant' && parsed.message?.content) {\n        for (const content of parsed.message.content) {\n          if (content.type === 'text' && content.text) {\n            process.stdout.write(content.text);\n          }\n        }\n      }\n      // Optionally show errors\n      else if (parsed.type === 'error') {\n        process.stdout.write(`\\n\u274c Error: ${parsed.error}\\n`);\n      }\n      // Ignore system messages and other JSON output\n    } catch {\n      // If it's not JSON, just write it (in case of non-JSON output)\n      // But skip it to avoid noise - Claude CLI outputs JSON by default\n    }\n  };\n}"
+    },
+    "tool_response": {
+      "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk/examples/advanced/interactive-relay.ts",
+      "oldString": "/**\n * Prompt user for input\n */\nfunction promptUser(rl: ReturnType<typeof createReadline>, question: string): Promise<string> {\n  return new Promise((resolve) => {\n    rl.question(question, (answer) => {\n      resolve(answer);\n    });\n  });\n}",
+      "newString": "/**\n * Prompt user for input\n */\nfunction promptUser(rl: ReturnType<typeof createReadline>, question: string): Promise<string> {\n  return new Promise((resolve) => {\n    rl.question(question, (answer) => {\n      resolve(answer);\n    });\n  });\n}\n\n/**\n * Parse and display only the text content from Claude's JSON output\n */\nfunction createTextOnlyOutput() {\n  return (raw: string) => {\n    try {\n      const parsed = JSON.parse(raw);\n\n      // Extract text from assistant messages\n      if (parsed.type === 'assistant' && parsed.message?.content) {\n        for (const content of parsed.message.content) {\n          if (content.type === 'text' && content.text) {\n            process.stdout.write(content.text);\n          }\n        }\n      }\n      // Optionally show errors\n      else if (parsed.type === 'error') {\n        process.stdout.write(`\\n\u274c Error: ${parsed.error}\\n`);\n      }\n      // Ignore system messages and other JSON output\n    } catch {\n      // If it's not JSON, just write it (in case of non-JSON output)\n      // But skip it to avoid noise - Claude CLI outputs JSON by default\n    }\n  };\n}",
+      "originalFile": "/**\n * Interactive relay example: Two-session pattern with user input\n *\n * Demonstrates:\n * - Real-time streaming output from Claude sessions\n * - Interactive terminal input with readline\n * - Multi-session coordination (relay pattern)\n * - Session 1 asks questions, Session 2 processes answers\n */\n\nimport { createInterface } from 'node:readline';\nimport { AgentClient, createClaudeAdapter } from '../../src/index.js';\n\n/**\n * Create a readline interface for user input\n */\nfunction createReadline() {\n  return createInterface({\n    input: process.stdin,\n    output: process.stdout,\n  });\n}\n\n/**\n * Prompt user for input\n */\nfunction promptUser(rl: ReturnType<typeof createReadline>, question: string): Promise<string> {\n  return new Promise((resolve) => {\n    rl.question(question, (answer) => {\n      resolve(answer);\n    });\n  });\n}\n\n/**\n * Main interactive relay loop\n */\nasync function main() {\n  // Check if running in interactive mode (has TTY)\n  const isInteractive = process.stdin.isTTY;\n\n  if (!isInteractive) {\n    console.log('\u26a0\ufe0f  This example requires an interactive terminal (TTY).');\n    console.log('Run it directly in your terminal, not via npm/pnpm scripts.\\n');\n    console.log('Examples:');\n    console.log('  tsx examples/advanced/interactive-relay.ts');\n    console.log('  bun examples/advanced/interactive-relay.ts\\n');\n    process.exit(1);\n  }\n\n  const client = new AgentClient({\n    adapter: createClaudeAdapter(),\n  });\n\n  const rl = createReadline();\n\n  console.log('\ud83e\udd16 Interactive Two-Session Relay Example');\n  console.log('==========================================\\n');\n  console.log('Session 1 (Questioner) will ask you 3 questions.');\n  console.log('Session 2 (Processor) will summarize all your answers.\\n');\n\n  try {\n    // Create Session 1 - The Questioner\n    console.log('\ud83d\udcdd Creating Session 1 (Questioner)...\\n');\n    const session1 = client.createSession({\n      onOutput: (raw) => {\n        process.stdout.write(raw);\n      },\n    });\n\n    // Create Session 2 - The Processor\n    console.log('\\n\ud83d\udd0d Creating Session 2 (Processor)...\\n');\n    const session2 = client.createSession({\n      onOutput: (raw) => {\n        process.stdout.write(raw);\n      },\n    });\n\n    // Questions to ask\n    const questions = [\n      'What is your current software project or main technical focus?',\n      'What is the biggest challenge you\\'re facing with it right now?',\n      'What technology stack or tools are you using?',\n    ];\n\n    const userAnswers: Array<{ question: string; answer: string }> = [];\n\n    // Ask each question\n    for (let i = 0; i < questions.length; i++) {\n      console.log('\\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501');\n      console.log(`QUESTION ${i + 1} of ${questions.length}`);\n      console.log('\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\\n');\n\n      await session1.send(\n        `Ask this exact question concisely: \"${questions[i]}\"`\n      );\n\n      console.log('\\n');\n\n      // Get user's answer\n      const userAnswer = await promptUser(\n        rl,\n        `\ud83d\udcad Your answer: `\n      );\n\n      if (!userAnswer.trim()) {\n        console.log('\\n\u26a0\ufe0f  Skipping empty answer...');\n        userAnswers.push({ question: questions[i], answer: '[No answer provided]' });\n      } else {\n        userAnswers.push({ question: questions[i], answer: userAnswer });\n      }\n    }\n\n    // Session 2: Summarize all answers to verify they were received correctly\n    console.log('\\n\\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501');\n    console.log('SESSION 2 (VERIFICATION SUMMARY)');\n    console.log('\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\\n');\n\n    const formattedAnswers = userAnswers\n      .map((qa, idx) => `${idx + 1}. ${qa.question}\\n   Answer: \"${qa.answer}\"`)\n      .join('\\n\\n');\n\n    const response2 = await session2.send(\n      `I collected the following answers from a user. Please summarize what they told you in a clear, organized way to verify the information was received correctly:\\n\\n${formattedAnswers}\\n\\nProvide a brief summary of what you learned about their project, challenges, and tech stack.`\n    );\n\n    // Summary\n    console.log('\\n\\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501');\n    console.log('SESSION SUMMARY');\n    console.log('\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\\n');\n    console.log(`Session 1 ID: ${session1.sessionId}`);\n    console.log(`Session 2 ID: ${session2.sessionId}`);\n    console.log(`Questions asked: ${questions.length}`);\n    console.log(`Session 1 messages: ${session1.messageCount}`);\n    console.log(`Session 2 messages: ${session2.messageCount}`);\n\n    if (response2.usage) {\n      console.log(`\\nSession 2 tokens used: ${response2.usage.totalTokens || 'N/A'}`);\n    }\n\n    console.log('\\n\ud83d\udcdd Your raw answers:');\n    userAnswers.forEach((qa, idx) => {\n      console.log(`  ${idx + 1}. \"${qa.answer}\"`);\n    });\n\n  } catch (error) {\n    console.error('\\n\u274c Error:', error instanceof Error ? error.message : error);\n  } finally {\n    rl.close();\n  }\n}\n\n// Handle cleanup on exit\nprocess.on('SIGINT', () => {\n  console.log('\\n\\n\ud83d\udc4b Interrupted. Cleaning up...');\n  process.exit(0);\n});\n\nmain().catch(console.error);\n",
+      "structuredPatch": [
+        {
+          "oldStart": 33,
+          "oldLines": 6,
+          "newStart": 33,
+          "newLines": 34,
+          "lines": [
+            " }",
+            " ",
+            " /**",
+            "+ * Parse and display only the text content from Claude's JSON output",
+            "+ */",
+            "+function createTextOnlyOutput() {",
+            "+  return (raw: string) => {",
+            "+    try {",
+            "+      const parsed = JSON.parse(raw);",
+            "+",
+            "+      // Extract text from assistant messages",
+            "+      if (parsed.type === 'assistant' && parsed.message?.content) {",
+            "+        for (const content of parsed.message.content) {",
+            "+          if (content.type === 'text' && content.text) {",
+            "+            process.stdout.write(content.text);",
+            "+          }",
+            "+        }",
+            "+      }",
+            "+      // Optionally show errors",
+            "+      else if (parsed.type === 'error') {",
+            "+        process.stdout.write(`\\n\u274c Error: ${parsed.error}\\n`);",
+            "+      }",
+            "+      // Ignore system messages and other JSON output",
+            "+    } catch {",
+            "+      // If it's not JSON, just write it (in case of non-JSON output)",
+            "+      // But skip it to avoid noise - Claude CLI outputs JSON by default",
+            "+    }",
+            "+  };",
+            "+}",
+            "+",
+            "+/**",
+            "  * Main interactive relay loop",
+            "  */",
+            " async function main() {"
+          ]
+        }
+      ],
+      "userModified": false,
+      "replaceAll": false
+    }
+  },
+  {
+    "session_id": "da4b44ad-20c9-42f5-b889-86f70935d518",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo/da4b44ad-20c9-42f5-b889-86f70935d518.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk/examples/advanced/interactive-relay.ts",
+      "old_string": "  try {\n    // Create Session 1 - The Questioner\n    console.log('\ud83d\udcdd Creating Session 1 (Questioner)...\\n');\n    const session1 = client.createSession({\n      onOutput: (raw) => {\n        process.stdout.write(raw);\n      },\n    });\n\n    // Create Session 2 - The Processor\n    console.log('\\n\ud83d\udd0d Creating Session 2 (Processor)...\\n');\n    const session2 = client.createSession({\n      onOutput: (raw) => {\n        process.stdout.write(raw);\n      },\n    });",
+      "new_string": "  try {\n    // Create Session 1 - The Questioner\n    console.log('\ud83d\udcdd Creating Session 1 (Questioner)...\\n');\n    const session1 = client.createSession({\n      onOutput: createTextOnlyOutput(),\n    });\n\n    // Create Session 2 - The Processor\n    console.log('\\n\ud83d\udd0d Creating Session 2 (Processor)...\\n');\n    const session2 = client.createSession({\n      onOutput: createTextOnlyOutput(),\n    });"
+    },
+    "tool_response": {
+      "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk/examples/advanced/interactive-relay.ts",
+      "oldString": "  try {\n    // Create Session 1 - The Questioner\n    console.log('\ud83d\udcdd Creating Session 1 (Questioner)...\\n');\n    const session1 = client.createSession({\n      onOutput: (raw) => {\n        process.stdout.write(raw);\n      },\n    });\n\n    // Create Session 2 - The Processor\n    console.log('\\n\ud83d\udd0d Creating Session 2 (Processor)...\\n');\n    const session2 = client.createSession({\n      onOutput: (raw) => {\n        process.stdout.write(raw);\n      },\n    });",
+      "newString": "  try {\n    // Create Session 1 - The Questioner\n    console.log('\ud83d\udcdd Creating Session 1 (Questioner)...\\n');\n    const session1 = client.createSession({\n      onOutput: createTextOnlyOutput(),\n    });\n\n    // Create Session 2 - The Processor\n    console.log('\\n\ud83d\udd0d Creating Session 2 (Processor)...\\n');\n    const session2 = client.createSession({\n      onOutput: createTextOnlyOutput(),\n    });",
+      "originalFile": "/**\n * Interactive relay example: Two-session pattern with user input\n *\n * Demonstrates:\n * - Real-time streaming output from Claude sessions\n * - Interactive terminal input with readline\n * - Multi-session coordination (relay pattern)\n * - Session 1 asks questions, Session 2 processes answers\n */\n\nimport { createInterface } from 'node:readline';\nimport { AgentClient, createClaudeAdapter } from '../../src/index.js';\n\n/**\n * Create a readline interface for user input\n */\nfunction createReadline() {\n  return createInterface({\n    input: process.stdin,\n    output: process.stdout,\n  });\n}\n\n/**\n * Prompt user for input\n */\nfunction promptUser(rl: ReturnType<typeof createReadline>, question: string): Promise<string> {\n  return new Promise((resolve) => {\n    rl.question(question, (answer) => {\n      resolve(answer);\n    });\n  });\n}\n\n/**\n * Parse and display only the text content from Claude's JSON output\n */\nfunction createTextOnlyOutput() {\n  return (raw: string) => {\n    try {\n      const parsed = JSON.parse(raw);\n\n      // Extract text from assistant messages\n      if (parsed.type === 'assistant' && parsed.message?.content) {\n        for (const content of parsed.message.content) {\n          if (content.type === 'text' && content.text) {\n            process.stdout.write(content.text);\n          }\n        }\n      }\n      // Optionally show errors\n      else if (parsed.type === 'error') {\n        process.stdout.write(`\\n\u274c Error: ${parsed.error}\\n`);\n      }\n      // Ignore system messages and other JSON output\n    } catch {\n      // If it's not JSON, just write it (in case of non-JSON output)\n      // But skip it to avoid noise - Claude CLI outputs JSON by default\n    }\n  };\n}\n\n/**\n * Main interactive relay loop\n */\nasync function main() {\n  // Check if running in interactive mode (has TTY)\n  const isInteractive = process.stdin.isTTY;\n\n  if (!isInteractive) {\n    console.log('\u26a0\ufe0f  This example requires an interactive terminal (TTY).');\n    console.log('Run it directly in your terminal, not via npm/pnpm scripts.\\n');\n    console.log('Examples:');\n    console.log('  tsx examples/advanced/interactive-relay.ts');\n    console.log('  bun examples/advanced/interactive-relay.ts\\n');\n    process.exit(1);\n  }\n\n  const client = new AgentClient({\n    adapter: createClaudeAdapter(),\n  });\n\n  const rl = createReadline();\n\n  console.log('\ud83e\udd16 Interactive Two-Session Relay Example');\n  console.log('==========================================\\n');\n  console.log('Session 1 (Questioner) will ask you 3 questions.');\n  console.log('Session 2 (Processor) will summarize all your answers.\\n');\n\n  try {\n    // Create Session 1 - The Questioner\n    console.log('\ud83d\udcdd Creating Session 1 (Questioner)...\\n');\n    const session1 = client.createSession({\n      onOutput: (raw) => {\n        process.stdout.write(raw);\n      },\n    });\n\n    // Create Session 2 - The Processor\n    console.log('\\n\ud83d\udd0d Creating Session 2 (Processor)...\\n');\n    const session2 = client.createSession({\n      onOutput: (raw) => {\n        process.stdout.write(raw);\n      },\n    });\n\n    // Questions to ask\n    const questions = [\n      'What is your current software project or main technical focus?',\n      'What is the biggest challenge you\\'re facing with it right now?',\n      'What technology stack or tools are you using?',\n    ];\n\n    const userAnswers: Array<{ question: string; answer: string }> = [];\n\n    // Ask each question\n    for (let i = 0; i < questions.length; i++) {\n      console.log('\\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501');\n      console.log(`QUESTION ${i + 1} of ${questions.length}`);\n      console.log('\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\\n');\n\n      await session1.send(\n        `Ask this exact question concisely: \"${questions[i]}\"`\n      );\n\n      console.log('\\n');\n\n      // Get user's answer\n      const userAnswer = await promptUser(\n        rl,\n        `\ud83d\udcad Your answer: `\n      );\n\n      if (!userAnswer.trim()) {\n        console.log('\\n\u26a0\ufe0f  Skipping empty answer...');\n        userAnswers.push({ question: questions[i], answer: '[No answer provided]' });\n      } else {\n        userAnswers.push({ question: questions[i], answer: userAnswer });\n      }\n    }\n\n    // Session 2: Summarize all answers to verify they were received correctly\n    console.log('\\n\\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501');\n    console.log('SESSION 2 (VERIFICATION SUMMARY)');\n    console.log('\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\\n');\n\n    const formattedAnswers = userAnswers\n      .map((qa, idx) => `${idx + 1}. ${qa.question}\\n   Answer: \"${qa.answer}\"`)\n      .join('\\n\\n');\n\n    const response2 = await session2.send(\n      `I collected the following answers from a user. Please summarize what they told you in a clear, organized way to verify the information was received correctly:\\n\\n${formattedAnswers}\\n\\nProvide a brief summary of what you learned about their project, challenges, and tech stack.`\n    );\n\n    // Summary\n    console.log('\\n\\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501');\n    console.log('SESSION SUMMARY');\n    console.log('\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\\n');\n    console.log(`Session 1 ID: ${session1.sessionId}`);\n    console.log(`Session 2 ID: ${session2.sessionId}`);\n    console.log(`Questions asked: ${questions.length}`);\n    console.log(`Session 1 messages: ${session1.messageCount}`);\n    console.log(`Session 2 messages: ${session2.messageCount}`);\n\n    if (response2.usage) {\n      console.log(`\\nSession 2 tokens used: ${response2.usage.totalTokens || 'N/A'}`);\n    }\n\n    console.log('\\n\ud83d\udcdd Your raw answers:');\n    userAnswers.forEach((qa, idx) => {\n      console.log(`  ${idx + 1}. \"${qa.answer}\"`);\n    });\n\n  } catch (error) {\n    console.error('\\n\u274c Error:', error instanceof Error ? error.message : error);\n  } finally {\n    rl.close();\n  }\n}\n\n// Handle cleanup on exit\nprocess.on('SIGINT', () => {\n  console.log('\\n\\n\ud83d\udc4b Interrupted. Cleaning up...');\n  process.exit(0);\n});\n\nmain().catch(console.error);\n",
+      "structuredPatch": [
+        {
+          "oldStart": 91,
+          "oldLines": 17,
+          "newStart": 91,
+          "newLines": 13,
+          "lines": [
+            "     // Create Session 1 - The Questioner",
+            "     console.log('\ud83d\udcdd Creating Session 1 (Questioner)...\\n');",
+            "     const session1 = client.createSession({",
+            "-      onOutput: (raw) => {",
+            "-        process.stdout.write(raw);",
+            "-      },",
+            "+      onOutput: createTextOnlyOutput(),",
+            "     });",
+            " ",
+            "     // Create Session 2 - The Processor",
+            "     console.log('\\n\ud83d\udd0d Creating Session 2 (Processor)...\\n');",
+            "     const session2 = client.createSession({",
+            "-      onOutput: (raw) => {",
+            "-        process.stdout.write(raw);",
+            "-      },",
+            "+      onOutput: createTextOnlyOutput(),",
+            "     });",
+            " ",
+            "     // Questions to ask"
+          ]
+        }
+      ],
+      "userModified": false,
+      "replaceAll": false
+    }
+  }
+]

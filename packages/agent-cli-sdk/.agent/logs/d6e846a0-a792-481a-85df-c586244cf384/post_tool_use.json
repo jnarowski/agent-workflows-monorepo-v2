@@ -1,0 +1,21 @@
+[
+  {
+    "session_id": "d6e846a0-a792-481a-85df-c586244cf384",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo/d6e846a0-a792-481a-85df-c586244cf384.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd packages/agent-cli-sdk && pnpm build",
+      "timeout": 60000,
+      "description": "Build agent-cli-sdk to verify changes"
+    },
+    "tool_response": {
+      "stdout": "> @sourceborn/agent-cli-sdk@3.0.0 build /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk\n> tsdown\n\n\u001b[34m\u2139\u001b[39m tsdown \u001b[2mv0.15.7\u001b[22m powered by rolldown \u001b[2mv1.0.0-beta.43\u001b[22m\n\u001b[34m\u2139\u001b[39m entry: \u001b[34msrc/index.ts\u001b[39m\n\u001b[34m\u2139\u001b[39m target: \u001b[34mnode22.0.0\u001b[39m\n\u001b[34m\u2139\u001b[39m tsconfig: \u001b[34mtsconfig.json\u001b[39m\n\u001b[34m\u2139\u001b[39m Build start\n\u001b[34m\u2139\u001b[39m Cleaning 4 files\n\u001b[34m\u2139\u001b[39m \u001b[2mdist/\u001b[22m\u001b[1mindex.js\u001b[22m        \u001b[2m42.61 kB\u001b[22m \u001b[2m\u2502 gzip: 10.33 kB\u001b[22m\n\u001b[34m\u2139\u001b[39m \u001b[2mdist/\u001b[22mindex.js.map    \u001b[2m97.21 kB\u001b[22m \u001b[2m\u2502 gzip: 23.97 kB\u001b[22m\n\u001b[34m\u2139\u001b[39m \u001b[2mdist/\u001b[22mindex.d.ts.map  \u001b[2m11.11 kB\u001b[22m \u001b[2m\u2502 gzip:  3.75 kB\u001b[22m\n\u001b[34m\u2139\u001b[39m \u001b[2mdist/\u001b[22m\u001b[32m\u001b[1mindex.d.ts\u001b[22m\u001b[39m      \u001b[2m18.59 kB\u001b[22m \u001b[2m\u2502 gzip:  4.70 kB\u001b[22m\n\u001b[34m\u2139\u001b[39m 4 files, total: 169.53 kB\n\u001b[32m\u2714\u001b[39m Build complete in \u001b[32m464ms\u001b[39m",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "session_id": "40959b0c-1269-4656-8b3f-0a2149b4fb82",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo/40959b0c-1269-4656-8b3f-0a2149b4fb82.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "pnpm test",
+      "timeout": 120000,
+      "description": "Run full test suite"
+    }
+  },
+  {
+    "session_id": "40959b0c-1269-4656-8b3f-0a2149b4fb82",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo/40959b0c-1269-4656-8b3f-0a2149b4fb82.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Remove result event text extraction from cli-wrapper.ts",
+          "status": "completed",
+          "activeForm": "Removing result event text extraction from cli-wrapper.ts"
+        },
+        {
+          "content": "Create regression test for text duplication fix",
+          "status": "completed",
+          "activeForm": "Creating regression test for text duplication fix"
+        },
+        {
+          "content": "Run tests to verify the fix",
+          "status": "completed",
+          "activeForm": "Running tests to verify the fix"
+        }
+      ]
+    }
+  }
+]

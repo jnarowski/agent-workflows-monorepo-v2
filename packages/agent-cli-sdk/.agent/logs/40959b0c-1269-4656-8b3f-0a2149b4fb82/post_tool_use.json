@@ -1,0 +1,102 @@
+[
+  {
+    "session_id": "40959b0c-1269-4656-8b3f-0a2149b4fb82",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo/40959b0c-1269-4656-8b3f-0a2149b4fb82.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk && pnpm test tests/unit/adapters/claude/cli-wrapper.test.ts",
+      "description": "Run new cli-wrapper regression tests"
+    },
+    "tool_response": {
+      "stdout": "> @sourceborn/agent-cli-sdk@3.0.0 test /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk\n> vitest run tests/unit/adapters/claude/cli-wrapper.test.ts\n\n\n RUN  v2.1.9 /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk\n\n \u2713 tests/unit/adapters/claude/cli-wrapper.test.ts (4 tests) 2ms\n\n Test Files  1 passed (1)\n      Tests  4 passed (4)\n   Start at  20:03:10\n   Duration  218ms (transform 40ms, setup 5ms, collect 44ms, tests 2ms, environment 0ms, prepare 28ms)",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  },
+  {
+    "session_id": "40959b0c-1269-4656-8b3f-0a2149b4fb82",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo/40959b0c-1269-4656-8b3f-0a2149b4fb82.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "pnpm test",
+      "timeout": 120000,
+      "description": "Run full test suite"
+    },
+    "tool_response": {
+      "stdout": "> @sourceborn/agent-cli-sdk@3.0.0 test /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk\n> vitest run\n\n\n RUN  v2.1.9 /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk\n\n \u2713 tests/unit/adapters/claude/mcp-detector.test.ts (19 tests) 4ms\n \u2713 tests/integration/client-workflows.test.ts (11 tests) 3ms\n \u2713 tests/unit/adapters/claude/image-handler.test.ts (20 tests) 6ms\n \u2713 tests/unit/core/errors.test.ts (46 tests) 9ms\n \u2713 tests/unit/utils/validation.test.ts (15 tests) 3ms\n \u2713 tests/unit/utils/json-parser.test.ts (12 tests) 3ms\n \u2713 tests/unit/utils/spawn.test.ts (12 tests) 24ms\n \u2713 tests/unit/client/agent-client.test.ts (23 tests) 27ms\n \u2713 tests/unit/client/session.test.ts (32 tests) 29ms\n \u2713 tests/unit/adapters/claude/cli-wrapper.test.ts (4 tests) 3ms\n \u2713 tests/unit/adapters/claude/parser.test.ts (49 tests) 8ms\n \u2713 tests/integration/session-flows.test.ts (20 tests) 98ms\n\n Test Files  12 passed (12)\n      Tests  263 passed (263)\n   Start at  20:03:16\n   Duration  343ms (transform 373ms, setup 83ms, collect 682ms, tests 216ms, environment 1ms, prepare 684ms)",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  },
+  {
+    "session_id": "40959b0c-1269-4656-8b3f-0a2149b4fb82",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo/40959b0c-1269-4656-8b3f-0a2149b4fb82.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Remove result event text extraction from cli-wrapper.ts",
+          "status": "completed",
+          "activeForm": "Removing result event text extraction from cli-wrapper.ts"
+        },
+        {
+          "content": "Create regression test for text duplication fix",
+          "status": "completed",
+          "activeForm": "Creating regression test for text duplication fix"
+        },
+        {
+          "content": "Run tests to verify the fix",
+          "status": "completed",
+          "activeForm": "Running tests to verify the fix"
+        }
+      ]
+    },
+    "tool_response": {
+      "oldTodos": [
+        {
+          "content": "Remove result event text extraction from cli-wrapper.ts",
+          "status": "completed",
+          "activeForm": "Removing result event text extraction from cli-wrapper.ts"
+        },
+        {
+          "content": "Create regression test for text duplication fix",
+          "status": "completed",
+          "activeForm": "Creating regression test for text duplication fix"
+        },
+        {
+          "content": "Run tests to verify the fix",
+          "status": "in_progress",
+          "activeForm": "Running tests to verify the fix"
+        }
+      ],
+      "newTodos": [
+        {
+          "content": "Remove result event text extraction from cli-wrapper.ts",
+          "status": "completed",
+          "activeForm": "Removing result event text extraction from cli-wrapper.ts"
+        },
+        {
+          "content": "Create regression test for text duplication fix",
+          "status": "completed",
+          "activeForm": "Creating regression test for text duplication fix"
+        },
+        {
+          "content": "Run tests to verify the fix",
+          "status": "completed",
+          "activeForm": "Running tests to verify the fix"
+        }
+      ]
+    }
+  }
+]
