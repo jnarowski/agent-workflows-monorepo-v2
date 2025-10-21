@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useProjects, useDeleteProject } from "../hooks/useProjects";
 import { Button } from "../components/ui/button";
 import {
@@ -18,6 +19,7 @@ import { DeleteProjectDialog } from "../components/projects/DeleteProjectDialog"
 import type { Project } from "../../shared/types/project.types";
 
 export default function Projects() {
+  const navigate = useNavigate();
   const { data: projects, isLoading, error } = useProjects();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -128,7 +130,11 @@ export default function Projects() {
             </TableHeader>
             <TableBody>
               {projects.map((project) => (
-                <TableRow key={project.id}>
+                <TableRow
+                  key={project.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => navigate(`/projects/${project.id}`)}
+                >
                   <TableCell className="font-medium whitespace-nowrap">{project.name}</TableCell>
                   <TableCell className="text-sm text-muted-foreground font-mono max-w-md">
                     <span title={project.path} className="break-all">
@@ -143,14 +149,20 @@ export default function Projects() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setEditingProject(project)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingProject(project);
+                        }}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setDeletingProject(project)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeletingProject(project);
+                        }}
                       >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
