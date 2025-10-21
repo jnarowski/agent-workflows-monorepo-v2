@@ -45,3 +45,5 @@ yarn-error.log*
 
 # Agent logs
 .agent/agents/logs
+
+.playwright-mcp/**
