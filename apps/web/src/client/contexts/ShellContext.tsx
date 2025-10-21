@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { Terminal } from '@xterm/xterm';
+import type { FitAddon } from '@xterm/addon-fit';
 
 export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 
@@ -16,6 +17,7 @@ export interface TerminalSession {
   id: string;
   projectId: string;
   terminal: Terminal | null;
+  fitAddon: FitAddon | null;
   containerElement: HTMLDivElement | null;
   status: ConnectionStatus;
   sessionId?: string; // Backend session ID from WebSocket

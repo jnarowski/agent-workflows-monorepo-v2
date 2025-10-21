@@ -21,6 +21,7 @@ export function Terminal({ sessionId, projectId, onConnect, onDisconnect }: Term
   const xtermRef = useRef<XTerm | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const lastDimensionsRef = useRef<{ cols: number; rows: number } | null>(null);
 
   // Stable callbacks for WebSocket
   const handleOutput = useCallback((data: string) => {
@@ -47,11 +48,10 @@ export function Terminal({ sessionId, projectId, onConnect, onDisconnect }: Term
     // Check if we have an existing session
     const existingSession = getSession(sessionId);
 
-    if (existingSession?.terminal) {
-      // Reuse existing terminal instance
+    if (existingSession?.terminal && existingSession?.fitAddon) {
+      // Reuse existing terminal instance and FitAddon
       xtermRef.current = existingSession.terminal;
-      fitAddonRef.current = new FitAddon();
-      xtermRef.current.loadAddon(fitAddonRef.current);
+      fitAddonRef.current = existingSession.fitAddon;
 
       // Open terminal in new container
       if (terminalRef.current) {
@@ -126,6 +126,7 @@ export function Terminal({ sessionId, projectId, onConnect, onDisconnect }: Term
       addSession(sessionId, {
         projectId,
         terminal,
+        fitAddon,
         containerElement: null,
         status: 'disconnected',
       });
@@ -152,41 +153,33 @@ export function Terminal({ sessionId, projectId, onConnect, onDisconnect }: Term
       });
     }
 
-    // Set up ResizeObserver for auto-fitting - observe terminal div (where xterm opens)
-    if (terminalRef.current && fitAddonRef.current) {
-      const resizeObserver = new ResizeObserver(() => {
-        if (fitAddonRef.current && xtermRef.current) {
-          setTimeout(() => {
-            try {
-              fitAddonRef.current?.fit();
-              // Send updated terminal size to backend after resize
-              if (xtermRef.current && sendResize) {
-                const dims = fitAddonRef.current?.proposeDimensions();
-                if (dims) {
-                  sendResize(dims.cols, dims.rows);
-                }
-              }
-            } catch (e) {
-              console.warn('[Terminal] Fit failed:', e);
-            }
-          }, 50);
-        }
-      });
+    // Initial fit - call once after terminal is ready
+    const initialFit = () => {
+      if (!fitAddonRef.current || !xtermRef.current || !terminalRef.current) return;
 
-      resizeObserver.observe(terminalRef.current);
-      resizeObserverRef.current = resizeObserver;
-    }
+      try {
+        fitAddonRef.current.fit();
+        const dims = fitAddonRef.current.proposeDimensions();
+        if (dims) {
+          lastDimensionsRef.current = { cols: dims.cols, rows: dims.rows };
+        }
+      } catch (e) {
+        console.warn('[Terminal] Initial fit failed:', e);
+      }
+    };
+
+    // Call fit after a small delay to ensure DOM is ready
+    const fitTimeout = setTimeout(initialFit, 50);
 
     // Cleanup on unmount
     return () => {
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect();
-      }
+      clearTimeout(fitTimeout);
 
       // Save terminal state in context (don't dispose - we want persistence)
-      if (xtermRef.current) {
+      if (xtermRef.current && fitAddonRef.current) {
         updateSession(sessionId, {
           terminal: xtermRef.current,
+          fitAddon: fitAddonRef.current,
           containerElement: null,
         });
       }
@@ -224,7 +217,7 @@ export function Terminal({ sessionId, projectId, onConnect, onDisconnect }: Term
   }, []); // Only run once on mount
 
   return (
-    <div ref={wrapperRef} className="flex-1 p-2 overflow-hidden relative bg-[#1e1e1e]">
+    <div ref={wrapperRef} className="h-full overflow-hidden relative bg-[#1e1e1e]">
       <div ref={terminalRef} className="h-full w-full" style={{ outline: 'none' }} />
     </div>
   );

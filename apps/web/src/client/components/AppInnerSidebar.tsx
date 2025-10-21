@@ -124,7 +124,7 @@ export function AppInnerSidebar({
       prev.includes(projectId) ? prev : [...prev, projectId]
     );
     onProjectClick?.(projectId);
-    navigate(`/projects/${projectId}`);
+    navigate(`/projects/${projectId}/chat`);
   };
 
   // Ensure active project is open on mount or when activeProjectId changes

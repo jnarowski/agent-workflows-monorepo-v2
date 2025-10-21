@@ -1,11 +1,14 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ShellProvider } from "./contexts/ShellContext";
 import ProtectedLayout from "./layouts/ProtectedLayout";
 import AuthLayout from "./layouts/AuthLayout";
+import ProjectDetailLayout from "./layouts/ProjectDetailLayout";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
-import ProjectDetail from "./pages/ProjectDetail";
+import ProjectChat from "./pages/ProjectChat";
+import ProjectShell from "./pages/ProjectShell";
+import ProjectFiles from "./pages/ProjectFiles";
 import AboutUs from "./pages/AboutUs";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -27,7 +30,15 @@ function App() {
           <Route element={<ProtectedLayout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/projects" element={<Projects />} />
-            <Route path="/projects/:id" element={<ProjectDetail />} />
+
+            {/* Project detail with nested routes */}
+            <Route path="/projects/:id" element={<ProjectDetailLayout />}>
+              <Route index element={<Navigate to="chat" replace />} />
+              <Route path="chat" element={<ProjectChat />} />
+              <Route path="shell" element={<ProjectShell />} />
+              <Route path="files" element={<ProjectFiles />} />
+            </Route>
+
             <Route path="/about" element={<AboutUs />} />
           </Route>
         </Routes>
