@@ -1,6 +1,6 @@
 .agent/logs
 .agent/agents/logs
-.agent/workflows/logs/** 
+.agent/workflows/logs/**
 
 node_modules/
 dist/
@@ -8,3 +8,5 @@ dist/
 *.tsbuildinfo
 .DS_Store
 .env*
+.npmrc.tmp
+*.npmrc.tmp
