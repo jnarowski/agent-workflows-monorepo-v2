@@ -13,9 +13,9 @@ interface AssistantMessageProps {
 
 export function AssistantMessage({ message, toolResults }: AssistantMessageProps) {
   return (
-    <div className="mb-4">
+    <div className="w-full">
       {/* Content blocks */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {message.content.map((block, index) => (
           <ContentBlockRenderer
             key={index}

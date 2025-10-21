@@ -92,17 +92,19 @@ export function ChatInterface({ projectId, sessionFile }: ChatInterfaceProps) {
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-y-auto p-4 pb-32 space-y-1"
+      className="h-full overflow-y-auto"
       data-project-id={projectId}
     >
-      {messages.map((message) => (
-        <MessageRenderer
-          key={message.id}
-          message={message}
-          toolResults={toolResults}
-        />
-      ))}
-      <div ref={messagesEndRef} />
+      <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
+        {messages.map((message) => (
+          <MessageRenderer
+            key={message.id}
+            message={message}
+            toolResults={toolResults}
+          />
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
     </div>
   );
 }

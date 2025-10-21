@@ -12,7 +12,7 @@ interface TextBlockProps {
 
 export function TextBlock({ text, className = '' }: TextBlockProps) {
   return (
-    <div className={`prose prose-sm dark:prose-invert max-w-none ${className}`}>
+    <div className={`prose dark:prose-invert max-w-none ${className}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
