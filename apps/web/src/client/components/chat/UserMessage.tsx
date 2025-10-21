@@ -3,7 +3,7 @@
  * Right-aligned with blue bubble design
  */
 
-import type { ChatMessage, TextBlock } from '../../shared/types/chat';
+import type { ChatMessage, TextBlock, ToolResultBlock } from '../../shared/types/chat';
 
 interface UserMessageProps {
   message: ChatMessage;
@@ -11,31 +11,50 @@ interface UserMessageProps {
 
 export function UserMessage({ message }: UserMessageProps) {
   // Extract text content from content blocks
-  const textContent = message.content
-    .filter((block): block is TextBlock => block.type === 'text')
-    .map(block => block.text)
-    .join('\n\n');
+  const textBlocks = message.content.filter(
+    (block): block is TextBlock => block.type === 'text'
+  );
+
+  // Extract tool result blocks
+  const toolResultBlocks = message.content.filter(
+    (block): block is ToolResultBlock => block.type === 'tool_result'
+  );
 
   // Format timestamp
-  const formattedTime = new Date(message.timestamp).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  const formattedTime = new Date(message.timestamp).toLocaleTimeString(
+    'en-US',
+    {
+      hour: '2-digit',
+      minute: '2-digit',
+    }
+  );
+
+  // If message only contains tool results (no text), don't render
+  // Tool results are already shown inline with the assistant's tool_use blocks
+  const hasText = textBlocks.length > 0;
+  const hasToolResults = toolResultBlocks.length > 0;
+
+  // Hide messages that only contain tool results (API plumbing, already shown in assistant message)
+  if (!hasText && hasToolResults) {
+    return null;
+  }
 
   return (
     <div className="flex justify-end mb-4">
-      <div className="max-w-[80%] space-y-1">
+      <div className="max-w-[80%] space-y-2">
         {/* Timestamp */}
         <div className="text-xs text-muted-foreground text-right pr-1">
           {formattedTime}
         </div>
 
-        {/* Message bubble */}
-        <div className="rounded-lg bg-primary text-primary-foreground px-4 py-3 shadow-sm">
-          <div className="whitespace-pre-wrap break-words text-sm">
-            {textContent}
+        {/* Text content */}
+        {hasText && (
+          <div className="rounded-lg bg-primary text-primary-foreground px-4 py-3 shadow-sm">
+            <div className="whitespace-pre-wrap wrap-break-word text-sm">
+              {textBlocks.map((block: TextBlock) => block.text).join('\n\n')}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

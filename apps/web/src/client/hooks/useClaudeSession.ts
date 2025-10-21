@@ -33,7 +33,7 @@ interface UseClaudeSessionReturn {
  * - Update UI in real-time as assistant responds
  */
 export function useClaudeSession(
-  sessionFile: string = '8f079ffe-995f-42ba-b089-84de56817b6f.jsonl'
+  sessionFile: string = '955542ae-9772-459d-a33f-d12f5586d961.jsonl'
 ): UseClaudeSessionReturn {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [toolResults, setToolResults] = useState<Map<string, { content: string; is_error?: boolean }>>(

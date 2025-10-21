@@ -25,15 +25,15 @@ export function ToolResultRenderer({ result, isError = false }: ToolResultRender
   const borderColor = isError ? 'border-red-200 dark:border-red-800' : 'border-green-200 dark:border-green-800';
 
   const content = (
-    <div className={`rounded-md border ${borderColor} ${bgColor} overflow-hidden`}>
-      <div className="flex items-center gap-2 px-3 py-2">
+    <div className={`rounded-md border ${borderColor} overflow-hidden`}>
+      <div className={`flex items-center gap-2 px-3 py-2 ${bgColor} ${shouldCollapse && !isOpen ? '' : 'rounded-t-md'}`}>
         <Icon className={`h-4 w-4 ${iconColor} flex-shrink-0`} />
         <span className="text-sm font-medium">
           {isError ? 'Error' : 'Success'}
         </span>
         {shouldCollapse && (
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="ml-auto h-6 px-2">
+            <Button variant="ghost" size="sm" className="ml-auto h-6 px-2 rounded-sm">
               {isOpen ? (
                 <>
                   <ChevronDown className="h-3 w-3 mr-1" />
@@ -50,7 +50,7 @@ export function ToolResultRenderer({ result, isError = false }: ToolResultRender
         )}
       </div>
 
-      <div className={`border-t ${borderColor} px-3 py-2`}>
+      <div className={`border-t ${borderColor} ${bgColor} px-3 py-2`}>
         <pre className="font-mono text-xs whitespace-pre-wrap break-words">
           {result}
         </pre>

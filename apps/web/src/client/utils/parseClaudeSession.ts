@@ -1,9 +1,17 @@
 /**
  * Parse JSONL session data into ChatMessage array
- * Handles Claude Code CLI output format with streaming events
+ * Supports multiple formats via adapter system
  */
 
-import type { ChatMessage, ContentBlock, ToolUseBlock, ToolResultBlock } from '../../shared/types/chat';
+import type {
+  ChatMessage,
+  ContentBlock,
+  ToolUseBlock,
+  ToolResultBlock,
+  ClaudeSessionRow,
+  ClaudeSessionData
+} from '../../shared/types/chat';
+import { parseJSONLWithAdapter, extractToolResultsWithAdapter } from './sessionAdapters';
 
 interface RawStreamEvent {
   type: string;
@@ -13,12 +21,19 @@ interface RawStreamEvent {
 
 /**
  * Parse JSONL content into an array of ChatMessage objects
- * Links tool_use blocks with their corresponding tool_result blocks
+ * Auto-detects format (Claude CLI or streaming) and uses appropriate adapter
  *
  * @param jsonlContent - Raw JSONL string content
  * @returns Array of parsed ChatMessage objects
  */
 export function parseJSONLSession(jsonlContent: string): ChatMessage[] {
+  // Try adapter-based parsing first (handles Claude CLI format)
+  const adapterResult = parseJSONLWithAdapter(jsonlContent);
+  if (adapterResult.length > 0) {
+    return adapterResult;
+  }
+
+  // Fall back to streaming format parsing
   if (!jsonlContent || jsonlContent.trim() === '') {
     return [];
   }
@@ -181,37 +196,11 @@ export function parseJSONLSession(jsonlContent: string): ChatMessage[] {
 
 /**
  * Extract tool results from JSONL and create a lookup map
+ * Auto-detects format and uses appropriate extraction method
  * @param jsonlContent - Raw JSONL string content
  * @returns Map of tool_use_id to tool result
  */
 export function extractToolResults(jsonlContent: string): Map<string, { content: string; is_error?: boolean }> {
-  const toolResults = new Map<string, { content: string; is_error?: boolean }>();
-
-  if (!jsonlContent || jsonlContent.trim() === '') {
-    return toolResults;
-  }
-
-  const lines = jsonlContent.split('\n').filter(line => line.trim() !== '');
-
-  for (const line of lines) {
-    try {
-      const event = JSON.parse(line) as RawStreamEvent;
-
-      if (event.type === 'tool_result') {
-        const toolUseId = (event as any).tool_use_id || '';
-        const content = (event as any).content || '';
-        const isError = (event as any).is_error || false;
-
-        toolResults.set(toolUseId, {
-          content,
-          is_error: isError
-        });
-      }
-    } catch (error) {
-      // Skip malformed lines
-      continue;
-    }
-  }
-
-  return toolResults;
+  // Use adapter-based extraction (handles both CLI and streaming formats)
+  return extractToolResultsWithAdapter(jsonlContent);
 }

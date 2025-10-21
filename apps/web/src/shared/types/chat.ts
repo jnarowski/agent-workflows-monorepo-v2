@@ -6,6 +6,27 @@
 // Re-export StreamEvent from agent-cli-sdk for consistency
 export type { StreamEvent } from '@repo/agent-cli-sdk';
 
+// Re-export Claude CLI session types
+export type {
+  ClaudeSessionRow,
+  ClaudeSessionData,
+  ClaudeFileHistorySnapshotRow,
+  ClaudeUserMessageRow,
+  ClaudeAssistantMessageRow,
+  ClaudeMessage,
+  ClaudeContentBlock,
+  ClaudeFileBackup,
+  ClaudeFileHistorySnapshot,
+  ClaudeThinkingMetadata,
+  ClaudeToolUseResult,
+} from './claude-session.types';
+
+export {
+  isFileHistorySnapshot,
+  isUserMessage,
+  isAssistantMessage,
+} from './claude-session.types';
+
 /**
  * Message role types
  */
