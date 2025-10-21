@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { NavLink, Outlet, useNavigate, useParams } from "react-router-dom";
 import { useProject } from "../hooks/useProjects";
 import { Button } from "../components/ui/button";
@@ -10,11 +11,45 @@ import {
   FileText,
 } from "lucide-react";
 import { Alert, AlertDescription } from "../components/ui/alert";
+import { ChatProvider } from "../contexts/ChatContext";
 
 export default function ProjectDetailLayout() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: project, isLoading, error } = useProject(id!);
+  const [isSyncing, setIsSyncing] = React.useState(false);
+
+  // Sync sessions on initial mount only
+  React.useEffect(() => {
+    if (!id || !project) return;
+
+    const syncSessions = async () => {
+      try {
+        setIsSyncing(true);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/projects/${id}/sessions/sync`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          console.error('Failed to sync sessions:', response.statusText);
+        } else {
+          const result = await response.json();
+          console.log('Sessions synced:', result);
+        }
+      } catch (err) {
+        console.error('Error syncing sessions:', err);
+      } finally {
+        setIsSyncing(false);
+      }
+    };
+
+    syncSessions();
+  }, [id]); // Only run when project ID changes (initial mount)
 
   // Loading state
   if (isLoading) {
@@ -63,62 +98,64 @@ export default function ProjectDetailLayout() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header with project name and tab navigation */}
-      <div className="flex items-center justify-between border-b px-6 py-4">
-        <div className="flex flex-col gap-1">
-          <div className="text-sm font-semibold text-muted-foreground">
-            Project
+    <ChatProvider>
+      <div className="flex flex-col h-full">
+        {/* Header with project name and tab navigation */}
+        <div className="flex items-center justify-between border-b px-6 py-4">
+          <div className="flex flex-col gap-1">
+            <div className="text-sm font-semibold text-muted-foreground">
+              Project
+            </div>
+            <div className="text-base font-medium">{project.name}</div>
           </div>
-          <div className="text-base font-medium">{project.name}</div>
+          <nav className="flex gap-2">
+            <NavLink
+              to={`/projects/${id}/chat`}
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-secondary text-secondary-foreground"
+                    : "text-muted-foreground hover:bg-secondary/50"
+                }`
+              }
+            >
+              <MessageSquare className="h-4 w-4" />
+              Chat
+            </NavLink>
+            <NavLink
+              to={`/projects/${id}/shell`}
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-secondary text-secondary-foreground"
+                    : "text-muted-foreground hover:bg-secondary/50"
+                }`
+              }
+            >
+              <TerminalIcon className="h-4 w-4" />
+              Shell
+            </NavLink>
+            <NavLink
+              to={`/projects/${id}/files`}
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-secondary text-secondary-foreground"
+                    : "text-muted-foreground hover:bg-secondary/50"
+                }`
+              }
+            >
+              <FileText className="h-4 w-4" />
+              Files
+            </NavLink>
+          </nav>
         </div>
-        <nav className="flex gap-2">
-          <NavLink
-            to={`/projects/${id}/chat`}
-            className={({ isActive }) =>
-              `flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:bg-secondary/50"
-              }`
-            }
-          >
-            <MessageSquare className="h-4 w-4" />
-            Chat
-          </NavLink>
-          <NavLink
-            to={`/projects/${id}/shell`}
-            className={({ isActive }) =>
-              `flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:bg-secondary/50"
-              }`
-            }
-          >
-            <TerminalIcon className="h-4 w-4" />
-            Shell
-          </NavLink>
-          <NavLink
-            to={`/projects/${id}/files`}
-            className={({ isActive }) =>
-              `flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:bg-secondary/50"
-              }`
-            }
-          >
-            <FileText className="h-4 w-4" />
-            Files
-          </NavLink>
-        </nav>
-      </div>
 
-      {/* Nested route content */}
-      <div className="flex-1 relative">
-        <Outlet />
+        {/* Nested route content */}
+        <div className="flex-1 relative">
+          <Outlet />
+        </div>
       </div>
-    </div>
+    </ChatProvider>
   );
 }

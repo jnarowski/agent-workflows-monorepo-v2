@@ -4,9 +4,7 @@ import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ChevronRight,
-  Clock,
   Folder,
-  Plus,
   MoreHorizontal,
   Trash2,
   Star,
@@ -33,27 +31,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useProjects } from "../hooks/useProjects";
-
-interface Session {
-  id: string;
-  name: string;
-  timestamp: string;
-  messageCount: number;
-}
+import { useAgentSessions } from "../hooks/useAgentSessions";
+import { SessionListItem } from "./chat/SessionListItem";
+import { NewSessionButton } from "./chat/NewSessionButton";
 
 interface ProjectWithSessions {
   id: string;
   name: string;
   path: string;
   sessionCount: number;
-  sessions?: Session[];
   isActive?: boolean;
 }
 
@@ -84,35 +76,23 @@ export function AppInnerSidebar({
     activeProjectId ? [activeProjectId] : []
   );
 
-  // Transform projects data and add mock sessions for now
+  // Fetch sessions for the active project
+  const { data: sessionsData } = useAgentSessions({
+    projectId: activeProjectId || '',
+    enabled: !!activeProjectId,
+  });
+
+  // Transform projects data with real session counts
   const projects: ProjectWithSessions[] = React.useMemo(() => {
     if (!projectsData) return [];
 
-    return projectsData.map((project, index) => ({
+    return projectsData.map((project) => ({
       id: project.id,
       name: project.name,
       path: project.path,
-      sessionCount: index === 0 ? 2 : Math.floor(Math.random() * 5), // Mock session count
-      sessions:
-        index === 0
-          ? [
-              // Mock sessions for first project
-              {
-                id: "s1",
-                name: "Warmup",
-                timestamp: "7 hours ago",
-                messageCount: 97,
-              },
-              {
-                id: "s2",
-                name: "Caveat: The messages below were gene...",
-                timestamp: "8 hours ago",
-                messageCount: 7,
-              },
-            ]
-          : [],
+      sessionCount: project.id === activeProjectId ? (sessionsData?.length || 0) : 0,
     }));
-  }, [projectsData]);
+  }, [projectsData, activeProjectId, sessionsData]);
 
   // Get active project name for title
   const activeProject = projects.find((p) => p.id === activeProjectId);
@@ -217,45 +197,33 @@ export function AppInnerSidebar({
                         </DropdownMenuContent>
                       </DropdownMenu>
                       <CollapsibleContent>
-                        {project.sessions && project.sessions.length > 0 && (
-                          <div className="ml-0 space-y-0.5 border-l pl-1 py-1">
-                            {project.sessions.map((session) => (
-                              <SidebarMenuButton
-                                key={session.id}
-                                onClick={() =>
-                                  onSessionClick?.(project.id, session.id)
-                                }
-                                className="w-full justify-start h-auto py-2"
-                              >
-                                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-orange-500 text-white text-xs">
-                                  ✱
-                                </div>
-                                <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0">
-                                  <span className="text-sm font-medium line-clamp-1">
-                                    {session.name}
-                                  </span>
-                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                    <Clock className="h-3 w-3" />
-                                    <span>{session.timestamp}</span>
-                                  </div>
-                                </div>
-                                <span className="text-sm font-medium shrink-0">
-                                  {session.messageCount}
-                                </span>
-                              </SidebarMenuButton>
-                            ))}
-                            <div className="px-2 pt-1">
-                              <Button
-                                onClick={() => onNewSession?.(project.id)}
-                                className="w-full h-7 bg-blue-600 hover:bg-blue-700 text-xs px-2"
-                                size="sm"
-                              >
-                                <Plus className="h-3 w-3" />
-                                New Session
-                              </Button>
+                        <div className="ml-0 space-y-0.5 border-l pl-1 py-1">
+                          {isActive && sessionsData && sessionsData.length > 0 ? (
+                            <>
+                              {sessionsData.map((session) => (
+                                <SessionListItem
+                                  key={session.id}
+                                  session={session}
+                                  projectId={project.id}
+                                  isActive={false}
+                                />
+                              ))}
+                            </>
+                          ) : isActive ? (
+                            <div className="px-2 py-2 text-xs text-muted-foreground">
+                              No sessions yet
                             </div>
-                          </div>
-                        )}
+                          ) : null}
+                          {isActive && (
+                            <div className="px-2 pt-1">
+                              <NewSessionButton
+                                projectId={project.id}
+                                variant="default"
+                                size="sm"
+                              />
+                            </div>
+                          )}
+                        </div>
                       </CollapsibleContent>
                     </SidebarMenuItem>
                   </Collapsible>

@@ -38,6 +38,7 @@ function App() {
               <Route path="/projects/:id" element={<ProjectDetailLayout />}>
                 <Route index element={<Navigate to="chat" replace />} />
                 <Route path="chat" element={<ProjectChat />} />
+                <Route path="chat/:sessionId" element={<ProjectChat />} />
                 <Route path="shell" element={<ProjectShell />} />
                 <Route path="files" element={<ProjectFiles />} />
               </Route>

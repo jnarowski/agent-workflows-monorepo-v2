@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { authRoutes } from './routes/auth';
 import { projectRoutes } from './routes/projects';
+import { sessionRoutes } from './routes/sessions';
 
 export async function registerRoutes(fastify: FastifyInstance) {
   // Register auth routes
@@ -8,6 +9,9 @@ export async function registerRoutes(fastify: FastifyInstance) {
 
   // Register project routes
   await fastify.register(projectRoutes);
+
+  // Register session routes
+  await fastify.register(sessionRoutes);
 
   // Health check endpoint
   fastify.get('/api/health', async () => {
