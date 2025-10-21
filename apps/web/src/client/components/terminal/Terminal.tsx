@@ -19,14 +19,17 @@ export function Terminal({
   onConnect,
   onDisconnect,
 }: TerminalProps) {
-  const { getSession, addSession, updateSession } = useShell();
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  // ============================================================================
+  // Refs and State
+  // ============================================================================
+  const { addSession, removeSession } = useShell();
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<XTerm | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
-  const resizeObserverRef = useRef<ResizeObserver | null>(null);
-  const lastDimensionsRef = useRef<{ cols: number; rows: number } | null>(null);
 
+  // ============================================================================
+  // WebSocket Integration
+  // ============================================================================
   // Stable callbacks for WebSocket
   const handleOutput = useCallback((data: string) => {
     xtermRef.current?.write(data);
@@ -38,168 +41,130 @@ export function Terminal({
     );
   }, []);
 
-  // WebSocket connection
-  const { isConnected, connect, disconnect, sendInput, sendResize } =
-    useShellWebSocket({
-      sessionId,
-      projectId,
-      enabled: true,
-      onOutput: handleOutput,
-      onExit: handleExit,
+  // WebSocket connection - handles shell I/O and reconnection
+  const { isConnected, connect, disconnect, sendInput } = useShellWebSocket({
+    sessionId,
+    projectId,
+    enabled: true,
+    onOutput: handleOutput,
+    onExit: handleExit,
+  });
+
+  // ============================================================================
+  // Terminal Initialization
+  // ============================================================================
+  // Create fresh terminal instance on each mount (no caching/persistence).
+  // This follows react-xtermjs pattern: simple, focused, easy to reason about.
+  useEffect(() => {
+    // Guard against double initialization (StrictMode, HMR)
+    if (!terminalRef.current || xtermRef.current) return;
+
+    // Create new terminal instance
+    const terminal = new XTerm({
+      cursorBlink: true,
+      fontSize: 14,
+      fontFamily: '"Cascadia Code", "Fira Code", "Courier New", monospace',
+      scrollback: 10000,
+      theme: {
+        background: "#1e1e1e",
+        foreground: "#d4d4d4",
+        cursor: "#ffffff",
+        cursorAccent: "#000000",
+        selectionBackground: "#264f78",
+        // ANSI colors (16-color palette)
+        black: "#000000",
+        red: "#cd3131",
+        green: "#0dbc79",
+        yellow: "#e5e510",
+        blue: "#2472c8",
+        magenta: "#bc3fbc",
+        cyan: "#11a8cd",
+        white: "#e5e5e5",
+        brightBlack: "#666666",
+        brightRed: "#f14c4c",
+        brightGreen: "#23d18b",
+        brightYellow: "#f5f543",
+        brightBlue: "#3b8eea",
+        brightMagenta: "#d670d6",
+        brightCyan: "#29b8db",
+        brightWhite: "#ffffff",
+      },
     });
 
-  // Initialize terminal on mount
-  useEffect(() => {
-    if (!terminalRef.current) return;
+    xtermRef.current = terminal;
 
-    // Check if we have an existing session
-    const existingSession = getSession(sessionId);
+    // Create and load FitAddon
+    const fitAddon = new FitAddon();
+    fitAddonRef.current = fitAddon;
+    terminal.loadAddon(fitAddon);
 
-    if (existingSession?.terminal && existingSession?.fitAddon) {
-      // Reuse existing terminal instance and FitAddon
-      xtermRef.current = existingSession.terminal;
-      fitAddonRef.current = existingSession.fitAddon;
+    // Create and load Clipboard addon
+    const clipboardAddon = new ClipboardAddon();
+    terminal.loadAddon(clipboardAddon);
 
-      // Open terminal in new container
-      if (terminalRef.current) {
-        xtermRef.current.open(terminalRef.current);
-        fitAddonRef.current.fit();
-      }
-    } else {
-      // Create new terminal instance
-      const terminal = new XTerm({
-        cursorBlink: true,
-        fontSize: 14,
-        fontFamily: '"Cascadia Code", "Fira Code", "Courier New", monospace',
-        scrollback: 10000,
-        theme: {
-          background: "#1e1e1e",
-          foreground: "#d4d4d4",
-          cursor: "#ffffff",
-          cursorAccent: "#000000",
-          selectionBackground: "#264f78",
-          // ANSI colors (16-color palette)
-          black: "#000000",
-          red: "#cd3131",
-          green: "#0dbc79",
-          yellow: "#e5e510",
-          blue: "#2472c8",
-          magenta: "#bc3fbc",
-          cyan: "#11a8cd",
-          white: "#e5e5e5",
-          brightBlack: "#666666",
-          brightRed: "#f14c4c",
-          brightGreen: "#23d18b",
-          brightYellow: "#f5f543",
-          brightBlue: "#3b8eea",
-          brightMagenta: "#d670d6",
-          brightCyan: "#29b8db",
-          brightWhite: "#ffffff",
-        },
-      });
+    // Handle user input - send to WebSocket
+    terminal.onData((data) => {
+      sendInput(data);
+    });
 
-      xtermRef.current = terminal;
-
-      // Create FitAddon
-      const fitAddon = new FitAddon();
-      fitAddonRef.current = fitAddon;
-      terminal.loadAddon(fitAddon);
-
-      // Use canvas renderer for better text quality
-      // WebGL can appear grainy on some displays
-      // try {
-      //   const webglAddon = new WebglAddon();
-      //   webglAddon.onContextLoss(() => {
-      //     console.warn('[Terminal] WebGL context lost, disposing addon');
-      //     webglAddon.dispose();
-      //   });
-      //   terminal.loadAddon(webglAddon);
-      //   console.log('[Terminal] WebGL renderer loaded successfully');
-      //   } catch (e) {
-      //   console.warn('[Terminal] WebGL addon failed to load, using canvas renderer:', e);
-      // }
-
-      // Create Clipboard addon
-      const clipboardAddon = new ClipboardAddon();
-      terminal.loadAddon(clipboardAddon);
-
-      // Open terminal in container
-      if (terminalRef.current) {
-        terminal.open(terminalRef.current);
-        fitAddon.fit();
+    // Keyboard shortcuts
+    terminal.attachCustomKeyEventHandler((event) => {
+      // Cmd/Ctrl+C for copy (only when text is selected)
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.code === "KeyC" &&
+        terminal.hasSelection()
+      ) {
+        return false; // Let browser handle copy
       }
 
-      // Add session to context
-      addSession(sessionId, {
-        projectId,
-        terminal,
-        fitAddon,
-        containerElement: null,
-        status: "disconnected",
-      });
-
-      // Handle user input - send to WebSocket
-      terminal.onData((data) => {
-        sendInput(data);
-      });
-
-      // Keyboard shortcuts
-      terminal.attachCustomKeyEventHandler((event) => {
-        // Cmd/Ctrl+C for copy (only when text is selected)
-        if (
-          (event.ctrlKey || event.metaKey) &&
-          event.code === "KeyC" &&
-          terminal.hasSelection()
-        ) {
-          return false; // Let browser handle copy
-        }
-
-        // Cmd/Ctrl+V for paste
-        if ((event.ctrlKey || event.metaKey) && event.code === "KeyV") {
-          return false; // Let browser handle paste
-        }
-
-        // Allow all other keys to be handled by terminal
-        return true;
-      });
-    }
-
-    // Initial fit - call once after terminal is ready
-    const initialFit = () => {
-      if (!fitAddonRef.current || !xtermRef.current || !terminalRef.current)
-        return;
-
-      try {
-        fitAddonRef.current.fit();
-        const dims = fitAddonRef.current.proposeDimensions();
-        if (dims) {
-          lastDimensionsRef.current = { cols: dims.cols, rows: dims.rows };
-        }
-      } catch (e) {
-        console.warn("[Terminal] Initial fit failed:", e);
+      // Cmd/Ctrl+V for paste
+      if ((event.ctrlKey || event.metaKey) && event.code === "KeyV") {
+        return false; // Let browser handle paste
       }
-    };
 
-    // Call fit after a small delay to ensure DOM is ready
-    const fitTimeout = setTimeout(initialFit, 50);
+      // Allow all other keys to be handled by terminal
+      return true;
+    });
 
-    // Cleanup on unmount
+    // Open terminal in container and fit
+    terminal.open(terminalRef.current);
+    fitAddon.fit();
+
+    // Focus the terminal so user can start typing immediately
+    terminal.focus();
+
+    // Add session to context (only WebSocket state, no terminal instances)
+    addSession(sessionId, {
+      projectId,
+      status: "disconnected",
+    });
+
+    // Connect WebSocket after terminal is initialized and fitted
+    // Use setTimeout to ensure DOM is fully ready (fixes dimensions error in some cases)
+    const connectTimeout = setTimeout(() => {
+      const dims = fitAddon.proposeDimensions();
+      if (dims) {
+        connect(dims.cols, dims.rows);
+      }
+    }, 0);
+
+    // Cleanup on unmount - dispose terminal, disconnect WebSocket, and remove session
     return () => {
-      clearTimeout(fitTimeout);
-
-      // Save terminal state in context (don't dispose - we want persistence)
-      if (xtermRef.current && fitAddonRef.current) {
-        updateSession(sessionId, {
-          terminal: xtermRef.current,
-          fitAddon: fitAddonRef.current,
-          containerElement: null,
-        });
-      }
+      clearTimeout(connectTimeout);
+      disconnect();
+      terminal.dispose();
+      xtermRef.current = null;
+      fitAddonRef.current = null;
+      removeSession(sessionId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, projectId]); // Only re-run if session/project changes
 
-  // Handle connection
+  // ============================================================================
+  // Connection Callbacks
+  // ============================================================================
+  // Notify parent component of connection state changes
   useEffect(() => {
     if (isConnected && onConnect) {
       onConnect();
@@ -208,34 +173,14 @@ export function Terminal({
     }
   }, [isConnected, onConnect, onDisconnect]);
 
-  // Auto-connect on mount (with small delay to ensure terminal is ready)
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | null = null;
-
-    timer = setTimeout(() => {
-      if (xtermRef.current && fitAddonRef.current) {
-        const dims = fitAddonRef.current.proposeDimensions();
-        if (dims) {
-          connect(dims.cols, dims.rows);
-        }
-      }
-    }, 100);
-
-    return () => {
-      if (timer) clearTimeout(timer);
-      disconnect();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
-
+  // ============================================================================
+  // Render
+  // ============================================================================
   return (
-    <div
-      ref={wrapperRef}
-      className="h-full overflow-hidden relative bg-[#1e1e1e]"
-    >
+    <div className="h-full overflow-hidden relative bg-[#1e1e1e]">
       <div
         ref={terminalRef}
-        className="h-full w-full"
+        className="h-full w-full p-4"
         style={{ outline: "none" }}
       />
     </div>

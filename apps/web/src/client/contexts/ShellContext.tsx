@@ -5,8 +5,6 @@ import {
   useCallback,
   type ReactNode,
 } from 'react';
-import type { Terminal } from '@xterm/xterm';
-import type { FitAddon } from '@xterm/addon-fit';
 
 export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 
@@ -16,9 +14,6 @@ export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'er
 export interface TerminalSession {
   id: string;
   projectId: string;
-  terminal: Terminal | null;
-  fitAddon: FitAddon | null;
-  containerElement: HTMLDivElement | null;
   status: ConnectionStatus;
   sessionId?: string; // Backend session ID from WebSocket
   error?: string;
@@ -52,13 +47,6 @@ export function ShellProvider({ children }: { children: ReactNode }) {
   const removeSession = useCallback((id: string) => {
     setSessions((prev) => {
       const newSessions = new Map(prev);
-      const session = newSessions.get(id);
-
-      // Cleanup terminal if it exists
-      if (session?.terminal) {
-        session.terminal.dispose();
-      }
-
       newSessions.delete(id);
       return newSessions;
     });
