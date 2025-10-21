@@ -12,7 +12,6 @@ import ProjectFiles from "./pages/ProjectFiles";
 import AboutUs from "./pages/AboutUs";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import "./App.css";
 
 function App() {
   return (
@@ -20,28 +19,28 @@ function App() {
       <AuthProvider>
         <ShellProvider>
           <Routes>
-          {/* Auth routes */}
-          <Route element={<AuthLayout />}>
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-          </Route>
-
-          {/* Protected routes */}
-          <Route element={<ProtectedLayout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/projects" element={<Projects />} />
-
-            {/* Project detail with nested routes */}
-            <Route path="/projects/:id" element={<ProjectDetailLayout />}>
-              <Route index element={<Navigate to="chat" replace />} />
-              <Route path="chat" element={<ProjectChat />} />
-              <Route path="shell" element={<ProjectShell />} />
-              <Route path="files" element={<ProjectFiles />} />
+            {/* Auth routes */}
+            <Route element={<AuthLayout />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
             </Route>
 
-            <Route path="/about" element={<AboutUs />} />
-          </Route>
-        </Routes>
+            {/* Protected routes */}
+            <Route element={<ProtectedLayout />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/projects" element={<Projects />} />
+
+              {/* Project detail with nested routes */}
+              <Route path="/projects/:id" element={<ProjectDetailLayout />}>
+                <Route index element={<Navigate to="chat" replace />} />
+                <Route path="chat" element={<ProjectChat />} />
+                <Route path="shell" element={<ProjectShell />} />
+                <Route path="files" element={<ProjectFiles />} />
+              </Route>
+
+              <Route path="/about" element={<AboutUs />} />
+            </Route>
+          </Routes>
         </ShellProvider>
       </AuthProvider>
     </BrowserRouter>

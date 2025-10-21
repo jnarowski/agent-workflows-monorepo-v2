@@ -25,11 +25,11 @@ export default function ProjectChat() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
       <ChatInterface projectId={id!} />
 
       {/* Floating Prompt Input */}
-      <div className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
+      <div className="absolute bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 z-10">
         <div className="mx-auto max-w-3xl px-4 py-4">
           <PromptInput onSubmit={handleSubmit}>
             <PromptInputBody>

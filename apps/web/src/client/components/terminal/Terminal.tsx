@@ -129,10 +129,27 @@ export function Terminal({
 
     // Open terminal in container and fit
     terminal.open(terminalRef.current);
-    fitAddon.fit();
 
-    // Focus the terminal so user can start typing immediately
-    terminal.focus();
+    // Ensure container has dimensions before fitting
+    // This prevents "Cannot read properties of undefined (reading 'dimensions')" error
+    requestAnimationFrame(() => {
+      try {
+        fitAddon.fit();
+        // Focus the terminal so user can start typing immediately
+        terminal.focus();
+      } catch (error) {
+        console.warn('[Terminal] Initial fit failed:', error);
+        // Retry after a short delay
+        setTimeout(() => {
+          try {
+            fitAddon.fit();
+            terminal.focus();
+          } catch (retryError) {
+            console.error('[Terminal] Fit retry failed:', retryError);
+          }
+        }, 100);
+      }
+    });
 
     // Add session to context (only WebSocket state, no terminal instances)
     addSession(sessionId, {
@@ -143,9 +160,24 @@ export function Terminal({
     // Connect WebSocket after terminal is initialized and fitted
     // Use setTimeout to ensure DOM is fully ready (fixes dimensions error in some cases)
     const connectTimeout = setTimeout(() => {
-      const dims = fitAddon.proposeDimensions();
-      if (dims) {
-        connect(dims.cols, dims.rows);
+      try {
+        const dims = fitAddon.proposeDimensions();
+        if (dims) {
+          connect(dims.cols, dims.rows);
+        }
+      } catch (error) {
+        console.warn('[Terminal] Failed to get dimensions for WebSocket connection:', error);
+        // Try again after a delay
+        setTimeout(() => {
+          try {
+            const dims = fitAddon.proposeDimensions();
+            if (dims) {
+              connect(dims.cols, dims.rows);
+            }
+          } catch (retryError) {
+            console.error('[Terminal] Retry failed to get dimensions:', retryError);
+          }
+        }, 200);
       }
     }, 0);
 
