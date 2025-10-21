@@ -4,7 +4,6 @@ export interface Project {
   id: string;
   name: string;
   path: string;
-  claude_project_path: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -13,13 +12,11 @@ export interface Project {
 export interface CreateProjectRequest {
   name: string;
   path: string;
-  claude_project_path?: string;
 }
 
 export interface UpdateProjectRequest {
   name?: string;
   path?: string;
-  claude_project_path?: string;
 }
 
 export interface ProjectResponse {

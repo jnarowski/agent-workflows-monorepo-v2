@@ -14,14 +14,13 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { FolderOpen, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import type { Project } from "../../../shared/types/project.types";
 
 // Form validation schema
 const projectFormSchema = z.object({
   name: z.string().min(1, "Project name is required").max(255),
   path: z.string().min(1, "Project path is required"),
-  claude_project_path: z.string().optional(),
 });
 
 type ProjectFormData = z.infer<typeof projectFormSchema>;
@@ -32,7 +31,11 @@ interface ProjectDialogProps {
   project?: Project;
 }
 
-export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProps) {
+export function ProjectDialog({
+  open,
+  onOpenChange,
+  project,
+}: ProjectDialogProps) {
   const isEditMode = !!project;
   const createMutation = useCreateProject();
   const updateMutation = useUpdateProject();
@@ -50,12 +53,10 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
       ? {
           name: project.name,
           path: project.path,
-          claude_project_path: project.claude_project_path || "",
         }
       : {
           name: "",
           path: "",
-          claude_project_path: "",
         },
   });
 
@@ -67,12 +68,10 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
           ? {
               name: project.name,
               path: project.path,
-              claude_project_path: project.claude_project_path || "",
             }
           : {
               name: "",
               path: "",
-              claude_project_path: "",
             }
       );
     }
@@ -90,7 +89,6 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
 
   // Watch path changes and auto-populate name (only when creating new project)
   const currentPath = watch("path");
-  const currentName = watch("name");
 
   useEffect(() => {
     // Only auto-populate name when creating (not editing) and name hasn't been manually changed
@@ -101,37 +99,6 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
       }
     }
   }, [currentPath, isEditMode, project, setValue]);
-
-  // Handle folder selection using File System Access API
-  const handleSelectFolder = async () => {
-    try {
-      // Check if showDirectoryPicker is supported
-      if (!("showDirectoryPicker" in window)) {
-        alert(
-          "Folder picker is not supported in this browser. Please use Chrome or Edge, or enter the path manually."
-        );
-        return;
-      }
-
-      // @ts-expect-error - showDirectoryPicker not in all browsers yet
-      const dirHandle: FileSystemDirectoryHandle = await window.showDirectoryPicker();
-
-      // Get the folder name
-      const folderName = dirHandle.name;
-
-      // Note: Browser File System Access API doesn't provide full paths for security
-      // User will need to paste the full path or we'd need Electron/Tauri for full path access
-      const path = `/${folderName}`;
-
-      setValue("path", path);
-      setValue("name", folderName);
-    } catch (error) {
-      // User cancelled or browser doesn't support it
-      if ((error as Error).name !== "AbortError") {
-        console.error("Error selecting folder:", error);
-      }
-    }
-  };
 
   const onSubmit = (data: ProjectFormData) => {
     if (isEditMode) {
@@ -158,40 +125,31 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{isEditMode ? "Edit Project" : "Create Project"}</DialogTitle>
+          <DialogTitle>
+            {isEditMode ? "Edit Project" : "Create Project"}
+          </DialogTitle>
           <DialogDescription>
             {isEditMode
               ? "Update your project information."
-              : "Select a folder from your local filesystem to create a new project."}
+              : "Enter the full path to your project folder to create a new project."}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="path">Project Folder Path</Label>
-            <div className="flex gap-2">
-              <Input
-                id="path"
-                {...register("path")}
-                placeholder="/Users/username/projects/my-project"
-                className="font-mono text-sm"
-                disabled={isLoading}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleSelectFolder}
-                disabled={isLoading}
-                title="Browse for folder (limited browser API)"
-              >
-                <FolderOpen className="h-4 w-4" />
-              </Button>
-            </div>
+            <Input
+              id="path"
+              {...register("path")}
+              placeholder="/Users/username/projects/my-project"
+              className="font-mono text-sm"
+              disabled={isLoading}
+            />
             {errors.path && (
               <p className="text-sm text-destructive">{errors.path.message}</p>
             )}
             <p className="text-xs text-muted-foreground">
-              Enter the full absolute path to your project folder. Name will be auto-extracted.
+              Paste the full absolute path to your project folder. The project name will be auto-extracted.
             </p>
           </div>
 
@@ -209,25 +167,6 @@ export function ProjectDialog({ open, onOpenChange, project }: ProjectDialogProp
             <p className="text-xs text-muted-foreground">
               Auto-filled from path. You can customize it if needed.
             </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="claude_project_path">
-              Claude Project Path{" "}
-              <span className="text-muted-foreground">(Optional)</span>
-            </Label>
-            <Input
-              id="claude_project_path"
-              {...register("claude_project_path")}
-              placeholder="/path/to/claude/project"
-              className="font-mono text-sm"
-              disabled={isLoading}
-            />
-            {errors.claude_project_path && (
-              <p className="text-sm text-destructive">
-                {errors.claude_project_path.message}
-              </p>
-            )}
           </div>
 
           <DialogFooter>

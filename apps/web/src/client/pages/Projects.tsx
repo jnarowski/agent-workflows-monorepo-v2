@@ -122,7 +122,6 @@ export default function Projects() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Path</TableHead>
-                <TableHead>Claude Project Path</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -134,11 +133,6 @@ export default function Projects() {
                   <TableCell className="text-sm text-muted-foreground font-mono max-w-md">
                     <span title={project.path} className="break-all">
                       {project.path}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground font-mono max-w-md">
-                    <span title={project.claude_project_path || ""} className="break-all">
-                      {project.claude_project_path || "—"}
                     </span>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground whitespace-nowrap">

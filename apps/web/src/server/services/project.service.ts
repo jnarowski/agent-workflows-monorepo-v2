@@ -43,7 +43,6 @@ export class ProjectService {
       data: {
         name: data.name,
         path: data.path,
-        claude_project_path: data.claude_project_path || null,
       },
     });
   }

@@ -4,14 +4,12 @@ import { z } from "zod";
 export const createProjectSchema = z.object({
   name: z.string().min(1, "Project name is required").max(255),
   path: z.string().min(1, "Project path is required"),
-  claude_project_path: z.string().optional(),
 });
 
 // Schema for updating a project
 export const updateProjectSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   path: z.string().min(1).optional(),
-  claude_project_path: z.string().optional().nullable(),
 });
 
 // Schema for project ID parameter

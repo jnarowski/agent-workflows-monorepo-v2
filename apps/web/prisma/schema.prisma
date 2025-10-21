@@ -31,12 +31,11 @@ model WorkflowStep {
 }
 
 model Project {
-  id                  String   @id @default(cuid())
-  name                String
-  path                String
-  claude_project_path String?
-  created_at          DateTime @default(now())
-  updated_at          DateTime @updatedAt
+  id         String   @id @default(cuid())
+  name       String
+  path       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@map("projects")
 }
