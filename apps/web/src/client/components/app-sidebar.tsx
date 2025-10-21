@@ -1,14 +1,15 @@
 "use client"
 
 import * as React from "react"
-import { ArchiveX, File, Inbox, Send, Trash2 } from "lucide-react"
+import { useNavigate, useLocation } from "react-router-dom"
+import { Home, FolderOpen, Info } from "lucide-react"
 import { useAuth } from "../contexts/AuthContext"
 
 import { Sidebar, useSidebar } from "@/components/ui/sidebar"
 import { AppSidebarMain } from "@/components/AppSidebarMain"
 import { AppInnerSidebar } from "@/components/AppInnerSidebar"
 
-// This is sample data
+// Navigation data
 const data = {
   user: {
     name: "shadcn",
@@ -17,33 +18,21 @@ const data = {
   },
   navMain: [
     {
-      title: "Inbox",
-      url: "#",
-      icon: Inbox,
-      isActive: true,
-    },
-    {
-      title: "Drafts",
-      url: "#",
-      icon: File,
+      title: "Dashboard",
+      url: "/",
+      icon: Home,
       isActive: false,
     },
     {
-      title: "Sent",
-      url: "#",
-      icon: Send,
+      title: "Projects",
+      url: "/projects",
+      icon: FolderOpen,
       isActive: false,
     },
     {
-      title: "Junk",
-      url: "#",
-      icon: ArchiveX,
-      isActive: false,
-    },
-    {
-      title: "Trash",
-      url: "#",
-      icon: Trash2,
+      title: "About",
+      url: "/about",
+      icon: Info,
       isActive: false,
     },
   ],
@@ -132,12 +121,16 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  // Note: I'm using state to show active item.
-  // IRL you should use the url/router.
-  const [activeItem, setActiveItem] = React.useState(data.navMain[0])
+  const navigate = useNavigate()
+  const location = useLocation()
   const [mails, setMails] = React.useState(data.mails)
   const { setOpen } = useSidebar()
   const { user, logout } = useAuth()
+
+  // Determine active item based on current location
+  const activeItem = React.useMemo(() => {
+    return data.navMain.find(item => item.url === location.pathname) || data.navMain[0]
+  }, [location.pathname])
 
   const currentUser = {
     name: user?.name || "Guest User",
@@ -146,7 +139,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }
 
   const handleNavItemClick = (item: typeof data.navMain[0]) => {
-    setActiveItem(item)
+    navigate(item.url)
     const mail = data.mails.sort(() => Math.random() - 0.5)
     setMails(
       mail.slice(0, Math.max(5, Math.floor(Math.random() * 10) + 1))

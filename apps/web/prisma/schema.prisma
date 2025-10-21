@@ -1,6 +1,6 @@
 datasource db {
   provider = "sqlite"
-  url      = "file:../.agent/workflows/ui.db"
+  url      = "file:./dev.db"
 }
 
 generator client {

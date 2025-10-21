@@ -19,6 +19,21 @@ export async function createServer() {
     },
   });
 
+  // Configure JSON parser to allow empty bodies
+  fastify.addContentTypeParser(
+    'application/json',
+    { parseAs: 'string' },
+    (req, body, done) => {
+      try {
+        // Allow empty bodies (e.g., DELETE requests with Content-Type: application/json)
+        const json = body === '' ? {} : JSON.parse(body as string);
+        done(null, json);
+      } catch (err) {
+        done(err as Error, undefined);
+      }
+    }
+  );
+
   // Register auth plugin (JWT)
   await fastify.register(authPlugin);
 

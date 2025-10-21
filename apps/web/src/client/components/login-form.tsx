@@ -17,11 +17,11 @@ import { Input } from "@/components/ui/input"
 import type { FormEvent } from "react"
 
 interface LoginFormProps extends React.ComponentProps<"div"> {
-  email: string
+  username: string
   password: string
   isLoading?: boolean
   error?: string
-  onEmailChange: (email: string) => void
+  onUsernameChange: (username: string) => void
   onPasswordChange: (password: string) => void
   onSubmit: (e: FormEvent) => void
   onSignUpClick?: () => void
@@ -29,11 +29,11 @@ interface LoginFormProps extends React.ComponentProps<"div"> {
 
 export function LoginForm({
   className,
-  email,
+  username,
   password,
   isLoading = false,
   error,
-  onEmailChange,
+  onUsernameChange,
   onPasswordChange,
   onSubmit,
   onSignUpClick,
@@ -45,7 +45,7 @@ export function LoginForm({
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Enter your username below to login to your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -57,13 +57,13 @@ export function LoginForm({
           <form onSubmit={onSubmit}>
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel htmlFor="username">Username</FieldLabel>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  value={email}
-                  onChange={(e) => onEmailChange(e.target.value)}
+                  id="username"
+                  type="text"
+                  placeholder="username"
+                  value={username}
+                  onChange={(e) => onUsernameChange(e.target.value)}
                   required
                 />
               </Field>

@@ -3,8 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 function Signup() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -15,6 +14,11 @@ function Signup() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (username.length < 3) {
+      setError("Username must be at least 3 characters");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
@@ -29,7 +33,7 @@ function Signup() {
     setIsLoading(true);
 
     try {
-      await signup(name, email, password);
+      await signup(username, password);
       navigate("/");
     } catch (err) {
       setError("Failed to create account. Please try again.");
@@ -53,37 +57,20 @@ function Signup() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label
-            htmlFor="name"
+            htmlFor="username"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
-            Full Name
+            Username
           </label>
           <input
-            id="name"
+            id="username"
             type="text"
             required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-            placeholder="John Doe"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-          >
-            Email Address
-          </label>
-          <input
-            id="email"
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-            placeholder="you@example.com"
+            placeholder="username"
+            minLength={3}
           />
         </div>
 

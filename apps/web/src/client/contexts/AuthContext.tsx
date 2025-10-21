@@ -1,16 +1,16 @@
 import { createContext, useContext, useState, ReactNode } from "react";
+import { toast } from "sonner";
 
 interface User {
-  id: string;
-  name: string;
-  email: string;
+  id: number;
+  username: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
+  signup: (username: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -23,39 +23,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
-  const login = async (email: string, password: string) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  const login = async (username: string, password: string) => {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-    // Mock user data
-    const mockUser = {
-      id: "1",
-      name: "John Doe",
-      email: email,
-    };
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Login failed");
+      }
 
-    setUser(mockUser);
-    localStorage.setItem("user", JSON.stringify(mockUser));
+      const data = await response.json();
+
+      // Store token and user in localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setUser(data.user);
+
+      toast.success("Logged in successfully");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Login failed";
+      toast.error(message);
+      throw error;
+    }
   };
 
-  const signup = async (name: string, email: string, password: string) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  const signup = async (username: string, password: string) => {
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-    // Mock user data
-    const mockUser = {
-      id: "1",
-      name: name,
-      email: email,
-    };
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Registration failed");
+      }
 
-    setUser(mockUser);
-    localStorage.setItem("user", JSON.stringify(mockUser));
+      const data = await response.json();
+
+      // Store token and user in localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setUser(data.user);
+
+      toast.success("Account created successfully");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Registration failed";
+      toast.error(message);
+      throw error;
+    }
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    toast.success("Logged out successfully");
   };
 
   return (
