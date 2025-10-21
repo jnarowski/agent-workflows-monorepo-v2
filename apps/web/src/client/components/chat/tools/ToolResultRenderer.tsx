@@ -21,12 +21,10 @@ export function ToolResultRenderer({ result, isError = false }: ToolResultRender
 
   const Icon = isError ? AlertCircle : CheckCircle2;
   const iconColor = isError ? 'text-red-500' : 'text-green-500';
-  const bgColor = isError ? 'bg-red-50 dark:bg-red-950/20' : 'bg-green-50 dark:bg-green-950/20';
-  const borderColor = isError ? 'border-red-200 dark:border-red-800' : 'border-green-200 dark:border-green-800';
 
   const content = (
-    <div className={`rounded-md border ${borderColor} overflow-hidden`}>
-      <div className={`flex items-center gap-2 px-3 py-2 ${bgColor} ${shouldCollapse && !isOpen ? '' : 'rounded-t-md'}`}>
+    <div className="rounded-md border border-gray-200 dark:border-gray-800 overflow-hidden">
+      <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-900/50">
         <Icon className={`h-4 w-4 ${iconColor} flex-shrink-0`} />
         <span className="text-sm font-medium">
           {isError ? 'Error' : 'Success'}
@@ -50,7 +48,7 @@ export function ToolResultRenderer({ result, isError = false }: ToolResultRender
         )}
       </div>
 
-      <div className={`border-t ${borderColor} ${bgColor} px-3 py-2`}>
+      <div className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 px-3 py-2">
         <pre className="font-mono text-xs whitespace-pre-wrap break-words">
           {result}
         </pre>

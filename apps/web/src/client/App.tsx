@@ -12,6 +12,7 @@ import ProjectFiles from "./pages/ProjectFiles";
 import AboutUs from "./pages/AboutUs";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import LayoutExperiment from "./pages/LayoutExperiment";
 
 function App() {
   return (
@@ -19,6 +20,9 @@ function App() {
       <AuthProvider>
         <ShellProvider>
           <Routes>
+            {/* Experiment route - no layout */}
+            <Route path="/experiment" element={<LayoutExperiment />} />
+
             {/* Auth routes */}
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<Login />} />

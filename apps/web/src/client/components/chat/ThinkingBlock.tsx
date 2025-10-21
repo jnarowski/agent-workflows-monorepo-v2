@@ -18,21 +18,21 @@ export function ThinkingBlock({ thinking, className = '' }: ThinkingBlockProps) 
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className={className}>
-      <div className="rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20">
+      <div className="rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
         {/* Trigger */}
         <CollapsibleTrigger asChild>
           <Button
             variant="ghost"
-            className="w-full justify-start px-4 py-3 hover:bg-purple-100 dark:hover:bg-purple-900/20"
+            className="w-full justify-start px-3 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <div className="flex items-center gap-2 text-sm">
               {isOpen ? (
-                <ChevronDown className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               ) : (
-                <ChevronRight className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               )}
               <Brain className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              <span className="font-medium text-purple-700 dark:text-purple-300">
+              <span className="font-medium text-foreground">
                 Thinking...
               </span>
             </div>
@@ -41,8 +41,8 @@ export function ThinkingBlock({ thinking, className = '' }: ThinkingBlockProps) 
 
         {/* Content */}
         <CollapsibleContent>
-          <div className="px-4 pb-3 pt-1 border-t border-purple-200 dark:border-purple-800">
-            <pre className="whitespace-pre-wrap break-words text-sm italic text-purple-900 dark:text-purple-200 font-sans">
+          <div className="px-3 pb-3 pt-1 border-t border-gray-200 dark:border-gray-800">
+            <pre className="whitespace-pre-wrap break-words text-sm italic text-muted-foreground font-sans">
               {thinking}
             </pre>
           </div>

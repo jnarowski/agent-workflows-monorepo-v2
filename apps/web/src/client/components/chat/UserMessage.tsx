@@ -20,15 +20,6 @@ export function UserMessage({ message }: UserMessageProps) {
     (block): block is ToolResultBlock => block.type === 'tool_result'
   );
 
-  // Format timestamp
-  const formattedTime = new Date(message.timestamp).toLocaleTimeString(
-    'en-US',
-    {
-      hour: '2-digit',
-      minute: '2-digit',
-    }
-  );
-
   // If message only contains tool results (no text), don't render
   // Tool results are already shown inline with the assistant's tool_use blocks
   const hasText = textBlocks.length > 0;
@@ -41,12 +32,7 @@ export function UserMessage({ message }: UserMessageProps) {
 
   return (
     <div className="flex justify-end mb-4">
-      <div className="max-w-[80%] space-y-2">
-        {/* Timestamp */}
-        <div className="text-xs text-muted-foreground text-right pr-1">
-          {formattedTime}
-        </div>
-
+      <div className="max-w-[80%]">
         {/* Text content */}
         {hasText && (
           <div className="rounded-lg bg-primary text-primary-foreground px-4 py-3 shadow-sm">

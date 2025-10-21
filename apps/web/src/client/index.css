@@ -119,3 +119,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Override Shiki syntax highlighting for inline code to make it more subtle */
+.syntax-highlighter code {
+  font-weight: normal !important;
+}
+
+/* Make backtick-wrapped code in syntax highlighted blocks less aggressive */
+.syntax-highlighter .line {
+  font-weight: normal !important;
+}
