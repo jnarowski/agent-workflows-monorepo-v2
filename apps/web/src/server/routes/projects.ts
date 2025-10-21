@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { projectService } from "../services/project.service";
+import { fileService } from "../services/file.service";
 import {
   createProjectSchema,
   updateProjectSchema,
@@ -210,6 +211,48 @@ export async function projectRoutes(fastify: FastifyInstance) {
       } catch (error) {
         fastify.log.error("Error deleting project:", error);
         return reply.code(500).send({ error: "Failed to delete project" });
+      }
+    }
+  );
+
+  /**
+   * GET /api/projects/:id/files
+   * Get file tree for a project
+   */
+  fastify.get<{
+    Params: { id: string };
+  }>(
+    "/api/projects/:id/files",
+    {
+      preHandler: authenticate,
+    },
+    async (request, reply) => {
+      try {
+        // Validate project ID
+        const validation = projectIdSchema.safeParse(request.params);
+        if (!validation.success) {
+          return reply.code(400).send({
+            error: "Invalid project ID",
+            message: validation.error.issues[0].message,
+          });
+        }
+
+        const files = await fileService.getProjectFiles(request.params.id);
+
+        return reply.send({ data: files });
+      } catch (error) {
+        fastify.log.error("Error fetching project files:", error);
+
+        // Handle specific error messages
+        const errorMessage = (error as Error).message;
+        if (errorMessage === 'Project not found') {
+          return reply.code(404).send({ error: "Project not found" });
+        }
+        if (errorMessage === 'Project path is not accessible') {
+          return reply.code(403).send({ error: "Project path is not accessible" });
+        }
+
+        return reply.code(500).send({ error: "Failed to fetch project files" });
       }
     }
   );

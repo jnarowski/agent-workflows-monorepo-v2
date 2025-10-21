@@ -8,11 +8,20 @@
 /* Remove focus outline */
 .terminal-container .xterm-screen {
   outline: none;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.xterm-dom-renderer {
+  display: none;
 }
 
 /* Custom scrollbar for terminal */
 .terminal-container .xterm-viewport {
   background-color: #1e1e1e;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: none;
 }
 
 .terminal-container .xterm-viewport::-webkit-scrollbar {
@@ -35,5 +44,12 @@
 /* Ensure terminal fills container */
 .terminal-container .xterm {
   height: 100%;
-  padding: 10px;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Remove any default padding from xterm rows */
+.terminal-container .xterm-rows {
+  padding: 0 !important;
+  margin: 0 !important;
 }
