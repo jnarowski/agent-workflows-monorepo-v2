@@ -11,7 +11,7 @@ if (!JWT_SECRET) {
 
 // JWT payload interface
 interface JWTPayload {
-  userId: number;
+  userId: string;
   username: string;
 }
 
@@ -67,7 +67,7 @@ declare module "fastify" {
 
   interface FastifyRequest {
     user?: {
-      id: number;
+      id: string;
       username: string;
       is_active: boolean;
     };

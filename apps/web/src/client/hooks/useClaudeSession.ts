@@ -5,7 +5,9 @@
 import { useState, useEffect } from 'react';
 import type { ChatMessage } from '../../shared/types/chat';
 import { parseJSONLSession, extractToolResults } from '../utils/parseClaudeSession';
+import { normalizeMessage } from '../utils/sessionAdapters';
 import { useChatWebSocket } from './useChatWebSocket';
+import { useAuth } from '../contexts/AuthContext';
 
 interface UseClaudeSessionOptions {
   sessionId: string;
@@ -43,6 +45,7 @@ export function useClaudeSession(
   options: UseClaudeSessionOptions
 ): UseClaudeSessionReturn {
   const { sessionId, projectId, enableWebSocket = false } = options;
+  const { handleInvalidToken } = useAuth();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [toolResults, setToolResults] = useState<Map<string, { content: string; is_error?: boolean }>>(
@@ -51,18 +54,9 @@ export function useClaudeSession(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Use WebSocket for real-time streaming if enabled
-  const webSocket = enableWebSocket
-    ? useChatWebSocket(sessionId, projectId)
-    : {
-        messages: [],
-        isConnected: false,
-        isStreaming: false,
-        error: null,
-        sendMessage: () => {},
-        reconnect: () => {},
-        setMessages: () => {},
-      };
+  // Always call useChatWebSocket (Rules of Hooks - must be called unconditionally)
+  // We'll conditionally use its return values based on enableWebSocket flag
+  const webSocket = useChatWebSocket(sessionId, projectId);
 
   // Load initial messages from JSONL file
   useEffect(() => {
@@ -81,6 +75,11 @@ export function useClaudeSession(
         });
 
         if (!response.ok) {
+          // Handle 401 Unauthorized - invalid or missing token
+          if (response.status === 401) {
+            handleInvalidToken();
+            throw new Error('Session expired');
+          }
           throw new Error(`Failed to load session messages: ${response.statusText}`);
         }
 
@@ -89,18 +88,8 @@ export function useClaudeSession(
 
         if (cancelled) return;
 
-        // API already returns parsed messages array
-        const parsedMessages: ChatMessage[] = messagesArray.map((msg: any) => ({
-          id: msg.id,
-          role: msg.role as 'user' | 'assistant',
-          content: typeof msg.content === 'string'
-            ? msg.content
-            : Array.isArray(msg.content)
-              ? msg.content.filter((c: any) => c.type === 'text').map((c: any) => c.text).join(' ')
-              : '',
-          timestamp: msg.timestamp,
-          images: msg.images,
-        }));
+        // API already returns parsed messages array - normalize them
+        const parsedMessages: ChatMessage[] = messagesArray.map((msg: any) => normalizeMessage(msg));
 
         // Extract tool results from messages
         const toolResultsMap = new Map<string, { content: string; is_error?: boolean }>();

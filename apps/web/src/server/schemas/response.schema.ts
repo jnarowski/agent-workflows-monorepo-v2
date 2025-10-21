@@ -30,7 +30,7 @@ export const projectsResponseSchema = successResponse(z.array(projectSchema));
 
 // Auth schemas
 export const userSchema = z.object({
-  id: z.number(),
+  id: z.string(),
   username: z.string(),
 });
 

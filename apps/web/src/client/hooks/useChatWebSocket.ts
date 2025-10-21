@@ -37,11 +37,13 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const maxReconnectAttempts = 5;
+  const isReconnectingRef = useRef(false);
+  const isMountedRef = useRef(true);
 
   const { setWebSocketConnection, removeWebSocketConnection, updateSessionMetadata } = useChatContext();
 
   const connect = useCallback(() => {
-    if (!sessionId || !projectId) return;
+    if (!sessionId || !projectId || !isMountedRef.current) return;
 
     const token = localStorage.getItem('token');
     if (!token) {
@@ -51,7 +53,17 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
 
     // Close existing connection if any
     if (wsRef.current) {
+      // Remove listeners to prevent reconnect loop
+      wsRef.current.onclose = null;
+      wsRef.current.onerror = null;
       wsRef.current.close();
+      wsRef.current = null;
+    }
+
+    // Clear any pending reconnect timeout
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
     }
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -71,15 +83,23 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
     ws.onmessage = (event) => {
       try {
         const data: WebSocketMessage = JSON.parse(event.data);
+        console.log('[WebSocket Client] Received message:', data.type, data);
 
         switch (data.type) {
           case 'stream_event':
+            console.log('[WebSocket Client] Stream event:', data.event);
             if (data.event) {
               handleStreamEvent(data.event);
             }
             break;
 
+          case 'stream_output':
+            console.log('[WebSocket Client] Stream output:', data);
+            // Handle stream output
+            break;
+
           case 'message_complete':
+            console.log('[WebSocket Client] Message complete:', data);
             setIsStreaming(false);
             if (data.metadata) {
               updateSessionMetadata(sessionId, data.metadata);
@@ -87,9 +107,13 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
             break;
 
           case 'error':
+            console.error('[WebSocket Client] Error:', data.message);
             setError(data.message || 'An error occurred');
             setIsStreaming(false);
             break;
+
+          default:
+            console.log('[WebSocket Client] Unknown message type:', data.type);
         }
       } catch (err) {
         console.error('Error parsing WebSocket message:', err);
@@ -104,17 +128,27 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
     ws.onclose = () => {
       console.log('WebSocket closed for session:', sessionId);
       setIsConnected(false);
-      wsRef.current = null;
+
+      // Only clear wsRef if it's the current connection
+      if (wsRef.current === ws) {
+        wsRef.current = null;
+      }
       removeWebSocketConnection(sessionId);
 
-      // Attempt to reconnect with exponential backoff
-      if (reconnectAttemptsRef.current < maxReconnectAttempts) {
+      // Only attempt to reconnect if not already reconnecting and component is still mounted
+      if (!isReconnectingRef.current &&
+          isMountedRef.current &&
+          reconnectAttemptsRef.current < maxReconnectAttempts) {
+        isReconnectingRef.current = true;
         const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 10000);
         reconnectAttemptsRef.current += 1;
 
         reconnectTimeoutRef.current = setTimeout(() => {
           console.log(`Reconnecting... (attempt ${reconnectAttemptsRef.current})`);
-          connect();
+          isReconnectingRef.current = false;
+          if (isMountedRef.current) {
+            connect();
+          }
         }, delay);
       }
     };
@@ -150,7 +184,23 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
   }, []);
 
   const sendMessage = useCallback(({ message, images, config }: SendMessageOptions) => {
+    console.log('[useChatWebSocket] sendMessage called:', {
+      sessionId,
+      message: message.substring(0, 100),
+      imagesCount: images?.length || 0,
+      wsState: wsRef.current?.readyState,
+      wsOpen: wsRef.current?.readyState === WebSocket.OPEN
+    });
+
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      console.error('[useChatWebSocket] WebSocket not connected:', {
+        hasWs: !!wsRef.current,
+        readyState: wsRef.current?.readyState,
+        CONNECTING: WebSocket.CONNECTING,
+        OPEN: WebSocket.OPEN,
+        CLOSING: WebSocket.CLOSING,
+        CLOSED: WebSocket.CLOSED
+      });
       setError('WebSocket is not connected');
       return;
     }
@@ -162,19 +212,24 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
       images,
       timestamp: new Date().toISOString(),
     };
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => {
+      console.log('[useChatWebSocket] Adding user message to state, current count:', prev.length);
+      return [...prev, userMessage];
+    });
 
     setIsStreaming(true);
     setError(null);
 
     // Send message via WebSocket
-    wsRef.current.send(JSON.stringify({
+    const payload = {
       type: 'send_message',
       sessionId,
       message,
       images,
       config,
-    }));
+    };
+    console.log('[useChatWebSocket] Sending WebSocket message:', payload);
+    wsRef.current.send(JSON.stringify(payload));
   }, [sessionId]);
 
   const reconnect = useCallback(() => {
@@ -184,18 +239,26 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
 
   // Connect on mount and cleanup on unmount
   useEffect(() => {
+    isMountedRef.current = true;
     connect();
 
     return () => {
+      isMountedRef.current = false;
+      isReconnectingRef.current = false;
+
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
       if (wsRef.current) {
+        // Remove listeners to prevent reconnect on unmount
+        wsRef.current.onclose = null;
+        wsRef.current.onerror = null;
         wsRef.current.close();
         wsRef.current = null;
       }
     };
-  }, [connect]);
+  }, [sessionId, projectId]); // Only depend on sessionId and projectId, not connect
 
   return {
     messages,

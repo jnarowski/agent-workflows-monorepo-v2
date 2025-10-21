@@ -1,12 +1,12 @@
-import type { FastifyInstance } from 'fastify';
-import { agentSessionService } from '../services/agent-session.service';
+import type { FastifyInstance } from "fastify";
+import { agentSessionService } from "../services/agent-session.service";
 import {
   createSessionSchema,
   sessionIdSchema,
   projectIdSchema,
-} from '../schemas/session.schema';
-import { errorResponse } from '../schemas/response.schema';
-import type { CreateSessionRequest } from '../../shared/types/agent-session.types';
+} from "../schemas/session.schema";
+import { errorResponse } from "../schemas/response.schema";
+import type { CreateSessionRequest } from "../../shared/types/agent-session.types";
 
 export async function sessionRoutes(fastify: FastifyInstance) {
   /**
@@ -16,34 +16,22 @@ export async function sessionRoutes(fastify: FastifyInstance) {
   fastify.get<{
     Params: { id: string };
   }>(
-    '/api/projects/:id/sessions',
+    "/api/projects/:id/sessions",
     {
       preHandler: fastify.authenticate,
       schema: {
         params: projectIdSchema,
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              data: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                },
-              },
-            },
-          },
-          401: errorResponse,
-        },
       },
     },
     async (request, reply) => {
       // Get userId from JWT token
-      const userId = request.user?.userId;
+      const userId = request.user?.id;
+      console.log(request.user, "aaaaaaaa");
+
       if (!userId) {
         return reply.code(401).send({
           error: {
-            message: 'Unauthorized',
+            message: "Unauthorized",
             statusCode: 401,
           },
         });
@@ -65,41 +53,16 @@ export async function sessionRoutes(fastify: FastifyInstance) {
   fastify.get<{
     Params: { id: string; sessionId: string };
   }>(
-    '/api/projects/:id/sessions/:sessionId/messages',
+    "/api/projects/:id/sessions/:sessionId/messages",
     {
       preHandler: fastify.authenticate,
-      schema: {
-        params: {
-          type: 'object',
-          properties: {
-            id: { type: 'string' },
-            sessionId: { type: 'string', format: 'uuid' },
-          },
-          required: ['id', 'sessionId'],
-        },
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              data: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                },
-              },
-            },
-          },
-          401: errorResponse,
-          404: errorResponse,
-        },
-      },
     },
     async (request, reply) => {
-      const userId = request.user?.userId;
+      const userId = request.user?.id;
       if (!userId) {
         return reply.code(401).send({
           error: {
-            message: 'Unauthorized',
+            message: "Unauthorized",
             statusCode: 401,
           },
         });
@@ -113,9 +76,11 @@ export async function sessionRoutes(fastify: FastifyInstance) {
 
         return reply.send({ data: messages });
       } catch (error: any) {
+        fastify.log.error({ error, sessionId: request.params.sessionId }, 'Error fetching session messages');
+
         if (
-          error.message === 'Session not found' ||
-          error.message === 'Session file not found'
+          error.message === "Session not found" ||
+          error.message === "Session file not found"
         ) {
           return reply.code(404).send({
             error: {
@@ -125,16 +90,22 @@ export async function sessionRoutes(fastify: FastifyInstance) {
           });
         }
 
-        if (error.message === 'Unauthorized access to session') {
+        if (error.message === "Unauthorized access to session") {
           return reply.code(401).send({
             error: {
-              message: 'Unauthorized access to session',
+              message: "Unauthorized access to session",
               statusCode: 401,
             },
           });
         }
 
-        throw error;
+        // Catch all other errors
+        return reply.code(500).send({
+          error: {
+            message: error.message || 'Internal server error',
+            statusCode: 500,
+          },
+        });
       }
     }
   );
@@ -147,31 +118,20 @@ export async function sessionRoutes(fastify: FastifyInstance) {
     Params: { id: string };
     Body: CreateSessionRequest;
   }>(
-    '/api/projects/:id/sessions',
+    "/api/projects/:id/sessions",
     {
       preHandler: fastify.authenticate,
       schema: {
         params: projectIdSchema,
         body: createSessionSchema,
-        response: {
-          201: {
-            type: 'object',
-            properties: {
-              data: {
-                type: 'object',
-              },
-            },
-          },
-          401: errorResponse,
-        },
       },
     },
     async (request, reply) => {
-      const userId = request.user?.userId;
+      const userId = request.user?.id;
       if (!userId) {
         return reply.code(401).send({
           error: {
-            message: 'Unauthorized',
+            message: "Unauthorized",
             statusCode: 401,
           },
         });
@@ -194,36 +154,19 @@ export async function sessionRoutes(fastify: FastifyInstance) {
   fastify.post<{
     Params: { id: string };
   }>(
-    '/api/projects/:id/sessions/sync',
+    "/api/projects/:id/sessions/sync",
     {
       preHandler: fastify.authenticate,
       schema: {
         params: projectIdSchema,
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              data: {
-                type: 'object',
-                properties: {
-                  synced: { type: 'number' },
-                  created: { type: 'number' },
-                  updated: { type: 'number' },
-                },
-              },
-            },
-          },
-          401: errorResponse,
-          404: errorResponse,
-        },
       },
     },
     async (request, reply) => {
-      const userId = request.user?.userId;
+      const userId = request.user?.id;
       if (!userId) {
         return reply.code(401).send({
           error: {
-            message: 'Unauthorized',
+            message: "Unauthorized",
             statusCode: 401,
           },
         });
@@ -237,10 +180,10 @@ export async function sessionRoutes(fastify: FastifyInstance) {
 
         return reply.send({ data: result });
       } catch (error: any) {
-        if (error.message.includes('Project not found')) {
+        if (error.message.includes("Project not found")) {
           return reply.code(404).send({
             error: {
-              message: 'Project not found',
+              message: "Project not found",
               statusCode: 404,
             },
           });

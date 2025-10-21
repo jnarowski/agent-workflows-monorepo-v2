@@ -82,11 +82,12 @@ export type ContentBlock = TextBlock | ThinkingBlock | ToolUseBlock | ToolResult
 
 /**
  * Chat message structure
+ * Content can be either a string (legacy/simple format) or ContentBlock[] (structured format)
  */
 export interface ChatMessage {
   id: string;
   role: MessageRole;
-  content: ContentBlock[];
+  content: string | ContentBlock[];
   timestamp: number;
   isStreaming?: boolean;
 }

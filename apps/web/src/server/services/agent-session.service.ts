@@ -293,7 +293,8 @@ export class AgentSessionService {
       }).filter(Boolean);
     } catch (error: any) {
       if (error.code === 'ENOENT') {
-        throw new Error('Session file not found');
+        // Return empty array for new sessions without messages yet
+        return [];
       }
       throw error;
     }

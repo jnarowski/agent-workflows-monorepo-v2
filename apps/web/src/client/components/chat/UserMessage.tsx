@@ -10,13 +10,29 @@ interface UserMessageProps {
 }
 
 export function UserMessage({ message }: UserMessageProps) {
-  // Extract text content from content blocks
-  const textBlocks = message.content.filter(
+  // Handle both string content and ContentBlock[] formats
+  const content = message.content;
+
+  // If content is a string, display it directly
+  if (typeof content === 'string') {
+    return (
+      <div className="w-full">
+        <div className="text-base text-foreground">
+          <div className="whitespace-pre-wrap break-words">
+            {content}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Otherwise, extract text content from content blocks
+  const textBlocks = content.filter(
     (block): block is TextBlock => block.type === 'text'
   );
 
   // Extract tool result blocks
-  const toolResultBlocks = message.content.filter(
+  const toolResultBlocks = content.filter(
     (block): block is ToolResultBlock => block.type === 'tool_result'
   );
 

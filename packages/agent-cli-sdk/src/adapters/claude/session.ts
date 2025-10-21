@@ -35,6 +35,13 @@ export class ClaudeSession extends EventEmitter {
    * Send a message in this session
    */
   async send<T = string>(message: string, options: SendOptions = {}): Promise<ExecutionResponse<T>> {
+    console.log('[agent-cli-sdk ClaudeSession] send() called:', {
+      sessionId: this._sessionId,
+      messageCount: this._messageCount,
+      messageLength: message.length,
+      aborted: this._aborted,
+    });
+
     if (this._aborted) {
       throw new Error('Cannot send message: session has been aborted');
     }
@@ -59,6 +66,14 @@ export class ClaudeSession extends EventEmitter {
       mergedOptions.sessionId = this._sessionId;
     }
 
+    console.log('[agent-cli-sdk ClaudeSession] Session config:', {
+      messageCount: this._messageCount,
+      sessionId: this._sessionId,
+      resume: mergedOptions.resume,
+      hasOnOutput: !!this.options.onOutput,
+      hasOnEvent: !!this.options.onEvent,
+    });
+
     // Create message-specific log path if session logging is enabled
     if (this.options.logPath && !options.logPath) {
       mergedOptions.logPath = createSessionMessageLogPath(this.options.logPath, this._messageCount);
@@ -67,19 +82,27 @@ export class ClaudeSession extends EventEmitter {
     // Set up callbacks
     if (this.options.onOutput || this.options.onEvent) {
       mergedOptions.onOutput = (data: import('../../types/index.js').OutputData) => {
+        console.log('[agent-cli-sdk ClaudeSession] onOutput callback triggered:', data);
         this.emit('output', data);
         this.options.onOutput?.(data);
       };
 
       mergedOptions.onEvent = (event: import('../../types/index.js').StreamEvent) => {
+        console.log('[agent-cli-sdk ClaudeSession] onEvent callback triggered:', event.type);
         this.emit('event', event);
         this.options.onEvent?.(event);
       };
     }
 
     try {
+      console.log('[agent-cli-sdk ClaudeSession] Calling adapter.execute()');
       // Execute via adapter
       const result = await this.adapter.execute<T>(message, mergedOptions);
+
+      console.log('[agent-cli-sdk ClaudeSession] adapter.execute() completed:', {
+        sessionId: result.sessionId,
+        hasOutput: !!result.output,
+      });
 
       // Capture session ID from first message
       if (!this._sessionId && result.sessionId) {
@@ -94,6 +117,7 @@ export class ClaudeSession extends EventEmitter {
 
       return result;
     } catch (error) {
+      console.error('[agent-cli-sdk ClaudeSession] Error in adapter.execute():', error);
       this.emit('error', error);
       throw error;
     }

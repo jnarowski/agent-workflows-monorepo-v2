@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { Plus } from 'lucide-react';
 import { useChatContext } from '../../contexts/ChatContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface NewSessionButtonProps {
   projectId: string;
@@ -14,6 +15,7 @@ export function NewSessionButton({ projectId, variant = 'default', size = 'defau
   const [isCreating, setIsCreating] = useState(false);
   const navigate = useNavigate();
   const { createSession } = useChatContext();
+  const { handleInvalidToken } = useAuth();
 
   const handleCreateSession = async () => {
     try {
@@ -34,6 +36,11 @@ export function NewSessionButton({ projectId, variant = 'default', size = 'defau
       });
 
       if (!response.ok) {
+        // Handle 401 Unauthorized - invalid or missing token
+        if (response.status === 401) {
+          handleInvalidToken();
+          return;
+        }
         throw new Error(`Failed to create session: ${response.statusText}`);
       }
 

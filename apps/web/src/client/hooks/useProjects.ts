@@ -14,6 +14,7 @@ import type {
   ProjectResponse,
   ErrorResponse,
 } from "../../shared/types/project.types";
+import { useAuth } from "../contexts/AuthContext";
 
 // Query keys factory - centralized key management
 export const projectKeys = {
@@ -30,7 +31,11 @@ function getAuthToken(): string | null {
 }
 
 // Helper to make authenticated API calls
-async function fetchWithAuth(url: string, options: RequestInit = {}) {
+async function fetchWithAuth(
+  url: string,
+  options: RequestInit = {},
+  onUnauthorized?: () => void
+) {
   const token = getAuthToken();
 
   const response = await fetch(url, {
@@ -43,6 +48,12 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   });
 
   if (!response.ok) {
+    // Handle 401 Unauthorized - invalid or missing token
+    if (response.status === 401 && onUnauthorized) {
+      onUnauthorized();
+      throw new Error("Session expired");
+    }
+
     const error: ErrorResponse = await response.json().catch(() => ({
       error: "An error occurred",
     }));
@@ -55,48 +66,48 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 /**
  * Fetch all projects
  */
-async function fetchProjects(): Promise<Project[]> {
-  const data: ProjectsResponse = await fetchWithAuth("/api/projects");
+async function fetchProjects(onUnauthorized?: () => void): Promise<Project[]> {
+  const data: ProjectsResponse = await fetchWithAuth("/api/projects", {}, onUnauthorized);
   return data.data;
 }
 
 /**
  * Fetch a single project by ID
  */
-async function fetchProject(id: string): Promise<Project> {
-  const data: ProjectResponse = await fetchWithAuth(`/api/projects/${id}`);
+async function fetchProject(id: string, onUnauthorized?: () => void): Promise<Project> {
+  const data: ProjectResponse = await fetchWithAuth(`/api/projects/${id}`, {}, onUnauthorized);
   return data.data;
 }
 
 /**
  * Create a new project
  */
-async function createProject(project: CreateProjectRequest): Promise<Project> {
+async function createProject(project: CreateProjectRequest, onUnauthorized?: () => void): Promise<Project> {
   const data: ProjectResponse = await fetchWithAuth("/api/projects", {
     method: "POST",
     body: JSON.stringify(project),
-  });
+  }, onUnauthorized);
   return data.data;
 }
 
 /**
  * Update a project
  */
-async function updateProject(id: string, project: UpdateProjectRequest): Promise<Project> {
+async function updateProject(id: string, project: UpdateProjectRequest, onUnauthorized?: () => void): Promise<Project> {
   const data: ProjectResponse = await fetchWithAuth(`/api/projects/${id}`, {
     method: "PATCH",
     body: JSON.stringify(project),
-  });
+  }, onUnauthorized);
   return data.data;
 }
 
 /**
  * Delete a project
  */
-async function deleteProject(id: string): Promise<Project> {
+async function deleteProject(id: string, onUnauthorized?: () => void): Promise<Project> {
   const data: ProjectResponse = await fetchWithAuth(`/api/projects/${id}`, {
     method: "DELETE",
-  });
+  }, onUnauthorized);
   return data.data;
 }
 
@@ -104,9 +115,11 @@ async function deleteProject(id: string): Promise<Project> {
  * Hook to fetch all projects
  */
 export function useProjects(): UseQueryResult<Project[], Error> {
+  const { handleInvalidToken } = useAuth();
+
   return useQuery({
     queryKey: projectKeys.list(),
-    queryFn: fetchProjects,
+    queryFn: () => fetchProjects(handleInvalidToken),
   });
 }
 
@@ -114,9 +127,11 @@ export function useProjects(): UseQueryResult<Project[], Error> {
  * Hook to fetch a single project
  */
 export function useProject(id: string): UseQueryResult<Project, Error> {
+  const { handleInvalidToken } = useAuth();
+
   return useQuery({
     queryKey: projectKeys.detail(id),
-    queryFn: () => fetchProject(id),
+    queryFn: () => fetchProject(id, handleInvalidToken),
     enabled: !!id, // Only run if id is provided
   });
 }
@@ -130,9 +145,10 @@ export function useCreateProject(): UseMutationResult<
   CreateProjectRequest
 > {
   const queryClient = useQueryClient();
+  const { handleInvalidToken } = useAuth();
 
   return useMutation({
-    mutationFn: createProject,
+    mutationFn: (project) => createProject(project, handleInvalidToken),
     onSuccess: (newProject) => {
       // Invalidate and refetch projects list
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
@@ -159,9 +175,10 @@ export function useUpdateProject(): UseMutationResult<
   { id: string; data: UpdateProjectRequest }
 > {
   const queryClient = useQueryClient();
+  const { handleInvalidToken } = useAuth();
 
   return useMutation({
-    mutationFn: ({ id, data }) => updateProject(id, data),
+    mutationFn: ({ id, data }) => updateProject(id, data, handleInvalidToken),
     onSuccess: (updatedProject) => {
       // Update the project in the list cache
       queryClient.setQueryData<Project[]>(projectKeys.list(), (old) => {
@@ -194,9 +211,10 @@ export function useDeleteProject(): UseMutationResult<
   string
 > {
   const queryClient = useQueryClient();
+  const { handleInvalidToken } = useAuth();
 
   return useMutation({
-    mutationFn: deleteProject,
+    mutationFn: (id) => deleteProject(id, handleInvalidToken),
     onSuccess: (deletedProject) => {
       // Remove the project from the list cache
       queryClient.setQueryData<Project[]>(projectKeys.list(), (old) => {

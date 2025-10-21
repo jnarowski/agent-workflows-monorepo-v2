@@ -50,13 +50,28 @@ export class Session extends EventEmitter {
     message: string,
     options: SendOptions = {}
   ): Promise<ExecutionResponse<T>> {
+    console.log('[agent-cli-sdk Session] send() called:', {
+      sessionId: this._sessionId,
+      messageLength: message.length,
+      messagePreview: message.substring(0, 100),
+      options: JSON.stringify(options),
+    });
+
     const mergedOptions = {
       ...this.options,
       ...options,
     };
 
+    console.log('[agent-cli-sdk Session] Calling adapterSession.send()');
+
     // Delegate to adapter session
     const result = await this.adapterSession.send<T>(message, mergedOptions);
+
+    console.log('[agent-cli-sdk Session] Received result from adapterSession:', {
+      sessionId: result.sessionId,
+      resultType: typeof result,
+      hasOutput: !!result.output,
+    });
 
     // Update metadata
     this._messageCount++;
