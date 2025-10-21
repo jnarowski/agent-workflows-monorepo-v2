@@ -1,9 +1,13 @@
 import type { FastifyInstance } from 'fastify';
 import { authRoutes } from './routes/auth';
+import { projectRoutes } from './routes/projects';
 
 export async function registerRoutes(fastify: FastifyInstance) {
   // Register auth routes
   await fastify.register(authRoutes);
+
+  // Register project routes
+  await fastify.register(projectRoutes);
 
   // Health check endpoint
   fastify.get('/api/health', async () => {

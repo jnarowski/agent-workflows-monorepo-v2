@@ -3,6 +3,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedLayout from "./layouts/ProtectedLayout";
 import AuthLayout from "./layouts/AuthLayout";
 import Dashboard from "./pages/Dashboard";
+import Projects from "./pages/Projects";
 import AboutUs from "./pages/AboutUs";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -22,6 +23,7 @@ function App() {
           {/* Protected routes */}
           <Route element={<ProtectedLayout />}>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/projects" element={<Projects />} />
             <Route path="/about" element={<AboutUs />} />
           </Route>
         </Routes>

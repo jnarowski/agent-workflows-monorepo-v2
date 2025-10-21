@@ -1,0 +1,1 @@
+- do not add .js or .ts to file extensions

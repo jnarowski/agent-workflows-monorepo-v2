@@ -5,7 +5,7 @@ import { LoginForm } from "../components/login-form";
 import type { FormEvent } from "react";
 
 function Login() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -18,10 +18,10 @@ function Login() {
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      await login(username, password);
       navigate("/");
     } catch (err) {
-      setError("Invalid email or password");
+      setError("Invalid username or password");
     } finally {
       setIsLoading(false);
     }
@@ -35,11 +35,11 @@ function Login() {
     <div className="flex items-center justify-center min-h-screen p-4">
       <div className="w-full max-w-md">
         <LoginForm
-          email={email}
+          username={username}
           password={password}
           isLoading={isLoading}
           error={error}
-          onEmailChange={setEmail}
+          onUsernameChange={setUsername}
           onPasswordChange={setPassword}
           onSubmit={handleSubmit}
           onSignUpClick={handleSignUpClick}
