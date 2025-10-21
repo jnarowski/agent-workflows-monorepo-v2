@@ -6,12 +6,10 @@ import {
   FileCode,
   FileText,
   File,
+  FileImage,
   ChevronRight,
   Search,
   X,
-  List,
-  Eye,
-  TableProperties,
 } from "lucide-react";
 import { useProjectFiles } from "../../hooks/useFiles";
 import type { FileTreeItem } from "../../../shared/types/file.types";
@@ -19,50 +17,44 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import { Alert, AlertDescription } from "../ui/alert";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "../ui/collapsible";
-
-type ViewMode = "simple" | "compact" | "detailed";
+import { FileEditor } from "./FileEditor";
+import { ImageViewer } from "./ImageViewer";
 
 // Helper functions
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`;
-}
-
-function formatRelativeTime(date: Date): string {
-  const now = new Date();
-  const diffMs = now.getTime() - new Date(date).getTime();
-  const diffSecs = Math.floor(diffMs / 1000);
-  const diffMins = Math.floor(diffSecs / 60);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffSecs < 60) return "just now";
-  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) > 1 ? "s" : ""} ago`;
-  return new Date(date).toLocaleDateString();
-}
-
 function getFileIcon(filename: string) {
   const ext = filename.split(".").pop()?.toLowerCase();
-  const codeExts = ["ts", "tsx", "js", "jsx", "py", "java", "c", "cpp", "go", "rs", "rb", "php"];
+  const codeExts = [
+    "ts",
+    "tsx",
+    "js",
+    "jsx",
+    "py",
+    "java",
+    "c",
+    "cpp",
+    "go",
+    "rs",
+    "rb",
+    "php",
+  ];
+  const imageExts = ["png", "jpg", "jpeg", "gif", "svg", "webp", "ico"];
 
   if (codeExts.includes(ext || "")) {
     return <FileCode className="h-4 w-4 text-blue-500" />;
+  }
+  if (imageExts.includes(ext || "")) {
+    return <FileImage className="h-4 w-4 text-purple-500" />;
   }
   if (["md", "txt", "json", "yaml", "yml", "xml"].includes(ext || "")) {
     return <FileText className="h-4 w-4 text-gray-500" />;
   }
   return <File className="h-4 w-4 text-gray-400" />;
+}
+
+function isImageFile(filename: string): boolean {
+  const ext = filename.split(".").pop()?.toLowerCase();
+  const imageExts = ["png", "jpg", "jpeg", "gif", "svg", "webp", "ico", "bmp"];
+  return imageExts.includes(ext || "");
 }
 
 function filterFiles(items: FileTreeItem[], query: string): FileTreeItem[] {
@@ -94,215 +86,67 @@ function filterFiles(items: FileTreeItem[], query: string): FileTreeItem[] {
 interface FileTreeItemProps {
   item: FileTreeItem;
   level: number;
-  viewMode: ViewMode;
   expandedDirs: Set<string>;
-  selectedFile: string | null;
   onToggle: (path: string) => void;
-  onSelect: (path: string) => void;
+  onFileClick: (item: FileTreeItem) => void;
 }
 
 function FileTreeItemComponent({
   item,
   level,
-  viewMode,
   expandedDirs,
-  selectedFile,
   onToggle,
-  onSelect,
+  onFileClick,
 }: FileTreeItemProps) {
   const isExpanded = expandedDirs.has(item.path);
-  const isSelected = selectedFile === item.path;
 
   if (item.type === "directory") {
     return (
-      <Collapsible open={isExpanded} onOpenChange={() => onToggle(item.path)}>
+      <div>
         <div
-          className={`flex items-center gap-2 px-2 py-1 hover:bg-secondary/50 cursor-pointer ${
-            isSelected ? "bg-secondary" : ""
-          }`}
+          className="flex items-center gap-2 px-2 py-1.5 hover:bg-secondary/50 cursor-pointer rounded-sm"
           style={{ paddingLeft: `${level * 16 + 8}px` }}
-          onClick={() => onSelect(item.path)}
+          onClick={() => onToggle(item.path)}
         >
-          <CollapsibleTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-4 w-4 p-0 hover:bg-transparent"
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggle(item.path);
-              }}
-            >
-              <ChevronRight
-                className={`h-3 w-3 transition-transform ${
-                  isExpanded ? "rotate-90" : ""
-                }`}
-              />
-            </Button>
-          </CollapsibleTrigger>
+          <ChevronRight
+            className={`h-3 w-3 transition-transform flex-shrink-0 ${
+              isExpanded ? "rotate-90" : ""
+            }`}
+          />
           {isExpanded ? (
-            <FolderOpen className="h-4 w-4 text-yellow-500" />
+            <FolderOpen className="h-4 w-4 text-blue-500 flex-shrink-0" />
           ) : (
-            <Folder className="h-4 w-4 text-yellow-500" />
+            <Folder className="h-4 w-4 text-blue-500 flex-shrink-0" />
           )}
           <span className="text-sm font-medium">{item.name}</span>
-          {viewMode === "compact" && (
-            <span className="text-xs text-muted-foreground ml-auto">
-              {item.permissions}
-            </span>
-          )}
         </div>
-        <CollapsibleContent>
-          {item.children?.map((child) => (
-            <FileTreeItemComponent
-              key={child.path}
-              item={child}
-              level={level + 1}
-              viewMode={viewMode}
-              expandedDirs={expandedDirs}
-              selectedFile={selectedFile}
-              onToggle={onToggle}
-              onSelect={onSelect}
-            />
-          ))}
-        </CollapsibleContent>
-      </Collapsible>
-    );
-  }
-
-  // File item
-  return (
-    <div
-      className={`flex items-center gap-2 px-2 py-1 hover:bg-secondary/50 cursor-pointer ${
-        isSelected ? "bg-secondary" : ""
-      }`}
-      style={{ paddingLeft: `${level * 16 + 24}px` }}
-      onClick={() => onSelect(item.path)}
-    >
-      {getFileIcon(item.name)}
-      <span className="text-sm">{item.name}</span>
-      {viewMode === "compact" && (
-        <>
-          <span className="text-xs text-muted-foreground ml-auto">
-            {item.size ? formatFileSize(item.size) : ""}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {item.permissions}
-          </span>
-        </>
-      )}
-    </div>
-  );
-}
-
-interface DetailedFileTreeItemProps {
-  item: FileTreeItem;
-  level: number;
-  expandedDirs: Set<string>;
-  selectedFile: string | null;
-  onToggle: (path: string) => void;
-  onSelect: (path: string) => void;
-}
-
-function DetailedFileTreeItem({
-  item,
-  level,
-  expandedDirs,
-  selectedFile,
-  onToggle,
-  onSelect,
-}: DetailedFileTreeItemProps) {
-  const isExpanded = expandedDirs.has(item.path);
-  const isSelected = selectedFile === item.path;
-
-  if (item.type === "directory") {
-    return (
-      <>
-        <Collapsible open={isExpanded} onOpenChange={() => onToggle(item.path)}>
-          <div
-            className={`grid grid-cols-[1fr,100px,150px,100px] gap-4 px-2 py-1 hover:bg-secondary/50 cursor-pointer ${
-              isSelected ? "bg-secondary" : ""
-            }`}
-            onClick={() => onSelect(item.path)}
-          >
-            <div
-              className="flex items-center gap-2"
-              style={{ paddingLeft: `${level * 16}px` }}
-            >
-              <CollapsibleTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-4 w-4 p-0 hover:bg-transparent"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggle(item.path);
-                  }}
-                >
-                  <ChevronRight
-                    className={`h-3 w-3 transition-transform ${
-                      isExpanded ? "rotate-90" : ""
-                    }`}
-                  />
-                </Button>
-              </CollapsibleTrigger>
-              {isExpanded ? (
-                <FolderOpen className="h-4 w-4 text-yellow-500" />
-              ) : (
-                <Folder className="h-4 w-4 text-yellow-500" />
-              )}
-              <span className="text-sm font-medium">{item.name}</span>
-            </div>
-            <span className="text-sm text-muted-foreground">—</span>
-            <span className="text-sm text-muted-foreground">
-              {item.modified ? formatRelativeTime(item.modified) : "—"}
-            </span>
-            <span className="text-sm text-muted-foreground font-mono text-xs">
-              {item.permissions || "—"}
-            </span>
-          </div>
-          <CollapsibleContent>
-            {item.children?.map((child) => (
-              <DetailedFileTreeItem
+        {isExpanded && item.children && item.children.length > 0 && (
+          <div>
+            {item.children.map((child) => (
+              <FileTreeItemComponent
                 key={child.path}
                 item={child}
                 level={level + 1}
                 expandedDirs={expandedDirs}
-                selectedFile={selectedFile}
                 onToggle={onToggle}
-                onSelect={onSelect}
+                onFileClick={onFileClick}
               />
             ))}
-          </CollapsibleContent>
-        </Collapsible>
-      </>
+          </div>
+        )}
+      </div>
     );
   }
 
   // File item
   return (
     <div
-      className={`grid grid-cols-[1fr,100px,150px,100px] gap-4 px-2 py-1 hover:bg-secondary/50 cursor-pointer ${
-        isSelected ? "bg-secondary" : ""
-      }`}
-      onClick={() => onSelect(item.path)}
+      className="flex items-center gap-2 px-2 py-1.5 hover:bg-secondary/50 cursor-pointer rounded-sm"
+      style={{ paddingLeft: `${level * 16 + 24}px` }}
+      onClick={() => onFileClick(item)}
     >
-      <div
-        className="flex items-center gap-2"
-        style={{ paddingLeft: `${level * 16 + 16}px` }}
-      >
-        {getFileIcon(item.name)}
-        <span className="text-sm">{item.name}</span>
-      </div>
-      <span className="text-sm text-muted-foreground">
-        {item.size ? formatFileSize(item.size) : "—"}
-      </span>
-      <span className="text-sm text-muted-foreground">
-        {item.modified ? formatRelativeTime(item.modified) : "—"}
-      </span>
-      <span className="text-sm text-muted-foreground font-mono text-xs">
-        {item.permissions || "—"}
-      </span>
+      {getFileIcon(item.name)}
+      <span className="text-sm">{item.name}</span>
     </div>
   );
 }
@@ -312,18 +156,20 @@ export function FileTree() {
   const { data: files, isLoading, error } = useProjectFiles(id!);
 
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    return (localStorage.getItem("fileTreeViewMode") as ViewMode) || "simple";
-  });
+  const [selectedFile, setSelectedFile] = useState<FileTreeItem | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
 
   // Auto-expand directories containing search matches
   useEffect(() => {
     if (searchQuery && files) {
       const newExpanded = new Set<string>();
 
-      function collectExpandedPaths(items: FileTreeItem[], currentPath: string[] = []) {
+      function collectExpandedPaths(
+        items: FileTreeItem[],
+        currentPath: string[] = []
+      ) {
         for (const item of items) {
           if (item.type === "directory") {
             const itemPath = [...currentPath, item.name];
@@ -358,11 +204,6 @@ export function FileTree() {
     }
   }, [searchQuery, files]);
 
-  // Persist view mode to localStorage
-  useEffect(() => {
-    localStorage.setItem("fileTreeViewMode", viewMode);
-  }, [viewMode]);
-
   const filteredFiles = useMemo(() => {
     if (!files) return [];
     return filterFiles(files, searchQuery);
@@ -380,8 +221,23 @@ export function FileTree() {
     });
   };
 
-  const handleSelect = (path: string) => {
-    setSelectedFile(path);
+  const handleFileClick = (item: FileTreeItem) => {
+    setSelectedFile(item);
+    if (isImageFile(item.name)) {
+      setIsImageViewerOpen(true);
+    } else {
+      setIsEditorOpen(true);
+    }
+  };
+
+  const handleCloseEditor = () => {
+    setIsEditorOpen(false);
+    setSelectedFile(null);
+  };
+
+  const handleCloseImageViewer = () => {
+    setIsImageViewerOpen(false);
+    setSelectedFile(null);
   };
 
   const handleClearSearch = () => {
@@ -432,7 +288,7 @@ export function FileTree() {
     return (
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between gap-2 p-4 border-b">
+        <div className="flex items-center gap-2 p-4 border-b">
           <div className="flex items-center gap-2 flex-1 relative">
             <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
             <Input
@@ -453,32 +309,6 @@ export function FileTree() {
               </Button>
             )}
           </div>
-          <div className="flex gap-1">
-            <Button
-              variant={viewMode === "simple" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("simple")}
-              title="Simple view"
-            >
-              <List className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === "compact" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("compact")}
-              title="Compact view"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === "detailed" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("detailed")}
-              title="Detailed view"
-            >
-              <TableProperties className="h-4 w-4" />
-            </Button>
-          </div>
         </div>
 
         {/* No results message */}
@@ -486,11 +316,7 @@ export function FileTree() {
           <div className="text-center text-muted-foreground">
             <Search className="h-12 w-12 mx-auto mb-2 opacity-50" />
             <p>No files match "{searchQuery}"</p>
-            <Button
-              variant="link"
-              onClick={handleClearSearch}
-              className="mt-2"
-            >
+            <Button variant="link" onClick={handleClearSearch} className="mt-2">
               Clear search
             </Button>
           </div>
@@ -500,96 +326,66 @@ export function FileTree() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-2 p-4 border-b">
-        <div className="flex items-center gap-2 flex-1 relative">
-          <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search files..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-9"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearSearch}
-              className="absolute right-1 h-7 w-7 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <div className="flex gap-1">
-          <Button
-            variant={viewMode === "simple" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("simple")}
-            title="Simple view"
-          >
-            <List className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={viewMode === "compact" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("compact")}
-            title="Compact view"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={viewMode === "detailed" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("detailed")}
-            title="Detailed view"
-          >
-            <TableProperties className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Column headers for detailed view */}
-      {viewMode === "detailed" && (
-        <div className="grid grid-cols-[1fr,100px,150px,100px] gap-4 px-2 py-2 border-b bg-secondary/30 text-sm font-semibold">
-          <div>Name</div>
-          <div>Size</div>
-          <div>Modified</div>
-          <div>Permissions</div>
-        </div>
-      )}
-
-      {/* File tree content */}
-      <div className="flex-1 overflow-auto">
-        {viewMode === "detailed" ? (
-          filteredFiles.map((item) => (
-            <DetailedFileTreeItem
-              key={item.path}
-              item={item}
-              level={0}
-              expandedDirs={expandedDirs}
-              selectedFile={selectedFile}
-              onToggle={handleToggle}
-              onSelect={handleSelect}
+    <>
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="flex items-center gap-2 p-4 border-b">
+          <div className="flex items-center gap-2 flex-1 relative">
+            <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search files..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-9"
             />
-          ))
-        ) : (
-          filteredFiles.map((item) => (
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearSearch}
+                className="absolute right-1 h-7 w-7 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* File tree content */}
+        <div className="flex-1 overflow-auto p-2">
+          {filteredFiles.map((item) => (
             <FileTreeItemComponent
               key={item.path}
               item={item}
               level={0}
-              viewMode={viewMode}
               expandedDirs={expandedDirs}
-              selectedFile={selectedFile}
               onToggle={handleToggle}
-              onSelect={handleSelect}
+              onFileClick={handleFileClick}
             />
-          ))
-        )}
+          ))}
+        </div>
       </div>
-    </div>
+
+      {/* File Editor Modal */}
+      {isEditorOpen && selectedFile && (
+        <FileEditor
+          projectId={id!}
+          filePath={selectedFile.path}
+          fileName={selectedFile.name}
+          onClose={handleCloseEditor}
+        />
+      )}
+
+      {/* Image Viewer Modal */}
+      {isImageViewerOpen && selectedFile && (
+        <ImageViewer
+          projectId={id!}
+          filePath={selectedFile.path}
+          fileName={selectedFile.name}
+          onClose={handleCloseImageViewer}
+        />
+      )}
+    </>
   );
 }

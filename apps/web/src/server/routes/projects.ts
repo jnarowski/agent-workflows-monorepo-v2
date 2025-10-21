@@ -5,12 +5,16 @@ import {
   createProjectSchema,
   updateProjectSchema,
   projectIdSchema,
+  fileContentQuerySchema,
+  fileContentBodySchema,
 } from "../schemas/project.schema";
 import {
   projectsResponseSchema,
   projectResponseSchema,
   errorResponse,
   fileTreeResponseSchema,
+  fileContentResponseSchema,
+  fileContentSaveResponseSchema,
 } from "../schemas/response.schema";
 import type {
   CreateProjectRequest,
@@ -233,6 +237,114 @@ export async function projectRoutes(fastify: FastifyInstance) {
           return reply.code(403).send({
             error: {
               message: "Project path is not accessible",
+              statusCode: 403,
+            },
+          });
+        }
+
+        throw error;
+      }
+    }
+  );
+
+  /**
+   * GET /api/projects/:id/files/content
+   * Get file content
+   */
+  fastify.get<{
+    Params: { id: string };
+    Querystring: { path: string };
+  }>(
+    "/api/projects/:id/files/content",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: projectIdSchema,
+        querystring: fileContentQuerySchema,
+        response: {
+          200: fileContentResponseSchema,
+          403: errorResponse,
+          404: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const content = await fileService.readFile(
+          request.params.id,
+          request.query.path
+        );
+        return reply.send({ content });
+      } catch (error) {
+        const errorMessage = (error as Error).message;
+        if (errorMessage === "Project not found") {
+          return reply.code(404).send({
+            error: {
+              message: "Project not found",
+              statusCode: 404,
+            },
+          });
+        }
+        if (
+          errorMessage === "File not found or not accessible" ||
+          errorMessage === "Access denied: File is outside project directory"
+        ) {
+          return reply.code(403).send({
+            error: {
+              message: errorMessage,
+              statusCode: 403,
+            },
+          });
+        }
+
+        throw error;
+      }
+    }
+  );
+
+  /**
+   * POST /api/projects/:id/files/content
+   * Save file content
+   */
+  fastify.post<{
+    Params: { id: string };
+    Body: { path: string; content: string };
+  }>(
+    "/api/projects/:id/files/content",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: projectIdSchema,
+        body: fileContentBodySchema,
+        response: {
+          200: fileContentSaveResponseSchema,
+          403: errorResponse,
+          404: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        await fileService.writeFile(
+          request.params.id,
+          request.body.path,
+          request.body.content
+        );
+        return reply.send({ success: true });
+      } catch (error) {
+        const errorMessage = (error as Error).message;
+        if (errorMessage === "Project not found") {
+          return reply.code(404).send({
+            error: {
+              message: "Project not found",
+              statusCode: 404,
+            },
+          });
+        }
+        if (errorMessage === "Access denied: File is outside project directory") {
+          return reply.code(403).send({
+            error: {
+              message: errorMessage,
               statusCode: 403,
             },
           });

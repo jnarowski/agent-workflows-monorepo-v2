@@ -63,3 +63,12 @@ export const fileTreeItemSchema: z.ZodType<any> = z.lazy(() =>
 );
 
 export const fileTreeResponseSchema = successResponse(z.array(fileTreeItemSchema));
+
+// File content schemas
+export const fileContentResponseSchema = z.object({
+  content: z.string(),
+});
+
+export const fileContentSaveResponseSchema = z.object({
+  success: z.boolean(),
+});

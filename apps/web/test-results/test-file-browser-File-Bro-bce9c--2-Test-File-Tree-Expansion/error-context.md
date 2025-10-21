@@ -1,0 +1,66 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - list [ref=e9]:
+          - listitem [ref=e10]:
+            - link "Acme Inc Enterprise" [ref=e11] [cursor=pointer]:
+              - /url: "#"
+              - img [ref=e13]
+              - generic:
+                - generic: Acme Inc
+                - generic: Enterprise
+        - list [ref=e18]:
+          - listitem [ref=e19]:
+            - button "Dashboard" [ref=e20]:
+              - img [ref=e21]
+              - generic: Dashboard
+          - listitem [ref=e24]:
+            - button "Projects" [ref=e25]:
+              - img [ref=e26]
+              - generic: Projects
+          - listitem [ref=e28]:
+            - button "About" [ref=e29]:
+              - img [ref=e30]
+              - generic: About
+        - list [ref=e33]:
+          - listitem [ref=e34]:
+            - button "CN Guest User guest@example.com" [ref=e35]:
+              - generic [ref=e37]: CN
+              - generic:
+                - generic: Guest User
+                - generic: guest@example.com
+              - img [ref=e38]
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e44]: Dashboard
+          - textbox "Type to search..." [ref=e45]
+        - generic [ref=e47]:
+          - generic [ref=e48]: All Projects
+          - list [ref=e49]:
+            - listitem [ref=e51]:
+              - button "agent-workflows-monorepo" [ref=e52]:
+                - img [ref=e53]
+                - generic [ref=e56]: agent-workflows-monorepo
+                - img [ref=e57]
+              - button "More" [ref=e59]:
+                - img [ref=e60]
+                - generic [ref=e64]: More
+            - listitem [ref=e66]:
+              - button "jpnarowski-com-next-v2" [ref=e67]:
+                - img [ref=e68]
+                - generic [ref=e71]: jpnarowski-com-next-v2
+                - img [ref=e72]
+              - button "More" [ref=e74]:
+                - img [ref=e75]
+                - generic [ref=e79]: More
+    - main [ref=e80]:
+      - generic [ref=e81]: Dashboard
+  - generic [ref=e82]:
+    - img [ref=e84]
+    - button "Open Tanstack query devtools" [ref=e132] [cursor=pointer]:
+      - img [ref=e133]
+```

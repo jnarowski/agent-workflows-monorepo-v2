@@ -17,7 +17,20 @@ export const projectIdSchema = z.object({
   id: z.string().cuid("Invalid project ID format"),
 });
 
+// Schema for file content query parameters
+export const fileContentQuerySchema = z.object({
+  path: z.string().min(1, "File path is required"),
+});
+
+// Schema for file content request body
+export const fileContentBodySchema = z.object({
+  path: z.string().min(1, "File path is required"),
+  content: z.string(),
+});
+
 // Export types inferred from schemas
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 export type ProjectIdParam = z.infer<typeof projectIdSchema>;
+export type FileContentQuery = z.infer<typeof fileContentQuerySchema>;
+export type FileContentBody = z.infer<typeof fileContentBodySchema>;

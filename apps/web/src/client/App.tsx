@@ -13,6 +13,7 @@ import AboutUs from "./pages/AboutUs";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import LayoutExperiment from "./pages/LayoutExperiment";
+import MockAIChat from "./pages/MockAIChat";
 
 function App() {
   return (
@@ -20,8 +21,9 @@ function App() {
       <AuthProvider>
         <ShellProvider>
           <Routes>
-            {/* Experiment route - no layout */}
+            {/* Experiment routes - no layout */}
             <Route path="/experiment" element={<LayoutExperiment />} />
+            <Route path="/mock-chat" element={<MockAIChat />} />
 
             {/* Auth routes */}
             <Route element={<AuthLayout />}>
