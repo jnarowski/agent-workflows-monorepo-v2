@@ -69,58 +69,33 @@ export default function MockChatTwo() {
     >
       <AppSidebar />
       <SidebarInset>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100vh',
-          backgroundColor: '#f5f5f5',
-        }}>
+        <div className="flex flex-col h-screen bg-gray-100">
           {/* Header */}
-          <div style={{
-            padding: '16px 24px',
-            backgroundColor: '#ffffff',
-            borderBottom: '1px solid #e0e0e0',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-          }}>
-            <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 600 }}>Mock Chat Interface</h1>
+          <div className="px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
+            <h1 className="text-xl font-semibold m-0">Mock Chat Interface</h1>
           </div>
 
           {/* Chat Messages Container */}
           <div
             ref={chatContainerRef}
-            style={{
-              flex: 1,
-              overflowY: 'auto',
-              padding: '24px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-            }}
+            className="flex-1 overflow-y-auto p-6 flex flex-col gap-4"
           >
             {messages.map((message) => (
               <div
                 key={message.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: message.from === 'user' ? 'flex-end' : 'flex-start',
-                }}
+                className={`flex ${message.from === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  style={{
-                    maxWidth: '70%',
-                    padding: '12px 16px',
-                    borderRadius: '12px',
-                    backgroundColor: message.from === 'user' ? '#007bff' : '#ffffff',
-                    color: message.from === 'user' ? '#ffffff' : '#333333',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                    wordWrap: 'break-word',
-                    whiteSpace: 'pre-wrap',
-                  }}
+                  className={`max-w-[70%] px-4 py-3 rounded-xl shadow-sm break-words whitespace-pre-wrap ${
+                    message.from === 'user'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-white text-gray-800'
+                  }`}
                 >
-                  <div style={{ fontWeight: 600, fontSize: '12px', marginBottom: '4px', opacity: 0.8 }}>
+                  <div className="font-semibold text-xs mb-1 opacity-80">
                     {message.from === 'user' ? 'You' : 'Assistant'}
                   </div>
-                  <div style={{ fontSize: '14px', lineHeight: '1.5' }}>
+                  <div className="text-sm leading-relaxed">
                     {message.text}
                   </div>
                 </div>
@@ -129,54 +104,23 @@ export default function MockChatTwo() {
           </div>
 
           {/* Fixed Input Container at Bottom */}
-          <div style={{
-            padding: '16px 24px',
-            backgroundColor: '#ffffff',
-            borderTop: '1px solid #e0e0e0',
-            boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
-          }}>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '12px' }}>
+          <div className="px-6 py-4 bg-white border-t border-gray-200 shadow-lg">
+            <form onSubmit={handleSubmit} className="flex gap-3">
               <input
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Type your message..."
-                style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  fontSize: '14px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '8px',
-                  outline: 'none',
-                  transition: 'border-color 0.2s',
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#007bff'}
-                onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+                className="flex-1 px-4 py-3 text-sm border border-gray-200 rounded-lg outline-none transition-colors focus:border-blue-500"
               />
               <button
                 type="submit"
                 disabled={!inputValue.trim()}
-                style={{
-                  padding: '12px 24px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: '#ffffff',
-                  backgroundColor: inputValue.trim() ? '#007bff' : '#cccccc',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
-                  transition: 'background-color 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  if (inputValue.trim()) {
-                    e.currentTarget.style.backgroundColor = '#0056b3';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (inputValue.trim()) {
-                    e.currentTarget.style.backgroundColor = '#007bff';
-                  }
-                }}
+                className={`px-6 py-3 text-sm font-semibold rounded-lg transition-colors ${
+                  inputValue.trim()
+                    ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
+                    : 'bg-gray-300 text-white cursor-not-allowed'
+                }`}
               >
                 Send
               </button>
