@@ -33,7 +33,7 @@ function ProtectedLayout() {
     >
       <AppSidebar />
       <SidebarInset>
-        <div className="flex flex-1 flex-col gap-4 p-4">
+        <div className="flex flex-1 flex-col">
           <Outlet />
         </div>
       </SidebarInset>
