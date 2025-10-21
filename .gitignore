@@ -5,6 +5,9 @@ node_modules
 .pnp
 .pnp.js
 
+# Python
+.claude/hooks/utils/__pycache__/**
+
 # Local env files
 .env
 .env.local

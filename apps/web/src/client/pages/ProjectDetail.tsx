@@ -89,7 +89,7 @@ export default function ProjectDetail() {
       <TabsContent value="chat" className="flex-1 p-4 m-0">
         <div className="text-muted-foreground">Chat content coming soon...</div>
       </TabsContent>
-      <TabsContent value="shell" className="flex-1 m-0 flex-col data-[state=inactive]:hidden" forceMount={true}>
+      <TabsContent value="shell" className="flex flex-1 m-0 flex-col data-[state=inactive]:hidden" forceMount={true}>
         <ShellControls
           status={session?.status || 'disconnected'}
           projectName={project.name}
