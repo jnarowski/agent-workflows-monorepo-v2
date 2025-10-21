@@ -7,6 +7,7 @@ import { dirname, join } from 'path';
 import { existsSync } from 'fs';
 import { registerRoutes } from './routes';
 import { registerWebSocket } from './websocket';
+import { registerShellRoute } from './routes/shell';
 import { authPlugin } from './plugins/auth';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -46,6 +47,9 @@ export async function createServer() {
   // Register WebSocket handler
   await registerWebSocket(fastify);
 
+  // Register Shell WebSocket handler
+  await registerShellRoute(fastify);
+
   // Serve static files from dist/client/ (production build only)
   // In production, the built client files are in dist/client/
   const distDir = join(__dirname, '../../dist/client');
@@ -59,7 +63,7 @@ export async function createServer() {
 
     // SPA fallback: serve index.html for all non-API routes
     fastify.setNotFoundHandler((request, reply) => {
-      if (request.url.startsWith('/api') || request.url.startsWith('/ws')) {
+      if (request.url.startsWith('/api') || request.url.startsWith('/ws') || request.url.startsWith('/shell')) {
         reply.code(404).send({ error: 'Not found' });
       } else {
         reply.sendFile('index.html');
@@ -68,7 +72,7 @@ export async function createServer() {
   } else {
     // Development mode: no static files, just API and WebSocket
     fastify.setNotFoundHandler((request, reply) => {
-      if (request.url.startsWith('/api') || request.url.startsWith('/ws')) {
+      if (request.url.startsWith('/api') || request.url.startsWith('/ws') || request.url.startsWith('/shell')) {
         reply.code(404).send({ error: 'Not found' });
       } else {
         reply.code(200).send({

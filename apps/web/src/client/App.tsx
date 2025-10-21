@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ShellProvider } from "./contexts/ShellContext";
 import ProtectedLayout from "./layouts/ProtectedLayout";
 import AuthLayout from "./layouts/AuthLayout";
 import Dashboard from "./pages/Dashboard";
@@ -14,7 +15,8 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
+        <ShellProvider>
+          <Routes>
           {/* Auth routes */}
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<Login />} />
@@ -29,6 +31,7 @@ function App() {
             <Route path="/about" element={<AboutUs />} />
           </Route>
         </Routes>
+        </ShellProvider>
       </AuthProvider>
     </BrowserRouter>
   );
