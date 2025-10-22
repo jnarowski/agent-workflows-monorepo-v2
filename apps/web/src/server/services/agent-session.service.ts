@@ -263,6 +263,39 @@ export class AgentSessionService {
   }
 
   /**
+   * Transform JSONL entry to ChatMessage format
+   * Converts Claude CLI format (type field) to API format (role field)
+   * @param entry - Raw JSONL entry
+   * @returns ChatMessage object or null if entry is not a message
+   */
+  private transformToChatMessage(entry: any): any | null {
+    // Extract role from either 'type' (Claude CLI format) or 'role' (API format)
+    const role = entry.type || entry.role;
+
+    // Only process user and assistant messages
+    if (role !== 'user' && role !== 'assistant') {
+      return null;
+    }
+
+    // Extract content - handle both formats
+    let content = entry.message?.content ?? entry.content;
+
+    // Ensure content is an array of ContentBlocks
+    if (typeof content === 'string') {
+      content = [{ type: 'text', text: content }];
+    } else if (!Array.isArray(content)) {
+      content = [];
+    }
+
+    return {
+      id: entry.id || `${entry.timestamp}-${role}`,
+      role, // Use the role field instead of type
+      content,
+      timestamp: new Date(entry.timestamp || Date.now()).getTime(),
+    };
+  }
+
+  /**
    * Get messages for a specific session
    * Reads from JSONL file
    * @param sessionId - Session ID
@@ -290,13 +323,16 @@ export class AgentSessionService {
       const content = await fs.readFile(filePath, 'utf-8');
       const lines = content.trim().split('\n').filter(Boolean);
 
-      return lines.map((line) => {
-        try {
-          return JSON.parse(line);
-        } catch {
-          return null;
-        }
-      }).filter(Boolean);
+      return lines
+        .map((line) => {
+          try {
+            const entry = JSON.parse(line);
+            return this.transformToChatMessage(entry);
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean);
     } catch (error: any) {
       if (error.code === 'ENOENT') {
         // Return empty array for new sessions without messages yet

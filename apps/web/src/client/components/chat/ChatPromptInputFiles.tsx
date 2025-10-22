@@ -15,38 +15,94 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/client/components/ui/popover";
-import { AtSignIcon, GlobeIcon } from "lucide-react";
-import { useEffect, useRef } from "react";
-
-const sampleFiles = {
-  activeTabs: [{ path: "prompt-input.tsx", location: "packages/elements/src" }],
-  recents: [
-    { path: "queue.tsx", location: "apps/test/app/examples" },
-    { path: "queue.tsx", location: "packages/elements/src" },
-  ],
-  added: [
-    { path: "prompt-input.tsx", location: "packages/elements/src" },
-    { path: "queue.tsx", location: "apps/test/app/examples" },
-    { path: "queue.tsx", location: "packages/elements/src" },
-  ],
-  filesAndFolders: [
-    { path: "prompt-input.tsx", location: "packages/elements/src" },
-    { path: "queue.tsx", location: "apps/test/app/examples" },
-  ],
-  code: [{ path: "prompt-input.tsx", location: "packages/elements/src" }],
-  docs: [{ path: "README.md", location: "packages/elements" }],
-};
+import { AtSignIcon, CheckIcon } from "lucide-react";
+import { useEffect, useRef, useState, useMemo } from "react";
+import { useProjectFiles } from "@/client/hooks/useFiles";
+import Fuse from "fuse.js";
+import {
+  flattenFileTree,
+  extractFileReferences,
+  type FileItem,
+} from "@/client/lib/fileUtils";
+import { FileBadge } from "@/client/components/ui/file-badge";
 
 interface ChatPromptInputFilesProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  projectId: string;
+  projectPath: string;
+  onFileSelect: (filePath: string) => void;
+  onFileRemove: (filePath: string) => void;
+  textareaValue: string;
 }
+
+// Helper to convert absolute path to relative path with @ prefix
+const toRelativePath = (absolutePath: string, projectPath: string): string => {
+  if (!projectPath) return absolutePath;
+
+  // Ensure project path ends without a trailing slash
+  const normalizedProjectPath = projectPath.endsWith("/")
+    ? projectPath.slice(0, -1)
+    : projectPath;
+
+  // If the path starts with the project path, make it relative
+  if (absolutePath.startsWith(normalizedProjectPath + "/")) {
+    const relativePath = absolutePath.slice(normalizedProjectPath.length + 1);
+    return `@${relativePath}`;
+  }
+
+  return absolutePath;
+};
 
 export const ChatPromptInputFiles = ({
   open,
   onOpenChange,
+  projectId,
+  projectPath,
+  onFileSelect,
+  onFileRemove,
+  textareaValue,
 }: ChatPromptInputFilesProps) => {
   const commandInputRef = useRef<HTMLInputElement>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [addedFiles, setAddedFiles] = useState<string[]>([]);
+
+  // Fetch project files
+  const { data, isLoading, error } = useProjectFiles(projectId);
+
+  // Flatten file tree
+  const flattenedFiles = useMemo(() => {
+    return flattenFileTree(data || []);
+  }, [data]);
+
+  // Setup Fuse.js search
+  const fuse = useMemo(() => {
+    return new Fuse(flattenedFiles, {
+      keys: [
+        { name: "filename", weight: 0.7 },
+        { name: "fullPath", weight: 0.3 },
+      ],
+      threshold: 0.4,
+      includeScore: true,
+    });
+  }, [flattenedFiles]);
+
+  // Parse added files when menu opens
+  useEffect(() => {
+    if (open) {
+      const references = extractFileReferences(textareaValue);
+      setAddedFiles(references);
+    }
+  }, [open, textareaValue]);
+
+  // Filter files based on search query
+  const filteredFiles = useMemo(() => {
+    if (!searchQuery) {
+      return flattenedFiles;
+    }
+    const results = fuse.search(searchQuery);
+    return results.map((result) => result.item);
+  }, [searchQuery, fuse, flattenedFiles]);
 
   // Focus command input when menu opens
   useEffect(() => {
@@ -57,6 +113,18 @@ export const ChatPromptInputFiles = ({
       }, 0);
     }
   }, [open]);
+
+  // Get file items for added files
+  const addedFileItems = useMemo(() => {
+    return addedFiles
+      .map((path) => flattenedFiles.find((f) => f.fullPath === path))
+      .filter((f): f is FileItem => f !== undefined);
+  }, [addedFiles, flattenedFiles]);
+
+  // Filter out already added files from search results
+  const searchResults = useMemo(() => {
+    return filteredFiles.filter((file) => !addedFiles.includes(file.fullPath));
+  }, [filteredFiles, addedFiles]);
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -70,33 +138,91 @@ export const ChatPromptInputFiles = ({
           <PromptInputCommandInput
             ref={commandInputRef}
             className="border-none focus-visible:ring-0"
-            placeholder="Add files, folders, docs..."
+            placeholder="Search files..."
+            value={searchQuery}
+            onValueChange={setSearchQuery}
           />
           <PromptInputCommandList>
-            <PromptInputCommandEmpty className="p-3 text-muted-foreground text-sm">
-              No results found.
-            </PromptInputCommandEmpty>
-            <PromptInputCommandGroup heading="Added">
-              <PromptInputCommandItem>
-                <GlobeIcon />
-                <span>Active Tabs</span>
-                <span className="ml-auto text-muted-foreground">✓</span>
-              </PromptInputCommandItem>
-            </PromptInputCommandGroup>
-            <PromptInputCommandSeparator />
-            <PromptInputCommandGroup heading="Other Files">
-              {sampleFiles.added.map((file, index) => (
-                <PromptInputCommandItem key={`${file.path}-${index}`}>
-                  <GlobeIcon className="text-primary" />
-                  <div className="flex flex-col">
-                    <span className="font-medium text-sm">{file.path}</span>
-                    <span className="text-muted-foreground text-xs">
-                      {file.location}
-                    </span>
-                  </div>
-                </PromptInputCommandItem>
-              ))}
-            </PromptInputCommandGroup>
+            {isLoading && (
+              <div className="p-3 text-muted-foreground text-sm">
+                Loading files...
+              </div>
+            )}
+            {error && (
+              <div className="p-3 text-destructive text-sm">
+                Error loading files: {error.message}
+              </div>
+            )}
+            {!isLoading && !error && flattenedFiles.length === 0 && (
+              <PromptInputCommandEmpty className="p-3 text-muted-foreground text-sm">
+                No files found in project.
+              </PromptInputCommandEmpty>
+            )}
+            {!isLoading &&
+              !error &&
+              flattenedFiles.length > 0 &&
+              searchResults.length === 0 &&
+              addedFileItems.length === 0 && (
+                <PromptInputCommandEmpty className="p-3 text-muted-foreground text-sm">
+                  No results found.
+                </PromptInputCommandEmpty>
+              )}
+
+            {/* Added Files Section */}
+            {addedFileItems.length > 0 && (
+              <PromptInputCommandGroup heading="Added Files">
+                {addedFileItems.map((file) => (
+                  <PromptInputCommandItem
+                    key={file.fullPath}
+                    onSelect={() => onFileRemove(file.fullPath)}
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <FileBadge extension={file.extension} />
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="font-medium text-sm truncate">
+                          {file.filename}
+                        </span>
+                        <span className="text-muted-foreground text-xs truncate">
+                          {file.directory}
+                        </span>
+                      </div>
+                    </div>
+                    <CheckIcon className="h-4 w-4 ml-2 flex-shrink-0" />
+                  </PromptInputCommandItem>
+                ))}
+              </PromptInputCommandGroup>
+            )}
+
+            {/* Separator between added files and search results */}
+            {addedFileItems.length > 0 && searchResults.length > 0 && (
+              <PromptInputCommandSeparator />
+            )}
+
+            {/* Search Results Section */}
+            {searchResults.length > 0 && (
+              <PromptInputCommandGroup heading="Search Results">
+                {searchResults.map((file) => (
+                  <PromptInputCommandItem
+                    key={file.fullPath}
+                    onSelect={() =>
+                      onFileSelect(toRelativePath(file.fullPath, projectPath))
+                    }
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <FileBadge extension={file.extension} />
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="font-medium text-sm truncate">
+                          {file.filename}
+                        </span>
+                        <span className="text-muted-foreground text-xs truncate">
+                          {file.directory}
+                        </span>
+                      </div>
+                    </div>
+                  </PromptInputCommandItem>
+                ))}
+              </PromptInputCommandGroup>
+            )}
           </PromptInputCommandList>
         </PromptInputCommand>
       </PopoverContent>
