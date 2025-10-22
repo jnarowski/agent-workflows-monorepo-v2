@@ -18,6 +18,7 @@ interface ChatInterfaceProps {
   isLoading?: boolean;
   error?: Error | null;
   isStreaming?: boolean;
+  isLoadingHistory?: boolean;
 }
 
 /**
@@ -32,6 +33,7 @@ export function ChatInterface({
   isLoading = false,
   error = null,
   isStreaming = false,
+  isLoadingHistory = false,
 }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -78,8 +80,17 @@ export function ChatInterface({
     );
   }
 
-  // Empty state
+  // Empty state - show loading if history is being fetched
   if (messages.length === 0) {
+    if (isLoadingHistory) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
+          <Loader2 className="h-12 w-12 mb-4 opacity-50 animate-spin" />
+          <p className="text-lg font-medium">Loading conversation history...</p>
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
         <MessageCircle className="h-12 w-12 mb-4 opacity-50" />

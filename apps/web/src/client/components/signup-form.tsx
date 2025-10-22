@@ -1,32 +1,32 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import type { FormEvent } from "react"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import type { FormEvent } from "react";
 
 interface SignupFormProps extends React.ComponentProps<"div"> {
-  username: string
-  password: string
-  confirmPassword: string
-  isLoading?: boolean
-  error?: string
-  onUsernameChange: (username: string) => void
-  onPasswordChange: (password: string) => void
-  onConfirmPasswordChange: (password: string) => void
-  onSubmit: (e: FormEvent) => void
-  onLoginClick?: () => void
+  username: string;
+  password: string;
+  confirmPassword: string;
+  isLoading?: boolean;
+  error?: string;
+  onUsernameChange: (username: string) => void;
+  onPasswordChange: (password: string) => void;
+  onConfirmPasswordChange: (password: string) => void;
+  onSubmit: (e: FormEvent) => void;
+  onLoginClick?: () => void;
 }
 
 export function SignupForm({
@@ -84,7 +84,9 @@ export function SignupForm({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
+                <FieldLabel htmlFor="confirmPassword">
+                  Confirm Password
+                </FieldLabel>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -103,8 +105,8 @@ export function SignupForm({
                   <a
                     href="#"
                     onClick={(e) => {
-                      e.preventDefault()
-                      onLoginClick?.()
+                      e.preventDefault();
+                      onLoginClick?.();
                     }}
                     className="underline"
                   >
@@ -117,5 +119,5 @@ export function SignupForm({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

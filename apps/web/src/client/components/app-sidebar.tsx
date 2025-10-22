@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useNavigate, useLocation } from "react-router-dom"
-import { Home, FolderOpen, Info } from "lucide-react"
-import { useAuth } from "../contexts/AuthContext"
+import * as React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Home, FolderOpen, Info } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
-import { Sidebar, useSidebar } from "@/components/ui/sidebar"
-import { AppSidebarMain } from "@/components/AppSidebarMain"
-import { AppInnerSidebar } from "@/components/AppInnerSidebar"
+import { Sidebar, useSidebar } from "@/components/ui/sidebar";
+import { AppSidebarMain } from "@/components/AppSidebarMain";
+import { AppInnerSidebar } from "@/components/AppInnerSidebar";
 
 // Navigation data
 const data = {
@@ -118,34 +118,35 @@ const data = {
         "To celebrate our recent project success, I'd like to organize a team dinner.\nAre you available next Friday evening? Please let me know your preferences.",
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [mails, setMails] = React.useState(data.mails)
-  const { setOpen } = useSidebar()
-  const { user, logout } = useAuth()
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [mails, setMails] = React.useState(data.mails);
+  const { setOpen } = useSidebar();
+  const { user, logout } = useAuth();
 
   // Determine active item based on current location
   const activeItem = React.useMemo(() => {
-    return data.navMain.find(item => item.url === location.pathname) || data.navMain[0]
-  }, [location.pathname])
+    return (
+      data.navMain.find((item) => item.url === location.pathname) ||
+      data.navMain[0]
+    );
+  }, [location.pathname]);
 
   const currentUser = {
     name: user?.name || "Guest User",
     email: user?.email || "guest@example.com",
     avatar: "/avatars/shadcn.jpg",
-  }
+  };
 
-  const handleNavItemClick = (item: typeof data.navMain[0]) => {
-    navigate(item.url)
-    const mail = data.mails.sort(() => Math.random() - 0.5)
-    setMails(
-      mail.slice(0, Math.max(5, Math.floor(Math.random() * 10) + 1))
-    )
-    setOpen(true)
-  }
+  const handleNavItemClick = (item: (typeof data.navMain)[0]) => {
+    navigate(item.url);
+    const mail = data.mails.sort(() => Math.random() - 0.5);
+    setMails(mail.slice(0, Math.max(5, Math.floor(Math.random() * 10) + 1)));
+    setOpen(true);
+  };
 
   return (
     <Sidebar
@@ -162,5 +163,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       />
       <AppInnerSidebar title={activeItem?.title || ""} mails={mails} />
     </Sidebar>
-  )
+  );
 }

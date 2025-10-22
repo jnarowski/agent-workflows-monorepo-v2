@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Command } from "lucide-react"
-import { NavUser } from "@/components/nav-user"
+import * as React from "react";
+import { Command } from "lucide-react";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -13,35 +13,35 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 interface NavItem {
-  title: string
-  url: string
-  icon: React.ElementType
-  isActive: boolean
+  title: string;
+  url: string;
+  icon: React.ElementType;
+  isActive: boolean;
 }
 
 interface Mail {
-  name: string
-  email: string
-  subject: string
-  date: string
-  teaser: string
+  name: string;
+  email: string;
+  subject: string;
+  date: string;
+  teaser: string;
 }
 
 interface User {
-  name: string
-  email: string
-  avatar: string
+  name: string;
+  email: string;
+  avatar: string;
 }
 
 interface AppSidebarMainProps {
-  navItems: NavItem[]
-  activeItem: NavItem | null
-  onNavItemClick: (item: NavItem) => void
-  user: User
-  onLogout: () => void
+  navItems: NavItem[];
+  activeItem: NavItem | null;
+  onNavItemClick: (item: NavItem) => void;
+  user: User;
+  onLogout: () => void;
 }
 
 export function AppSidebarMain({
@@ -101,5 +101,5 @@ export function AppSidebarMain({
         <NavUser user={user} onLogout={onLogout} />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

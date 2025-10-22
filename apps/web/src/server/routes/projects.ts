@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { projectService } from "../services/project.service";
+import { projectSyncService } from "../services/project-sync.service";
 import { FileService } from "../services/file.service";
 import {
   createProjectSchema,
@@ -15,6 +16,7 @@ import {
   fileTreeResponseSchema,
   fileContentResponseSchema,
   fileContentSaveResponseSchema,
+  projectSyncResponseSchema,
 } from "../schemas/response.schema";
 import type {
   CreateProjectRequest,
@@ -42,6 +44,52 @@ export async function projectRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const projects = await projectService.getAllProjects();
       return reply.send({ data: projects });
+    }
+  );
+
+  /**
+   * POST /api/projects/sync
+   * Sync projects from ~/.claude/projects/ directory
+   */
+  fastify.post(
+    "/api/projects/sync",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        response: {
+          200: projectSyncResponseSchema,
+          401: errorResponse,
+          500: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const userId = request.user?.id;
+
+        if (!userId) {
+          return reply.code(401).send({
+            error: {
+              message: "Unauthorized",
+              statusCode: 401,
+            },
+          });
+        }
+
+        const syncResults = await projectSyncService.syncFromClaudeProjects(
+          userId
+        );
+
+        return reply.send({ data: syncResults });
+      } catch (error) {
+        fastify.log.error({ error }, "Error syncing projects");
+        return reply.code(500).send({
+          error: {
+            message: "Failed to sync projects",
+            statusCode: 500,
+          },
+        });
+      }
     }
   );
 

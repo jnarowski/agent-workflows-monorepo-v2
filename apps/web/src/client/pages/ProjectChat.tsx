@@ -1,9 +1,10 @@
-import * as React from "react";
+import { useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { ChatInterface } from "../components/chat/ChatInterface";
 import { ChatPromptInput } from "../components/chat/ChatPromptInput";
 import { useClaudeSession } from "../hooks/useClaudeSession";
 import { useChatContext } from "../contexts/ChatContext";
+import { useSessionMessages } from "../hooks/useSessionMessages";
 
 export default function ProjectChat() {
   const { id, sessionId } = useParams<{ id: string; sessionId?: string }>();
@@ -30,8 +31,38 @@ export default function ProjectChat() {
     enableWebSocket: !!sessionId,
   });
 
+  // Load historical messages from JSONL file
+  const {
+    data: historicalMessages = [],
+    isLoading: isLoadingHistory,
+  } = useSessionMessages(id || "", sessionId || "");
+
+  // Merge and deduplicate messages from both sources
+  const allMessages = useMemo(() => {
+    const messageMap = new Map();
+
+    // Add historical messages first
+    historicalMessages.forEach((msg) => {
+      const key = msg.id || msg.timestamp || JSON.stringify(msg);
+      messageMap.set(key, msg);
+    });
+
+    // Add/overwrite with WebSocket messages (more recent)
+    messages.forEach((msg) => {
+      const key = msg.id || msg.timestamp || JSON.stringify(msg);
+      messageMap.set(key, msg);
+    });
+
+    // Sort by timestamp
+    return Array.from(messageMap.values()).sort((a, b) => {
+      const timeA = new Date(a.timestamp || 0).getTime();
+      const timeB = new Date(b.timestamp || 0).getTime();
+      return timeA - timeB;
+    });
+  }, [historicalMessages, messages]);
+
   // Set current session in context
-  React.useEffect(() => {
+  useEffect(() => {
     if (sessionId) {
       setCurrentSession(sessionId);
     }
@@ -98,11 +129,12 @@ export default function ProjectChat() {
         <ChatInterface
           projectId={id!}
           sessionId={sessionId}
-          messages={messages}
+          messages={allMessages}
           toolResults={toolResults}
           isLoading={isLoading}
           error={error}
           isStreaming={isStreaming}
+          isLoadingHistory={isLoadingHistory}
         />
       </div>
 

@@ -33,7 +33,7 @@ model WorkflowStep {
 model Project {
   id         String   @id @default(cuid())
   name       String
-  path       String
+  path       String   @unique
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   sessions   AgentSession[]
@@ -57,6 +57,7 @@ model AgentSession {
   id         String   @id @default(uuid())
   projectId  String
   userId     String
+  name       String?  // AI-generated session name (nullable for legacy sessions)
   metadata   Json     // { totalTokens, messageCount, lastMessageAt, firstMessagePreview }
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt

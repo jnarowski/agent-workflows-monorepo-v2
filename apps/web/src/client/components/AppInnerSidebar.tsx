@@ -61,8 +61,6 @@ export function AppInnerSidebar({
   title,
   activeProjectId: activeProjectIdProp,
   onProjectClick,
-  onSessionClick,
-  onNewSession,
 }: AppInnerSidebarProps) {
   const navigate = useNavigate();
   const params = useParams<{ id: string }>();
@@ -75,23 +73,29 @@ export function AppInnerSidebar({
   const [openProjects, setOpenProjects] = React.useState<string[]>(
     activeProjectId ? [activeProjectId] : []
   );
+  const [showAllSessions, setShowAllSessions] = React.useState<{
+    [projectId: string]: boolean;
+  }>({});
 
   // Fetch sessions for the active project
   const { data: sessionsData } = useAgentSessions({
-    projectId: activeProjectId || '',
+    projectId: activeProjectId || "",
     enabled: !!activeProjectId,
   });
 
-  // Transform projects data with real session counts
+  // Transform projects data with real session counts and sort alphabetically
   const projects: ProjectWithSessions[] = React.useMemo(() => {
     if (!projectsData) return [];
 
-    return projectsData.map((project) => ({
-      id: project.id,
-      name: project.name,
-      path: project.path,
-      sessionCount: project.id === activeProjectId ? (sessionsData?.length || 0) : 0,
-    }));
+    return projectsData
+      .map((project) => ({
+        id: project.id,
+        name: project.name,
+        path: project.path,
+        sessionCount:
+          project.id === activeProjectId ? sessionsData?.length || 0 : 0,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [projectsData, activeProjectId, sessionsData]);
 
   // Get active project name for title
@@ -198,9 +202,14 @@ export function AppInnerSidebar({
                       </DropdownMenu>
                       <CollapsibleContent>
                         <div className="ml-0 space-y-0.5 border-l pl-1 py-1">
-                          {isActive && sessionsData && sessionsData.length > 0 ? (
+                          {isActive &&
+                          sessionsData &&
+                          sessionsData.length > 0 ? (
                             <>
-                              {sessionsData.map((session) => (
+                              {(showAllSessions[project.id]
+                                ? sessionsData
+                                : sessionsData.slice(0, 5)
+                              ).map((session) => (
                                 <SessionListItem
                                   key={session.id}
                                   session={session}
@@ -208,6 +217,20 @@ export function AppInnerSidebar({
                                   isActive={false}
                                 />
                               ))}
+                              {sessionsData.length > 5 &&
+                                !showAllSessions[project.id] && (
+                                  <button
+                                    onClick={() =>
+                                      setShowAllSessions((prev) => ({
+                                        ...prev,
+                                        [project.id]: true,
+                                      }))
+                                    }
+                                    className="w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors text-left"
+                                  >
+                                    Show {sessionsData.length - 5} more...
+                                  </button>
+                                )}
                             </>
                           ) : isActive ? (
                             <div className="px-2 py-2 text-xs text-muted-foreground">

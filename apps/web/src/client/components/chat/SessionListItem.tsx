@@ -11,7 +11,7 @@ interface SessionListItemProps {
 
 export function SessionListItem({ session, projectId, isActive = false }: SessionListItemProps) {
   const { id, metadata } = session;
-  const { firstMessagePreview, lastMessageAt, messageCount, totalTokens } = metadata;
+  const { firstMessagePreview, lastMessageAt, messageCount } = metadata;
 
   const timeAgo = formatDistanceToNow(new Date(lastMessageAt), { addSuffix: true });
 
@@ -30,9 +30,6 @@ export function SessionListItem({ session, projectId, isActive = false }: Sessio
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{timeAgo}</span>
           <span>{messageCount} messages</span>
-        </div>
-        <div className="text-xs text-muted-foreground">
-          {totalTokens.toLocaleString()} tokens
         </div>
       </div>
     </Link>

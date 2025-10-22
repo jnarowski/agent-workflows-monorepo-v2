@@ -23,14 +23,14 @@ export class AgentSessionService {
 
   /**
    * Encode project path for filesystem storage
-   * Removes leading `/` and replaces `/` with `-`
+   * Replaces `/` with `-` (including leading slash)
    * @param projectPath - Full project path from Project.path
    * @returns Encoded path for filesystem
-   * @example "/Users/john/myproject" -> "Users-john-myproject"
+   * @example "/Users/john/myproject" -> "-Users-john-myproject"
    */
   private encodeProjectPath(projectPath: string): string {
-    // Remove leading slash and replace remaining slashes with dashes
-    return projectPath.replace(/^\//, '').replace(/\//g, '-');
+    // Replace all slashes with dashes (Claude CLI keeps the leading dash)
+    return projectPath.replace(/\//g, '-');
   }
 
   /**

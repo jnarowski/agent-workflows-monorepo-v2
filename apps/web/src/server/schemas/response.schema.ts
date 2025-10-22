@@ -72,3 +72,12 @@ export const fileContentResponseSchema = z.object({
 export const fileContentSaveResponseSchema = z.object({
   success: z.boolean(),
 });
+
+// Project sync schemas
+export const projectSyncResultSchema = z.object({
+  projectsImported: z.number(),
+  projectsUpdated: z.number(),
+  totalSessionsSynced: z.number(),
+});
+
+export const projectSyncResponseSchema = successResponse(projectSyncResultSchema);

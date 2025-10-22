@@ -14,6 +14,7 @@ import type {
   ProjectResponse,
   ErrorResponse,
 } from "../../shared/types/project.types";
+import type { SyncProjectsResponse } from "../../shared/types/project-sync.types";
 import { useAuth } from "../contexts/AuthContext";
 
 // Query keys factory - centralized key management
@@ -229,6 +230,44 @@ export function useDeleteProject(): UseMutationResult<
     },
     onError: (error) => {
       toast.error(error.message || "Failed to delete project");
+    },
+  });
+}
+
+/**
+ * Sync projects from Claude CLI
+ */
+async function syncProjects(onUnauthorized?: () => void): Promise<SyncProjectsResponse> {
+  const data: { data: SyncProjectsResponse } = await fetchWithAuth("/api/projects/sync", {
+    method: "POST",
+  }, onUnauthorized);
+  return data.data;
+}
+
+/**
+ * Hook to sync projects from Claude CLI
+ */
+export function useSyncProjects(): UseMutationResult<
+  SyncProjectsResponse,
+  Error,
+  void
+> {
+  const queryClient = useQueryClient();
+  const { handleInvalidToken } = useAuth();
+
+  return useMutation({
+    mutationFn: () => syncProjects(handleInvalidToken),
+    onSuccess: (data) => {
+      // Invalidate projects list to trigger refetch
+      queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+
+      // Show success toast with sync stats
+      toast.success(
+        `Projects synced: ${data.projectsImported} imported, ${data.projectsUpdated} updated`
+      );
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to sync projects");
     },
   });
 }

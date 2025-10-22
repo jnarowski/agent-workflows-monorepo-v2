@@ -1,30 +1,30 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import type { FormEvent } from "react"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import type { FormEvent } from "react";
 
 interface LoginFormProps extends React.ComponentProps<"div"> {
-  username: string
-  password: string
-  isLoading?: boolean
-  error?: string
-  onUsernameChange: (username: string) => void
-  onPasswordChange: (password: string) => void
-  onSubmit: (e: FormEvent) => void
-  onSignUpClick?: () => void
+  username: string;
+  password: string;
+  isLoading?: boolean;
+  error?: string;
+  onUsernameChange: (username: string) => void;
+  onPasswordChange: (password: string) => void;
+  onSubmit: (e: FormEvent) => void;
+  onSignUpClick?: () => void;
 }
 
 export function LoginForm({
@@ -95,8 +95,8 @@ export function LoginForm({
                   <a
                     href="#"
                     onClick={(e) => {
-                      e.preventDefault()
-                      onSignUpClick?.()
+                      e.preventDefault();
+                      onSignUpClick?.();
                     }}
                     className="underline"
                   >
@@ -109,5 +109,5 @@ export function LoginForm({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

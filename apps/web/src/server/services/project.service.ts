@@ -106,6 +106,38 @@ export class ProjectService {
     });
     return project !== null;
   }
+
+  /**
+   * Get a project by its path
+   * @param path - Project path (case-sensitive match)
+   * @returns Project or null if not found
+   */
+  async getProjectByPath(path: string): Promise<Project | null> {
+    return await prisma.project.findFirst({
+      where: { path },
+    });
+  }
+
+  /**
+   * Create a new project or update an existing one by path
+   * Uses upsert to ensure atomic operation and prevent race conditions
+   * @param name - Project display name
+   * @param path - Project filesystem path
+   * @returns Created or updated project
+   */
+  async createOrUpdateProject(name: string, path: string): Promise<Project> {
+    return await prisma.project.upsert({
+      where: { path },
+      update: {
+        name,
+        updated_at: new Date(),
+      },
+      create: {
+        name,
+        path,
+      },
+    });
+  }
 }
 
 // Export a singleton instance

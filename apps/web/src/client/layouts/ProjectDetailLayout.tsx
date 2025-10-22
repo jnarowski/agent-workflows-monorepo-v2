@@ -1,5 +1,6 @@
-import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import { useProject } from "../hooks/useProjects";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
@@ -18,10 +19,18 @@ export default function ProjectDetailLayout() {
   const navigate = useNavigate();
   const { handleInvalidToken } = useAuth();
   const { data: project, isLoading, error } = useProject(id!);
-  const [isSyncing, setIsSyncing] = React.useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // Redirect to root if project is not found or deleted
+  useEffect(() => {
+    if (error) {
+      toast.error("Project not found or has been deleted");
+      navigate("/", { replace: true });
+    }
+  }, [error, navigate]);
 
   // Sync sessions on initial mount only
-  React.useEffect(() => {
+  useEffect(() => {
     if (!id || !project) return;
 
     const syncSessions = async () => {
@@ -55,7 +64,7 @@ export default function ProjectDetailLayout() {
     };
 
     syncSessions();
-  }, [id, handleInvalidToken]); // Only run when project ID changes (initial mount)
+  }, [id, project, handleInvalidToken]); // Only run when project ID changes (initial mount)
 
   // Loading state
   if (isLoading) {
@@ -69,22 +78,9 @@ export default function ProjectDetailLayout() {
     );
   }
 
-  // Error state
+  // Error state - return null since we're redirecting via useEffect
   if (error) {
-    return (
-      <div className="space-y-4 p-4">
-        <Button variant="ghost" onClick={() => navigate("/projects")}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Projects
-        </Button>
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {error.message || "Failed to load project. Please try again."}
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
+    return null;
   }
 
   // Not found state
