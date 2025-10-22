@@ -1,13 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 /**
  * Hook to load and parse Claude session JSONL data with WebSocket streaming support
  */
 
 import { useState, useEffect } from 'react';
-import type { ChatMessage } from '../../shared/types/chat';
-import { parseJSONLSession, extractToolResults } from '../utils/parseClaudeSession';
-import { normalizeMessage } from '../utils/sessionAdapters';
+import type { ChatMessage } from "@/shared/types/chat";
+import { parseJSONLSession, extractToolResults } from "@/client/utils/parseClaudeSession";
+import { normalizeMessage } from "@/client/utils/sessionAdapters";
 import { useChatWebSocket } from './useChatWebSocket';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from "@/client/contexts/AuthContext";
 
 interface UseClaudeSessionOptions {
   sessionId: string;
@@ -103,10 +104,16 @@ export function useClaudeSession(
         const parsedMessages: ChatMessage[] = messagesArray.map((msg: any) => normalizeMessage(msg));
 
         // Extract tool results from messages
+        // Note: Claude CLI JSONL format stores tool_result blocks in user messages (the message after assistant's tool_use)
         const toolResultsMap = new Map<string, { content: string; is_error?: boolean }>();
         messagesArray.forEach((msg: any) => {
-          if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-            msg.content.forEach((block: any) => {
+          // Handle both Claude CLI format (msg.type, msg.message.content) and normalized format (msg.role, msg.content)
+          const messageType = msg.type || msg.role;
+          const messageContent = msg.message?.content || msg.content;
+
+          // Check both user and assistant messages for tool_result blocks
+          if ((messageType === 'user' || messageType === 'assistant') && Array.isArray(messageContent)) {
+            messageContent.forEach((block: any) => {
               if (block.type === 'tool_result' && block.tool_use_id) {
                 toolResultsMap.set(block.tool_use_id, {
                   content: typeof block.content === 'string' ? block.content : JSON.stringify(block.content),
@@ -151,7 +158,35 @@ export function useClaudeSession(
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, projectId, enableWebSocket]);
+
+  // Extract tool results from WebSocket messages when they update
+  useEffect(() => {
+    if (enableWebSocket && webSocket.messages.length > 0) {
+      // Extract tool results from WebSocket messages
+      const wsToolResultsMap = new Map(toolResults); // Start with existing results from JSONL
+
+      webSocket.messages.forEach((msg: any) => {
+        // WebSocket messages are already normalized with role and content
+        if (Array.isArray(msg.content)) {
+          msg.content.forEach((block: any) => {
+            if (block.type === 'tool_result' && block.tool_use_id) {
+              wsToolResultsMap.set(block.tool_use_id, {
+                content: typeof block.content === 'string' ? block.content : JSON.stringify(block.content),
+                is_error: block.is_error,
+              });
+            }
+          });
+        }
+      });
+
+      // Only update if we found new tool results
+      if (wsToolResultsMap.size !== toolResults.size) {
+        setToolResults(wsToolResultsMap);
+      }
+    }
+  }, [enableWebSocket, webSocket.messages, toolResults]);
 
   // Merge JSONL messages with WebSocket messages when WebSocket is enabled
   const finalMessages = enableWebSocket ? webSocket.messages : messages;

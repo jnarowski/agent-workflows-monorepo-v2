@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Button } from "../ui/button";
+import { Button } from "@/client/components/ui/button";
 import { X } from "lucide-react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "@/client/contexts/AuthContext";
 
 interface ImageViewerProps {
   projectId: string;
@@ -64,6 +64,7 @@ export function ImageViewer({
         URL.revokeObjectURL(imageUrl);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, filePath]);
 
   return (

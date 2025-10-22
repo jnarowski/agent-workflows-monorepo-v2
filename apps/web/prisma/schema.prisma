@@ -23,7 +23,7 @@ model WorkflowStep {
   workflow_id String
   name        String
   status      String
-  result      String?  // JSON string
+  result      String? // JSON string
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
@@ -31,23 +31,24 @@ model WorkflowStep {
 }
 
 model Project {
-  id         String   @id @default(cuid())
+  id         String         @id @default(cuid())
   name       String
-  path       String   @unique
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  path       String         @unique
+  is_hidden  Boolean        @default(false)
+  created_at DateTime       @default(now())
+  updated_at DateTime       @updatedAt
   sessions   AgentSession[]
 
   @@map("projects")
 }
 
 model User {
-  id            String        @id @default(uuid())
-  username      String        @unique
+  id            String         @id @default(uuid())
+  username      String         @unique
   password_hash String
-  created_at    DateTime      @default(now())
+  created_at    DateTime       @default(now())
   last_login    DateTime?
-  is_active     Boolean       @default(true)
+  is_active     Boolean        @default(true)
   sessions      AgentSession[]
 
   @@map("users")
@@ -57,8 +58,8 @@ model AgentSession {
   id         String   @id @default(uuid())
   projectId  String
   userId     String
-  name       String?  // AI-generated session name (nullable for legacy sessions)
-  metadata   Json     // { totalTokens, messageCount, lastMessageAt, firstMessagePreview }
+  name       String? // AI-generated session name (nullable for legacy sessions)
+  metadata   Json // { totalTokens, messageCount, lastMessageAt, firstMessagePreview }
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

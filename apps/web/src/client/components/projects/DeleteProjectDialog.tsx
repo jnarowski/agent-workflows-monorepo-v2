@@ -1,4 +1,4 @@
-import { useDeleteProject } from "../../hooks/useProjects";
+import { useDeleteProject } from "@/client/hooks/useProjects";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,9 +8,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "../ui/alert-dialog";
+} from "@/client/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
-import type { Project } from "../../../shared/types/project.types";
+import type { Project } from "@/shared/types/project.types";
 
 interface DeleteProjectDialogProps {
   open: boolean;

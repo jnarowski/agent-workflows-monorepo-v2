@@ -10,6 +10,7 @@ export const createProjectSchema = z.object({
 export const updateProjectSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   path: z.string().min(1).optional(),
+  is_hidden: z.boolean().optional(),
 });
 
 // Schema for project ID parameter
@@ -28,9 +29,15 @@ export const fileContentBodySchema = z.object({
   content: z.string(),
 });
 
+// Schema for hiding/unhiding a project
+export const hideProjectSchema = z.object({
+  is_hidden: z.boolean(),
+});
+
 // Export types inferred from schemas
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 export type ProjectIdParam = z.infer<typeof projectIdSchema>;
 export type FileContentQuery = z.infer<typeof fileContentQuerySchema>;
 export type FileContentBody = z.infer<typeof fileContentBodySchema>;
+export type HideProjectInput = z.infer<typeof hideProjectSchema>;

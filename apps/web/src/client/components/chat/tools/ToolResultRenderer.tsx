@@ -5,8 +5,8 @@
 
 import { useState } from 'react';
 import { AlertCircle, CheckCircle2, ChevronDown, ChevronRight } from 'lucide-react';
-import { Button } from '../../ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible';
+import { Button } from "@/client/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/client/components/ui/collapsible";
 
 interface ToolResultRendererProps {
   result: string;

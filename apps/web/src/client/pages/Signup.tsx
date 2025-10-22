@@ -1,7 +1,7 @@
 import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import { SignupForm } from "../components/signup-form";
+import { useAuth } from "@/client/contexts/AuthContext";
+import { SignupForm } from "@/client/components/signup-form";
 
 function Signup() {
   const [username, setUsername] = useState("");
@@ -36,7 +36,7 @@ function Signup() {
     try {
       await signup(username, password);
       navigate("/");
-    } catch (err) {
+    } catch {
       setError("Failed to create account. Please try again.");
     } finally {
       setIsLoading(false);

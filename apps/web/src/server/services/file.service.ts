@@ -1,8 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
 import type { FastifyBaseLogger } from 'fastify';
-import type { FileTreeItem } from '../../shared/types/file.types';
-import { projectService } from './project.service';
+import type { FileTreeItem } from '@/shared/types/file.types';
+import { projectService } from '@/server/services/project.service';
 
 /**
  * File Service
@@ -38,7 +38,7 @@ export class FileService {
     // Validate that the path is accessible
     try {
       await fs.access(project.path);
-    } catch (error) {
+    } catch {
       throw new Error('Project path is not accessible');
     }
 
@@ -183,7 +183,7 @@ export class FileService {
     // Check if file exists and is accessible
     try {
       await fs.access(absolutePath, fs.constants.R_OK);
-    } catch (error) {
+    } catch {
       throw new Error('File not found or not accessible');
     }
 

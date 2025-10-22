@@ -46,7 +46,7 @@ export async function generateSessionName(
 
     // Generate session name using AI
     const result = await generateText({
-      model: anthropic("claude-3-5-sonnet-20241022"),
+      model: anthropic("claude-3-5-sonnet-20241022", { apiKey }),
       system: `You create concise 3-5 word names for chat sessions. You MUST follow these rules strictly:
 
 Rules:
@@ -67,6 +67,7 @@ Response:
 Your response must be ONLY the 3-5 word name, nothing else.`,
       prompt: `Create a 3-5 word name for this chat session:\n\n${truncatedPrompt}`,
       temperature: 0.7,
+      maxTokens: 30,
     });
 
     // Clean up the generated name

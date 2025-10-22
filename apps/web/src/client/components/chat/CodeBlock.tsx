@@ -4,11 +4,11 @@
 
 import { useState } from 'react';
 import { Copy, Check, ChevronDown, ChevronRight } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
-import { SyntaxHighlighter } from '../../utils/syntaxHighlighter';
-import { getLanguageDisplayName } from '../../utils/getLanguageFromPath';
+import { Button } from "@/client/components/ui/button";
+import { Badge } from "@/client/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/client/components/ui/collapsible";
+import { SyntaxHighlighter } from "@/client/utils/syntaxHighlighter";
+import { getLanguageDisplayName } from "@/client/utils/getLanguageFromPath";
 
 interface CodeBlockProps {
   code: string;

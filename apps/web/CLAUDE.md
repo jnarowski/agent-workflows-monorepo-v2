@@ -9,6 +9,10 @@ This is a **Turborepo monorepo** for agent workflow tools. The `web` app is a fu
 ## Important Rules
 
 - **Do not add `.js` or `.ts` extensions to file imports** - TypeScript/ESM resolution handles this automatically
+- **Always use `@/` path aliases for imports** - Never use relative imports (`../`, `./`)
+  - Client imports: `@/client/*` (components, hooks, pages, contexts, etc.)
+  - Server imports: `@/server/*` (routes, services, schemas, plugins, etc.)
+  - Shared imports: `@/shared/*` (types, utilities, Prisma client)
 
 ## Development Commands
 
@@ -154,7 +158,11 @@ src/
    - `/shell` - WebSocket endpoint for terminal/shell sessions (JWT authenticated via query param)
 
 5. **Import Aliases**:
-   - `@/*` resolves to `src/client/*` (client-side only)
+   - `@/*` resolves to `src/*` (used across client, server, and shared code)
+   - Client code: Use `@/client/*` for all client modules
+   - Server code: Use `@/server/*` for all server modules
+   - Shared code: Use `@/shared/*` for types, utilities, and Prisma client
+   - **Never use relative imports** (`../`, `./`) - always use the `@/` alias
 
 6. **Production Mode**: Built client assets are served from `dist/client/` by Fastify with SPA fallback
 
@@ -191,7 +199,11 @@ See `.env.example` for complete configuration template.
 
 2. **Prisma schema changes**: Run `pnpm prisma:generate` after modifying `schema.prisma`
 
-3. **Path aliases**: The `@/*` alias only works in client code; server code uses relative imports
+3. **Path aliases**: Always use `@/` aliases for imports across all code:
+   - `@/client/*` in client code
+   - `@/server/*` in server code
+   - `@/shared/*` in both client and server
+   - This applies to both Vite bundling (client) and tsx execution (server)
 
 4. **Empty JSON bodies**: Server is configured to handle empty JSON bodies (e.g., DELETE with Content-Type: application/json)
 

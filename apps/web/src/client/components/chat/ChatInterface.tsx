@@ -7,8 +7,8 @@ import { useEffect, useRef } from "react";
 import { MessageCircle, AlertCircle, Loader2 } from "lucide-react";
 import { MessageRenderer } from "./MessageRenderer";
 import { ChatSkeleton } from "./ChatSkeleton";
-import { Alert, AlertDescription } from "../ui/alert";
-import type { ChatMessage } from "../../../shared/types/chat";
+import { Alert, AlertDescription } from "@/client/components/ui/alert";
+import type { ChatMessage } from "@/shared/types/chat";
 
 interface ChatInterfaceProps {
   projectId: string;

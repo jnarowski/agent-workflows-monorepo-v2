@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import { ChatProvider } from "../contexts/ChatContext";
-import { useSyncProjects } from "../hooks/useProjects";
-import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useAuth } from "@/client/contexts/AuthContext";
+import { ChatProvider } from "@/client/contexts/ChatContext";
+import { useSyncProjects } from "@/client/hooks/useProjects";
+import { AppSidebar } from "@/client/components/app-sidebar";
+import { SidebarInset, SidebarProvider } from "@/client/components/ui/sidebar";
 
 function ProtectedLayout() {
   const { isAuthenticated } = useAuth();
@@ -13,6 +13,7 @@ function ProtectedLayout() {
   // Sync projects from Claude CLI on mount
   useEffect(() => {
     syncProjects.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array = run once on mount
 
   if (!isAuthenticated) {

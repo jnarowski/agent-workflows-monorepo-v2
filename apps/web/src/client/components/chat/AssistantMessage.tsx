@@ -3,32 +3,34 @@
  * Left-aligned with AI avatar
  */
 
-import { AlertCircle } from 'lucide-react';
-import type { ChatMessage } from '../../shared/types/chat';
-import { ContentBlockRenderer } from './ContentBlockRenderer';
-import { TextBlock } from './TextBlock';
+import { AlertCircle } from "lucide-react";
+import type { ChatMessage } from "@/shared/types/chat";
+import { ContentBlockRenderer } from "./ContentBlockRenderer";
 
 interface AssistantMessageProps {
   message: ChatMessage;
   toolResults?: Map<string, { content: string; is_error?: boolean }>;
 }
 
-export function AssistantMessage({ message, toolResults }: AssistantMessageProps) {
+export function AssistantMessage({
+  message,
+  toolResults,
+}: AssistantMessageProps) {
   const content = message.content;
 
   // Strip ANSI color codes from text
   const stripAnsiCodes = (text: string): string => {
     // eslint-disable-next-line no-control-regex
-    return text.replace(/\x1b\[[0-9;]*m/g, '');
+    return text.replace(/\x1b\[[0-9;]*m/g, "");
   };
 
   // Check if this is an error message - render with special styling
   if (message.isError) {
     // Extract text from content blocks
     const errorText = content
-      .filter((block: any) => block.type === 'text')
-      .map((block: any) => stripAnsiCodes(block.text))
-      .join('\n');
+      .filter((block) => block.type === "text")
+      .map((block) => block.type === "text" ? stripAnsiCodes(block.text) : "")
+      .join("\n");
 
     return (
       <div className="flex justify-center w-full">

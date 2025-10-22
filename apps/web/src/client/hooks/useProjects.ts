@@ -13,9 +13,9 @@ import type {
   ProjectsResponse,
   ProjectResponse,
   ErrorResponse,
-} from "../../shared/types/project.types";
-import type { SyncProjectsResponse } from "../../shared/types/project-sync.types";
-import { useAuth } from "../contexts/AuthContext";
+} from "@/shared/types/project.types";
+import type { SyncProjectsResponse } from "@/shared/types/project-sync.types";
+import { useAuth } from "@/client/contexts/AuthContext";
 
 // Query keys factory - centralized key management
 export const projectKeys = {
@@ -108,6 +108,17 @@ async function updateProject(id: string, project: UpdateProjectRequest, onUnauth
 async function deleteProject(id: string, onUnauthorized?: () => void): Promise<Project> {
   const data: ProjectResponse = await fetchWithAuth(`/api/projects/${id}`, {
     method: "DELETE",
+  }, onUnauthorized);
+  return data.data;
+}
+
+/**
+ * Toggle project hidden state
+ */
+async function toggleProjectHidden(id: string, is_hidden: boolean, onUnauthorized?: () => void): Promise<Project> {
+  const data: ProjectResponse = await fetchWithAuth(`/api/projects/${id}/hide`, {
+    method: "PATCH",
+    body: JSON.stringify({ is_hidden }),
   }, onUnauthorized);
   return data.data;
 }
@@ -268,6 +279,47 @@ export function useSyncProjects(): UseMutationResult<
     },
     onError: (error) => {
       toast.error(error.message || "Failed to sync projects");
+    },
+  });
+}
+
+/**
+ * Hook to toggle project hidden state
+ */
+export function useToggleProjectHidden(): UseMutationResult<
+  Project,
+  Error,
+  { id: string; is_hidden: boolean }
+> {
+  const queryClient = useQueryClient();
+  const { handleInvalidToken } = useAuth();
+
+  return useMutation({
+    mutationFn: ({ id, is_hidden }) => toggleProjectHidden(id, is_hidden, handleInvalidToken),
+    onSuccess: (updatedProject) => {
+      // Update the project in the list cache
+      queryClient.setQueryData<Project[]>(projectKeys.list(), (old) => {
+        if (!old) return [updatedProject];
+        return old.map((project) =>
+          project.id === updatedProject.id ? updatedProject : project
+        );
+      });
+
+      // Update the individual project cache
+      queryClient.setQueryData(
+        projectKeys.detail(updatedProject.id),
+        updatedProject
+      );
+
+      // Invalidate queries to ensure consistency
+      queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+
+      // Show success toast
+      const action = updatedProject.is_hidden ? "hidden" : "unhidden";
+      toast.success(`Project ${action} successfully`);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update project visibility");
     },
   });
 }

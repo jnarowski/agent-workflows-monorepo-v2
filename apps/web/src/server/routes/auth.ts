@@ -1,9 +1,9 @@
 import type { FastifyInstance } from 'fastify';
 import { Prisma } from '@prisma/client';
 import bcrypt from 'bcrypt';
-import { prisma } from '../../shared/prisma';
-import { registerSchema, loginSchema } from '../schemas/auth.schema';
-import { authResponseSchema, authStatusResponseSchema, userResponseSchema, errorResponse } from '../schemas/response.schema';
+import { prisma } from '@/shared/prisma';
+import { registerSchema, loginSchema } from '@/server/schemas/auth.schema';
+import { authResponseSchema, authStatusResponseSchema, userResponseSchema, errorResponse } from '@/server/schemas/response.schema';
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Check auth status and setup requirements

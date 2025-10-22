@@ -1,5 +1,5 @@
-import { useShell } from '../contexts/ShellContext';
-import type { TerminalSession } from '../contexts/ShellContext';
+import { useShell } from "@/client/contexts/ShellContext";
+import type { TerminalSession } from "@/client/contexts/ShellContext";
 
 /**
  * Convenience hook for accessing a specific terminal session by ID

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useProjects, projectKeys } from '../useProjects';
-import React from 'react';
+import { useProjects, projectKeys } from "@/client/hooks/useProjects";
+import { ReactNode, createElement } from 'react';
 
 // Mock the auth context
-vi.mock('../../contexts/AuthContext', () => ({
+vi.mock('@/client/contexts/AuthContext', () => ({
   useAuth: () => ({
     handleInvalidToken: vi.fn(),
   }),
@@ -22,8 +22,8 @@ function createWrapper() {
       },
     },
   });
-  return ({ children }: { children: React.ReactNode }) => (
-    React.createElement(QueryClientProvider, { client: queryClient }, children)
+  return ({ children }: { children: ReactNode }) => (
+    createElement(QueryClientProvider, { client: queryClient }, children)
   );
 }
 

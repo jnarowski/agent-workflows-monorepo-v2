@@ -2,7 +2,7 @@
  * API client functions for making authenticated requests to the backend
  */
 
-import type { ChatMessage } from "../../shared/types/chat";
+import type { ChatMessage } from "@/shared/types/chat";
 
 /**
  * Helper to get auth token from localStorage

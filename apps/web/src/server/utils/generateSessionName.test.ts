@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { generateSessionName } from './generateSessionName';
 import { generateText } from 'ai';
@@ -183,7 +184,7 @@ describe('generateSessionName', () => {
 
       expect(vi.mocked(generateText)).toHaveBeenCalledWith(
         expect.objectContaining({
-          system: expect.stringContaining('3-5 words maximum'),
+          system: expect.stringContaining('EXACTLY 3-5 words'),
         })
       );
     });

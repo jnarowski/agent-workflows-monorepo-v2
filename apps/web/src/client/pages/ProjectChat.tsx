@@ -1,14 +1,18 @@
-import { useEffect, useMemo } from "react";
-import { useParams } from "react-router-dom";
-import { ChatInterface } from "../components/chat/ChatInterface";
-import { ChatPromptInput } from "../components/chat/ChatPromptInput";
-import { useClaudeSession } from "../hooks/useClaudeSession";
-import { useChatContext } from "../contexts/ChatContext";
-import { useSessionMessages } from "../hooks/useSessionMessages";
+import { useEffect, useMemo, useRef } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { ChatInterface } from "@/client/components/chat/ChatInterface";
+import { ChatPromptInput } from "@/client/components/chat/ChatPromptInput";
+import { useClaudeSession } from "@/client/hooks/useClaudeSession";
+import { useChatContext } from "@/client/contexts/ChatContext";
+import { useSessionMessages } from "@/client/hooks/useSessionMessages";
+import { v4 as uuidv4 } from "uuid";
 
 export default function ProjectChat() {
   const { id, sessionId } = useParams<{ id: string; sessionId?: string }>();
-  const { setCurrentSession, activeSessions } = useChatContext();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { setCurrentSession, activeSessions, createSession } = useChatContext();
+  const initialMessageSentRef = useRef(false);
 
   // Get session metadata for token count
   const sessionMetadata = sessionId
@@ -69,6 +73,33 @@ export default function ProjectChat() {
     return () => setCurrentSession(null);
   }, [sessionId, setCurrentSession]);
 
+  // Handle initial message from navigation state
+  useEffect(() => {
+    const state = location.state as { initialMessage?: string; initialImages?: File[] } | null;
+
+    if (
+      state?.initialMessage &&
+      sessionId &&
+      isConnected &&
+      sendMessage &&
+      !initialMessageSentRef.current
+    ) {
+      console.log('[ProjectChat] Sending initial message from navigation state');
+      initialMessageSentRef.current = true;
+
+      // Send the initial message
+      const sendInitialMessage = async () => {
+        const imagePaths = state.initialImages ? await handleImageUpload(state.initialImages) : undefined;
+        sendMessage({ message: state.initialMessage!, images: imagePaths });
+      };
+
+      sendInitialMessage();
+
+      // Clear the state to prevent re-sending on component updates
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [sessionId, isConnected, sendMessage, location, navigate]);
+
   const handleSubmit = async (message: string, images?: File[]) => {
     console.log('[ProjectChat] handleSubmit called:', {
       message: message.substring(0, 100),
@@ -78,13 +109,44 @@ export default function ProjectChat() {
       isConnected
     });
 
-    if (!sendMessage) {
-      console.error('[ProjectChat] sendMessage is not available');
+    // If no sessionId, create a new session
+    if (!sessionId) {
+      console.log('[ProjectChat] No sessionId, creating new session');
+      const newSessionId = uuidv4();
+
+      try {
+        // Create the session in the backend
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/projects/${id}/sessions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ sessionId: newSessionId }),
+        });
+
+        if (!response.ok) {
+          console.error('[ProjectChat] Failed to create session:', response.statusText);
+          return;
+        }
+
+        // Create session in context
+        createSession(newSessionId);
+
+        // Navigate to the new session with the message as state
+        navigate(`/projects/${id}/chat/${newSessionId}`, {
+          state: { initialMessage: message, initialImages: images },
+          replace: true
+        });
+      } catch (error) {
+        console.error('[ProjectChat] Error creating session:', error);
+      }
       return;
     }
 
-    if (!sessionId) {
-      console.error('[ProjectChat] sessionId is missing');
+    if (!sendMessage) {
+      console.error('[ProjectChat] sendMessage is not available');
       return;
     }
 
@@ -151,7 +213,7 @@ export default function ProjectChat() {
           )}
           <ChatPromptInput
             onSubmit={handleSubmit}
-            disabled={!sessionId || !isConnected}
+            disabled={sessionId ? !isConnected : false}
             isStreaming={isStreaming}
           />
         </div>

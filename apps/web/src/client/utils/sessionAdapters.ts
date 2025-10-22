@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 /**
  * Simple adapters to transform different JSONL formats into normalized events
  */
@@ -7,9 +8,9 @@ import type {
   ClaudeSessionRow,
   ClaudeUserMessageRow,
   ClaudeAssistantMessageRow,
-  ContentBlock
-} from '../../shared/types/chat';
-import { isUserMessage, isAssistantMessage } from '../../shared/types/chat';
+  ContentBlock,
+} from "@/shared/types/chat";
+import { isUserMessage, isAssistantMessage } from "@/shared/types/chat";
 
 /**
  * Normalize a single message object to ensure content is in ContentBlock[] format
@@ -23,21 +24,21 @@ export function normalizeMessage(msg: any): ChatMessage {
     content = msg.content;
   }
   // If content is a string, keep it as a string (components handle both formats)
-  else if (typeof msg.content === 'string') {
+  else if (typeof msg.content === "string") {
     content = msg.content;
   }
   // Handle message.content from Claude CLI format (nested in message object)
   else if (msg.message?.content) {
-    if (typeof msg.message.content === 'string') {
+    if (typeof msg.message.content === "string") {
       // Convert string to text block array
-      content = [{ type: 'text', text: msg.message.content }];
+      content = [{ type: "text", text: msg.message.content }];
     } else {
       content = msg.message.content;
     }
   }
   // Fallback to empty string
   else {
-    content = '';
+    content = "";
   }
 
   return {
@@ -61,7 +62,7 @@ type TransformFn = (event: any) => any | null;
  */
 function transformClaudeCliEvent(event: any): any | null {
   // Only process user/assistant messages
-  if (!event.type || !['user', 'assistant'].includes(event.type)) {
+  if (!event.type || !["user", "assistant"].includes(event.type)) {
     return null;
   }
 
@@ -72,20 +73,20 @@ function transformClaudeCliEvent(event: any): any | null {
 
   // Normalize content to array format
   let content = event.message.content;
-  if (typeof content === 'string') {
+  if (typeof content === "string") {
     // Convert string content to text block array
-    content = [{ type: 'text', text: content }];
+    content = [{ type: "text", text: content }];
   } else if (!Array.isArray(content)) {
     return null;
   }
 
   // Transform to normalized format
   return {
-    type: event.type === 'user' ? 'user_message' : 'assistant_message',
+    type: event.type === "user" ? "user_message" : "assistant_message",
     id: event.uuid || crypto.randomUUID(),
     role: event.type,
     content: content, // Normalized to array format
-    timestamp: event.timestamp
+    timestamp: event.timestamp,
   };
 }
 
@@ -94,7 +95,10 @@ function transformClaudeCliEvent(event: any): any | null {
  */
 function detectFormat(jsonlContent: string): TransformFn {
   // Check for Claude CLI format (has type: 'user' or 'assistant')
-  if (jsonlContent.includes('"type":"user"') || jsonlContent.includes('"type":"assistant"')) {
+  if (
+    jsonlContent.includes('"type":"user"') ||
+    jsonlContent.includes('"type":"assistant"')
+  ) {
     return transformClaudeCliEvent;
   }
 
@@ -109,7 +113,7 @@ export function parseJSONLWithAdapter(jsonlContent: string): ChatMessage[] {
   if (!jsonlContent?.trim()) return [];
 
   const transform = detectFormat(jsonlContent);
-  const lines = jsonlContent.split('\n').filter(line => line.trim());
+  const lines = jsonlContent.split("\n").filter((line) => line.trim());
   const messages: ChatMessage[] = [];
 
   for (const line of lines) {
@@ -120,17 +124,20 @@ export function parseJSONLWithAdapter(jsonlContent: string): ChatMessage[] {
       if (!normalized) continue;
 
       // Handle user/assistant messages
-      if (normalized.type === 'user_message' || normalized.type === 'assistant_message') {
+      if (
+        normalized.type === "user_message" ||
+        normalized.type === "assistant_message"
+      ) {
         messages.push({
           id: normalized.id,
           role: normalized.role,
           content: normalized.content,
           timestamp: new Date(normalized.timestamp || Date.now()).getTime(),
-          isStreaming: false
+          isStreaming: false,
         });
       }
     } catch (error) {
-      console.warn('Failed to parse JSONL line:', error);
+      console.warn("Failed to parse JSONL line:", error);
     }
   }
 
@@ -146,7 +153,7 @@ export function extractToolResultsWithAdapter(
   const results = new Map();
   if (!jsonlContent?.trim()) return results;
 
-  const lines = jsonlContent.split('\n').filter(line => line.trim());
+  const lines = jsonlContent.split("\n").filter((line) => line.trim());
 
   for (const line of lines) {
     try {
@@ -159,30 +166,32 @@ export function extractToolResultsWithAdapter(
           : [];
 
         for (const block of content) {
-          if (block.type === 'tool_result' && block.tool_use_id) {
+          if (block.type === "tool_result" && block.tool_use_id) {
             // Ensure content is a string (could be object for images, etc.)
-            const contentStr = typeof block.content === 'string'
-              ? block.content
-              : JSON.stringify(block.content, null, 2);
+            const contentStr =
+              typeof block.content === "string"
+                ? block.content
+                : JSON.stringify(block.content, null, 2);
 
             results.set(block.tool_use_id, {
-              content: contentStr || '',
-              is_error: block.is_error || false
+              content: contentStr || "",
+              is_error: block.is_error || false,
             });
           }
         }
       }
 
       // Check for standalone tool_result events (streaming format)
-      if (event.type === 'tool_result' && event.tool_use_id) {
+      if (event.type === "tool_result" && event.tool_use_id) {
         // Ensure content is a string (could be object for images, etc.)
-        const content = typeof event.content === 'string'
-          ? event.content
-          : JSON.stringify(event.content, null, 2);
+        const content =
+          typeof event.content === "string"
+            ? event.content
+            : JSON.stringify(event.content, null, 2);
 
         results.set(event.tool_use_id, {
-          content: content || '',
-          is_error: event.is_error || false
+          content: content || "",
+          is_error: event.is_error || false,
         });
       }
     } catch (error) {

@@ -1,4 +1,4 @@
-import { FileTree } from "../components/files/FileTree";
+import { FileTree } from "@/client/components/files/FileTree";
 
 export default function ProjectFiles() {
   return <FileTree />;

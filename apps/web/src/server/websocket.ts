@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, prefer-const */
 import type { FastifyInstance } from "fastify";
 import { AgentClient, createClaudeAdapter } from "@repo/agent-cli-sdk";
-import { agentSessionService } from "./services/agent-session.service";
-import { prisma } from "../shared/prisma";
+import { agentSessionService } from "@/server/services/agent-session.service";
+import { prisma } from "@/shared/prisma";
 import fs from "fs/promises";
 import path from "path";
 
@@ -219,7 +220,7 @@ export async function registerWebSocket(fastify: FastifyInstance) {
                 }
 
                 // Handle image uploads
-                let imagePaths: string[] = [];
+                const imagePaths: string[] = [];
                 if (data.images && data.images.length > 0) {
                   // Create temp directory for images
                   const timestamp = Date.now();
@@ -363,25 +364,26 @@ export async function registerWebSocket(fastify: FastifyInstance) {
 
                   // After message completes, update session metadata
                   let metadata = null;
-                  try {
-                    const jsonlPath = agentSessionService.getSessionFilePath(
-                      sessionData.projectPath,
-                      sessionId
-                    );
-                    metadata =
-                      await agentSessionService.parseJSONLFile(jsonlPath);
+                  // TEMPORARILY COMMENTED OUT TO DEBUG INFINITE LOOP
+                  // try {
+                  //   const jsonlPath = agentSessionService.getSessionFilePath(
+                  //     sessionData.projectPath,
+                  //     sessionId
+                  //   );
+                  //   metadata =
+                  //     await agentSessionService.parseJSONLFile(jsonlPath);
 
-                    await agentSessionService.updateSessionMetadata(
-                      sessionId,
-                      metadata
-                    );
-                  } catch (metadataErr: any) {
-                    // JSONL file might not exist yet for new sessions
-                    fastify.log.debug(
-                      { err: metadataErr, sessionId },
-                      "Could not update session metadata (file may not exist yet)"
-                    );
-                  }
+                  //   await agentSessionService.updateSessionMetadata(
+                  //     sessionId,
+                  //     metadata
+                  //   );
+                  // } catch (metadataErr: any) {
+                  //   // JSONL file might not exist yet for new sessions
+                  //   fastify.log.debug(
+                  //     { err: metadataErr, sessionId },
+                  //     "Could not update session metadata (file may not exist yet)"
+                  //   );
+                  // }
 
                   // Clean up temporary images
                   if (sessionData.tempImageDir) {

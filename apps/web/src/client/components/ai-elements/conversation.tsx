@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState, type ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { Button } from '../../client/components/ui/button';
+import { Button } from "@/client/components/ui/button";
 
 interface ConversationProps {
   children: ReactNode;

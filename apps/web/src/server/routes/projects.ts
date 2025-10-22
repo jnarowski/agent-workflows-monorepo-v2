@@ -1,14 +1,15 @@
 import type { FastifyInstance } from "fastify";
-import { projectService } from "../services/project.service";
-import { projectSyncService } from "../services/project-sync.service";
-import { FileService } from "../services/file.service";
+import { projectService } from "@/server/services/project.service";
+import { projectSyncService } from "@/server/services/project-sync.service";
+import { FileService } from "@/server/services/file.service";
 import {
   createProjectSchema,
   updateProjectSchema,
   projectIdSchema,
   fileContentQuerySchema,
   fileContentBodySchema,
-} from "../schemas/project.schema";
+  hideProjectSchema,
+} from "@/server/schemas/project.schema";
 import {
   projectsResponseSchema,
   projectResponseSchema,
@@ -17,11 +18,11 @@ import {
   fileContentResponseSchema,
   fileContentSaveResponseSchema,
   projectSyncResponseSchema,
-} from "../schemas/response.schema";
+} from "@/server/schemas/response.schema";
 import type {
   CreateProjectRequest,
   UpdateProjectRequest,
-} from "../../shared/types/project.types";
+} from "@/shared/types/project.types";
 
 export async function projectRoutes(fastify: FastifyInstance) {
   // Create file service with logger
@@ -233,6 +234,45 @@ export async function projectRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const project = await projectService.deleteProject(request.params.id);
+
+      if (!project) {
+        return reply.code(404).send({
+          error: {
+            message: "Project not found",
+            statusCode: 404,
+          },
+        });
+      }
+
+      return reply.send({ data: project });
+    }
+  );
+
+  /**
+   * PATCH /api/projects/:id/hide
+   * Toggle project hidden state
+   */
+  fastify.patch<{
+    Params: { id: string };
+    Body: { is_hidden: boolean };
+  }>(
+    "/api/projects/:id/hide",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: projectIdSchema,
+        body: hideProjectSchema,
+        response: {
+          200: projectResponseSchema,
+          404: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      const project = await projectService.toggleProjectHidden(
+        request.params.id,
+        request.body.is_hidden
+      );
 
       if (!project) {
         return reply.code(404).send({

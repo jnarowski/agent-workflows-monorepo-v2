@@ -3,8 +3,8 @@
  */
 
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
-import { getSessionMessages } from "../lib/api";
-import type { ChatMessage } from "../../shared/types/chat";
+import { getSessionMessages } from "@/client/lib/api";
+import type { ChatMessage } from "@/shared/types/chat";
 
 /**
  * Query keys factory for session messages

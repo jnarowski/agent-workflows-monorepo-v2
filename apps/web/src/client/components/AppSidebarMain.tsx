@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Command } from "lucide-react";
-import { NavUser } from "@/components/nav-user";
+import { NavUser } from "@/client/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -13,21 +13,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
+} from "@/client/components/ui/sidebar";
 
 interface NavItem {
   title: string;
   url: string;
   icon: React.ElementType;
   isActive: boolean;
-}
-
-interface Mail {
-  name: string;
-  email: string;
-  subject: string;
-  date: string;
-  teaser: string;
 }
 
 interface User {

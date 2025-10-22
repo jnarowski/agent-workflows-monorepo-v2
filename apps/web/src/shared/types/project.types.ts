@@ -4,6 +4,7 @@ export interface Project {
   id: string;
   name: string;
   path: string;
+  is_hidden: boolean;
   created_at: Date;
   updated_at: Date;
 }
@@ -17,6 +18,7 @@ export interface CreateProjectRequest {
 export interface UpdateProjectRequest {
   name?: string;
   path?: string;
+  is_hidden?: boolean;
 }
 
 export interface ProjectResponse {

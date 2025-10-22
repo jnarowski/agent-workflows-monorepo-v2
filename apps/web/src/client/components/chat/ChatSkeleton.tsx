@@ -2,7 +2,7 @@
  * Loading skeleton for chat interface
  */
 
-import { Skeleton } from '../ui/skeleton';
+import { Skeleton } from "@/client/components/ui/skeleton";
 
 export function ChatSkeleton() {
   return (

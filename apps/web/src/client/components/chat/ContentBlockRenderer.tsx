@@ -3,10 +3,10 @@
  * Dispatches to appropriate renderer based on block type
  */
 
-import type { ContentBlock } from '../../shared/types/chat';
-import { TextBlock } from './TextBlock';
-import { ThinkingBlock } from './ThinkingBlock';
-import { ToolUseBlock } from './ToolUseBlock';
+import type { ContentBlock } from "@/shared/types/chat";
+import { TextBlock } from "./TextBlock";
+import { ThinkingBlock } from "./ThinkingBlock";
+import { ToolUseBlock } from "./ToolUseBlock";
 
 interface ContentBlockRendererProps {
   block: ContentBlock;
@@ -14,15 +14,19 @@ interface ContentBlockRendererProps {
   className?: string;
 }
 
-export function ContentBlockRenderer({ block, toolResults, className = '' }: ContentBlockRendererProps) {
+export function ContentBlockRenderer({
+  block,
+  toolResults,
+  className = "",
+}: ContentBlockRendererProps) {
   switch (block.type) {
-    case 'text':
+    case "text":
       return <TextBlock text={block.text} className={className} />;
 
-    case 'thinking':
+    case "thinking":
       return <ThinkingBlock thinking={block.thinking} className={className} />;
 
-    case 'tool_use':
+    case "tool_use": {
       // Look up the result for this tool use
       const result = toolResults?.get(block.id);
       return (
@@ -34,19 +38,23 @@ export function ContentBlockRenderer({ block, toolResults, className = '' }: Con
           className={className}
         />
       );
+    }
 
-    case 'tool_result':
+    case "tool_result":
       // Tool results are handled inline with tool_use blocks
       // We don't render them separately
       return null;
 
-    default:
+    default: {
       // Unknown block type
-      console.warn('Unknown content block type:', (block as any).type);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      console.warn("Unknown content block type:", (block as any).type);
       return (
         <div className="text-sm text-muted-foreground italic">
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           Unknown content block type: {(block as any).type}
         </div>
       );
+    }
   }
 }

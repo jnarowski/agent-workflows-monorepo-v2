@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../ui/button';
+import { Button } from "@/client/components/ui/button";
 import { Plus } from 'lucide-react';
-import { useChatContext } from '../../contexts/ChatContext';
-import { useAuth } from '../../contexts/AuthContext';
+import { useChatContext } from "@/client/contexts/ChatContext";
+import { useAuth } from "@/client/contexts/AuthContext";
 
 interface NewSessionButtonProps {
   projectId: string;

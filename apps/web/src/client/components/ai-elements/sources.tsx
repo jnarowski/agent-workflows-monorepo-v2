@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, type ReactNode } from 'react';
+import { useState, Children, isValidElement, cloneElement, type ReactNode } from 'react';
 import { ChevronDown, ChevronUp, ExternalLink, FileText } from 'lucide-react';
-import { Button } from '../../client/components/ui/button';
+import { Button } from "@/client/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '../../client/components/ui/collapsible';
+} from "@/client/components/ui/collapsible";
 
 interface SourcesProps {
   children: ReactNode;
@@ -19,9 +19,10 @@ export const Sources = ({ children }: SourcesProps) => {
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <div className="space-y-2">
-        {React.Children.map(children, (child) => {
-          if (React.isValidElement(child)) {
-            return React.cloneElement(child, { isOpen } as any);
+        {Children.map(children, (child) => {
+          if (isValidElement(child)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return cloneElement(child, { isOpen } as any);
           }
           return child;
         })}

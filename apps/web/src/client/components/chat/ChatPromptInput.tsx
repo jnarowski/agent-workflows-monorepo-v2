@@ -32,7 +32,7 @@ import {
   PromptInputTabLabel,
   PromptInputTextarea,
   PromptInputTools,
-} from "@/components/ai-elements/prompt-input";
+} from "@/client/components/ai-elements/prompt-input";
 import {
   AtSignIcon,
   FilesIcon,
@@ -41,7 +41,7 @@ import {
   RulerIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/client/components/ui/button";
 
 const models = [
   { id: "gpt-4", name: "GPT-4" },
@@ -113,7 +113,7 @@ export const ChatPromptInput = ({
     } else if (status === "streaming") {
       setStatus("ready");
     }
-  }, [externalIsStreaming]);
+  }, [externalIsStreaming, status]);
 
   const handleSubmit = async (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);

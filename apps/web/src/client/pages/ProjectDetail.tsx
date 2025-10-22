@@ -1,14 +1,14 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useProject } from "../hooks/useProjects";
-import { Button } from "../components/ui/button";
-import { Skeleton } from "../components/ui/skeleton";
+import { useProject } from "@/client/hooks/useProjects";
+import { Button } from "@/client/components/ui/button";
+import { Skeleton } from "@/client/components/ui/skeleton";
 import { AlertCircle, ArrowLeft, MessageSquare, Terminal as TerminalIcon } from "lucide-react";
-import { Alert, AlertDescription } from "../components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { Terminal } from "../components/terminal/Terminal";
-import { ShellControls } from "../components/terminal/ShellControls";
-import { useShell } from "../contexts/ShellContext";
-import { ChatInterface } from "../components/chat/ChatInterface";
+import { Alert, AlertDescription } from "@/client/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/client/components/ui/tabs";
+import { Terminal } from "@/client/components/terminal/Terminal";
+import { ShellControls } from "@/client/components/terminal/ShellControls";
+import { useShell } from "@/client/contexts/ShellContext";
+import { ChatInterface } from "@/client/components/chat/ChatInterface";
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();

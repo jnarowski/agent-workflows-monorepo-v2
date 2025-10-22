@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import fastifyJwt from "@fastify/jwt";
 import fastifyPlugin from "fastify-plugin";
-import { prisma } from "../../shared/prisma";
+import { prisma } from "@/shared/prisma";
 
 // JWT secret from environment - required for security
 const JWT_SECRET = process.env.JWT_SECRET;

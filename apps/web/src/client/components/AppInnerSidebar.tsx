@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useState, useMemo, useEffect, type MouseEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ChevronRight,
@@ -10,6 +10,8 @@ import {
   Star,
   Edit,
   Forward,
+  EyeOff,
+  Eye,
 } from "lucide-react";
 import {
   Sidebar,
@@ -23,31 +25,26 @@ import {
   SidebarMenuButton,
   SidebarMenuAction,
   useSidebar,
-} from "@/components/ui/sidebar";
+} from "@/client/components/ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/client/components/ui/dropdown-menu";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { useProjects } from "../hooks/useProjects";
-import { useAgentSessions } from "../hooks/useAgentSessions";
+} from "@/client/components/ui/collapsible";
+import {
+  useProjects,
+  useToggleProjectHidden,
+} from "@/client/hooks/useProjects";
+import { useAgentSessions } from "@/client/hooks/useAgentSessions";
 import { SessionListItem } from "./chat/SessionListItem";
 import { NewSessionButton } from "./chat/NewSessionButton";
-
-interface ProjectWithSessions {
-  id: string;
-  name: string;
-  path: string;
-  sessionCount: number;
-  isActive?: boolean;
-}
 
 interface AppInnerSidebarProps {
   title?: string;
@@ -70,12 +67,13 @@ export function AppInnerSidebar({
   // Use URL param if available, otherwise use prop
   const activeProjectId = params.id || activeProjectIdProp;
 
-  const [openProjects, setOpenProjects] = React.useState<string[]>(
+  const [openProjects, setOpenProjects] = useState<string[]>(
     activeProjectId ? [activeProjectId] : []
   );
-  const [showAllSessions, setShowAllSessions] = React.useState<{
+  const [showAllSessions, setShowAllSessions] = useState<{
     [projectId: string]: boolean;
   }>({});
+  const [isHiddenOpen, setIsHiddenOpen] = useState(false);
 
   // Fetch sessions for the active project
   const { data: sessionsData } = useAgentSessions({
@@ -83,23 +81,36 @@ export function AppInnerSidebar({
     enabled: !!activeProjectId,
   });
 
-  // Transform projects data with real session counts and sort alphabetically
-  const projects: ProjectWithSessions[] = React.useMemo(() => {
-    if (!projectsData) return [];
+  const toggleHiddenMutation = useToggleProjectHidden();
 
-    return projectsData
-      .map((project) => ({
-        id: project.id,
-        name: project.name,
-        path: project.path,
-        sessionCount:
-          project.id === activeProjectId ? sessionsData?.length || 0 : 0,
-      }))
+  // Transform projects data with real session counts and separate visible/hidden
+  const { visibleProjects, hiddenProjects } = useMemo(() => {
+    if (!projectsData) return { visibleProjects: [], hiddenProjects: [] };
+
+    const allProjects = projectsData.map((project) => ({
+      id: project.id,
+      name: project.name,
+      path: project.path,
+      is_hidden: project.is_hidden,
+      sessionCount:
+        project.id === activeProjectId ? sessionsData?.length || 0 : 0,
+    }));
+
+    const visible = allProjects
+      .filter((p) => !p.is_hidden)
       .sort((a, b) => a.name.localeCompare(b.name));
+
+    const hidden = allProjects
+      .filter((p) => p.is_hidden)
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    return { visibleProjects: visible, hiddenProjects: hidden };
   }, [projectsData, activeProjectId, sessionsData]);
 
   // Get active project name for title
-  const activeProject = projects.find((p) => p.id === activeProjectId);
+  const activeProject = [...visibleProjects, ...hiddenProjects].find(
+    (p) => p.id === activeProjectId
+  );
   const displayTitle = title || activeProject?.name || "Projects";
 
   const toggleProject = (projectId: string) => {
@@ -111,12 +122,22 @@ export function AppInnerSidebar({
     navigate(`/projects/${projectId}/chat`);
   };
 
+  const handleToggleHidden = (
+    projectId: string,
+    is_hidden: boolean,
+    e: MouseEvent
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleHiddenMutation.mutate({ id: projectId, is_hidden });
+  };
+
   // Ensure active project is open on mount or when activeProjectId changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (activeProjectId && !openProjects.includes(activeProjectId)) {
       setOpenProjects((prev) => [...prev, activeProjectId]);
     }
-  }, [activeProjectId]);
+  }, [activeProjectId, openProjects]);
 
   return (
     <Sidebar collapsible="none" className="hidden flex-1 md:flex">
@@ -143,7 +164,7 @@ export function AppInnerSidebar({
           )}
           {!isLoading && !error && (
             <SidebarMenu>
-              {projects.map((project) => {
+              {visibleProjects.map((project) => {
                 const isOpen = openProjects.includes(project.id);
                 const isActive = project.id === activeProjectId;
 
@@ -155,15 +176,15 @@ export function AppInnerSidebar({
                   >
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild isActive={isActive}>
-                        <CollapsibleTrigger className="w-full">
-                          <Folder />
-                          <div className="flex flex-1 flex-col items-start gap-0.5">
-                            <span className="font-medium text-sm">
+                        <CollapsibleTrigger className="w-full overflow-hidden">
+                          <Folder className="shrink-0" />
+                          <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0 overflow-hidden">
+                            <span className="font-medium text-sm truncate block">
                               {project.name}
                             </span>
                           </div>
                           <ChevronRight
-                            className={`ml-auto transition-transform ${
+                            className={`ml-auto shrink-0 transition-transform ${
                               isOpen ? "rotate-90" : ""
                             }`}
                           />
@@ -189,14 +210,26 @@ export function AppInnerSidebar({
                             <Edit className="text-muted-foreground" />
                             <span>Edit Project</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Forward className="text-muted-foreground" />
-                            <span>Share Project</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem>
-                            <Trash2 className="text-muted-foreground" />
-                            <span>Delete Project</span>
+                          <DropdownMenuItem
+                            onClick={(e) =>
+                              handleToggleHidden(
+                                project.id,
+                                !project.is_hidden,
+                                e
+                              )
+                            }
+                          >
+                            {project.is_hidden ? (
+                              <>
+                                <Eye className="text-muted-foreground" />
+                                <span>Unhide Project</span>
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="text-muted-foreground" />
+                                <span>Hide Project</span>
+                              </>
+                            )}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -255,6 +288,156 @@ export function AppInnerSidebar({
             </SidebarMenu>
           )}
         </SidebarGroup>
+        {hiddenProjects.length > 0 && (
+          <SidebarGroup>
+            <Collapsible open={isHiddenOpen} onOpenChange={setIsHiddenOpen}>
+              <SidebarGroupLabel asChild>
+                <CollapsibleTrigger className="w-full flex items-center justify-between">
+                  <span>Hidden ({hiddenProjects.length})</span>
+                  <ChevronRight
+                    className={`transition-transform ${
+                      isHiddenOpen ? "rotate-90" : ""
+                    }`}
+                  />
+                </CollapsibleTrigger>
+              </SidebarGroupLabel>
+              <CollapsibleContent>
+                <SidebarMenu>
+                  {hiddenProjects.map((project) => {
+                    const isOpen = openProjects.includes(project.id);
+                    const isActive = project.id === activeProjectId;
+
+                    return (
+                      <Collapsible
+                        key={project.id}
+                        open={isOpen}
+                        onOpenChange={() => toggleProject(project.id)}
+                      >
+                        <SidebarMenuItem>
+                          <SidebarMenuButton asChild isActive={isActive}>
+                            <CollapsibleTrigger className="w-full overflow-hidden">
+                              <Folder className="shrink-0" />
+                              <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0 overflow-hidden">
+                                <span className="font-medium text-sm truncate block">
+                                  {project.name}
+                                </span>
+                              </div>
+                              <ChevronRight
+                                className={`ml-auto shrink-0 transition-transform ${
+                                  isOpen ? "rotate-90" : ""
+                                }`}
+                              />
+                            </CollapsibleTrigger>
+                          </SidebarMenuButton>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <SidebarMenuAction showOnHover>
+                                <MoreHorizontal />
+                                <span className="sr-only">More</span>
+                              </SidebarMenuAction>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              className="w-48 rounded-lg"
+                              side={isMobile ? "bottom" : "right"}
+                              align={isMobile ? "end" : "start"}
+                            >
+                              <DropdownMenuItem>
+                                <Star className="text-muted-foreground" />
+                                <span>Favorite</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Edit className="text-muted-foreground" />
+                                <span>Edit Project</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) =>
+                                  handleToggleHidden(
+                                    project.id,
+                                    !project.is_hidden,
+                                    e
+                                  )
+                                }
+                              >
+                                {project.is_hidden ? (
+                                  <>
+                                    <Eye className="text-muted-foreground" />
+                                    <span>Unhide Project</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <EyeOff className="text-muted-foreground" />
+                                    <span>Hide Project</span>
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Forward className="text-muted-foreground" />
+                                <span>Share Project</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem>
+                                <Trash2 className="text-muted-foreground" />
+                                <span>Delete Project</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                          <CollapsibleContent>
+                            <div className="ml-0 space-y-0.5 border-l pl-1 py-1">
+                              {isActive &&
+                              sessionsData &&
+                              sessionsData.length > 0 ? (
+                                <>
+                                  {(showAllSessions[project.id]
+                                    ? sessionsData
+                                    : sessionsData.slice(0, 5)
+                                  ).map((session) => (
+                                    <SessionListItem
+                                      key={session.id}
+                                      session={session}
+                                      projectId={project.id}
+                                      isActive={false}
+                                    />
+                                  ))}
+                                  {sessionsData.length > 5 &&
+                                    !showAllSessions[project.id] && (
+                                      <button
+                                        onClick={() =>
+                                          setShowAllSessions((prev) => ({
+                                            ...prev,
+                                            [project.id]: true,
+                                          }))
+                                        }
+                                        className="w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors text-left"
+                                      >
+                                        Show {sessionsData.length - 5} more...
+                                      </button>
+                                    )}
+                                </>
+                              ) : isActive ? (
+                                <div className="px-2 py-2 text-xs text-muted-foreground">
+                                  No sessions yet
+                                </div>
+                              ) : null}
+                              {isActive && (
+                                <div className="px-2 pt-1">
+                                  <NewSessionButton
+                                    projectId={project.id}
+                                    variant="default"
+                                    size="sm"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </CollapsibleContent>
+                        </SidebarMenuItem>
+                      </Collapsible>
+                    );
+                  })}
+                </SidebarMenu>
+              </CollapsibleContent>
+            </Collapsible>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   );

@@ -1,6 +1,6 @@
 import type { BaseStorage } from '../storage/BaseStorage';
 import type { WorkflowStateData, StepStatus, ExecutionResponse, Cli, CheckpointResult } from '../types/workflow';
-import type { ClaudeExecutionOptions, CodexExecutionOptions } from '@sourceborn/agent-cli-sdk';
+import type { ClaudeExecutionOptions, CodexExecutionOptions } from '@repo/agent-cli-sdk';
 import type { Result } from '../utils/result';
 import { ok, err } from '../utils/result';
 import path from 'path';

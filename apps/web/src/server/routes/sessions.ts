@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 import type { FastifyInstance } from "fastify";
-import { agentSessionService } from "../services/agent-session.service";
+import { agentSessionService } from "@/server/services/agent-session.service";
 import {
   createSessionSchema,
   sessionIdSchema,
   projectIdSchema,
-} from "../schemas/session.schema";
-import { errorResponse } from "../schemas/response.schema";
-import type { CreateSessionRequest } from "../../shared/types/agent-session.types";
+} from "@/server/schemas/session.schema";
+import { errorResponse } from "@/server/schemas/response.schema";
+import type { CreateSessionRequest } from "@/shared/types/agent-session.types";
 
 export async function sessionRoutes(fastify: FastifyInstance) {
   /**

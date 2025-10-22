@@ -29,7 +29,7 @@ Generate a well-defined spec file based on the provided context. Read Instructio
 
 ## Workflow
 
-1.  Read and analyze `./agent/specs/${featureName}-prd.md` (if the file exists. if it does not exist, igore this step)
+1.  Read and analyze `./.agent/specs/${featureName}-prd.md` (if the file exists. if it does not exist, igore this step)
 2.  Research codebase for existing patterns
 3.  IMPORTANT: If you have any questions or unclear about anything within the implementation, do the following:
     a. Ask the user your questions ONE AT A TIME.
@@ -44,7 +44,7 @@ Generate a well-defined spec file based on the provided context. Read Instructio
                 ```
 
 4.  Once you are confident that you have all the context needed to successfully implement this feature, generate a focused spec following the exact structure outlined in Template below. Be concise but comprehensive. Skip sections only if truly not applicable.
-5.  Create spec in: `./agent/specs/${featureName}-spec.md`
+5.  Create spec in: `./.agent/specs/[yymmddhhss]-${featureName}-spec.md`
 
 ## Template
 
@@ -200,7 +200,7 @@ Execute these commands to verify the feature works correctly:
 ```json
 {
   "success": true,
-  "spec_path": ".agent/specs/featureName-spec.md",
+  "spec_path": "./.agents/specs/featureName-spec.md",
   "feature_name": "$featureName",
   "phases": ["Foundation", "Core Implementation", "Integration"],
   "task_groups": 5,

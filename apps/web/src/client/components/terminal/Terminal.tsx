@@ -2,8 +2,8 @@ import { useEffect, useRef, useCallback } from "react";
 import { Terminal as XTerm } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { ClipboardAddon } from "@xterm/addon-clipboard";
-import { useShell } from "../../contexts/ShellContext";
-import { useShellWebSocket } from "../../hooks/useShellWebSocket";
+import { useShell } from "@/client/contexts/ShellContext";
+import { useShellWebSocket } from "@/client/hooks/useShellWebSocket";
 import "@xterm/xterm/css/xterm.css";
 
 interface TerminalProps {

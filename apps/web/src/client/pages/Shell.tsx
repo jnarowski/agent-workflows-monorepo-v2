@@ -1,18 +1,18 @@
 import { useState } from 'react';
-import { useProjects } from '../hooks/useProjects';
-import { Terminal } from '../components/terminal/Terminal';
-import { ShellControls } from '../components/terminal/ShellControls';
-import { useShell } from '../contexts/ShellContext';
+import { useProjects } from "@/client/hooks/useProjects";
+import { Terminal } from "@/client/components/terminal/Terminal";
+import { ShellControls } from "@/client/components/terminal/ShellControls";
+import { useShell } from "@/client/contexts/ShellContext";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Skeleton } from '../components/ui/skeleton';
-import { Alert, AlertDescription } from '../components/ui/alert';
+} from "@/client/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/client/components/ui/card";
+import { Skeleton } from "@/client/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { AlertCircle, Terminal as TerminalIcon } from 'lucide-react';
 
 export default function Shell() {

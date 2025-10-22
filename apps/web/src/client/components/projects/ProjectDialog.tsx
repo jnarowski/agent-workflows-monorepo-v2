@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useCreateProject, useUpdateProject } from "../../hooks/useProjects";
+import { useCreateProject, useUpdateProject } from "@/client/hooks/useProjects";
 import {
   Dialog,
   DialogContent,
@@ -10,12 +10,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+} from "@/client/components/ui/dialog";
+import { Button } from "@/client/components/ui/button";
+import { Input } from "@/client/components/ui/input";
+import { Label } from "@/client/components/ui/label";
 import { Loader2 } from "lucide-react";
-import type { Project } from "../../../shared/types/project.types";
+import type { Project } from "@/shared/types/project.types";
 
 // Form validation schema
 const projectFormSchema = z.object({

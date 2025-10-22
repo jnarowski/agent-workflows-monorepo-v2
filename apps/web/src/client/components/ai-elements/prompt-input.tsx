@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/client/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -9,37 +9,37 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "@/components/ui/command";
+} from "@/client/components/ui/command";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/client/components/ui/dropdown-menu";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@/components/ui/hover-card";
+} from "@/client/components/ui/hover-card";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupTextarea,
-} from "@/components/ui/input-group";
+} from "@/client/components/ui/input-group";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/client/components/ui/select";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+} from "@/client/components/ui/tooltip";
+import { cn } from "@/client/lib/utils";
 import type { ChatStatus, FileUIPart } from "ai";
 import {
   ImageIcon,
@@ -111,6 +111,7 @@ const ProviderAttachmentsContext = createContext<AttachmentsContext | null>(
   null
 );
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const usePromptInputController = () => {
   const ctx = useContext(PromptInputController);
   if (!ctx) {
@@ -125,6 +126,7 @@ export const usePromptInputController = () => {
 const useOptionalPromptInputController = () =>
   useContext(PromptInputController);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useProviderAttachments = () => {
   const ctx = useContext(ProviderAttachmentsContext);
   if (!ctx) {
@@ -245,6 +247,7 @@ export function PromptInputProvider({
 
 const LocalAttachmentsContext = createContext<AttachmentsContext | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const usePromptInputAttachments = () => {
   // Dual-mode: prefer provider if present, otherwise use local
   const provider = useOptionalProviderAttachments();
@@ -554,36 +557,52 @@ export const PromptInput = ({
     [matchesAccept, maxFiles, maxFileSize, onError]
   );
 
-  const add = usingProvider
-    ? (files: File[] | FileList) => controller.attachments.add(files)
-    : addLocal;
+  const add = useMemo(
+    () =>
+      usingProvider
+        ? (files: File[] | FileList) => controller.attachments.add(files)
+        : addLocal,
+    [usingProvider, controller, addLocal]
+  );
 
-  const remove = usingProvider
-    ? (id: string) => controller.attachments.remove(id)
-    : (id: string) =>
-        setItems((prev) => {
-          const found = prev.find((file) => file.id === id);
-          if (found?.url) {
-            URL.revokeObjectURL(found.url);
-          }
-          return prev.filter((file) => file.id !== id);
-        });
+  const remove = useMemo(
+    () =>
+      usingProvider
+        ? (id: string) => controller.attachments.remove(id)
+        : (id: string) =>
+            setItems((prev) => {
+              const found = prev.find((file) => file.id === id);
+              if (found?.url) {
+                URL.revokeObjectURL(found.url);
+              }
+              return prev.filter((file) => file.id !== id);
+            }),
+    [usingProvider, controller]
+  );
 
-  const clear = usingProvider
-    ? () => controller.attachments.clear()
-    : () =>
-        setItems((prev) => {
-          for (const file of prev) {
-            if (file.url) {
-              URL.revokeObjectURL(file.url);
-            }
-          }
-          return [];
-        });
+  const clear = useMemo(
+    () =>
+      usingProvider
+        ? () => controller.attachments.clear()
+        : () =>
+            setItems((prev) => {
+              for (const file of prev) {
+                if (file.url) {
+                  URL.revokeObjectURL(file.url);
+                }
+              }
+              return [];
+            }),
+    [usingProvider, controller]
+  );
 
-  const openFileDialog = usingProvider
-    ? () => controller.attachments.openFileDialog()
-    : openFileDialogLocal;
+  const openFileDialog = useMemo(
+    () =>
+      usingProvider
+        ? () => controller.attachments.openFileDialog()
+        : openFileDialogLocal,
+    [usingProvider, controller, openFileDialogLocal]
+  );
 
   // Let provider know about our hidden file input so external menus can call openFileDialog()
   useEffect(() => {
@@ -709,6 +728,8 @@ export const PromptInput = ({
     // Convert blob URLs to data URLs asynchronously
     Promise.all(
       files.map(async ({ id, ...item }) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _id = id; // Store id for potential future use
         if (item.url && item.url.startsWith("blob:")) {
           return {
             ...item,
@@ -740,7 +761,7 @@ export const PromptInput = ({
             controller.textInput.clear();
           }
         }
-      } catch (error) {
+      } catch {
         // Don't clear on error - user may want to retry
       }
     });
@@ -1026,13 +1047,13 @@ interface SpeechRecognition extends EventTarget {
   lang: string;
   start(): void;
   stop(): void;
-  onstart: ((this: SpeechRecognition, ev: Event) => any) | null;
-  onend: ((this: SpeechRecognition, ev: Event) => any) | null;
+  onstart: ((this: SpeechRecognition, ev: Event) => void) | null;
+  onend: ((this: SpeechRecognition, ev: Event) => void) | null;
   onresult:
-    | ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any)
+    | ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void)
     | null;
   onerror:
-    | ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => any)
+    | ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => void)
     | null;
 }
 

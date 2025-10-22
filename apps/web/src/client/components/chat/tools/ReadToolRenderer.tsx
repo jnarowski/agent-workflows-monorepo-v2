@@ -3,9 +3,9 @@
  * Shows file reference with optional line range
  */
 
-import { FileText } from 'lucide-react';
-import type { ReadToolInput } from '../../../shared/types/chat';
-import { FileReference } from '../FileReference';
+import { FileText } from "lucide-react";
+import type { ReadToolInput } from "@/shared/types/chat";
+import { FileReference } from "@/client/components/chat/FileReference";
 
 interface ReadToolRendererProps {
   input: ReadToolInput;
@@ -20,7 +20,10 @@ export function ReadToolRenderer({ input }: ReadToolRendererProps) {
     <div className="flex items-center gap-2">
       <FileText className="h-4 w-4 text-muted-foreground" />
       <span className="text-sm text-muted-foreground">Read:</span>
-      <FileReference filePath={input.file_path} lineNumber={startLine > 0 ? startLine : undefined} />
+      <FileReference
+        filePath={input.file_path}
+        lineNumber={startLine > 0 ? startLine : undefined}
+      />
       {hasRange && endLine && (
         <span className="text-xs text-muted-foreground">
           (lines {startLine}-{endLine})

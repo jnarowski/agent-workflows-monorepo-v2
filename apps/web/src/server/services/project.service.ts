@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Prisma } from "@prisma/client";
-import { prisma } from "../../shared/prisma";
+import { prisma } from "@/shared/prisma";
 import type {
   CreateProjectInput,
   UpdateProjectInput,
-} from "../schemas/project.schema";
-import type { Project } from "../../shared/types/project.types";
+} from "@/server/schemas/project.schema";
+import type { Project } from "@/shared/types/project.types";
 
 /**
  * Project Service
@@ -12,15 +13,30 @@ import type { Project } from "../../shared/types/project.types";
  */
 export class ProjectService {
   /**
+   * Transform Prisma project to API project format
+   */
+  private transformProject(prismaProject: any): Project {
+    return {
+      id: prismaProject.id,
+      name: prismaProject.name,
+      path: prismaProject.path,
+      is_hidden: prismaProject.is_hidden,
+      created_at: prismaProject.created_at,
+      updated_at: prismaProject.updated_at,
+    };
+  }
+
+  /**
    * Get all projects
    * @returns Array of all projects ordered by creation date (newest first)
    */
   async getAllProjects(): Promise<Project[]> {
-    return await prisma.project.findMany({
+    const projects = await prisma.project.findMany({
       orderBy: {
         created_at: "desc",
       },
     });
+    return projects.map(p => this.transformProject(p));
   }
 
   /**
@@ -29,9 +45,10 @@ export class ProjectService {
    * @returns Project or null if not found
    */
   async getProjectById(id: string): Promise<Project | null> {
-    return await prisma.project.findUnique({
+    const project = await prisma.project.findUnique({
       where: { id },
     });
+    return project ? this.transformProject(project) : null;
   }
 
   /**
@@ -40,12 +57,13 @@ export class ProjectService {
    * @returns Created project
    */
   async createProject(data: CreateProjectInput): Promise<Project> {
-    return await prisma.project.create({
+    const project = await prisma.project.create({
       data: {
         name: data.name,
         path: data.path,
       },
     });
+    return this.transformProject(project);
   }
 
   /**
@@ -59,10 +77,11 @@ export class ProjectService {
     data: UpdateProjectInput
   ): Promise<Project | null> {
     try {
-      return await prisma.project.update({
+      const project = await prisma.project.update({
         where: { id },
         data,
       });
+      return this.transformProject(project);
     } catch (error) {
       // Return null if project not found
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -81,9 +100,10 @@ export class ProjectService {
    */
   async deleteProject(id: string): Promise<Project | null> {
     try {
-      return await prisma.project.delete({
+      const project = await prisma.project.delete({
         where: { id },
       });
+      return this.transformProject(project);
     } catch (error) {
       // Return null if project not found
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -93,6 +113,19 @@ export class ProjectService {
       }
       throw error;
     }
+  }
+
+  /**
+   * Toggle the hidden state of a project
+   * @param projectId - Project ID
+   * @param is_hidden - Whether the project should be hidden
+   * @returns Updated project or null if not found
+   */
+  async toggleProjectHidden(
+    projectId: string,
+    is_hidden: boolean
+  ): Promise<Project | null> {
+    return await this.updateProject(projectId, { is_hidden });
   }
 
   /**
@@ -113,9 +146,10 @@ export class ProjectService {
    * @returns Project or null if not found
    */
   async getProjectByPath(path: string): Promise<Project | null> {
-    return await prisma.project.findFirst({
+    const project = await prisma.project.findFirst({
       where: { path },
     });
+    return project ? this.transformProject(project) : null;
   }
 
   /**
@@ -126,7 +160,7 @@ export class ProjectService {
    * @returns Created or updated project
    */
   async createOrUpdateProject(name: string, path: string): Promise<Project> {
-    return await prisma.project.upsert({
+    const project = await prisma.project.upsert({
       where: { path },
       update: {
         name,
@@ -137,6 +171,7 @@ export class ProjectService {
         path,
       },
     });
+    return this.transformProject(project);
   }
 }
 

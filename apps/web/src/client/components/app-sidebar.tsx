@@ -1,13 +1,13 @@
 "use client";
 
-import * as React from "react";
+import { useState, useMemo, ComponentProps } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Home, FolderOpen, Info } from "lucide-react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "@/client/contexts/AuthContext";
 
-import { Sidebar, useSidebar } from "@/components/ui/sidebar";
-import { AppSidebarMain } from "@/components/AppSidebarMain";
-import { AppInnerSidebar } from "@/components/AppInnerSidebar";
+import { Sidebar, useSidebar } from "@/client/components/ui/sidebar";
+import { AppSidebarMain } from "@/client/components/AppSidebarMain";
+import { AppInnerSidebar } from "@/client/components/AppInnerSidebar";
 
 // Navigation data
 const data = {
@@ -120,15 +120,15 @@ const data = {
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [mails, setMails] = React.useState(data.mails);
+  const [mails, setMails] = useState(data.mails);
   const { setOpen } = useSidebar();
   const { user, logout } = useAuth();
 
   // Determine active item based on current location
-  const activeItem = React.useMemo(() => {
+  const activeItem = useMemo(() => {
     return (
       data.navMain.find((item) => item.url === location.pathname) ||
       data.navMain[0]

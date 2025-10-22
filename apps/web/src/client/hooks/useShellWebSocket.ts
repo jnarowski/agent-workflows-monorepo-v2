@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { useShell } from '../contexts/ShellContext';
+import { useShell } from "@/client/contexts/ShellContext";
 
 interface UseShellWebSocketOptions {
   sessionId: string;

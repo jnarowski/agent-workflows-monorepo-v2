@@ -126,6 +126,7 @@ function escapeHtml(text: string): string {
  * Preload highlighter for common languages
  * Call this once during app initialization for better performance
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export async function preloadHighlighter() {
   try {
     await codeToHtml('', {

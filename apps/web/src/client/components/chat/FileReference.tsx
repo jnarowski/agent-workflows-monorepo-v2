@@ -4,7 +4,7 @@
  */
 
 import { FileText, FileCode } from 'lucide-react';
-import { Badge } from '../ui/badge';
+import { Badge } from "@/client/components/ui/badge";
 
 interface FileReferenceProps {
   filePath: string;

@@ -3,11 +3,16 @@
  * Dispatches to appropriate renderer based on tool name
  */
 
-import type { EditToolInput, WriteToolInput, ReadToolInput, BashToolInput } from '../../../shared/types/chat';
-import { EditToolRenderer } from './EditToolRenderer';
-import { WriteToolRenderer } from './WriteToolRenderer';
-import { ReadToolRenderer } from './ReadToolRenderer';
-import { BashToolRenderer } from './BashToolRenderer';
+import type {
+  EditToolInput,
+  WriteToolInput,
+  ReadToolInput,
+  BashToolInput,
+} from "@/shared/types/chat";
+import { EditToolRenderer } from "./EditToolRenderer";
+import { WriteToolRenderer } from "./WriteToolRenderer";
+import { ReadToolRenderer } from "./ReadToolRenderer";
+import { BashToolRenderer } from "./BashToolRenderer";
 
 interface ToolInputRendererProps {
   toolName: string;
@@ -31,33 +36,36 @@ interface ToolInputRendererProps {
  */
 export function ToolInputRenderer({ toolName, input }: ToolInputRendererProps) {
   switch (toolName) {
-    case 'Edit':
+    case "Edit":
       return <EditToolRenderer input={input as EditToolInput} />;
 
-    case 'Write':
+    case "Write":
       return <WriteToolRenderer input={input as WriteToolInput} />;
 
-    case 'Read':
+    case "Read":
       return <ReadToolRenderer input={input as ReadToolInput} />;
 
-    case 'Bash':
+    case "Bash":
       return <BashToolRenderer input={input as BashToolInput} />;
 
-    case 'Glob':
-    case 'Grep':
+    case "Glob":
+    case "Grep": {
       // Simple renderer for search tools
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const searchInput = input as any;
       return (
         <div className="text-sm font-mono bg-muted/50 px-3 py-2 rounded-md border">
           <div className="text-muted-foreground">Pattern:</div>
-          <div>{(input as any).pattern}</div>
-          {(input as any).path && (
+          <div>{searchInput.pattern}</div>
+          {searchInput.path && (
             <>
               <div className="text-muted-foreground mt-2">Path:</div>
-              <div>{(input as any).path}</div>
+              <div>{searchInput.path}</div>
             </>
           )}
         </div>
       );
+    }
 
     default:
       // Fallback: display JSON for unknown tools

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useProject } from "../hooks/useProjects";
-import { Button } from "../components/ui/button";
-import { Skeleton } from "../components/ui/skeleton";
+import { useProject } from "@/client/hooks/useProjects";
+import { Button } from "@/client/components/ui/button";
+import { Skeleton } from "@/client/components/ui/skeleton";
 import {
   AlertCircle,
   ArrowLeft,
@@ -11,15 +11,15 @@ import {
   Terminal as TerminalIcon,
   FileText,
 } from "lucide-react";
-import { Alert, AlertDescription } from "../components/ui/alert";
-import { useAuth } from "../contexts/AuthContext";
+import { Alert, AlertDescription } from "@/client/components/ui/alert";
+import { useAuth } from "@/client/contexts/AuthContext";
 
 export default function ProjectDetailLayout() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { handleInvalidToken } = useAuth();
   const { data: project, isLoading, error } = useProject(id!);
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [, setIsSyncing] = useState(false);
 
   // Redirect to root if project is not found or deleted
   useEffect(() => {

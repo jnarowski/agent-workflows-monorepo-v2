@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
+import { createContext, useContext, useId, useMemo, type ComponentProps } from "react";
 import * as RechartsPrimitive from "recharts";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/client/lib/utils";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
@@ -22,10 +22,10 @@ type ChartContextProps = {
   config: ChartConfig;
 };
 
-const ChartContext = React.createContext<ChartContextProps | null>(null);
+const ChartContext = createContext<ChartContextProps | null>(null);
 
 function useChart() {
-  const context = React.useContext(ChartContext);
+  const context = useContext(ChartContext);
 
   if (!context) {
     throw new Error("useChart must be used within a <ChartContainer />");
@@ -40,13 +40,13 @@ function ChartContainer({
   children,
   config,
   ...props
-}: React.ComponentProps<"div"> & {
+}: ComponentProps<"div"> & {
   config: ChartConfig;
-  children: React.ComponentProps<
+  children: ComponentProps<
     typeof RechartsPrimitive.ResponsiveContainer
   >["children"];
 }) {
-  const uniqueId = React.useId();
+  const uniqueId = useId();
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`;
 
   return (
@@ -118,8 +118,8 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
-}: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-  React.ComponentProps<"div"> & {
+}: ComponentProps<typeof RechartsPrimitive.Tooltip> &
+  ComponentProps<"div"> & {
     hideLabel?: boolean;
     hideIndicator?: boolean;
     indicator?: "line" | "dot" | "dashed";
@@ -128,7 +128,7 @@ function ChartTooltipContent({
   }) {
   const { config } = useChart();
 
-  const tooltipLabel = React.useMemo(() => {
+  const tooltipLabel = useMemo(() => {
     if (hideLabel || !payload?.length) {
       return null;
     }
@@ -258,7 +258,7 @@ function ChartLegendContent({
   payload,
   verticalAlign = "bottom",
   nameKey,
-}: React.ComponentProps<"div"> &
+}: ComponentProps<"div"> &
   Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
     hideIcon?: boolean;
     nameKey?: string;

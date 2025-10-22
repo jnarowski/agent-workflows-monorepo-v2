@@ -3,10 +3,10 @@
  * Shows file path and new file content
  */
 
-import type { WriteToolInput } from '../../../shared/types/chat';
-import { FileReference } from '../FileReference';
-import { CodeBlock } from '../CodeBlock';
-import { getLanguageFromPath } from '../../../utils/getLanguageFromPath';
+import type { WriteToolInput } from "@/shared/types/chat";
+import { FileReference } from "@/client/components/chat/FileReference";
+import { CodeBlock } from "@/client/components/chat/CodeBlock";
+import { getLanguageFromPath } from "@/client/utils/getLanguageFromPath";
 
 interface WriteToolRendererProps {
   input: WriteToolInput;
@@ -14,7 +14,7 @@ interface WriteToolRendererProps {
 
 export function WriteToolRenderer({ input }: WriteToolRendererProps) {
   const language = getLanguageFromPath(input.file_path);
-  const lineCount = input.content.split('\n').length;
+  const lineCount = input.content.split("\n").length;
 
   return (
     <div className="space-y-3">

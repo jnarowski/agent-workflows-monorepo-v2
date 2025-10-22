@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from 'zod';
 
 // Standard success response wrapper
@@ -21,6 +22,7 @@ export const projectSchema = z.object({
   id: z.string(),
   name: z.string(),
   path: z.string(),
+  is_hidden: z.boolean(),
   created_at: z.date(),
   updated_at: z.date(),
 });

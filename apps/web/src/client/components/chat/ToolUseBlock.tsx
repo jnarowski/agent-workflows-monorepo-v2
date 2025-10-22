@@ -5,9 +5,9 @@
 
 import { useState } from 'react';
 import { ChevronDown, ChevronRight, Wrench, Loader2 } from 'lucide-react';
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
+import { Badge } from "@/client/components/ui/badge";
+import { Button } from "@/client/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/client/components/ui/collapsible";
 import { ToolInputRenderer } from './tools/ToolInputRenderer';
 import { ToolResultRenderer } from './tools/ToolResultRenderer';
 

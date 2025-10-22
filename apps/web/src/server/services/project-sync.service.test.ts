@@ -1,14 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { projectSyncService } from '../project-sync.service';
-import { projectService } from '../project.service';
-import { agentSessionService } from '../agent-session.service';
+import { projectSyncService } from '@/server/services/project-sync.service';
+import { projectService } from '@/server/services/project.service';
+import { agentSessionService } from '@/server/services/agent-session.service';
 
 // Mock the services
-vi.mock('../project.service');
-vi.mock('../agent-session.service');
+vi.mock('@/server/services/project.service');
+vi.mock('@/server/services/agent-session.service');
 
 describe('ProjectSyncService', () => {
   const originalHome = process.env.HOME;

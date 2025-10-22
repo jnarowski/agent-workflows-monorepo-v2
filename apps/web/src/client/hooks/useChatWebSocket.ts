@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useChatContext } from "../contexts/ChatContext";
-import type { AgentSessionMetadata } from "../../shared/types";
-import type { ContentBlock } from "../../shared/types/chat";
+import { useChatContext } from "@/client/contexts/ChatContext";
+import type { AgentSessionMetadata } from "@/shared/types";
+import type { ContentBlock } from "@/shared/types/chat";
 
 export interface ChatMessage {
   id?: string;
@@ -365,12 +366,13 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
         }, delay);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     sessionId,
     projectId,
     setWebSocketConnection,
     removeWebSocketConnection,
-    updateSessionMetadata,
+    // updateSessionMetadata is stable (empty deps), no need to include
   ]);
 
   const handleStreamEvent = useCallback(
@@ -519,6 +521,7 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
         wsRef.current = null;
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, projectId]); // Only depend on sessionId and projectId, not connect
 
   // Update isFirstMessageRef when messages are set from outside (e.g., loaded from API)

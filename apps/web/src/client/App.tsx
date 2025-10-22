@@ -1,18 +1,18 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import { ShellProvider } from "./contexts/ShellContext";
-import ProtectedLayout from "./layouts/ProtectedLayout";
-import AuthLayout from "./layouts/AuthLayout";
-import ProjectDetailLayout from "./layouts/ProjectDetailLayout";
-import Dashboard from "./pages/Dashboard";
-import Projects from "./pages/Projects";
-import ProjectChat from "./pages/ProjectChat";
-import ProjectShell from "./pages/ProjectShell";
-import ProjectFiles from "./pages/ProjectFiles";
-import AboutUs from "./pages/AboutUs";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import LayoutExperiment from "./pages/LayoutExperiment";
+import { AuthProvider } from "@/client/contexts/AuthContext";
+import { ShellProvider } from "@/client/contexts/ShellContext";
+import ProtectedLayout from "@/client/layouts/ProtectedLayout";
+import AuthLayout from "@/client/layouts/AuthLayout";
+import ProjectDetailLayout from "@/client/layouts/ProjectDetailLayout";
+import Dashboard from "@/client/pages/Dashboard";
+import Projects from "@/client/pages/Projects";
+import ProjectChat from "@/client/pages/ProjectChat";
+import ProjectShell from "@/client/pages/ProjectShell";
+import ProjectFiles from "@/client/pages/ProjectFiles";
+import AboutUs from "@/client/pages/AboutUs";
+import Login from "@/client/pages/Login";
+import Signup from "@/client/pages/Signup";
+import LayoutExperiment from "@/client/pages/LayoutExperiment";
 
 function App() {
   return (

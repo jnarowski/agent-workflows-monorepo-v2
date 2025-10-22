@@ -22,9 +22,9 @@ export type WorkflowStateData = {
 };
 
 /**
- * Import types from @sourceborn/agent-cli-sdk for use in type aliases
+ * Import types from @repo/agent-cli-sdk for use in type aliases
  */
-import type { ExecutionResponse, AIAdapter } from '@sourceborn/agent-cli-sdk';
+import type { ExecutionResponse, AIAdapter } from '@repo/agent-cli-sdk';
 
 /**
  * Re-export types from @sourceborn/agent-cli-sdk for convenience

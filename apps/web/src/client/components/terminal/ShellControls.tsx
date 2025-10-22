@@ -1,5 +1,5 @@
-import { Button } from '../ui/button';
-import type { ConnectionStatus } from '../../contexts/ShellContext';
+import { Button } from "@/client/components/ui/button";
+import type { ConnectionStatus } from "@/client/contexts/ShellContext";
 
 interface ShellControlsProps {
   status: ConnectionStatus;

@@ -11,12 +11,12 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { useProjectFiles } from "../../hooks/useFiles";
-import type { FileTreeItem } from "../../../shared/types/file.types";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { Skeleton } from "../ui/skeleton";
-import { Alert, AlertDescription } from "../ui/alert";
+import { useProjectFiles } from "@/client/hooks/useFiles";
+import type { FileTreeItem } from "@/shared/types/file.types";
+import { Input } from "@/client/components/ui/input";
+import { Button } from "@/client/components/ui/button";
+import { Skeleton } from "@/client/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { FileEditor } from "./FileEditor";
 import { ImageViewer } from "./ImageViewer";
 

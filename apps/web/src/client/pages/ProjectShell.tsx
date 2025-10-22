@@ -1,8 +1,8 @@
 import { useParams } from "react-router-dom";
-import { useProject } from "../hooks/useProjects";
-import { Terminal } from "../components/terminal/Terminal";
-import { ShellControls } from "../components/terminal/ShellControls";
-import { useShell } from "../contexts/ShellContext";
+import { useProject } from "@/client/hooks/useProjects";
+import { Terminal } from "@/client/components/terminal/Terminal";
+import { ShellControls } from "@/client/components/terminal/ShellControls";
+import { useShell } from "@/client/contexts/ShellContext";
 
 export default function ProjectShell() {
   const { id } = useParams<{ id: string }>();

@@ -5,8 +5,8 @@
 
 import { useState } from 'react';
 import { Brain, ChevronDown, ChevronRight } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible';
-import { Button } from '../ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/client/components/ui/collapsible";
+import { Button } from "@/client/components/ui/button";
 
 interface ThinkingBlockProps {
   thinking: string;

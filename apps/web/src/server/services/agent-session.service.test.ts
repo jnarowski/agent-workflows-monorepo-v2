@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { agentSessionService } from '../agent-session.service';
-import { prisma } from '../../../shared/prisma';
+import { agentSessionService } from '@/server/services/agent-session.service';
+import { prisma } from '@/shared/prisma';
 
 // Mock Prisma
-vi.mock('../../../shared/prisma', () => ({
+vi.mock('@/shared/prisma', () => ({
   prisma: {
     project: {
       findUnique: vi.fn(),
@@ -212,6 +213,7 @@ describe('AgentSessionService', () => {
         id: testProjectId,
         name: 'myproject',
         path: projectPath,
+        is_hidden: false,
         created_at: new Date(),
         updated_at: new Date(),
       });
@@ -224,6 +226,7 @@ describe('AgentSessionService', () => {
         id: 'session-1',
         projectId: testProjectId,
         userId: testUserId,
+        name: null,
         metadata: {},
         created_at: new Date(),
         updated_at: new Date(),
@@ -260,6 +263,7 @@ describe('AgentSessionService', () => {
         id: testProjectId,
         name: 'myproject',
         path: projectPath,
+        is_hidden: false,
         created_at: new Date(),
         updated_at: new Date(),
       });
@@ -269,6 +273,7 @@ describe('AgentSessionService', () => {
         id: 'existing-session',
         projectId: testProjectId,
         userId: testUserId,
+        name: null,
         metadata: {},
         created_at: new Date(),
         updated_at: new Date(),
@@ -278,6 +283,7 @@ describe('AgentSessionService', () => {
         id: 'existing-session',
         projectId: testProjectId,
         userId: testUserId,
+        name: null,
         metadata: {},
         created_at: new Date(),
         updated_at: new Date(),
@@ -288,6 +294,7 @@ describe('AgentSessionService', () => {
           id: 'existing-session',
           projectId: testProjectId,
           userId: testUserId,
+        name: null,
           metadata: {},
           created_at: new Date(),
           updated_at: new Date(),
@@ -323,6 +330,7 @@ describe('AgentSessionService', () => {
         id: testProjectId,
         name: 'myproject',
         path: projectPath,
+        is_hidden: false,
         created_at: new Date(),
         updated_at: new Date(),
       });
@@ -332,6 +340,7 @@ describe('AgentSessionService', () => {
         id: 'session-1',
         projectId: testProjectId,
         userId: testUserId,
+        name: null,
         metadata: {},
         created_at: new Date(),
         updated_at: new Date(),
@@ -343,6 +352,7 @@ describe('AgentSessionService', () => {
           id: 'session-1',
           projectId: testProjectId,
           userId: testUserId,
+        name: null,
           metadata: {},
           created_at: new Date(),
           updated_at: new Date(),
@@ -351,6 +361,7 @@ describe('AgentSessionService', () => {
           id: 'session-orphaned',
           projectId: testProjectId,
           userId: testUserId,
+        name: null,
           metadata: {},
           created_at: new Date(),
           updated_at: new Date(),
@@ -361,6 +372,7 @@ describe('AgentSessionService', () => {
         id: 'session-orphaned',
         projectId: testProjectId,
         userId: testUserId,
+        name: null,
         metadata: {},
         created_at: new Date(),
         updated_at: new Date(),
@@ -379,6 +391,7 @@ describe('AgentSessionService', () => {
         id: testProjectId,
         name: 'myproject',
         path: '/Users/test/no-sessions',
+        is_hidden: false,
         created_at: new Date(),
         updated_at: new Date(),
       });
@@ -424,6 +437,7 @@ describe('AgentSessionService', () => {
         id: testProjectId,
         name: 'parseproject',
         path: projectPath,
+        is_hidden: false,
         created_at: new Date(),
         updated_at: new Date(),
       });
@@ -433,6 +447,7 @@ describe('AgentSessionService', () => {
         id: 'semi-corrupted',
         projectId: testProjectId,
         userId: testUserId,
+        name: null,
         metadata: { messageCount: 1 },
         created_at: new Date(),
         updated_at: new Date(),

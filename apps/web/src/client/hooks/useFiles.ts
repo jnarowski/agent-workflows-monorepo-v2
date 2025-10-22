@@ -3,8 +3,8 @@ import type {
   FileTreeItem,
   FilesResponse,
   FileErrorResponse,
-} from "../../shared/types/file.types";
-import { useAuth } from "../contexts/AuthContext";
+} from "@/shared/types/file.types";
+import { useAuth } from "@/client/contexts/AuthContext";
 
 // Query keys factory - centralized key management
 export const fileKeys = {

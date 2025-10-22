@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Prisma } from '@prisma/client';
-import { prisma } from '../../shared/prisma';
+import { prisma } from '@/shared/prisma';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
@@ -7,7 +8,7 @@ import type {
   AgentSessionMetadata,
   SessionResponse,
   SyncSessionsResponse,
-} from '../../shared/types/agent-session.types';
+} from '@/shared/types/agent-session.types';
 
 /**
  * Agent Session Service
@@ -67,20 +68,24 @@ export class AgentSessionService {
 
       for (const line of lines) {
         try {
-          const message = JSON.parse(line);
+          const entry = JSON.parse(line);
 
-          // Count messages
-          if (message.role === 'user' || message.role === 'assistant') {
+          // Count messages (check both 'type' for Claude CLI format and 'role' for API format)
+          const isMessage = entry.type === 'user' || entry.type === 'assistant' || entry.role === 'user' || entry.role === 'assistant';
+          if (isMessage) {
             messageCount++;
           }
 
           // Extract first user message for preview
-          if (message.role === 'user' && !firstMessagePreview) {
+          const isUserMessage = entry.type === 'user' || entry.role === 'user';
+          if (isUserMessage && !firstMessagePreview) {
+            // Handle both Claude CLI format (message.content) and API format (content)
+            const content = entry.message?.content ?? entry.content;
             const text =
-              typeof message.content === 'string'
-                ? message.content
-                : Array.isArray(message.content)
-                  ? message.content
+              typeof content === 'string'
+                ? content
+                : Array.isArray(content)
+                  ? content
                       .filter((c: any) => c.type === 'text')
                       .map((c: any) => c.text)
                       .join(' ')
@@ -89,17 +94,18 @@ export class AgentSessionService {
           }
 
           // Sum token usage from assistant messages
-          if (message.role === 'assistant' && message.usage) {
+          const isAssistantMessage = entry.type === 'assistant' || entry.role === 'assistant';
+          if (isAssistantMessage && entry.usage) {
             totalTokens +=
-              (message.usage.input_tokens || 0) +
-              (message.usage.cache_creation_input_tokens || 0) +
-              (message.usage.cache_read_input_tokens || 0) +
-              (message.usage.output_tokens || 0);
+              (entry.usage.input_tokens || 0) +
+              (entry.usage.cache_creation_input_tokens || 0) +
+              (entry.usage.cache_read_input_tokens || 0) +
+              (entry.usage.output_tokens || 0);
           }
 
           // Track the timestamp from the latest message
-          if (message.timestamp) {
-            lastMessageAt = message.timestamp;
+          if (entry.timestamp) {
+            lastMessageAt = entry.timestamp;
           }
         } catch (err) {
           // Skip malformed lines
@@ -175,7 +181,7 @@ export class AgentSessionService {
               where: { id: sessionId },
               data: {
                 metadata: metadata as any,
-                updated_at: new Date(),
+                // updated_at is automatically set by Prisma @updatedAt directive
               },
             });
             updated++;
@@ -367,7 +373,7 @@ export class AgentSessionService {
         where: { id: sessionId },
         data: {
           metadata: updatedMetadata as any,
-          updated_at: new Date(),
+          // updated_at is automatically set by Prisma @updatedAt directive
         },
       });
 

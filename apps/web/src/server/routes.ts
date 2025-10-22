@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
-import { authRoutes } from './routes/auth';
-import { projectRoutes } from './routes/projects';
-import { sessionRoutes } from './routes/sessions';
+import { authRoutes } from '@/server/routes/auth';
+import { projectRoutes } from '@/server/routes/projects';
+import { sessionRoutes } from '@/server/routes/sessions';
 
 export async function registerRoutes(fastify: FastifyInstance) {
   // Register auth routes

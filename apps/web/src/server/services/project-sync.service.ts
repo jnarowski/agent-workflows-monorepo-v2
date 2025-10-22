@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
 import os from "os";
 import readline from "readline";
-import { projectService } from "./project.service";
-import { agentSessionService } from "./agent-session.service";
-import type { SyncProjectsResponse } from "../../shared/types/project-sync.types";
+import { projectService } from "@/server/services/project.service";
+import { agentSessionService } from "@/server/services/agent-session.service";
+import type { SyncProjectsResponse } from "@/shared/types/project-sync.types";
 
 /**
  * Project Sync Service
@@ -81,7 +82,7 @@ export class ProjectSyncService {
                     latestCwd = entry.cwd;
                   }
                 }
-              } catch (parseError) {
+              } catch {
                 // Skip malformed lines
               }
             }
@@ -182,7 +183,7 @@ export class ProjectSyncService {
     try {
       // Check if directory exists
       await fs.access(claudeProjectsDir);
-    } catch (error) {
+    } catch {
       // Directory doesn't exist, return empty stats
       return {
         projectsImported: 0,

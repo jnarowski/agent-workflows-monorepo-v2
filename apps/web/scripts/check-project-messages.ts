@@ -46,7 +46,7 @@ async function checkProjectMessages(projectName: string) {
     console.log(
       `  Should import: ${sessionsWithMoreThan3 > 0 ? 'YES' : 'NO'}`
     );
-  } catch (error) {
+  } catch {
     console.log(`Project ${projectName} not found or inaccessible`);
   }
 }

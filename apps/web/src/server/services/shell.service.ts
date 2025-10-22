@@ -1,7 +1,7 @@
 import * as pty from 'node-pty';
 import * as os from 'os';
 import type { FastifyBaseLogger } from 'fastify';
-import { projectService } from './project.service';
+import { projectService } from '@/server/services/project.service';
 
 /**
  * Represents an active shell session

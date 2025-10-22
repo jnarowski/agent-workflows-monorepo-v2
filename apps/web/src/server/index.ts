@@ -12,19 +12,66 @@ import {
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { existsSync } from 'fs';
-import { registerRoutes } from './routes';
-import { registerWebSocket } from './websocket';
-import { registerShellRoute } from './routes/shell';
-import { authPlugin } from './plugins/auth';
+import { registerRoutes } from '@/server/routes';
+import { registerWebSocket } from '@/server/websocket';
+import { registerShellRoute } from '@/server/routes/shell';
+import { authPlugin } from '@/server/plugins/auth';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export async function createServer() {
   const fastify = Fastify({
-    logger: {
-      level: process.env.LOG_LEVEL || 'info',
-    },
+    logger: process.env.NODE_ENV === 'production'
+      ? {
+          level: process.env.LOG_LEVEL || 'info',
+          transport: {
+            targets: [
+              // Console output (for Docker, PM2, systemd)
+              {
+                target: 'pino/file',
+                options: { destination: 1 }, // stdout
+                level: 'info'
+              },
+              // File output
+              {
+                target: 'pino/file',
+                options: {
+                  destination: process.env.LOG_FILE || './logs/app.log',
+                  mkdir: true
+                },
+                level: process.env.LOG_LEVEL || 'info'
+              }
+            ]
+          }
+        }
+      : {
+          // Development: pretty-print to console + log file
+          level: process.env.LOG_LEVEL || 'info',
+          transport: {
+            targets: [
+              // Pretty console output
+              {
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                  translateTime: 'HH:MM:ss Z',
+                  ignore: 'pid,hostname'
+                },
+                level: process.env.LOG_LEVEL || 'info'
+              },
+              // File output (plain JSON)
+              {
+                target: 'pino/file',
+                options: {
+                  destination: process.env.LOG_FILE || './logs/app.log',
+                  mkdir: true
+                },
+                level: process.env.LOG_LEVEL || 'info'
+              }
+            ]
+          }
+        }
   }).withTypeProvider<ZodTypeProvider>();
 
   // Set up Zod validation

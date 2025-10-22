@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProjects, useDeleteProject } from "../hooks/useProjects";
-import { Button } from "../components/ui/button";
+import { useProjects } from "@/client/hooks/useProjects";
+import { Button } from "@/client/components/ui/button";
 import {
   Table,
   TableBody,
@@ -9,14 +9,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../components/ui/table";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import { Skeleton } from "../components/ui/skeleton";
+} from "@/client/components/ui/table";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/client/components/ui/card";
+import { Skeleton } from "@/client/components/ui/skeleton";
 import { AlertCircle, FolderOpen, Plus, Pencil, Trash2 } from "lucide-react";
-import { Alert, AlertDescription } from "../components/ui/alert";
-import { ProjectDialog } from "../components/projects/ProjectDialog";
-import { DeleteProjectDialog } from "../components/projects/DeleteProjectDialog";
-import type { Project } from "../../shared/types/project.types";
+import { Alert, AlertDescription } from "@/client/components/ui/alert";
+import { ProjectDialog } from "@/client/components/projects/ProjectDialog";
+import { DeleteProjectDialog } from "@/client/components/projects/DeleteProjectDialog";
+import type { Project } from "@/shared/types/project.types";
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -24,6 +24,9 @@ export default function Projects() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [deletingProject, setDeletingProject] = useState<Project | null>(null);
+
+  // Filter out hidden projects
+  const visibleProjects = projects?.filter(project => !project.is_hidden) ?? [];
 
   // Loading state
   if (isLoading) {
@@ -66,7 +69,7 @@ export default function Projects() {
   }
 
   // Empty state
-  if (!projects || projects.length === 0) {
+  if (!visibleProjects || visibleProjects.length === 0) {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -129,7 +132,7 @@ export default function Projects() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {projects.map((project) => (
+              {visibleProjects.map((project) => (
                 <TableRow
                   key={project.id}
                   className="cursor-pointer hover:bg-muted/50"

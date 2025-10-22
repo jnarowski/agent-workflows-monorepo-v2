@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { python } from "@codemirror/lang-python";
@@ -9,9 +9,9 @@ import { markdown } from "@codemirror/lang-markdown";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { EditorView } from "@codemirror/view";
 import { X, Save, Maximize2, Minimize2 } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "@/client/components/ui/button";
 import { useTheme } from "next-themes";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "@/client/contexts/AuthContext";
 
 interface FileEditorProps {
   projectId: string;
@@ -108,7 +108,7 @@ export function FileEditor({
     loadFileContent();
   }, [projectId, filePath, fileName, handleInvalidToken]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     setSaving(true);
     try {
       const token = localStorage.getItem("token");
@@ -148,7 +148,7 @@ export function FileEditor({
     } finally {
       setSaving(false);
     }
-  };
+  }, [projectId, filePath, content, handleInvalidToken]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -170,7 +170,7 @@ export function FileEditor({
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [content, onClose]);
+  }, [content, onClose, handleSave]);
 
   if (loading) {
     return (

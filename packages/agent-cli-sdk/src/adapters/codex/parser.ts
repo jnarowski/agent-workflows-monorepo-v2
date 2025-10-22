@@ -61,6 +61,7 @@ export async function parseCodexOutput<T = string>(
   // Build response
   const response: ExecutionResponse<T> = {
     output,
+    data: events,
     sessionId: sessionId || generateSessionId(),
     status: exitCode === 0 ? "success" : "error",
     exitCode,
@@ -72,7 +73,6 @@ export async function parseCodexOutput<T = string>(
     raw: {
       stdout,
       stderr: "",
-      events,
     },
   };
 

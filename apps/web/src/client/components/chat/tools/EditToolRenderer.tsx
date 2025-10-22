@@ -3,9 +3,9 @@
  * Shows file path and diff view
  */
 
-import type { EditToolInput } from '../../../shared/types/chat';
-import { FileReference } from '../FileReference';
-import { DiffViewer } from '../DiffViewer';
+import type { EditToolInput } from "@/shared/types/chat";
+import { FileReference } from "@/client/components/chat/FileReference";
+import { DiffViewer } from "@/client/components/chat/DiffViewer";
 
 interface EditToolRendererProps {
   input: EditToolInput;

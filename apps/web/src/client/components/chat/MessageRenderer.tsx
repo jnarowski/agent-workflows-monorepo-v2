@@ -3,7 +3,7 @@
  * Dispatches to UserMessage or AssistantMessage based on role
  */
 
-import type { ChatMessage } from '../../shared/types/chat';
+import type { ChatMessage } from "@/shared/types/chat";
 import { UserMessage } from './UserMessage';
 import { AssistantMessage } from './AssistantMessage';
 

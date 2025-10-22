@@ -1,22 +1,22 @@
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/client/lib/utils";
+import { Button } from "@/client/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/client/components/ui/card";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import type { FormEvent } from "react";
+} from "@/client/components/ui/field";
+import { Input } from "@/client/components/ui/input";
+import type { FormEvent, ComponentProps } from "react";
 
-interface LoginFormProps extends React.ComponentProps<"div"> {
+interface LoginFormProps extends ComponentProps<"div"> {
   username: string;
   password: string;
   isLoading?: boolean;

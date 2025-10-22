@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import { LoginForm } from "../components/login-form";
+import { useAuth } from "@/client/contexts/AuthContext";
+import { LoginForm } from "@/client/components/login-form";
 import type { FormEvent } from "react";
 
 function Login() {
@@ -20,7 +20,7 @@ function Login() {
     try {
       await login(username, password);
       navigate("/");
-    } catch (err) {
+    } catch {
       setError("Invalid username or password");
     } finally {
       setIsLoading(false);

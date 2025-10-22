@@ -36,7 +36,7 @@ async function checkProjects() {
 
   console.log(`\nSample sessions (${sessions.length}):\n`);
   for (const session of sessions) {
-    const metadata = session.metadata as any;
+    const metadata = session.metadata as { messageCount?: number; firstMessagePreview?: string } | null;
     console.log(`Session: ${session.id.substring(0, 8)}...`);
     console.log(`  Project: ${session.project.name}`);
     console.log(`  Messages: ${metadata?.messageCount || 0}`);

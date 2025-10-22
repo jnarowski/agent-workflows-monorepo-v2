@@ -1,11 +1,11 @@
 import type { FastifyInstance } from 'fastify';
-import { ShellService } from '../services/shell.service';
+import { ShellService } from '@/server/services/shell.service';
 import {
   shellMessageSchema,
   type InitMessage,
   type InputMessage,
   type ResizeMessage,
-} from '../schemas/shell.schema';
+} from '@/server/schemas/shell.schema';
 
 // JWT payload interface (matching auth plugin)
 interface JWTPayload {
@@ -78,7 +78,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
                 fastify
               );
             } else if (validatedMessage.type === 'input') {
-              handleInput(validatedMessage, sessionId, socket, fastify);
+              handleInput(validatedMessage, sessionId, socket);
             } else if (validatedMessage.type === 'resize') {
               handleResize(validatedMessage, sessionId, socket, fastify);
             }
@@ -168,8 +168,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
         function handleInput(
           message: InputMessage,
           sessionId: string | null,
-          socket: typeof socket,
-          _fastify: FastifyInstance
+          socket: typeof socket
         ) {
           if (!sessionId) {
             socket.send(
