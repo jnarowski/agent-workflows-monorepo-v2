@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/client/contexts/AuthContext";
 import { ShellProvider } from "@/client/contexts/ShellContext";
 import ProtectedLayout from "@/client/layouts/ProtectedLayout";
 import AuthLayout from "@/client/layouts/AuthLayout";
@@ -17,37 +16,35 @@ import LayoutExperiment from "@/client/pages/LayoutExperiment";
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <ShellProvider>
-          <Routes>
-            {/* Experiment routes - no layout */}
-            <Route path="/experiment" element={<LayoutExperiment />} />
+      <ShellProvider>
+        <Routes>
+          {/* Experiment routes - no layout */}
+          <Route path="/experiment" element={<LayoutExperiment />} />
 
-            {/* Auth routes */}
-            <Route element={<AuthLayout />}>
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
+          {/* Auth routes */}
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+          </Route>
+
+          {/* Protected routes */}
+          <Route element={<ProtectedLayout />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/projects" element={<Projects />} />
+
+            {/* Project detail with nested routes */}
+            <Route path="/projects/:id" element={<ProjectDetailLayout />}>
+              <Route index element={<Navigate to="chat" replace />} />
+              <Route path="chat" element={<ProjectChat />} />
+              <Route path="chat/:sessionId" element={<ProjectChat />} />
+              <Route path="shell" element={<ProjectShell />} />
+              <Route path="files" element={<ProjectFiles />} />
             </Route>
 
-            {/* Protected routes */}
-            <Route element={<ProtectedLayout />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/projects" element={<Projects />} />
-
-              {/* Project detail with nested routes */}
-              <Route path="/projects/:id" element={<ProjectDetailLayout />}>
-                <Route index element={<Navigate to="chat" replace />} />
-                <Route path="chat" element={<ProjectChat />} />
-                <Route path="chat/:sessionId" element={<ProjectChat />} />
-                <Route path="shell" element={<ProjectShell />} />
-                <Route path="files" element={<ProjectFiles />} />
-              </Route>
-
-              <Route path="/about" element={<AboutUs />} />
-            </Route>
-          </Routes>
-        </ShellProvider>
-      </AuthProvider>
+            <Route path="/about" element={<AboutUs />} />
+          </Route>
+        </Routes>
+      </ShellProvider>
     </BrowserRouter>
   );
 }

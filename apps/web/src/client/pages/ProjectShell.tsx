@@ -1,15 +1,15 @@
-import { useParams } from "react-router-dom";
 import { useProject } from "@/client/hooks/useProjects";
 import { Terminal } from "@/client/components/terminal/Terminal";
 import { ShellControls } from "@/client/components/terminal/ShellControls";
 import { useShell } from "@/client/contexts/ShellContext";
+import { useActiveProject } from "@/client/hooks/navigation";
 
 export default function ProjectShell() {
-  const { id } = useParams<{ id: string }>();
-  const { data: project } = useProject(id!);
+  const { projectId } = useActiveProject();
+  const { data: project } = useProject(projectId!);
   const { getSession } = useShell();
 
-  const sessionId = `shell-${id}`;
+  const sessionId = `shell-${projectId}`;
   const session = getSession(sessionId);
 
   const handleRestart = () => {
@@ -24,7 +24,7 @@ export default function ProjectShell() {
         onRestart={handleRestart}
       />
       <div className="flex-1 overflow-hidden">
-        <Terminal sessionId={sessionId} projectId={id!} />
+        <Terminal sessionId={sessionId} projectId={projectId!} />
       </div>
     </div>
   );

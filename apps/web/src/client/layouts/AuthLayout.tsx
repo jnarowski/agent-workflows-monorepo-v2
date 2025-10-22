@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "@/client/contexts/AuthContext";
+import { useAuthStore } from "@/client/stores";
 
 function AuthLayout() {
-  const { isAuthenticated } = useAuth();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;

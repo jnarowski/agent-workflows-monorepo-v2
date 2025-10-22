@@ -1,6 +1,6 @@
 import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/client/contexts/AuthContext";
+import { useAuthStore } from "@/client/stores";
 import { SignupForm } from "@/client/components/signup-form";
 
 function Signup() {
@@ -9,7 +9,7 @@ function Signup() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const { signup } = useAuth();
+  const signup = useAuthStore((state) => state.signup);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent) => {

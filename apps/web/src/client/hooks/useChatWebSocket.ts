@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useChatContext } from "@/client/contexts/ChatContext";
 import type { AgentSessionMetadata } from "@/shared/types";
 import type { ContentBlock } from "@/shared/types/chat";
 
@@ -48,7 +47,13 @@ interface SendMessageOptions {
   config?: Record<string, any>;
 }
 
-export function useChatWebSocket(sessionId: string, projectId: string) {
+interface UseChatWebSocketOptions {
+  sessionId: string;
+  projectId: string;
+  onMetadataUpdate?: (metadata: AgentSessionMetadata) => void;
+}
+
+function useChatWebSocketImpl({ sessionId, projectId, onMetadataUpdate }: UseChatWebSocketOptions) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,12 +66,6 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
   const isReconnectingRef = useRef(false);
   const isMountedRef = useRef(true);
   const isFirstMessageRef = useRef(true);
-
-  const {
-    setWebSocketConnection,
-    removeWebSocketConnection,
-    updateSessionMetadata,
-  } = useChatContext();
 
   const connect = useCallback(() => {
     if (!sessionId || !projectId || !isMountedRef.current) return;
@@ -103,7 +102,6 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
       setError(null);
       reconnectAttemptsRef.current = 0;
       wsRef.current = ws;
-      setWebSocketConnection(sessionId, ws);
     };
 
     ws.onmessage = (event) => {
@@ -278,8 +276,8 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
               return prev;
             });
 
-            if (data.metadata) {
-              updateSessionMetadata(sessionId, data.metadata);
+            if (data.metadata && onMetadataUpdate) {
+              onMetadataUpdate(data.metadata);
             }
             break;
 
@@ -340,7 +338,6 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
       if (wsRef.current === ws) {
         wsRef.current = null;
       }
-      removeWebSocketConnection(sessionId);
 
       // Only attempt to reconnect if not already reconnecting and component is still mounted
       if (
@@ -367,13 +364,7 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    sessionId,
-    projectId,
-    setWebSocketConnection,
-    removeWebSocketConnection,
-    // updateSessionMetadata is stable (empty deps), no need to include
-  ]);
+  }, [sessionId, projectId]);
 
   const handleStreamEvent = useCallback(
     (event: { type: string; data?: any }) => {
@@ -542,4 +533,20 @@ export function useChatWebSocket(sessionId: string, projectId: string) {
     reconnect,
     setMessages,
   };
+}
+
+/**
+ * Hook to manage WebSocket connection for chat sessions
+ *
+ * @param sessionId - The session ID to connect to
+ * @param projectId - The project ID
+ * @param onMetadataUpdate - Optional callback for when metadata is received from WebSocket
+ * @returns WebSocket state and controls
+ */
+export function useChatWebSocket(
+  sessionId: string,
+  projectId: string,
+  onMetadataUpdate?: (metadata: AgentSessionMetadata) => void
+) {
+  return useChatWebSocketImpl({ sessionId, projectId, onMetadataUpdate });
 }

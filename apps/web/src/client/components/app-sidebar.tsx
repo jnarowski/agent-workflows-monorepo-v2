@@ -3,7 +3,7 @@
 import { useState, useMemo, ComponentProps } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Home, FolderOpen, Info } from "lucide-react";
-import { useAuth } from "@/client/contexts/AuthContext";
+import { useAuthStore } from "@/client/stores";
 
 import { Sidebar, useSidebar } from "@/client/components/ui/sidebar";
 import { AppSidebarMain } from "@/client/components/AppSidebarMain";
@@ -125,7 +125,8 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const location = useLocation();
   const [mails, setMails] = useState(data.mails);
   const { setOpen } = useSidebar();
-  const { user, logout } = useAuth();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
 
   // Determine active item based on current location
   const activeItem = useMemo(() => {

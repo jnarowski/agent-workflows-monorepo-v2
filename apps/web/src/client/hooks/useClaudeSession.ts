@@ -5,15 +5,17 @@
 
 import { useState, useEffect } from 'react';
 import type { ChatMessage } from "@/shared/types/chat";
+import type { AgentSessionMetadata } from "@/shared/types";
 import { parseJSONLSession, extractToolResults } from "@/client/utils/parseClaudeSession";
 import { normalizeMessage } from "@/client/utils/sessionAdapters";
 import { useChatWebSocket } from './useChatWebSocket';
-import { useAuth } from "@/client/contexts/AuthContext";
+import { useAuthStore } from "@/client/stores";
 
 interface UseClaudeSessionOptions {
   sessionId: string;
   projectId: string;
   enableWebSocket?: boolean;
+  onMetadataUpdate?: (metadata: AgentSessionMetadata) => void;
 }
 
 interface UseClaudeSessionReturn {
@@ -45,8 +47,8 @@ interface UseClaudeSessionReturn {
 export function useClaudeSession(
   options: UseClaudeSessionOptions
 ): UseClaudeSessionReturn {
-  const { sessionId, projectId, enableWebSocket = false } = options;
-  const { handleInvalidToken } = useAuth();
+  const { sessionId, projectId, enableWebSocket = false, onMetadataUpdate } = options;
+  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [toolResults, setToolResults] = useState<Map<string, { content: string; is_error?: boolean }>>(
@@ -57,7 +59,7 @@ export function useClaudeSession(
 
   // Always call useChatWebSocket (Rules of Hooks - must be called unconditionally)
   // We'll conditionally use its return values based on enableWebSocket flag
-  const webSocket = useChatWebSocket(sessionId, projectId);
+  const webSocket = useChatWebSocket(sessionId, projectId, onMetadataUpdate);
 
   // Load initial messages from JSONL file
   useEffect(() => {

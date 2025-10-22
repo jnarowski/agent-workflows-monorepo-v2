@@ -1,13 +1,12 @@
 import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "@/client/contexts/AuthContext";
-import { ChatProvider } from "@/client/contexts/ChatContext";
+import { useAuthStore } from "@/client/stores";
 import { useSyncProjects } from "@/client/hooks/useProjects";
 import { AppSidebar } from "@/client/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/client/components/ui/sidebar";
 
 function ProtectedLayout() {
-  const { isAuthenticated } = useAuth();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const syncProjects = useSyncProjects();
 
   // Sync projects from Claude CLI on mount
@@ -21,20 +20,18 @@ function ProtectedLayout() {
   }
 
   return (
-    <ChatProvider>
-      <SidebarProvider
-        style={
-          {
-            "--sidebar-width": "350px",
-          } as React.CSSProperties
-        }
-      >
-        <AppSidebar />
-        <SidebarInset>
-          <Outlet />
-        </SidebarInset>
-      </SidebarProvider>
-    </ChatProvider>
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "350px",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar />
+      <SidebarInset>
+        <Outlet />
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
 

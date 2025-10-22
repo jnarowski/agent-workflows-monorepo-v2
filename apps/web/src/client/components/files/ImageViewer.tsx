@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/client/components/ui/button";
 import { X } from "lucide-react";
-import { useAuth } from "@/client/contexts/AuthContext";
+import { useAuthStore } from "@/client/stores";
 
 interface ImageViewerProps {
   projectId: string;
@@ -16,7 +16,7 @@ export function ImageViewer({
   fileName,
   onClose,
 }: ImageViewerProps) {
-  const { handleInvalidToken } = useAuth();
+  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

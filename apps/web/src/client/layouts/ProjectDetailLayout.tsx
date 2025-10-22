@@ -12,14 +12,28 @@ import {
   FileText,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
-import { useAuth } from "@/client/contexts/AuthContext";
+import { useAuthStore, useNavigationStore } from "@/client/stores";
 
 export default function ProjectDetailLayout() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { handleInvalidToken } = useAuth();
+  const handleInvalidToken = useAuthStore((state) => state.handleInvalidToken);
+  const setActiveProject = useNavigationStore((state) => state.setActiveProject);
+  const clearNavigation = useNavigationStore((state) => state.clearNavigation);
   const { data: project, isLoading, error } = useProject(id!);
   const [, setIsSyncing] = useState(false);
+
+  // Sync projectId with navigationStore on mount and when id changes
+  useEffect(() => {
+    if (id) {
+      setActiveProject(id);
+    }
+
+    // Cleanup: clear navigation on unmount
+    return () => {
+      clearNavigation();
+    };
+  }, [id, setActiveProject, clearNavigation]);
 
   // Redirect to root if project is not found or deleted
   useEffect(() => {
@@ -49,6 +63,7 @@ export default function ProjectDetailLayout() {
           // Handle 401 Unauthorized - invalid or missing token
           if (response.status === 401) {
             handleInvalidToken();
+            navigate("/login");
             return;
           }
           console.error('Failed to sync sessions:', response.statusText);
@@ -64,7 +79,7 @@ export default function ProjectDetailLayout() {
     };
 
     syncSessions();
-  }, [id, project, handleInvalidToken]); // Only run when project ID changes (initial mount)
+  }, [id, project, handleInvalidToken, navigate]); // Only run when project ID changes (initial mount)
 
   // Loading state
   if (isLoading) {

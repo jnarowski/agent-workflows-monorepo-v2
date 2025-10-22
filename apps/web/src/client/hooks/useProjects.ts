@@ -15,7 +15,7 @@ import type {
   ErrorResponse,
 } from "@/shared/types/project.types";
 import type { SyncProjectsResponse } from "@/shared/types/project-sync.types";
-import { useAuth } from "@/client/contexts/AuthContext";
+import { useAuthStore } from "@/client/stores";
 
 // Query keys factory - centralized key management
 export const projectKeys = {
@@ -127,7 +127,7 @@ async function toggleProjectHidden(id: string, is_hidden: boolean, onUnauthorize
  * Hook to fetch all projects
  */
 export function useProjects(): UseQueryResult<Project[], Error> {
-  const { handleInvalidToken } = useAuth();
+  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useQuery({
     queryKey: projectKeys.list(),
@@ -139,7 +139,7 @@ export function useProjects(): UseQueryResult<Project[], Error> {
  * Hook to fetch a single project
  */
 export function useProject(id: string): UseQueryResult<Project, Error> {
-  const { handleInvalidToken } = useAuth();
+  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useQuery({
     queryKey: projectKeys.detail(id),
@@ -157,7 +157,7 @@ export function useCreateProject(): UseMutationResult<
   CreateProjectRequest
 > {
   const queryClient = useQueryClient();
-  const { handleInvalidToken } = useAuth();
+  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useMutation({
     mutationFn: (project) => createProject(project, handleInvalidToken),
@@ -187,7 +187,7 @@ export function useUpdateProject(): UseMutationResult<
   { id: string; data: UpdateProjectRequest }
 > {
   const queryClient = useQueryClient();
-  const { handleInvalidToken } = useAuth();
+  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useMutation({
     mutationFn: ({ id, data }) => updateProject(id, data, handleInvalidToken),
@@ -223,7 +223,7 @@ export function useDeleteProject(): UseMutationResult<
   string
 > {
   const queryClient = useQueryClient();
-  const { handleInvalidToken } = useAuth();
+  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useMutation({
     mutationFn: (id) => deleteProject(id, handleInvalidToken),
@@ -264,7 +264,7 @@ export function useSyncProjects(): UseMutationResult<
   void
 > {
   const queryClient = useQueryClient();
-  const { handleInvalidToken } = useAuth();
+  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useMutation({
     mutationFn: () => syncProjects(handleInvalidToken),
@@ -292,7 +292,7 @@ export function useToggleProjectHidden(): UseMutationResult<
   { id: string; is_hidden: boolean }
 > {
   const queryClient = useQueryClient();
-  const { handleInvalidToken } = useAuth();
+  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useMutation({
     mutationFn: ({ id, is_hidden }) => toggleProjectHidden(id, is_hidden, handleInvalidToken),

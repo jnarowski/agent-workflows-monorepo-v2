@@ -1,23 +1,24 @@
-import { useEffect, useMemo, useRef } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ChatInterface } from "@/client/components/chat/ChatInterface";
 import { ChatPromptInput } from "@/client/components/chat/ChatPromptInput";
 import { useClaudeSession } from "@/client/hooks/useClaudeSession";
-import { useChatContext } from "@/client/contexts/ChatContext";
+import { useActiveProject, useActiveSession } from "@/client/hooks/navigation";
 import { useSessionMessages } from "@/client/hooks/useSessionMessages";
+import { useAuthStore } from "@/client/stores";
+import type { AgentSessionMetadata } from "@/shared/types";
 import { v4 as uuidv4 } from "uuid";
 
 export default function ProjectChat() {
-  const { id, sessionId } = useParams<{ id: string; sessionId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { setCurrentSession, activeSessions, createSession } = useChatContext();
+  const { projectId } = useActiveProject();
+  const { sessionId } = useActiveSession();
+  const token = useAuthStore((s) => s.token);
   const initialMessageSentRef = useRef(false);
 
-  // Get session metadata for token count
-  const sessionMetadata = sessionId
-    ? activeSessions.get(sessionId)?.metadata
-    : undefined;
+  // Track session metadata locally (per spec: messages stay in component state initially)
+  const [sessionMetadata, setSessionMetadata] = useState<AgentSessionMetadata | undefined>();
 
   // Load session with WebSocket if sessionId is present
   const {
@@ -31,15 +32,16 @@ export default function ProjectChat() {
     reconnect,
   } = useClaudeSession({
     sessionId: sessionId || "",
-    projectId: id || "",
+    projectId: projectId || "",
     enableWebSocket: !!sessionId,
+    onMetadataUpdate: setSessionMetadata,
   });
 
   // Load historical messages from JSONL file
   const {
     data: historicalMessages = [],
     isLoading: isLoadingHistory,
-  } = useSessionMessages(id || "", sessionId || "");
+  } = useSessionMessages(projectId || "", sessionId || "");
 
   // Merge and deduplicate messages from both sources
   const allMessages = useMemo(() => {
@@ -65,13 +67,7 @@ export default function ProjectChat() {
     });
   }, [historicalMessages, messages]);
 
-  // Set current session in context
-  useEffect(() => {
-    if (sessionId) {
-      setCurrentSession(sessionId);
-    }
-    return () => setCurrentSession(null);
-  }, [sessionId, setCurrentSession]);
+  // No longer need to set current session in context - navigationStore handles this
 
   // Handle initial message from navigation state
   useEffect(() => {
@@ -116,8 +112,7 @@ export default function ProjectChat() {
 
       try {
         // Create the session in the backend
-        const token = localStorage.getItem('token');
-        const response = await fetch(`/api/projects/${id}/sessions`, {
+        const response = await fetch(`/api/projects/${projectId}/sessions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -131,11 +126,8 @@ export default function ProjectChat() {
           return;
         }
 
-        // Create session in context
-        createSession(newSessionId);
-
         // Navigate to the new session with the message as state
-        navigate(`/projects/${id}/chat/${newSessionId}`, {
+        navigate(`/projects/${projectId}/chat/${newSessionId}`, {
           state: { initialMessage: message, initialImages: images },
           replace: true
         });
@@ -189,7 +181,7 @@ export default function ProjectChat() {
       {/* Chat Messages Container - takes up remaining space */}
       <div className="flex-1 overflow-hidden">
         <ChatInterface
-          projectId={id!}
+          projectId={projectId!}
           sessionId={sessionId}
           messages={allMessages}
           toolResults={toolResults}

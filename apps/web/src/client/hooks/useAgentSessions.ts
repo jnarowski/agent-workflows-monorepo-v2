@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/client/contexts/AuthContext";
+import { useAuthStore } from "@/client/stores";
 import type { SessionResponse } from "@/shared/types";
 
 interface UseAgentSessionsOptions {
@@ -34,7 +34,7 @@ export function useAgentSessions({
   projectId,
   enabled = true,
 }: UseAgentSessionsOptions) {
-  const { handleInvalidToken } = useAuth();
+  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useQuery({
     queryKey: ["agentSessions", projectId],

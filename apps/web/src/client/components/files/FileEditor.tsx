@@ -11,7 +11,7 @@ import { EditorView } from "@codemirror/view";
 import { X, Save, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/client/components/ui/button";
 import { useTheme } from "next-themes";
-import { useAuth } from "@/client/contexts/AuthContext";
+import { useAuthStore } from "@/client/stores";
 
 interface FileEditorProps {
   projectId: string;
@@ -55,7 +55,7 @@ export function FileEditor({
   fileName,
   onClose,
 }: FileEditorProps) {
-  const { handleInvalidToken } = useAuth();
+  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

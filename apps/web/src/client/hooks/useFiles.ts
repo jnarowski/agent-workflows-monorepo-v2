@@ -4,7 +4,7 @@ import type {
   FilesResponse,
   FileErrorResponse,
 } from "@/shared/types/file.types";
-import { useAuth } from "@/client/contexts/AuthContext";
+import { useAuthStore } from "@/client/stores";
 
 // Query keys factory - centralized key management
 export const fileKeys = {
@@ -63,7 +63,7 @@ async function fetchProjectFiles(projectId: string, onUnauthorized?: () => void)
  * Hook to fetch file tree for a project
  */
 export function useProjectFiles(projectId: string): UseQueryResult<FileTreeItem[], Error> {
-  const { handleInvalidToken } = useAuth();
+  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useQuery({
     queryKey: fileKeys.project(projectId),

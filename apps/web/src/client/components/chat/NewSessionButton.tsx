@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/client/components/ui/button";
 import { Plus } from 'lucide-react';
-import { useChatContext } from "@/client/contexts/ChatContext";
-import { useAuth } from "@/client/contexts/AuthContext";
+import { useAuthStore } from "@/client/stores";
 
 interface NewSessionButtonProps {
   projectId: string;
@@ -14,8 +13,8 @@ interface NewSessionButtonProps {
 export function NewSessionButton({ projectId, variant = 'default', size = 'default' }: NewSessionButtonProps) {
   const [isCreating, setIsCreating] = useState(false);
   const navigate = useNavigate();
-  const { createSession } = useChatContext();
-  const { handleInvalidToken } = useAuth();
+  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
+  const token = useAuthStore((s) => s.token);
 
   const handleCreateSession = async () => {
     try {
@@ -25,7 +24,6 @@ export function NewSessionButton({ projectId, variant = 'default', size = 'defau
       const sessionId = crypto.randomUUID();
 
       // Call API to create session
-      const token = localStorage.getItem('token');
       const response = await fetch(`/api/projects/${projectId}/sessions`, {
         method: 'POST',
         headers: {
@@ -44,10 +42,7 @@ export function NewSessionButton({ projectId, variant = 'default', size = 'defau
         throw new Error(`Failed to create session: ${response.statusText}`);
       }
 
-      // Add to context
-      createSession(sessionId);
-
-      // Navigate to new session
+      // Navigate to new session (no longer need to add to context)
       navigate(`/projects/${projectId}/chat/${sessionId}`);
     } catch (error) {
       console.error('Error creating session:', error);
