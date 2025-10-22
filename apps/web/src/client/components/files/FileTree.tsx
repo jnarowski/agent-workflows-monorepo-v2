@@ -161,7 +161,6 @@ export function FileTree() {
   const toggleDir = useFilesStore((s) => s.toggleDir);
   const searchQuery = useFilesStore((s) => s.searchQuery);
   const setSearch = useFilesStore((s) => s.setSearch);
-  const selectedFileFromStore = useFilesStore((s) => s.selectedFile);
   const setSelectedFile = useFilesStore((s) => s.setSelectedFile);
   const clearSelection = useFilesStore((s) => s.clearSelection);
 
