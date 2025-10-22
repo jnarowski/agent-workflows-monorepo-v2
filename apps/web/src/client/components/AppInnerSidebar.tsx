@@ -46,6 +46,8 @@ import { useAgentSessions } from "@/client/hooks/useAgentSessions";
 import { SessionListItem } from "./chat/SessionListItem";
 import { NewSessionButton } from "./chat/NewSessionButton";
 import { CommandMenu } from "./CommandMenu";
+import { ProjectDialog } from "./projects/ProjectDialog";
+import type { Project } from "@/shared/types/project.types";
 
 interface AppInnerSidebarProps {
   title?: string;
@@ -75,12 +77,26 @@ export function AppInnerSidebar({
     [projectId: string]: boolean;
   }>({});
   const [isHiddenOpen, setIsHiddenOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [projectToEdit, setProjectToEdit] = useState<Project | undefined>(
+    undefined
+  );
 
   // Fetch sessions for the active project
   const { data: sessionsData } = useAgentSessions({
     projectId: activeProjectId || "",
     enabled: !!activeProjectId,
   });
+
+  // Sort sessions by lastMessageAt (most recent first)
+  const sortedSessions = useMemo(() => {
+    if (!sessionsData) return [];
+    return [...sessionsData].sort((a, b) => {
+      const aTime = new Date(a.metadata.lastMessageAt).getTime();
+      const bTime = new Date(b.metadata.lastMessageAt).getTime();
+      return bTime - aTime; // Descending order (most recent first)
+    });
+  }, [sessionsData]);
 
   const toggleHiddenMutation = useToggleProjectHidden();
 
@@ -131,6 +147,13 @@ export function AppInnerSidebar({
     e.preventDefault();
     e.stopPropagation();
     toggleHiddenMutation.mutate({ id: projectId, is_hidden });
+  };
+
+  const handleEditProject = (project: Project, e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setProjectToEdit(project);
+    setEditDialogOpen(true);
   };
 
   // Ensure active project is open on mount or when activeProjectId changes
@@ -207,7 +230,9 @@ export function AppInnerSidebar({
                             <Star className="text-muted-foreground" />
                             <span>Favorite</span>
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={(e) => handleEditProject(project, e)}
+                          >
                             <Edit className="text-muted-foreground" />
                             <span>Edit Project</span>
                           </DropdownMenuItem>
@@ -237,12 +262,12 @@ export function AppInnerSidebar({
                       <CollapsibleContent>
                         <div className="ml-0 space-y-0.5 border-l pl-1 py-1">
                           {isActive &&
-                          sessionsData &&
-                          sessionsData.length > 0 ? (
+                          sortedSessions &&
+                          sortedSessions.length > 0 ? (
                             <>
                               {(showAllSessions[project.id]
-                                ? sessionsData
-                                : sessionsData.slice(0, 5)
+                                ? sortedSessions
+                                : sortedSessions.slice(0, 5)
                               ).map((session) => (
                                 <SessionListItem
                                   key={session.id}
@@ -251,7 +276,7 @@ export function AppInnerSidebar({
                                   isActive={false}
                                 />
                               ))}
-                              {sessionsData.length > 5 &&
+                              {sortedSessions.length > 5 &&
                                 !showAllSessions[project.id] && (
                                   <button
                                     onClick={() =>
@@ -262,7 +287,7 @@ export function AppInnerSidebar({
                                     }
                                     className="w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors text-left"
                                   >
-                                    Show {sessionsData.length - 5} more...
+                                    Show {sortedSessions.length - 5} more...
                                   </button>
                                 )}
                             </>
@@ -346,7 +371,9 @@ export function AppInnerSidebar({
                                 <Star className="text-muted-foreground" />
                                 <span>Favorite</span>
                               </DropdownMenuItem>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => handleEditProject(project, e)}
+                              >
                                 <Edit className="text-muted-foreground" />
                                 <span>Edit Project</span>
                               </DropdownMenuItem>
@@ -440,6 +467,11 @@ export function AppInnerSidebar({
           </SidebarGroup>
         )}
       </SidebarContent>
+      <ProjectDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        project={projectToEdit}
+      />
     </Sidebar>
   );
 }

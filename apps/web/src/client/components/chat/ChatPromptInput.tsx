@@ -261,10 +261,6 @@ const ChatPromptInputInner = ({
               onTranscriptionChange={controller.textInput.setInput}
               textareaRef={textareaRef}
             />
-            <PromptInputButton>
-              <GlobeIcon size={16} />
-              <span>Search</span>
-            </PromptInputButton>
             <PromptInputModelSelect onValueChange={setModel} value={model}>
               <PromptInputModelSelectTrigger>
                 <PromptInputModelSelectValue />
