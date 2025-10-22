@@ -2,22 +2,13 @@
 
 import {
   PromptInput,
+  PromptInputActionAddAttachments,
+  PromptInputActionMenu,
+  PromptInputActionMenuContent,
+  PromptInputActionMenuTrigger,
   PromptInputAttachment,
   PromptInputAttachments,
   PromptInputBody,
-  PromptInputButton,
-  PromptInputCommand,
-  PromptInputCommandEmpty,
-  PromptInputCommandGroup,
-  PromptInputCommandInput,
-  PromptInputCommandItem,
-  PromptInputCommandList,
-  PromptInputCommandSeparator,
-  PromptInputFooter,
-  PromptInputHeader,
-  PromptInputHoverCard,
-  PromptInputHoverCardContent,
-  PromptInputHoverCardTrigger,
   type PromptInputMessage,
   PromptInputModelSelect,
   PromptInputModelSelectContent,
@@ -25,23 +16,16 @@ import {
   PromptInputModelSelectTrigger,
   PromptInputModelSelectValue,
   PromptInputProvider,
+  PromptInputSpeechButton,
   PromptInputSubmit,
-  PromptInputTab,
-  PromptInputTabBody,
-  PromptInputTabItem,
-  PromptInputTabLabel,
   PromptInputTextarea,
+  PromptInputFooter,
   PromptInputTools,
+  PromptInputButton,
 } from "@/client/components/ai-elements/prompt-input";
-import {
-  AtSignIcon,
-  FilesIcon,
-  GlobeIcon,
-  ImageIcon,
-  RulerIcon,
-} from "lucide-react";
+import { ChatPromptInputFiles } from "@/client/components/chat/ChatPromptInputFiles";
+import { GlobeIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Button } from "@/client/components/ui/button";
 
 const models = [
   { id: "gpt-4", name: "GPT-4" },
@@ -58,37 +42,6 @@ const models = [
 const SUBMITTING_TIMEOUT = 200;
 const STREAMING_TIMEOUT = 2000;
 
-const sampleFiles = {
-  activeTabs: [{ path: "prompt-input.tsx", location: "packages/elements/src" }],
-  recents: [
-    { path: "queue.tsx", location: "apps/test/app/examples" },
-    { path: "queue.tsx", location: "packages/elements/src" },
-  ],
-  added: [
-    { path: "prompt-input.tsx", location: "packages/elements/src" },
-    { path: "queue.tsx", location: "apps/test/app/examples" },
-    { path: "queue.tsx", location: "packages/elements/src" },
-  ],
-  filesAndFolders: [
-    { path: "prompt-input.tsx", location: "packages/elements/src" },
-    { path: "queue.tsx", location: "apps/test/app/examples" },
-  ],
-  code: [{ path: "prompt-input.tsx", location: "packages/elements/src" }],
-  docs: [{ path: "README.md", location: "packages/elements" }],
-};
-
-const sampleTabs = {
-  active: [{ path: "packages/elements/src/task-queue-panel.tsx" }],
-  recents: [
-    { path: "apps/test/app/examples/task-queue-panel.tsx" },
-    { path: "apps/test/app/page.tsx" },
-    { path: "packages/elements/src/task.tsx" },
-    { path: "apps/test/app/examples/prompt-input.tsx" },
-    { path: "packages/elements/src/queue.tsx" },
-    { path: "apps/test/app/examples/queue.tsx" },
-  ],
-};
-
 interface ChatPromptInputProps {
   onSubmit?: (message: string, images?: File[]) => void | Promise<void>;
   disabled?: boolean;
@@ -100,10 +53,13 @@ export const ChatPromptInput = ({
   disabled = false,
   isStreaming: externalIsStreaming = false,
 }: ChatPromptInputProps) => {
+  const [text, setText] = useState<string>("");
   const [model, setModel] = useState<string>(models[0].id);
   const [status, setStatus] = useState<
     "submitted" | "streaming" | "ready" | "error"
   >("ready");
+  const [isAtMenuOpen, setIsAtMenuOpen] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Update status based on external streaming state
@@ -115,7 +71,38 @@ export const ChatPromptInput = ({
     }
   }, [externalIsStreaming, status]);
 
+  // Handle text change and detect @ command
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setText(newValue);
+
+    // Check if user just typed "@" at the end
+    if (newValue.endsWith("@")) {
+      setIsAtMenuOpen(true);
+      // Remove the @ from the text
+      setText(newValue.slice(0, -1));
+    }
+  };
+
+  const stop = () => {
+    console.log("[ChatPromptInput] Stopping request...");
+
+    // Clear any pending timeouts
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
+    setStatus("ready");
+  };
+
   const handleSubmit = async (message: PromptInputMessage) => {
+    // If currently streaming or submitted, stop instead of submitting
+    if (status === "streaming" || status === "submitted") {
+      stop();
+      return;
+    }
+
     const hasText = Boolean(message.text);
     const hasAttachments = Boolean(message.files?.length);
 
@@ -156,8 +143,9 @@ export const ChatPromptInput = ({
         setStatus("streaming");
       }, SUBMITTING_TIMEOUT);
 
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         setStatus("ready");
+        timeoutRef.current = null;
       }, STREAMING_TIMEOUT);
     }
   };
@@ -166,127 +154,36 @@ export const ChatPromptInput = ({
     <div className="flex flex-col justify-end size-full">
       <PromptInputProvider>
         <PromptInput globalDrop multiple onSubmit={handleSubmit}>
-          <PromptInputHeader>
-            <PromptInputHoverCard>
-              <PromptInputHoverCardTrigger>
-                <PromptInputButton
-                  size="icon-sm"
-                  variant="outline"
-                  className="!h-8"
-                >
-                  <AtSignIcon className="text-muted-foreground" size={12} />
-                </PromptInputButton>
-              </PromptInputHoverCardTrigger>
-              <PromptInputHoverCardContent className="w-[400px] p-0">
-                <PromptInputCommand>
-                  <PromptInputCommandInput
-                    className="border-none focus-visible:ring-0"
-                    placeholder="Add files, folders, docs..."
-                  />
-                  <PromptInputCommandList>
-                    <PromptInputCommandEmpty className="p-3 text-muted-foreground text-sm">
-                      No results found.
-                    </PromptInputCommandEmpty>
-                    <PromptInputCommandGroup heading="Added">
-                      <PromptInputCommandItem>
-                        <GlobeIcon />
-                        <span>Active Tabs</span>
-                        <span className="ml-auto text-muted-foreground">✓</span>
-                      </PromptInputCommandItem>
-                    </PromptInputCommandGroup>
-                    <PromptInputCommandSeparator />
-                    <PromptInputCommandGroup heading="Other Files">
-                      {sampleFiles.added.map((file, index) => (
-                        <PromptInputCommandItem key={`${file.path}-${index}`}>
-                          <GlobeIcon className="text-primary" />
-                          <div className="flex flex-col">
-                            <span className="font-medium text-sm">
-                              {file.path}
-                            </span>
-                            <span className="text-muted-foreground text-xs">
-                              {file.location}
-                            </span>
-                          </div>
-                        </PromptInputCommandItem>
-                      ))}
-                    </PromptInputCommandGroup>
-                  </PromptInputCommandList>
-                </PromptInputCommand>
-              </PromptInputHoverCardContent>
-            </PromptInputHoverCard>
-            <PromptInputHoverCard>
-              <PromptInputHoverCardTrigger>
-                <PromptInputButton size="sm" variant="outline">
-                  <RulerIcon className="text-muted-foreground" size={12} />
-                  <span>1</span>
-                </PromptInputButton>
-              </PromptInputHoverCardTrigger>
-              <PromptInputHoverCardContent className="divide-y overflow-hidden p-0">
-                <div className="space-y-2 p-3">
-                  <p className="font-medium text-muted-foreground text-sm">
-                    Attached Project Rules
-                  </p>
-                  <p className="ml-4 text-muted-foreground text-sm">
-                    Always Apply:
-                  </p>
-                  <p className="ml-8 text-sm">ultracite.mdc</p>
-                </div>
-                <p className="bg-sidebar px-4 py-3 text-muted-foreground text-sm">
-                  Click to manage
-                </p>
-              </PromptInputHoverCardContent>
-            </PromptInputHoverCard>
-            <PromptInputHoverCard>
-              <PromptInputHoverCardTrigger>
-                <PromptInputButton size="sm" variant="outline">
-                  <FilesIcon className="text-muted-foreground" size={12} />
-                  <span>1 Tab</span>
-                </PromptInputButton>
-              </PromptInputHoverCardTrigger>
-              <PromptInputHoverCardContent className="w-[300px] space-y-4 px-0 py-3">
-                <PromptInputTab>
-                  <PromptInputTabLabel>Active Tabs</PromptInputTabLabel>
-                  <PromptInputTabBody>
-                    {sampleTabs.active.map((tab) => (
-                      <PromptInputTabItem key={tab.path}>
-                        <GlobeIcon className="text-primary" size={16} />
-                        <span className="truncate" dir="rtl">
-                          {tab.path}
-                        </span>
-                      </PromptInputTabItem>
-                    ))}
-                  </PromptInputTabBody>
-                </PromptInputTab>
-                <PromptInputTab>
-                  <PromptInputTabLabel>Recents</PromptInputTabLabel>
-                  <PromptInputTabBody>
-                    {sampleTabs.recents.map((tab) => (
-                      <PromptInputTabItem key={tab.path}>
-                        <GlobeIcon className="text-primary" size={16} />
-                        <span className="truncate" dir="rtl">
-                          {tab.path}
-                        </span>
-                      </PromptInputTabItem>
-                    ))}
-                  </PromptInputTabBody>
-                </PromptInputTab>
-                <div className="border-t px-3 pt-2 text-muted-foreground text-xs">
-                  Only file paths are included
-                </div>
-              </PromptInputHoverCardContent>
-            </PromptInputHoverCard>
-          </PromptInputHeader>
           <PromptInputBody>
             <PromptInputAttachments>
               {(attachment) => <PromptInputAttachment data={attachment} />}
             </PromptInputAttachments>
             <PromptInputTextarea
-              placeholder="Plan, search, build anything"
+              onChange={handleTextChange}
               ref={textareaRef}
+              value={text}
             />
           </PromptInputBody>
           <PromptInputFooter>
             <PromptInputTools>
+              <PromptInputActionMenu>
+                <PromptInputActionMenuTrigger />
+                <PromptInputActionMenuContent>
+                  <PromptInputActionAddAttachments />
+                </PromptInputActionMenuContent>
+              </PromptInputActionMenu>
+              <ChatPromptInputFiles
+                open={isAtMenuOpen}
+                onOpenChange={setIsAtMenuOpen}
+              />
+              <PromptInputSpeechButton
+                onTranscriptionChange={setText}
+                textareaRef={textareaRef}
+              />
+              <PromptInputButton>
+                <GlobeIcon size={16} />
+                <span>Search</span>
+              </PromptInputButton>
               <PromptInputModelSelect onValueChange={setModel} value={model}>
                 <PromptInputModelSelectTrigger>
                   <PromptInputModelSelectValue />
@@ -303,12 +200,7 @@ export const ChatPromptInput = ({
                 </PromptInputModelSelectContent>
               </PromptInputModelSelect>
             </PromptInputTools>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon-sm">
-                <ImageIcon size={16} className="text-muted-foreground" />
-              </Button>
-              <PromptInputSubmit className="!h-8" status={status} />
-            </div>
+            <PromptInputSubmit className="!h-8" status={status} />
           </PromptInputFooter>
         </PromptInput>
       </PromptInputProvider>
