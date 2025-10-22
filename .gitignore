@@ -41,6 +41,6 @@ yarn-error.log*
 *.pem
 
 # Agent logs
-.agent/agents/logs
-
+.agent/agents/logs/**
+.agent/logs/**
 .playwright-mcp/**
