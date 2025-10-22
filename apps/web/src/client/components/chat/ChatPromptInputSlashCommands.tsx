@@ -94,7 +94,7 @@ export const ChatPromptInputSlashCommands = ({
           <SlashIcon size={16} />
         </PromptInputButton>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-[400px] p-0">
+      <PopoverContent align="start" className="w-[calc(100vw-2rem)] md:w-[400px] p-0">
         <PromptInputCommand>
           <PromptInputCommandInput
             ref={commandInputRef}
@@ -114,13 +114,11 @@ export const ChatPromptInputSlashCommands = ({
                 Error loading commands: {error.message}
               </div>
             )}
-            {!isLoading &&
-              !error &&
-              commands.length === 0 && (
-                <PromptInputCommandEmpty className="p-3 text-muted-foreground text-sm">
-                  No commands found.
-                </PromptInputCommandEmpty>
-              )}
+            {!isLoading && !error && commands.length === 0 && (
+              <PromptInputCommandEmpty className="p-3 text-muted-foreground text-sm">
+                No commands found.
+              </PromptInputCommandEmpty>
+            )}
             {!isLoading &&
               !error &&
               commands.length > 0 &&
@@ -144,7 +142,7 @@ export const ChatPromptInputSlashCommands = ({
                       onSelect={() => onCommandSelect(command.fullCommand)}
                     >
                       <div className="flex flex-col min-w-0 flex-1">
-                        <div className="flex items-baseline gap-2">
+                        <div className="flex items-baseline gap-1">
                           <span className="font-medium text-sm">
                             {hasNamespace ? (
                               <>
@@ -157,11 +155,14 @@ export const ChatPromptInputSlashCommands = ({
                               command.fullCommand
                             )}
                           </span>
-                          {command.argumentHints && command.argumentHints.length > 0 && (
-                            <span className="text-muted-foreground text-xs ml-2">
-                              {command.argumentHints.map((arg) => `[${arg}]`).join(' ')}
-                            </span>
-                          )}
+                          {command.argumentHints &&
+                            command.argumentHints.length > 0 && (
+                              <span className="text-muted-foreground text-xs ml-2">
+                                {command.argumentHints
+                                  .map((arg) => `[${arg}]`)
+                                  .join(" ")}
+                              </span>
+                            )}
                         </div>
                         <span className="text-muted-foreground text-xs">
                           {command.description}
@@ -191,11 +192,14 @@ export const ChatPromptInputSlashCommands = ({
                         <span className="font-medium text-sm">
                           {command.fullCommand}
                         </span>
-                        {command.argumentHints && command.argumentHints.length > 0 && (
-                          <span className="text-muted-foreground text-xs ml-2">
-                            {command.argumentHints.map((arg) => `[${arg}]`).join(' ')}
-                          </span>
-                        )}
+                        {command.argumentHints &&
+                          command.argumentHints.length > 0 && (
+                            <span className="text-muted-foreground text-xs ml-2">
+                              {command.argumentHints
+                                .map((arg) => `[${arg}]`)
+                                .join(" ")}
+                            </span>
+                          )}
                       </div>
                       <span className="text-muted-foreground text-xs">
                         {command.description}

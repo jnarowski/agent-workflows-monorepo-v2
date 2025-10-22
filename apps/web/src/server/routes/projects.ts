@@ -66,7 +66,6 @@ export async function projectRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        console.log('🔍 [POST /api/projects/sync] GLOBAL PROJECT SYNC called');
         const userId = request.user?.id;
 
         if (!userId) {

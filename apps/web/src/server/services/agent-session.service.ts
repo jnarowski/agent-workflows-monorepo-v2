@@ -136,9 +136,6 @@ export class AgentSessionService {
     projectId: string,
     userId: string
   ): Promise<SyncSessionsResponse> {
-    console.log('🔍 [syncProjectSessions] CALLED for projectId:', projectId);
-    console.log('🔍 [syncProjectSessions] Stack trace:', new Error().stack);
-
     const project = await prisma.project.findUnique({
       where: { id: projectId },
     });
@@ -228,7 +225,6 @@ export class AgentSessionService {
 
       // Batch update existing sessions
       if (sessionsToUpdate.length > 0) {
-        console.log(`🔍 [syncProjectSessions] Updating ${sessionsToUpdate.length} sessions for project ${projectId}`);
         await prisma.$transaction(
           sessionsToUpdate.map((session) =>
             prisma.agentSession.update({

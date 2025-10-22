@@ -69,7 +69,7 @@ export function TextBlock({ text, className = "" }: TextBlockProps) {
             if (isInline) {
               return (
                 <code
-                  className="px-1.5 py-0.5 rounded bg-muted text-blue-700 font-mono text-sm font-normal"
+                  className="px-1.5 py-0.5 rounded bg-muted text-blue-700 font-mono text-xs font-normal"
                   {...props}
                 >
                   {children}

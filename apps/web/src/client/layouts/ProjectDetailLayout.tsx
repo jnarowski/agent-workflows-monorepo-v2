@@ -122,9 +122,6 @@ export default function ProjectDetailLayout() {
       {/* Header with project name and tab navigation */}
       <div className="flex items-center justify-between border-b px-6 py-4">
         <div className="flex flex-col gap-1">
-          <div className="text-sm font-semibold text-muted-foreground">
-            Project
-          </div>
           <div className="text-base font-medium">{project.name}</div>
         </div>
         <nav className="flex gap-2">

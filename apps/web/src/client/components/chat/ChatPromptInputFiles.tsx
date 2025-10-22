@@ -159,7 +159,7 @@ export const ChatPromptInputFiles = ({
           <AtSignIcon size={16} />
         </PromptInputButton>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-[400px] p-0">
+      <PopoverContent align="start" className="w-[calc(100vw-2rem)] md:w-[400px] p-0">
         <PromptInputCommand>
           <PromptInputCommandInput
             ref={commandInputRef}

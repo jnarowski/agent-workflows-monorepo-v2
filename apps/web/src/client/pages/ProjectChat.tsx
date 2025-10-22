@@ -29,7 +29,9 @@ export default function ProjectChat() {
   }, [sessionId, setActiveSession]);
 
   // Track session metadata locally (per spec: messages stay in component state initially)
-  const [sessionMetadata, setSessionMetadata] = useState<AgentSessionMetadata | undefined>();
+  const [sessionMetadata, setSessionMetadata] = useState<
+    AgentSessionMetadata | undefined
+  >();
 
   // Load session with WebSocket if sessionId is present
   const {
@@ -49,10 +51,8 @@ export default function ProjectChat() {
   });
 
   // Load historical messages from JSONL file
-  const {
-    data: historicalMessages = [],
-    isLoading: isLoadingHistory,
-  } = useSessionMessages(projectId || "", sessionId || "");
+  const { data: historicalMessages = [], isLoading: isLoadingHistory } =
+    useSessionMessages(projectId || "", sessionId || "");
 
   // Merge and deduplicate messages from both sources
   const allMessages = useMemo(() => {
@@ -82,7 +82,10 @@ export default function ProjectChat() {
 
   // Handle initial message from navigation state
   useEffect(() => {
-    const state = location.state as { initialMessage?: string; initialImages?: File[] } | null;
+    const state = location.state as {
+      initialMessage?: string;
+      initialImages?: File[];
+    } | null;
 
     if (
       state?.initialMessage &&
@@ -91,12 +94,16 @@ export default function ProjectChat() {
       sendMessage &&
       !initialMessageSentRef.current
     ) {
-      console.log('[ProjectChat] Sending initial message from navigation state');
+      console.log(
+        "[ProjectChat] Sending initial message from navigation state"
+      );
       initialMessageSentRef.current = true;
 
       // Send the initial message
       const sendInitialMessage = async () => {
-        const imagePaths = state.initialImages ? await handleImageUpload(state.initialImages) : undefined;
+        const imagePaths = state.initialImages
+          ? await handleImageUpload(state.initialImages)
+          : undefined;
         sendMessage({ message: state.initialMessage!, images: imagePaths });
       };
 
@@ -108,54 +115,57 @@ export default function ProjectChat() {
   }, [sessionId, isConnected, sendMessage, location, navigate]);
 
   const handleSubmit = async (message: string, images?: File[]) => {
-    console.log('[ProjectChat] handleSubmit called:', {
+    console.log("[ProjectChat] handleSubmit called:", {
       message: message.substring(0, 100),
       imagesCount: images?.length || 0,
       hasSendMessage: !!sendMessage,
       sessionId,
-      isConnected
+      isConnected,
     });
 
     // If no sessionId, create a new session
     if (!sessionId) {
-      console.log('[ProjectChat] No sessionId, creating new session');
+      console.log("[ProjectChat] No sessionId, creating new session");
       const newSessionId = uuidv4();
 
       try {
         // Create the session in the backend
         const response = await fetch(`/api/projects/${projectId}/sessions`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ sessionId: newSessionId }),
         });
 
         if (!response.ok) {
-          console.error('[ProjectChat] Failed to create session:', response.statusText);
+          console.error(
+            "[ProjectChat] Failed to create session:",
+            response.statusText
+          );
           return;
         }
 
         // Navigate to the new session with the message as state
         navigate(`/projects/${projectId}/chat/${newSessionId}`, {
           state: { initialMessage: message, initialImages: images },
-          replace: true
+          replace: true,
         });
       } catch (error) {
-        console.error('[ProjectChat] Error creating session:', error);
+        console.error("[ProjectChat] Error creating session:", error);
       }
       return;
     }
 
     if (!sendMessage) {
-      console.error('[ProjectChat] sendMessage is not available');
+      console.error("[ProjectChat] sendMessage is not available");
       return;
     }
 
     // Convert images to base64 before sending via WebSocket
     const imagePaths = images ? await handleImageUpload(images) : undefined;
-    console.log('[ProjectChat] Calling sendMessage with processed data');
+    console.log("[ProjectChat] Calling sendMessage with processed data");
     sendMessage({ message, images: imagePaths });
   };
 
@@ -204,7 +214,7 @@ export default function ProjectChat() {
       </div>
 
       {/* Fixed Input Container at Bottom */}
-      <div className="pb-4">
+      <div className="md:pb-4 pb-2">
         <div className="mx-auto max-w-4xl">
           {/* Token usage display */}
           {sessionId && sessionMetadata && (

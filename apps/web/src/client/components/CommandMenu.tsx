@@ -11,6 +11,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/client/components/ui/command";
 import { useProjects } from "@/client/hooks/useProjects";
 import { useAgentSessions } from "@/client/hooks/useAgentSessions";
@@ -63,12 +64,15 @@ export function CommandMenu() {
               Loading...
             </div>
           ) : (
-            sortedProjects.map((project) => (
-              <ProjectGroup
-                key={project.id}
-                project={project}
-                onNavigate={handleNavigate}
-              />
+            sortedProjects.map((project, index) => (
+              <>
+                <ProjectGroup
+                  key={project.id}
+                  project={project}
+                  onNavigate={handleNavigate}
+                />
+                {index < sortedProjects.length - 1 && <CommandSeparator />}
+              </>
             ))
           )}
         </CommandList>
