@@ -19,7 +19,6 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarHeader,
-  SidebarInput,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -45,6 +44,7 @@ import {
 import { useAgentSessions } from "@/client/hooks/useAgentSessions";
 import { SessionListItem } from "./chat/SessionListItem";
 import { NewSessionButton } from "./chat/NewSessionButton";
+import { CommandMenu } from "./CommandMenu";
 
 interface AppInnerSidebarProps {
   title?: string;
@@ -147,7 +147,7 @@ export function AppInnerSidebar({
             {displayTitle}
           </div>
         </div>
-        <SidebarInput placeholder="Type to search..." />
+        <CommandMenu />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
