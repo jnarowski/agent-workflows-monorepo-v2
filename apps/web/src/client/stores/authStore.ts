@@ -83,7 +83,8 @@ export const useAuthStore = create<AuthStore>()(
 
           if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.error || "Login failed");
+            const errorMessage = typeof error.error === 'string' ? error.error : error.error?.message || "Login failed";
+            throw new Error(errorMessage);
           }
 
           const data = await response.json();
@@ -117,7 +118,8 @@ export const useAuthStore = create<AuthStore>()(
 
           if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.error || "Registration failed");
+            const errorMessage = typeof error.error === 'string' ? error.error : error.error?.message || "Registration failed";
+            throw new Error(errorMessage);
           }
 
           const data = await response.json();

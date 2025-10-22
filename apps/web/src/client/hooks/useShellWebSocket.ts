@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useShell } from "@/client/contexts/ShellContext";
+import { getAuthToken } from '@/client/lib/auth';
 
 interface UseShellWebSocketOptions {
   sessionId: string;
@@ -32,8 +33,7 @@ export function useShellWebSocket({
     (cols: number, rows: number) => {
       if (!enabled || wsRef.current) return;
 
-      // Get JWT token from localStorage
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       if (!token) {
         updateSessionStatus(sessionId, 'error', 'No authentication token found');
         return;

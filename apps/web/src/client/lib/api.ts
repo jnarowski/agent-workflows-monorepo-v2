@@ -3,34 +3,7 @@
  */
 
 import type { ChatMessage } from "@/shared/types/chat";
-
-/**
- * Helper to get auth token from localStorage
- */
-function getAuthToken(): string | null {
-  return localStorage.getItem("token");
-}
-
-/**
- * Helper to make authenticated API calls
- */
-async function fetchWithAuth(
-  url: string,
-  options: RequestInit = {}
-): Promise<Response> {
-  const token = getAuthToken();
-
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
-    },
-  });
-
-  return response;
-}
+import { fetchWithAuth } from "@/client/lib/auth";
 
 /**
  * Fetch historical messages for a session from JSONL file
@@ -42,18 +15,16 @@ export async function getSessionMessages(
   projectId: string,
   sessionId: string
 ): Promise<ChatMessage[]> {
-  const response = await fetchWithAuth(
-    `/api/projects/${projectId}/sessions/${sessionId}/messages`
-  );
-
-  if (!response.ok) {
-    if (response.status === 404) {
-      // No JSONL file exists yet - return empty array
+  try {
+    const response = await fetchWithAuth<{ data: ChatMessage[] }>(
+      `/api/projects/${projectId}/sessions/${sessionId}/messages`
+    );
+    return response.data || [];
+  } catch (error) {
+    // If 404, return empty array (no JSONL file exists yet)
+    if (error instanceof Error && error.message.includes('404')) {
       return [];
     }
-    throw new Error(`Failed to fetch session messages: ${response.statusText}`);
+    throw error;
   }
-
-  const { data } = await response.json();
-  return data || [];
 }

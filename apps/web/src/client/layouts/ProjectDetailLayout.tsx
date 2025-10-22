@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useProject } from "@/client/hooks/useProjects";
 import { Button } from "@/client/components/ui/button";
 import { Skeleton } from "@/client/components/ui/skeleton";
+import { getAuthToken } from '@/client/lib/auth';
 import {
   AlertCircle,
   ArrowLeft,
@@ -50,11 +51,12 @@ export default function ProjectDetailLayout() {
     const syncSessions = async () => {
       try {
         setIsSyncing(true);
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
+
         const response = await fetch(`/api/projects/${id}/sessions/sync`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`,
+            ...(token && { 'Authorization': `Bearer ${token}` }),
             'Content-Type': 'application/json',
           },
         });

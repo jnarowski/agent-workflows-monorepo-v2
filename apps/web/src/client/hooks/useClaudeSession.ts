@@ -8,6 +8,7 @@ import type { ChatMessage } from "@/shared/types/chat";
 import type { AgentSessionMetadata } from "@/shared/types";
 import { parseJSONLSession, extractToolResults } from "@/client/utils/parseClaudeSession";
 import { normalizeMessage } from "@/client/utils/sessionAdapters";
+import { getAuthToken } from '@/client/lib/auth';
 import { useChatWebSocket } from './useChatWebSocket';
 import { useAuthStore } from "@/client/stores";
 
@@ -70,10 +71,11 @@ export function useClaudeSession(
         setIsLoading(true);
         setError(null);
 
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
+
         const response = await fetch(`/api/projects/${projectId}/sessions/${sessionId}/messages`, {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            ...(token && { 'Authorization': `Bearer ${token}` }),
           },
         });
 

@@ -12,10 +12,10 @@ import type {
   UpdateProjectRequest,
   ProjectsResponse,
   ProjectResponse,
-  ErrorResponse,
 } from "@/shared/types/project.types";
 import type { SyncProjectsResponse } from "@/shared/types/project-sync.types";
 import { useAuthStore } from "@/client/stores";
+import { fetchWithAuth } from "@/client/lib/auth";
 
 // Query keys factory - centralized key management
 export const projectKeys = {
@@ -26,100 +26,103 @@ export const projectKeys = {
   detail: (id: string) => [...projectKeys.details(), id] as const,
 };
 
-// Helper to get auth token
-function getAuthToken(): string | null {
-  return localStorage.getItem("token");
-}
-
-// Helper to make authenticated API calls
-async function fetchWithAuth(
-  url: string,
-  options: RequestInit = {},
-  onUnauthorized?: () => void
-) {
-  const token = getAuthToken();
-
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
-    },
-  });
-
-  if (!response.ok) {
-    // Handle 401 Unauthorized - invalid or missing token
-    if (response.status === 401 && onUnauthorized) {
-      onUnauthorized();
-      throw new Error("Session expired");
-    }
-
-    const error: ErrorResponse = await response.json().catch(() => ({
-      error: "An error occurred",
-    }));
-    throw new Error(error.error || "An error occurred");
-  }
-
-  return response.json();
-}
-
 /**
  * Fetch all projects
  */
 async function fetchProjects(onUnauthorized?: () => void): Promise<Project[]> {
-  const data: ProjectsResponse = await fetchWithAuth("/api/projects", {}, onUnauthorized);
+  const data: ProjectsResponse = await fetchWithAuth(
+    "/api/projects",
+    {},
+    onUnauthorized
+  );
   return data.data;
 }
 
 /**
  * Fetch a single project by ID
  */
-async function fetchProject(id: string, onUnauthorized?: () => void): Promise<Project> {
-  const data: ProjectResponse = await fetchWithAuth(`/api/projects/${id}`, {}, onUnauthorized);
+async function fetchProject(
+  id: string,
+  onUnauthorized?: () => void
+): Promise<Project> {
+  const data: ProjectResponse = await fetchWithAuth(
+    `/api/projects/${id}`,
+    {},
+    onUnauthorized
+  );
   return data.data;
 }
 
 /**
  * Create a new project
  */
-async function createProject(project: CreateProjectRequest, onUnauthorized?: () => void): Promise<Project> {
-  const data: ProjectResponse = await fetchWithAuth("/api/projects", {
-    method: "POST",
-    body: JSON.stringify(project),
-  }, onUnauthorized);
+async function createProject(
+  project: CreateProjectRequest,
+  onUnauthorized?: () => void
+): Promise<Project> {
+  const data: ProjectResponse = await fetchWithAuth(
+    "/api/projects",
+    {
+      method: "POST",
+      body: JSON.stringify(project),
+    },
+    onUnauthorized
+  );
   return data.data;
 }
 
 /**
  * Update a project
  */
-async function updateProject(id: string, project: UpdateProjectRequest, onUnauthorized?: () => void): Promise<Project> {
-  const data: ProjectResponse = await fetchWithAuth(`/api/projects/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify(project),
-  }, onUnauthorized);
+async function updateProject(
+  id: string,
+  project: UpdateProjectRequest,
+  onUnauthorized?: () => void
+): Promise<Project> {
+  const data: ProjectResponse = await fetchWithAuth(
+    `/api/projects/${id}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(project),
+    },
+    onUnauthorized
+  );
   return data.data;
 }
 
 /**
  * Delete a project
  */
-async function deleteProject(id: string, onUnauthorized?: () => void): Promise<Project> {
-  const data: ProjectResponse = await fetchWithAuth(`/api/projects/${id}`, {
-    method: "DELETE",
-  }, onUnauthorized);
+async function deleteProject(
+  id: string,
+  onUnauthorized?: () => void
+): Promise<Project> {
+  const data: ProjectResponse = await fetchWithAuth(
+    `/api/projects/${id}`,
+    {
+      method: "DELETE",
+    },
+    onUnauthorized
+  );
   return data.data;
 }
 
 /**
  * Toggle project hidden state
  */
-async function toggleProjectHidden(id: string, is_hidden: boolean, onUnauthorized?: () => void): Promise<Project> {
-  const data: ProjectResponse = await fetchWithAuth(`/api/projects/${id}/hide`, {
-    method: "PATCH",
-    body: JSON.stringify({ is_hidden }),
-  }, onUnauthorized);
+async function toggleProjectHidden(
+  id: string,
+  is_hidden: boolean,
+  onUnauthorized?: () => void
+): Promise<Project> {
+  const data: ProjectResponse = await fetchWithAuth(
+    `/api/projects/${id}/hide`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ is_hidden }),
+    },
+    onUnauthorized
+  );
   return data.data;
 }
 
@@ -217,11 +220,7 @@ export function useUpdateProject(): UseMutationResult<
 /**
  * Hook to delete a project
  */
-export function useDeleteProject(): UseMutationResult<
-  Project,
-  Error,
-  string
-> {
+export function useDeleteProject(): UseMutationResult<Project, Error, string> {
   const queryClient = useQueryClient();
   const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
@@ -235,7 +234,9 @@ export function useDeleteProject(): UseMutationResult<
       });
 
       // Remove the individual project cache
-      queryClient.removeQueries({ queryKey: projectKeys.detail(deletedProject.id) });
+      queryClient.removeQueries({
+        queryKey: projectKeys.detail(deletedProject.id),
+      });
 
       toast.success("Project deleted successfully");
     },
@@ -248,10 +249,16 @@ export function useDeleteProject(): UseMutationResult<
 /**
  * Sync projects from Claude CLI
  */
-async function syncProjects(onUnauthorized?: () => void): Promise<SyncProjectsResponse> {
-  const data: { data: SyncProjectsResponse } = await fetchWithAuth("/api/projects/sync", {
-    method: "POST",
-  }, onUnauthorized);
+async function syncProjects(
+  onUnauthorized?: () => void
+): Promise<SyncProjectsResponse> {
+  const data: { data: SyncProjectsResponse } = await fetchWithAuth(
+    "/api/projects/sync",
+    {
+      method: "POST",
+    },
+    onUnauthorized
+  );
   return data.data;
 }
 
@@ -295,7 +302,8 @@ export function useToggleProjectHidden(): UseMutationResult<
   const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useMutation({
-    mutationFn: ({ id, is_hidden }) => toggleProjectHidden(id, is_hidden, handleInvalidToken),
+    mutationFn: ({ id, is_hidden }) =>
+      toggleProjectHidden(id, is_hidden, handleInvalidToken),
     onSuccess: (updatedProject) => {
       // Update the project in the list cache
       queryClient.setQueryData<Project[]>(projectKeys.list(), (old) => {

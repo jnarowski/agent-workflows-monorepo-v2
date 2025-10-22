@@ -38,14 +38,24 @@ async function authPluginFunction(fastify: FastifyInstance) {
         if (!user || !user.is_active) {
           return reply
             .code(401)
-            .send({ error: "Invalid token. User not found or inactive." });
+            .send({
+              error: {
+                message: "Invalid token. User not found or inactive.",
+                statusCode: 401,
+              },
+            });
         }
 
         // Attach user to request
         request.user = user;
       } catch (err) {
         fastify.log.debug({ err }, "Authentication failed");
-        return reply.code(401).send({ error: "Invalid or missing token" });
+        return reply.code(401).send({
+          error: {
+            message: "Invalid or missing token",
+            statusCode: 401,
+          },
+        });
       }
     }
   );

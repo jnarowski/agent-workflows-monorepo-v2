@@ -54,6 +54,29 @@ const toRelativePath = (absolutePath: string, projectPath: string): string => {
   return absolutePath;
 };
 
+// Helper to get relative directory path for display
+const getRelativeDirectory = (
+  fullPath: string,
+  projectPath: string
+): string => {
+  if (!projectPath) return fullPath;
+
+  // Ensure project path ends without a trailing slash
+  const normalizedProjectPath = projectPath.endsWith("/")
+    ? projectPath.slice(0, -1)
+    : projectPath;
+
+  // If the path starts with the project path, make it relative
+  if (fullPath.startsWith(normalizedProjectPath + "/")) {
+    const relativePath = fullPath.slice(normalizedProjectPath.length + 1);
+    // Get directory portion (everything before the last /)
+    const lastSlashIndex = relativePath.lastIndexOf("/");
+    return lastSlashIndex > -1 ? relativePath.slice(0, lastSlashIndex) : "";
+  }
+
+  return fullPath;
+};
+
 export const ChatPromptInputFiles = ({
   open,
   onOpenChange,
@@ -122,9 +145,12 @@ export const ChatPromptInputFiles = ({
   }, [addedFiles, flattenedFiles]);
 
   // Filter out already added files from search results
+  // Only limit results when NOT searching to keep initial load fast
   const searchResults = useMemo(() => {
-    return filteredFiles.filter((file) => !addedFiles.includes(file.fullPath));
-  }, [filteredFiles, addedFiles]);
+    const filtered = filteredFiles.filter((file) => !addedFiles.includes(file.fullPath));
+    // If user is searching, show all results; otherwise limit to 100 for fast initial render
+    return searchQuery ? filtered : filtered.slice(0, 100);
+  }, [filteredFiles, addedFiles, searchQuery]);
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -183,7 +209,7 @@ export const ChatPromptInputFiles = ({
                           {file.filename}
                         </span>
                         <span className="text-muted-foreground text-xs truncate">
-                          {file.directory}
+                          {getRelativeDirectory(file.fullPath, projectPath)}
                         </span>
                       </div>
                     </div>
@@ -215,7 +241,7 @@ export const ChatPromptInputFiles = ({
                           {file.filename}
                         </span>
                         <span className="text-muted-foreground text-xs truncate">
-                          {file.directory}
+                          {getRelativeDirectory(file.fullPath, projectPath)}
                         </span>
                       </div>
                     </div>

@@ -5,6 +5,7 @@ import type {
   FileErrorResponse,
 } from "@/shared/types/file.types";
 import { useAuthStore } from "@/client/stores";
+import { fetchWithAuth } from "@/client/lib/auth";
 
 // Query keys factory - centralized key management
 export const fileKeys = {
@@ -12,44 +13,6 @@ export const fileKeys = {
   projects: () => [...fileKeys.all, "project"] as const,
   project: (projectId: string) => [...fileKeys.projects(), projectId] as const,
 };
-
-// Helper to get auth token
-function getAuthToken(): string | null {
-  return localStorage.getItem("token");
-}
-
-// Helper to make authenticated API calls
-async function fetchWithAuth(
-  url: string,
-  options: RequestInit = {},
-  onUnauthorized?: () => void
-) {
-  const token = getAuthToken();
-
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
-    },
-  });
-
-  if (!response.ok) {
-    // Handle 401 Unauthorized - invalid or missing token
-    if (response.status === 401 && onUnauthorized) {
-      onUnauthorized();
-      throw new Error("Session expired");
-    }
-
-    const error: FileErrorResponse = await response.json().catch(() => ({
-      error: "An error occurred",
-    }));
-    throw new Error(error.error || "An error occurred");
-  }
-
-  return response.json();
-}
 
 /**
  * Fetch file tree for a project

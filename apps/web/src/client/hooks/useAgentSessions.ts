@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/client/stores";
 import type { SessionResponse } from "@/shared/types";
+import { getAuthToken } from "@/client/lib/auth";
 
 interface UseAgentSessionsOptions {
   projectId: string;
@@ -11,9 +12,11 @@ async function fetchAgentSessions(
   projectId: string,
   onUnauthorized?: () => void
 ): Promise<SessionResponse[]> {
+  const token = getAuthToken();
+
   const response = await fetch(`/api/projects/${projectId}/sessions`, {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      ...(token && { Authorization: `Bearer ${token}` }),
     },
   });
 

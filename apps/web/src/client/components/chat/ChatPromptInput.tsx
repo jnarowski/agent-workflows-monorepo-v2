@@ -2,10 +2,6 @@
 
 import {
   PromptInput,
-  PromptInputActionAddAttachments,
-  PromptInputActionMenu,
-  PromptInputActionMenuContent,
-  PromptInputActionMenuTrigger,
   PromptInputAttachment,
   PromptInputAttachments,
   PromptInputBody,
@@ -25,6 +21,7 @@ import {
   usePromptInputController,
 } from "@/client/components/ai-elements/prompt-input";
 import { ChatPromptInputFiles } from "@/client/components/chat/ChatPromptInputFiles";
+import { ChatPromptInputSlashCommands } from "@/client/components/chat/ChatPromptInputSlashCommands";
 import { GlobeIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigationStore } from "@/client/stores/navigationStore";
@@ -64,6 +61,7 @@ const ChatPromptInputInner = ({
     "submitted" | "streaming" | "ready" | "error"
   >("ready");
   const [isAtMenuOpen, setIsAtMenuOpen] = useState(false);
+  const [isSlashMenuOpen, setIsSlashMenuOpen] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -84,7 +82,7 @@ const ChatPromptInputInner = ({
     }
   }, [externalIsStreaming, status]);
 
-  // Handle text change and detect @ command
+  // Handle text change and detect @ and / commands
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     controller.textInput.setInput(newValue);
@@ -99,6 +97,15 @@ const ChatPromptInputInner = ({
       const textWithoutAt = newValue.slice(0, -1);
       controller.textInput.setInput(textWithoutAt);
       setCursorPosition(textWithoutAt.length);
+    }
+
+    // Check if user just typed "/" at the end
+    if (newValue.endsWith("/")) {
+      setIsSlashMenuOpen(true);
+      // Remove the / from the text and update cursor position
+      const textWithoutSlash = newValue.slice(0, -1);
+      controller.textInput.setInput(textWithoutSlash);
+      setCursorPosition(textWithoutSlash.length);
     }
   };
 
@@ -133,6 +140,29 @@ const ChatPromptInputInner = ({
   const handleFileRemove = (filePath: string) => {
     const newText = removeAllOccurrences(text, filePath);
     controller.textInput.setInput(newText);
+  };
+
+  // Handle command selection from slash menu
+  const handleCommandSelect = (command: string) => {
+    // Insert command at position 0 with trailing space
+    const commandText = `${command} `;
+    const newText = commandText + text;
+    controller.textInput.setInput(newText);
+
+    // Close menu
+    setIsSlashMenuOpen(false);
+
+    // Focus textarea and position cursor after command
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+      setTimeout(() => {
+        if (textareaRef.current) {
+          const newPosition = commandText.length;
+          textareaRef.current.setSelectionRange(newPosition, newPosition);
+          setCursorPosition(newPosition);
+        }
+      }, 0);
+    }
   };
 
   const stop = () => {
@@ -203,25 +233,15 @@ const ChatPromptInputInner = ({
 
   return (
     <div className="flex flex-col justify-end size-full">
-      <p>{text}</p>
       <PromptInput globalDrop multiple onSubmit={handleSubmit}>
         <PromptInputBody>
           <PromptInputAttachments>
             {(attachment) => <PromptInputAttachment data={attachment} />}
           </PromptInputAttachments>
-          <PromptInputTextarea
-            onChange={handleTextChange}
-            ref={textareaRef}
-          />
+          <PromptInputTextarea onChange={handleTextChange} ref={textareaRef} />
         </PromptInputBody>
         <PromptInputFooter>
           <PromptInputTools>
-            <PromptInputActionMenu>
-              <PromptInputActionMenuTrigger />
-              <PromptInputActionMenuContent>
-                <PromptInputActionAddAttachments />
-              </PromptInputActionMenuContent>
-            </PromptInputActionMenu>
             <ChatPromptInputFiles
               open={isAtMenuOpen}
               onOpenChange={setIsAtMenuOpen}
@@ -230,6 +250,12 @@ const ChatPromptInputInner = ({
               onFileSelect={handleFileSelect}
               onFileRemove={handleFileRemove}
               textareaValue={text}
+            />
+            <ChatPromptInputSlashCommands
+              open={isSlashMenuOpen}
+              onOpenChange={setIsSlashMenuOpen}
+              projectId={activeProjectId}
+              onCommandSelect={handleCommandSelect}
             />
             <PromptInputSpeechButton
               onTranscriptionChange={controller.textInput.setInput}

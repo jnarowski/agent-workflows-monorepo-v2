@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { AgentSessionMetadata } from "@/shared/types";
 import type { ContentBlock } from "@/shared/types/chat";
+import { getAuthToken } from "@/client/lib/auth";
 
 export interface ChatMessage {
   id?: string;
@@ -70,7 +71,7 @@ function useChatWebSocketImpl({ sessionId, projectId, onMetadataUpdate }: UseCha
   const connect = useCallback(() => {
     if (!sessionId || !projectId || !isMountedRef.current) return;
 
-    const token = localStorage.getItem("token");
+    const token = getAuthToken();
     if (!token) {
       setError("Authentication token not found");
       return;
