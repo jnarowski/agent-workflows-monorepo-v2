@@ -1,0 +1,24 @@
+[
+  {
+    "session_id": "b5d85418-511a-4fbf-9432-4399b2f8a9e6",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b5d85418-511a-4fbf-9432-4399b2f8a9e6.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "BashOutput",
+    "tool_input": {
+      "bash_id": "117363"
+    }
+  },
+  {
+    "session_id": "b5d85418-511a-4fbf-9432-4399b2f8a9e6",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b5d85418-511a-4fbf-9432-4399b2f8a9e6.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "BashOutput",
+    "tool_input": {
+      "bash_id": "7e0e21"
+    }
+  }
+]

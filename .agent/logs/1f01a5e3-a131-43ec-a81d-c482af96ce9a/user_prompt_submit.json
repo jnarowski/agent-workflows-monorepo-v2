@@ -1,0 +1,66 @@
+[
+  {
+    "session_id": "1f01a5e3-a131-43ec-a81d-c482af96ce9a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/1f01a5e3-a131-43ec-a81d-c482af96ce9a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "/generate-slash-command use-browser this should generate a slash command that logs into my app and verifies that the feature was completed. If there are issues, use this tool to iterate on the feature and always verify it is working before finishing your work"
+  },
+  {
+    "session_id": "1f01a5e3-a131-43ec-a81d-c482af96ce9a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/1f01a5e3-a131-43ec-a81d-c482af96ce9a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "1"
+  },
+  {
+    "session_id": "1f01a5e3-a131-43ec-a81d-c482af96ce9a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/1f01a5e3-a131-43ec-a81d-c482af96ce9a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "http://localhost:5173/login"
+  },
+  {
+    "session_id": "1f01a5e3-a131-43ec-a81d-c482af96ce9a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/1f01a5e3-a131-43ec-a81d-c482af96ce9a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "1"
+  },
+  {
+    "session_id": "1f01a5e3-a131-43ec-a81d-c482af96ce9a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/1f01a5e3-a131-43ec-a81d-c482af96ce9a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "1 - i already added them to .env"
+  },
+  {
+    "session_id": "1f01a5e3-a131-43ec-a81d-c482af96ce9a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/1f01a5e3-a131-43ec-a81d-c482af96ce9a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can we have the slash command add playwright mcp just for that command?"
+  },
+  {
+    "session_id": "1f01a5e3-a131-43ec-a81d-c482af96ce9a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/1f01a5e3-a131-43ec-a81d-c482af96ce9a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "where do I put .mcp.json files?"
+  },
+  {
+    "session_id": "1f01a5e3-a131-43ec-a81d-c482af96ce9a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/1f01a5e3-a131-43ec-a81d-c482af96ce9a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "I just don't want it to always load in context"
+  }
+]

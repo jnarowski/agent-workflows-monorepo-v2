@@ -1,0 +1,26 @@
+[
+  {
+    "session_id": "a700de4f-8059-4ca1-bd92-ab58702a8ad3",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/a700de4f-8059-4ca1-bd92-ab58702a8ad3.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "/use-browser load http://localhost:5173/projects/cmh0h2ub80001ya2z3h246ivy/chat and make sure the bottom prompt box is floating and doesn't require you to scroll all the way down"
+  },
+  {
+    "session_id": "a700de4f-8059-4ca1-bd92-ab58702a8ad3",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/a700de4f-8059-4ca1-bd92-ab58702a8ad3.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "'/var/folders/sr/6t367_f55y3d5cf8mvmj_c800000gn/T/TemporaryItems/NSIRD_screencaptureui_ZE1bNU/Screenshot 2025-10-21 at 10.16.18\u202fAM.png' it should be in the middle bottom of the right side, not the whole screen"
+  },
+  {
+    "session_id": "a700de4f-8059-4ca1-bd92-ab58702a8ad3",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/a700de4f-8059-4ca1-bd92-ab58702a8ad3.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "it is not aligned in the middle of the chat pane. it's further right than left"
+  }
+]

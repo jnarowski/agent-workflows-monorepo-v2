@@ -1,0 +1,52 @@
+[
+  {
+    "session_id": "f39b4dc7-dd60-46c8-b19d-86bef9061f15",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f39b4dc7-dd60-46c8-b19d-86bef9061f15.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/components/AppInnerSidebar.tsx",
+      "old_string": "  const [openProjects, setOpenProjects] = React.useState<string[]>(\n    activeProjectId ? [activeProjectId] : []\n  );",
+      "new_string": "  const [openProjects, setOpenProjects] = React.useState<string[]>(\n    activeProjectId ? [activeProjectId] : []\n  );\n  const [showAllSessions, setShowAllSessions] = React.useState<{\n    [projectId: string]: boolean;\n  }>({});"
+    }
+  },
+  {
+    "session_id": "f39b4dc7-dd60-46c8-b19d-86bef9061f15",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f39b4dc7-dd60-46c8-b19d-86bef9061f15.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/components/AppInnerSidebar.tsx",
+      "old_string": "                      <CollapsibleContent>\n                        <div className=\"ml-0 space-y-0.5 border-l pl-1 py-1\">\n                          {isActive &&\n                          sessionsData &&\n                          sessionsData.length > 0 ? (\n                            <>\n                              {sessionsData.map((session) => (\n                                <SessionListItem\n                                  key={session.id}\n                                  session={session}\n                                  projectId={project.id}\n                                  isActive={false}\n                                />\n                              ))}\n                            </>\n                          ) : isActive ? (\n                            <div className=\"px-2 py-2 text-xs text-muted-foreground\">\n                              No sessions yet\n                            </div>\n                          ) : null}\n                          {isActive && (\n                            <div className=\"px-2 pt-1\">\n                              <NewSessionButton\n                                projectId={project.id}\n                                variant=\"default\"\n                                size=\"sm\"\n                              />\n                            </div>\n                          )}\n                        </div>\n                      </CollapsibleContent>",
+      "new_string": "                      <CollapsibleContent>\n                        <div className=\"ml-0 space-y-0.5 border-l pl-1 py-1\">\n                          {isActive &&\n                          sessionsData &&\n                          sessionsData.length > 0 ? (\n                            <>\n                              {(showAllSessions[project.id]\n                                ? sessionsData\n                                : sessionsData.slice(0, 5)\n                              ).map((session) => (\n                                <SessionListItem\n                                  key={session.id}\n                                  session={session}\n                                  projectId={project.id}\n                                  isActive={false}\n                                />\n                              ))}\n                              {sessionsData.length > 5 &&\n                                !showAllSessions[project.id] && (\n                                  <button\n                                    onClick={() =>\n                                      setShowAllSessions((prev) => ({\n                                        ...prev,\n                                        [project.id]: true,\n                                      }))\n                                    }\n                                    className=\"w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors text-left\"\n                                  >\n                                    Show {sessionsData.length - 5} more...\n                                  </button>\n                                )}\n                            </>\n                          ) : isActive ? (\n                            <div className=\"px-2 py-2 text-xs text-muted-foreground\">\n                              No sessions yet\n                            </div>\n                          ) : null}\n                          {isActive && (\n                            <div className=\"px-2 pt-1\">\n                              <NewSessionButton\n                                projectId={project.id}\n                                variant=\"default\"\n                                size=\"sm\"\n                              />\n                            </div>\n                          )}\n                        </div>\n                      </CollapsibleContent>"
+    }
+  },
+  {
+    "session_id": "f39b4dc7-dd60-46c8-b19d-86bef9061f15",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f39b4dc7-dd60-46c8-b19d-86bef9061f15.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/components/chat/SessionListItem.tsx"
+    }
+  },
+  {
+    "session_id": "f39b4dc7-dd60-46c8-b19d-86bef9061f15",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f39b4dc7-dd60-46c8-b19d-86bef9061f15.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/components/chat/SessionListItem.tsx",
+      "old_string": "export function SessionListItem({ session, projectId, isActive = false }: SessionListItemProps) {\n  const { id, metadata } = session;\n  const { firstMessagePreview, lastMessageAt, messageCount, totalTokens } = metadata;\n\n  const timeAgo = formatDistanceToNow(new Date(lastMessageAt), { addSuffix: true });\n\n  return (\n    <Link\n      to={`/projects/${projectId}/chat/${id}`}\n      className={cn(\n        'block px-3 py-2 rounded-md transition-colors hover:bg-accent',\n        isActive && 'bg-accent'\n      )}\n    >\n      <div className=\"space-y-1\">\n        <p className=\"text-sm font-medium leading-none truncate\">\n          {firstMessagePreview || 'New session'}\n        </p>\n        <div className=\"flex items-center justify-between text-xs text-muted-foreground\">\n          <span>{timeAgo}</span>\n          <span>{messageCount} messages</span>\n        </div>\n        <div className=\"text-xs text-muted-foreground\">\n          {totalTokens.toLocaleString()} tokens\n        </div>\n      </div>\n    </Link>\n  );\n}",
+      "new_string": "export function SessionListItem({ session, projectId, isActive = false }: SessionListItemProps) {\n  const { id, metadata } = session;\n  const { firstMessagePreview, lastMessageAt, messageCount } = metadata;\n\n  const timeAgo = formatDistanceToNow(new Date(lastMessageAt), { addSuffix: true });\n\n  return (\n    <Link\n      to={`/projects/${projectId}/chat/${id}`}\n      className={cn(\n        'block px-3 py-2 rounded-md transition-colors hover:bg-accent',\n        isActive && 'bg-accent'\n      )}\n    >\n      <div className=\"space-y-1\">\n        <p className=\"text-sm font-medium leading-none truncate\">\n          {firstMessagePreview || 'New session'}\n        </p>\n        <div className=\"flex items-center justify-between text-xs text-muted-foreground\">\n          <span>{timeAgo}</span>\n          <span>{messageCount} messages</span>\n        </div>\n      </div>\n    </Link>\n  );\n}"
+    }
+  }
+]

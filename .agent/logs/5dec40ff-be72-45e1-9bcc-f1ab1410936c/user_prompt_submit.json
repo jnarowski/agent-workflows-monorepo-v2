@@ -1,0 +1,42 @@
+[
+  {
+    "session_id": "5dec40ff-be72-45e1-9bcc-f1ab1410936c",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dec40ff-be72-45e1-9bcc-f1ab1410936c.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "It looks like when implementing chat, you modified the mockup file. Please don't modify the file. We'll need an adapter for claude output vs codex or others on the frontend. I've added a new mockup file:\\\napps/web/public/mocks/955542ae-9772-459d-a33f-d12f5586d961.jsonl\\\n\\\nDo not change it. Update the /chat feature to work with this format and ensure there is a way to add parsing for different formats"
+  },
+  {
+    "session_id": "5dec40ff-be72-45e1-9bcc-f1ab1410936c",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dec40ff-be72-45e1-9bcc-f1ab1410936c.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Try to keep it as simple as possible with the transform and adapter functions."
+  },
+  {
+    "session_id": "5dec40ff-be72-45e1-9bcc-f1ab1410936c",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dec40ff-be72-45e1-9bcc-f1ab1410936c.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "see @apps/claudecodeui/ "
+  },
+  {
+    "session_id": "5dec40ff-be72-45e1-9bcc-f1ab1410936c",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dec40ff-be72-45e1-9bcc-f1ab1410936c.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "\u23fa Perfect! I can see that claudecodeui uses a WebSocket-based real-time approach rather than parsing JSONL files.\n  They receive messages directly from the WebSocket and store them in state. This is much simpler.\\\n\\\nWe will do the same thing. We just might want to load a previous conversion from a jsonl file"
+  },
+  {
+    "session_id": "5dec40ff-be72-45e1-9bcc-f1ab1410936c",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dec40ff-be72-45e1-9bcc-f1ab1410936c.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "ok"
+  }
+]

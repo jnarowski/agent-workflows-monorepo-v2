@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "38b8767b-c069-432a-bd6e-f32738f9ab97",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/38b8767b-c069-432a-bd6e-f32738f9ab97.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "'/var/folders/sr/6t367_f55y3d5cf8mvmj_c800000gn/T/TemporaryItems/NSIRD_screencaptureui_VYh706/Screenshot 2025-10-22 at 5.42.29\u202fAM.png' when a project is deleted or not found, this is what it looks like. Can we redirect back to root with a sonner notification if this happens?"
+  }
+]

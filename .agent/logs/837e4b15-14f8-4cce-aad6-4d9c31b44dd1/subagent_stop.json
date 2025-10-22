@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "837e4b15-14f8-4cce-aad6-4d9c31b44dd1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/837e4b15-14f8-4cce-aad6-4d9c31b44dd1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "default",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "786b510f-3ba2-41f0-81c0-af24db56bd34",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/786b510f-3ba2-41f0-81c0-af24db56bd34.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can you create a sh script that deletes all git branches except main, staging and develop in apps/web/scripts"
+  }
+]

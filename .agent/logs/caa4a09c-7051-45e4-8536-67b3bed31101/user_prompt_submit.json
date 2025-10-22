@@ -1,0 +1,18 @@
+[
+  {
+    "session_id": "caa4a09c-7051-45e4-8536-67b3bed31101",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/caa4a09c-7051-45e4-8536-67b3bed31101.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can you add a .mcp.json.design for the shadcn mcp"
+  },
+  {
+    "session_id": "caa4a09c-7051-45e4-8536-67b3bed31101",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/caa4a09c-7051-45e4-8536-67b3bed31101.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "what other design related mcp tools should we add to this list or is shadcn the only one we need?"
+  }
+]

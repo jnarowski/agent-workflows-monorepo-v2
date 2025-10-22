@@ -1,0 +1,64 @@
+[
+  {
+    "session_id": "e9ff7c78-52b1-4f88-a83b-6d826790c42d",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/e9ff7c78-52b1-4f88-a83b-6d826790c42d.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "ls apps/web",
+      "description": "List web app directory structure"
+    }
+  },
+  {
+    "session_id": "e9ff7c78-52b1-4f88-a83b-6d826790c42d",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/e9ff7c78-52b1-4f88-a83b-6d826790c42d.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Explore project structure and check for existing MCP configuration",
+          "status": "completed",
+          "activeForm": "Exploring project structure and checking for existing MCP configuration"
+        },
+        {
+          "content": "Install Playwright and MCP dependencies",
+          "status": "in_progress",
+          "activeForm": "Installing Playwright and MCP dependencies"
+        },
+        {
+          "content": "Configure Playwright MCP server",
+          "status": "pending",
+          "activeForm": "Configuring Playwright MCP server"
+        },
+        {
+          "content": "Create test script to verify login flow",
+          "status": "pending",
+          "activeForm": "Creating test script to verify login flow"
+        },
+        {
+          "content": "Test the MCP server integration",
+          "status": "pending",
+          "activeForm": "Testing the MCP server integration"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "e9ff7c78-52b1-4f88-a83b-6d826790c42d",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/e9ff7c78-52b1-4f88-a83b-6d826790c42d.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd apps/web && pnpm add -D @playwright/test playwright",
+      "timeout": 120000,
+      "description": "Install Playwright in web app"
+    }
+  }
+]

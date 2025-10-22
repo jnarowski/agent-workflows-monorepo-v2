@@ -1,0 +1,42 @@
+[
+  {
+    "session_id": "e9493061-1508-4973-9176-aeaca83c5939",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/e9493061-1508-4973-9176-aeaca83c5939.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can you write a little sh script to kill anything on port 5173 and 3456"
+  },
+  {
+    "session_id": "e9493061-1508-4973-9176-aeaca83c5939",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/e9493061-1508-4973-9176-aeaca83c5939.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can we add it to pnpm dev:force"
+  },
+  {
+    "session_id": "e9493061-1508-4973-9176-aeaca83c5939",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/e9493061-1508-4973-9176-aeaca83c5939.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "how do I access and/or stop a background task?"
+  },
+  {
+    "session_id": "e9493061-1508-4973-9176-aeaca83c5939",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/e9493061-1508-4973-9176-aeaca83c5939.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can I tail a background task somehow?"
+  },
+  {
+    "session_id": "e9493061-1508-4973-9176-aeaca83c5939",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/e9493061-1508-4973-9176-aeaca83c5939.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "how do I start a background task?"
+  }
+]

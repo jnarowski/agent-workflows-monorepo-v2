@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "14d5ae02-0151-40a6-9dd2-1e02dea0d698",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/14d5ae02-0151-40a6-9dd2-1e02dea0d698.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "now that's add the prompt input to the bottom of the Chat pane:\\\nhttps://ai-sdk.dev/elements/components/prompt-input"
+  }
+]

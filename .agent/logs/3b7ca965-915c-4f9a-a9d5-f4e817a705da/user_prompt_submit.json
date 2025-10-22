@@ -1,0 +1,26 @@
+[
+  {
+    "session_id": "3b7ca965-915c-4f9a-a9d5-f4e817a705da",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3b7ca965-915c-4f9a-a9d5-f4e817a705da.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "hello"
+  },
+  {
+    "session_id": "3b7ca965-915c-4f9a-a9d5-f4e817a705da",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3b7ca965-915c-4f9a-a9d5-f4e817a705da.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "is it best practice to import useEffect etc directly instead of React.useEffect, eg { useEffect }"
+  },
+  {
+    "session_id": "3b7ca965-915c-4f9a-a9d5-f4e817a705da",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3b7ca965-915c-4f9a-a9d5-f4e817a705da.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Can you update the CLAUDE.md file with this best practice (to not import React)"
+  }
+]

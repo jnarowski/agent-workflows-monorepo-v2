@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "3940dc67-2e1e-4c5a-af40-c19b17138992",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3940dc67-2e1e-4c5a-af40-c19b17138992.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "in apps/web run pnpm check and fix all issues and errors. think harder. First try to resolve the error but if you can't you can disable with eslint comment for now."
+  }
+]

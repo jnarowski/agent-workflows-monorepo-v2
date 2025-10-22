@@ -1,0 +1,9 @@
+[
+  {
+    "session_id": "5dec40ff-be72-45e1-9bcc-f1ab1410936c",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dec40ff-be72-45e1-9bcc-f1ab1410936c.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  }
+]

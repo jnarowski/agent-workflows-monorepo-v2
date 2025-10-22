@@ -1,0 +1,392 @@
+[
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/shared/types/chat.ts"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/shared/types/claude-session.types.ts"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/hooks/useClaudeSession.ts"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Glob",
+    "tool_input": {
+      "pattern": "**/*.prisma",
+      "path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/contexts/ShellContext.tsx"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/prisma/schema.prisma"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "\\.claude",
+      "path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web",
+      "output_mode": "files_with_matches"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/layouts/ProjectDetailLayout.tsx"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "AskUserQuestion",
+    "tool_input": {
+      "questions": [
+        {
+          "question": "Should chat sessions be stored in the database OR rely on .claude/projects/{projectPath}/{sessionId}.jsonl files like claudecodeui does?",
+          "header": "Storage",
+          "options": [
+            {
+              "label": "Database only",
+              "description": "Store all chat session data (messages, metadata, token usage) in Prisma database tables. Simpler queries but duplicates .claude data."
+            },
+            {
+              "label": "Hybrid approach",
+              "description": "Store session metadata (id, name, created_at, last_message_at, token_count) in DB for fast queries. Read full conversation history from .claude/projects JSONL files when viewing a session."
+            },
+            {
+              "label": ".claude files only",
+              "description": "Don't store anything in DB. Scan .claude/projects directory to discover sessions like claudecodeui does. Simpler but slower for large projects."
+            }
+          ],
+          "multiSelect": false
+        },
+        {
+          "question": "How should the sidebar session list be organized?",
+          "header": "Navigation",
+          "options": [
+            {
+              "label": "Flat list per project",
+              "description": "Show all sessions for the current project in a simple list, sorted by most recent activity."
+            },
+            {
+              "label": "Global cross-project list",
+              "description": "Show all sessions across ALL projects in one list. User can filter/group by project."
+            },
+            {
+              "label": "Both views available",
+              "description": "Toggle between project-scoped and global session views in the sidebar."
+            }
+          ],
+          "multiSelect": false
+        },
+        {
+          "question": "What should happen when a user creates a new chat session?",
+          "header": "Session Start",
+          "options": [
+            {
+              "label": "Immediately initialize",
+              "description": "Create temp session ID immediately, send first message to start the real Claude session. Similar to claudecodeui's 'new-session-*' pattern."
+            },
+            {
+              "label": "Blank canvas",
+              "description": "Just show empty chat input. Session only starts when user sends first message. No temporary IDs."
+            },
+            {
+              "label": "Wizard/config first",
+              "description": "Show configuration dialog (model selection, permission mode, tools) before allowing user to send first message."
+            }
+          ],
+          "multiSelect": false
+        },
+        {
+          "question": "Should users be able to customize session names or just use default naming?",
+          "header": "Session Names",
+          "options": [
+            {
+              "label": "Auto-generated only",
+              "description": "Use timestamp or first message preview as session name. No manual naming."
+            },
+            {
+              "label": "Manual naming",
+              "description": "Allow users to name/rename sessions for easier organization (like 'Fix auth bug' or 'Add dark mode')."
+            }
+          ],
+          "multiSelect": false
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/server/services/project.service.ts"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "\\.claude|projects.*jsonl|session",
+      "path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/server",
+      "output_mode": "files_with_matches"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/server/services/file.service.ts"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "websocket|WebSocket",
+      "path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/server",
+      "output_mode": "files_with_matches"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/server/websocket.ts"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Glob",
+    "tool_input": {
+      "pattern": "**/*types*.ts",
+      "path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/shared"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/shared/types/index.ts"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/shared/types/project.types.ts"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "ExitPlanMode",
+    "tool_input": {
+      "plan": "# Live Chat Sessions Implementation Plan\n\n## Architecture: Smart Hybrid Storage\n\n**Storage Strategy:**\n- \u2705 **Database:** Store session metadata (id, timestamps, token counts) for fast queries\n- \u2705 **Filesystem (`.claude/projects`):** Single source of truth for conversation history\n- \u2705 **Sync on demand:** When loading project sessions, detect CLI-created sessions and update DB\n\n---\n\n## Database Schema\n\n### New Prisma Model\n```prisma\nmodel ChatSession {\n  id              String   @id // UUID from .claude JSONL filename\n  projectId       String\n  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)\n  \n  // Metadata for fast sidebar queries\n  firstMessagePreview String?  // First 100 chars for display\n  lastMessageAt       DateTime\n  messageCount        Int      @default(0)\n  totalTokens         Int      @default(0)\n  \n  created_at    DateTime @default(now())\n  updated_at    DateTime @updatedAt\n  \n  @@map(\"chat_sessions\")\n  @@index([projectId, lastMessageAt])\n}\n```\n\n### Update Project Model\n```prisma\nmodel Project {\n  // ... existing fields\n  chatSessions ChatSession[]\n}\n```\n\n---\n\n## Backend Implementation\n\n### 1. **ChatSession Service** (`src/server/services/chat-session.service.ts`)\nHandles all session business logic:\n- `syncProjectSessions(projectId)` - Scan `.claude/` dir, sync with DB\n- `getSessionsByProject(projectId)` - Fast DB query for sidebar\n- `getSessionMessages(sessionId)` - Read JSONL file, parse messages\n- `updateSessionMetadata(sessionId, metadata)` - Update DB after new messages\n- `createSession(projectId, tempId?)` - Initialize new session\n\n### 2. **Chat Routes** (`src/server/routes/chat.ts`)\nREST API endpoints:\n- `GET /api/projects/:id/sessions` - List sessions (from DB)\n- `GET /api/projects/:id/sessions/:sessionId/messages` - Load conversation (from JSONL)\n- `POST /api/projects/:id/sessions` - Create new session\n- `POST /api/projects/:id/sessions/sync` - Manual sync trigger\n\n### 3. **WebSocket Handler** (`src/server/websocket.ts`)\nUpgrade existing WebSocket to handle chat:\n- Route: `/ws/chat/:sessionId`\n- Send message \u2192 agent-cli-sdk \u2192 stream events back\n- Update DB metadata on message completion\n- Handle session creation (temp ID \u2192 real ID transition)\n\n### 4. **Validation Schemas** (`src/server/schemas/chat.schema.ts`)\nZod schemas for request/response validation\n\n---\n\n## Frontend Implementation\n\n### 1. **Types** (`src/shared/types/chat-session.types.ts`)\n```typescript\nexport interface ChatSessionMetadata {\n  id: string;\n  projectId: string;\n  firstMessagePreview: string | null;\n  lastMessageAt: Date;\n  messageCount: number;\n  totalTokens: number;\n  created_at: Date;\n}\n\nexport interface ChatSessionWithMessages extends ChatSessionMetadata {\n  messages: ChatMessage[];\n}\n```\n\n### 2. **Context** (`src/client/contexts/ChatContext.tsx`)\nGlobal state for chat sessions:\n- Active sessions map\n- Current session ID\n- Session list for sidebar\n- WebSocket connection management\n\n### 3. **Hooks**\n- `useChatSessions(projectId)` - Load session list from API\n- `useChatSession(sessionId)` - Load messages + WebSocket connection\n- `useChatWebSocket(sessionId)` - WebSocket streaming logic\n\n### 4. **Components**\n\n**Updated:**\n- `ProjectChat.tsx` - Connect to WebSocket, handle message submission\n- `ChatInterface.tsx` - Remove mock data, use real WebSocket events\n- `ProjectDetailLayout.tsx` - Add session sidebar navigation\n\n**New:**\n- `SessionSidebar.tsx` - List of sessions with preview\n- `SessionListItem.tsx` - Individual session preview card\n- `NewSessionButton.tsx` - Create blank session\n\n---\n\n## Implementation Flow\n\n### User Creates New Chat Session\n1. Click \"New Chat\" button\n2. Frontend: Generate temp UUID (`temp-{uuid}`)\n3. Frontend: Add to local state, show empty chat\n4. User sends first message\n5. Frontend \u2192 WebSocket: Send message with temp ID\n6. Backend: agent-cli-sdk creates real session\n7. Backend \u2192 WebSocket: `session-created` event with real ID\n8. Frontend: Replace temp ID with real ID\n9. Backend: Create DB record with metadata\n\n### User Opens Existing Session\n1. User clicks session in sidebar\n2. Frontend: `GET /api/projects/:id/sessions/:sessionId/messages`\n3. Backend: Read JSONL file, parse, return messages\n4. Frontend: Display chat history\n5. Frontend: Connect WebSocket for real-time updates\n\n### User Sends Message in Active Session\n1. User types message, clicks send\n2. Frontend \u2192 WebSocket: Send message with session ID\n3. Backend: agent-cli-sdk.session.send(message)\n4. Backend \u2192 WebSocket: Stream events (tool_use, text, etc.)\n5. Frontend: Update UI in real-time\n6. Backend: On completion, update DB metadata (tokens, count, timestamp)\n\n### CLI Creates Session Outside App\n1. User runs `claude` CLI in terminal\n2. Session JSONL created in `.claude/projects/`\n3. User opens project in web app\n4. Backend: `syncProjectSessions()` runs on load\n5. Backend: Detect new JSONL file, create DB record\n6. Frontend: Session appears in sidebar\n\n---\n\n## File Structure\n\n```\napps/web/\n\u251c\u2500\u2500 prisma/\n\u2502   \u2514\u2500\u2500 schema.prisma                 [UPDATE] Add ChatSession model\n\u251c\u2500\u2500 src/\n\u2502   \u251c\u2500\u2500 server/\n\u2502   \u2502   \u251c\u2500\u2500 routes/\n\u2502   \u2502   \u2502   \u2514\u2500\u2500 chat.ts               [NEW] Chat API routes\n\u2502   \u2502   \u251c\u2500\u2500 services/\n\u2502   \u2502   \u2502   \u2514\u2500\u2500 chat-session.service.ts [NEW] Session sync & queries\n\u2502   \u2502   \u251c\u2500\u2500 schemas/\n\u2502   \u2502   \u2502   \u2514\u2500\u2500 chat.schema.ts        [NEW] Validation schemas\n\u2502   \u2502   \u251c\u2500\u2500 websocket.ts              [UPDATE] Add chat WebSocket handler\n\u2502   \u2502   \u2514\u2500\u2500 index.ts                  [UPDATE] Register chat routes\n\u2502   \u251c\u2500\u2500 client/\n\u2502   \u2502   \u251c\u2500\u2500 contexts/\n\u2502   \u2502   \u2502   \u2514\u2500\u2500 ChatContext.tsx       [NEW] Chat state management\n\u2502   \u2502   \u251c\u2500\u2500 hooks/\n\u2502   \u2502   \u2502   \u251c\u2500\u2500 useChatSessions.ts    [NEW] Session list query\n\u2502   \u2502   \u2502   \u251c\u2500\u2500 useChatSession.ts     [UPDATE] Add WebSocket\n\u2502   \u2502   \u2502   \u2514\u2500\u2500 useChatWebSocket.ts   [NEW] WebSocket streaming\n\u2502   \u2502   \u251c\u2500\u2500 components/\n\u2502   \u2502   \u2502   \u251c\u2500\u2500 chat/\n\u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 ChatInterface.tsx [UPDATE] Use real data\n\u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 SessionSidebar.tsx [NEW] Session list\n\u2502   \u2502   \u2502   \u2502   \u251c\u2500\u2500 SessionListItem.tsx [NEW] Session preview\n\u2502   \u2502   \u2502   \u2502   \u2514\u2500\u2500 NewSessionButton.tsx [NEW] Create session\n\u2502   \u2502   \u251c\u2500\u2500 pages/\n\u2502   \u2502   \u2502   \u2514\u2500\u2500 ProjectChat.tsx       [UPDATE] Full integration\n\u2502   \u2502   \u2514\u2500\u2500 layouts/\n\u2502   \u2502       \u2514\u2500\u2500 ProjectDetailLayout.tsx [UPDATE] Add sidebar\n\u2502   \u2514\u2500\u2500 shared/\n\u2502       \u2514\u2500\u2500 types/\n\u2502           \u2514\u2500\u2500 chat-session.types.ts [NEW] Shared types\n```\n\n---\n\n## Key Design Decisions\n\n### 1. Sync Strategy: On-Demand (Not Polling)\n- Sync when: Project loads, manual refresh button\n- NO background polling (over-engineering for personal tool)\n- User can manually sync if they create sessions via CLI\n\n### 2. Session ID Transition: Temp \u2192 Real\n- Use claudecodeui's proven pattern\n- Temp ID: `temp-{uuid}` for optimistic UI\n- Real ID: UUID from agent-cli-sdk response\n- Clean transition without page reload\n\n### 3. WebSocket Message Format\n```typescript\n// Client \u2192 Server\n{\n  type: 'send_message',\n  sessionId: 'abc-123' | 'temp-xyz',\n  message: 'Fix the bug',\n  images?: ['/path/to/image.png'],\n  config?: { model: 'sonnet', permissionMode: 'acceptEdits' }\n}\n\n// Server \u2192 Client (streaming)\n{\n  type: 'stream_event',\n  sessionId: 'abc-123',\n  event: { /* StreamEvent from agent-cli-sdk */ }\n}\n\n// Server \u2192 Client (session created)\n{\n  type: 'session_created',\n  tempId: 'temp-xyz',\n  realId: 'abc-123'\n}\n```\n\n### 4. Error Handling\n- JSONL file missing: Show error, offer to remove from DB\n- Sync conflicts: JSONL is source of truth, update DB\n- WebSocket disconnect: Show reconnect button\n- Agent SDK errors: Display in chat with retry option\n\n---\n\n## Migration Plan\n\n1. **Phase 1:** Database schema + migration\n2. **Phase 2:** Backend services (sync, routes, WebSocket)\n3. **Phase 3:** Frontend hooks + context\n4. **Phase 4:** UI components + integration\n5. **Phase 5:** Testing + polish\n\n---\n\n## Out of Scope (For Later)\n\n- \u274c Session search/filtering\n- \u274c Session deletion via UI\n- \u274c Custom session naming\n- \u274c Image upload UI (use file paths for now)\n- \u274c Model/permission configuration UI\n- \u274c Multi-project session view\n\nKeep it clean, focused, and working!"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "ExitPlanMode",
+    "tool_input": {
+      "plan": "# Live Agent Chat Sessions Implementation Plan\n\n## Architecture: Smart Hybrid Storage\n\n**Storage Strategy:**\n- \u2705 **Database:** Store session metadata (id, type, timestamps, token counts) for fast queries\n- \u2705 **Filesystem (`.claude/projects`):** Single source of truth for conversation history\n- \u2705 **Sync on demand:** When loading project, detect CLI-created sessions and update DB\n- \u2705 **Pre-generated UUIDs:** Frontend generates real session ID upfront (no temp IDs)\n\n---\n\n## Database Schema\n\n### New Prisma Model\n```prisma\nmodel AgentSession {\n  id              String   @id // Pre-generated UUID, matches JSONL filename\n  projectId       String\n  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)\n  \n  type            String   // 'chat' (shell sessions for future)\n  \n  // Metadata for fast sidebar queries\n  firstMessagePreview String?  // First 100 chars for display\n  lastMessageAt       DateTime\n  messageCount        Int      @default(0)\n  totalTokens         Int      @default(0)\n  \n  created_at    DateTime @default(now())\n  updated_at    DateTime @updatedAt\n  \n  @@map(\"agent_sessions\")\n  @@index([projectId, type, lastMessageAt])\n}\n```\n\n### Update Project Model\n```prisma\nmodel Project {\n  // ... existing fields\n  agentSessions AgentSession[]\n}\n```\n\n---\n\n## Backend Implementation\n\n### 1. **AgentSession Service** (`src/server/services/agent-session.service.ts`)\n- `syncProjectSessions(projectId)` - Scan `.claude/` dir, sync with DB\n- `getSessionsByProject(projectId, type?)` - Fast DB query for sidebar\n- `getSessionMessages(sessionId)` - Read JSONL file, parse messages\n- `createSession(projectId, sessionId, type)` - Create DB record\n- `updateSessionMetadata(sessionId, metadata)` - Update after messages\n\n### 2. **Session Routes** (`src/server/routes/sessions.ts`)\n- `GET /api/projects/:id/sessions?type=chat` - List sessions\n- `GET /api/projects/:id/sessions/:sessionId/messages` - Load conversation\n- `POST /api/projects/:id/sessions` - Create new session (with pre-generated ID)\n- `POST /api/projects/:id/sessions/sync` - Manual sync\n\n### 3. **WebSocket Handler** (`src/server/websocket.ts`)\nUpgrade existing WebSocket:\n- Route: `/ws/chat/:sessionId`\n- Use agent-cli-sdk with `--session-id` flag\n- Stream events back to client\n- Update DB metadata on completion\n\n### 4. **Schemas** (`src/server/schemas/session.schema.ts`)\nZod validation schemas\n\n---\n\n## Frontend Implementation\n\n### 1. **Types** (`src/shared/types/agent-session.types.ts`)\n```typescript\nexport type AgentSessionType = 'chat' | 'shell';\n\nexport interface AgentSessionMetadata {\n  id: string;\n  projectId: string;\n  type: AgentSessionType;\n  firstMessagePreview: string | null;\n  lastMessageAt: Date;\n  messageCount: number;\n  totalTokens: number;\n  created_at: Date;\n}\n```\n\n### 2. **Context** (`src/client/contexts/ChatContext.tsx`)\n- Active session tracking\n- WebSocket connection management\n- Session list state\n\n### 3. **Hooks**\n- `useAgentSessions(projectId, type)` - Load session list\n- `useChatSession(sessionId)` - Load messages + WebSocket\n- `useChatWebSocket(sessionId)` - WebSocket streaming\n\n### 4. **Components**\n\n**Updated:**\n- `ProjectChat.tsx` - Full WebSocket integration\n- `ChatInterface.tsx` - Real-time streaming\n- `ProjectDetailLayout.tsx` - Add session sidebar\n\n**New:**\n- `SessionSidebar.tsx` - Session list with preview\n- `SessionListItem.tsx` - Individual session card\n- `NewSessionButton.tsx` - Create session with UUID\n\n---\n\n## Key Flows\n\n### Create New Session (Simplified!)\n1. User clicks \"New Chat\"\n2. Frontend: `const sessionId = crypto.randomUUID()`\n3. Frontend: `POST /api/projects/:id/sessions { sessionId, type: 'chat' }`\n4. Backend: Create DB record immediately\n5. Frontend: Navigate to `/projects/:id/chat/:sessionId`\n6. User sends first message\n7. Backend: `agentClient.createSession({ sessionId, workingDirectory })`\n8. Backend: `session.send(message)` with `--session-id {sessionId}`\n9. Claude CLI creates JSONL with our UUID\n\n### Open Existing Session\n1. Click session in sidebar\n2. `GET /api/projects/:id/sessions/:sessionId/messages`\n3. Read JSONL, parse, return\n4. Display + connect WebSocket\n\n### CLI Session Discovery\n1. User runs `claude` in terminal\n2. Web app loads project\n3. Backend: `syncProjectSessions()` scans `.claude/`\n4. New JSONL found \u2192 create DB record\n5. Session appears in sidebar\n\n---\n\n## File Structure\n\n```\napps/web/\n\u251c\u2500\u2500 prisma/schema.prisma                    [UPDATE] Add AgentSession\n\u251c\u2500\u2500 src/server/\n\u2502   \u251c\u2500\u2500 routes/sessions.ts                  [NEW] Session routes\n\u2502   \u251c\u2500\u2500 services/agent-session.service.ts   [NEW] Core logic\n\u2502   \u251c\u2500\u2500 schemas/session.schema.ts           [NEW] Validation\n\u2502   \u251c\u2500\u2500 websocket.ts                        [UPDATE] Chat handler\n\u2502   \u2514\u2500\u2500 index.ts                            [UPDATE] Register routes\n\u251c\u2500\u2500 src/client/\n\u2502   \u251c\u2500\u2500 contexts/ChatContext.tsx            [NEW] State management\n\u2502   \u251c\u2500\u2500 hooks/\n\u2502   \u2502   \u251c\u2500\u2500 useAgentSessions.ts             [NEW] Session list\n\u2502   \u2502   \u251c\u2500\u2500 useChatSession.ts               [UPDATE] WebSocket\n\u2502   \u2502   \u2514\u2500\u2500 useChatWebSocket.ts             [NEW] Streaming\n\u2502   \u251c\u2500\u2500 components/chat/\n\u2502   \u2502   \u251c\u2500\u2500 SessionSidebar.tsx              [NEW] Session list\n\u2502   \u2502   \u251c\u2500\u2500 SessionListItem.tsx             [NEW] Preview card\n\u2502   \u2502   \u2514\u2500\u2500 NewSessionButton.tsx            [NEW] Create button\n\u2502   \u251c\u2500\u2500 pages/ProjectChat.tsx               [UPDATE] Integration\n\u2502   \u2514\u2500\u2500 layouts/ProjectDetailLayout.tsx     [UPDATE] Add sidebar\n\u2514\u2500\u2500 src/shared/types/agent-session.types.ts [NEW] Types\n```\n\n---\n\n## WebSocket Message Format\n\n```typescript\n// Client \u2192 Server: Send message\n{\n  type: 'send_message',\n  sessionId: 'abc-123-def',\n  message: 'Fix the authentication bug',\n  images?: ['/path/to/screenshot.png'],\n  config?: { model: 'sonnet', permissionMode: 'acceptEdits' }\n}\n\n// Server \u2192 Client: Stream event\n{\n  type: 'stream_event',\n  sessionId: 'abc-123-def',\n  event: StreamEvent // From agent-cli-sdk\n}\n\n// Server \u2192 Client: Complete\n{\n  type: 'message_complete',\n  sessionId: 'abc-123-def',\n  metadata: { tokens: 150, messageCount: 2 }\n}\n```\n\n---\n\n## Implementation Phases\n\n**Phase 1: Database**\n- Update schema, run migration\n- Add Project \u2192 AgentSession relation\n\n**Phase 2: Backend Core**\n- AgentSession service (sync, CRUD)\n- Session routes (REST API)\n\n**Phase 3: WebSocket Integration**\n- Upgrade websocket.ts for chat\n- Integrate agent-cli-sdk with session ID\n- Stream events to client\n\n**Phase 4: Frontend Data Layer**\n- Types, schemas, API hooks\n- ChatContext for state\n\n**Phase 5: UI Components**\n- Session sidebar with list\n- Update ChatInterface for streaming\n- New session creation flow\n\n**Phase 6: Polish**\n- Error handling\n- Loading states\n- Token usage display\n\n---\n\n## Design Decisions Summary\n\n\u2705 **AgentSession** naming (supports chat + shell)\n\u2705 **Pre-generated UUIDs** (no temp IDs)\n\u2705 **Hybrid storage** (DB metadata + JSONL messages)\n\u2705 **On-demand sync** (no polling)\n\u2705 **Flat list per project** (sidebar navigation)\n\u2705 **Auto-generated names** (from first message)\n\nClean, focused, and ready to build!"
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "AskUserQuestion",
+    "tool_input": {
+      "questions": [
+        {
+          "question": "For the session sidebar navigation, where should it be placed in the ProjectChat page?",
+          "header": "Sidebar Layout",
+          "options": [
+            {
+              "label": "Left sidebar (collapsible)",
+              "description": "Session list on the left side, can be toggled open/closed. Similar to VS Code's file explorer. (Recommended - matches common chat UIs like ChatGPT)"
+            },
+            {
+              "label": "Right sidebar",
+              "description": "Session list on the right side of the chat interface."
+            },
+            {
+              "label": "Top horizontal tabs",
+              "description": "Sessions shown as tabs above the chat interface, similar to browser tabs."
+            }
+          ],
+          "multiSelect": false
+        },
+        {
+          "question": "What should happen when syncing discovers a CLI-created session that doesn't have a userId? (Since CLI doesn't know about users)",
+          "header": "CLI Session Owner",
+          "options": [
+            {
+              "label": "Assign to current user",
+              "description": "Automatically assign CLI-created sessions to whoever is logged in when sync runs. (Recommended - simple and works for single-user scenario)"
+            },
+            {
+              "label": "Create system/null user",
+              "description": "Have a special 'system' user (userId=0 or null) for CLI sessions, then allow claiming them later."
+            },
+            {
+              "label": "Skip/ignore unowned",
+              "description": "Don't add CLI sessions to DB unless explicitly imported by a user."
+            }
+          ],
+          "multiSelect": false
+        },
+        {
+          "question": "Should we support configuration options (model, permission mode) when creating a new session?",
+          "header": "Session Config",
+          "options": [
+            {
+              "label": "Use defaults only",
+              "description": "Always use default model (sonnet) and permission mode. Keep it simple for now. (Recommended - ship faster, add later if needed)"
+            },
+            {
+              "label": "Show config dialog",
+              "description": "Before first message, show dialog to select model and permission mode."
+            },
+            {
+              "label": "Store as project settings",
+              "description": "Let users set default model/permissions at project level, apply to all new sessions."
+            }
+          ],
+          "multiSelect": false
+        },
+        {
+          "question": "How should we handle image uploads for sending to Claude?",
+          "header": "Image Upload",
+          "options": [
+            {
+              "label": "Drag-and-drop only",
+              "description": "User can drag images into chat input area. Images uploaded to temp directory, paths sent to Claude. (Recommended - matches claudecodeui pattern)"
+            },
+            {
+              "label": "File picker button",
+              "description": "Add attachment button to open file picker dialog for selecting images."
+            },
+            {
+              "label": "Both drag-drop and picker",
+              "description": "Support both interaction methods for maximum flexibility."
+            }
+          ],
+          "multiSelect": false
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "6a71e718-ca2b-4c47-ba50-31c99423a7b7",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/6a71e718-ca2b-4c47-ba50-31c99423a7b7.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.agent/specs/live-chat-sessions-spec.md",
+      "content": "# Feature: Live Chat Sessions with Claude Code\n\n## What We're Building\n\nA real-time chat interface that enables users to create and manage multiple simultaneous Claude Code conversation sessions within projects. Users can start new sessions, continue existing conversations, view session history in a sidebar, and track token usage across all interactions. The feature uses a hybrid storage approach with database metadata and filesystem-based conversation history for seamless CLI integration.\n\n## User Story\n\nAs a developer using the Agent Workflows UI\nI want to create and manage multiple Claude Code chat sessions within my projects\nSo that I can work on different tasks simultaneously, resume conversations later, and maintain organized conversation history alongside my CLI usage\n\n## Technical Approach\n\nImplement a hybrid storage architecture where session metadata (timestamps, token counts, message counts) is stored in the database for fast queries, while full conversation history remains in `.claude/projects/{projectPath}/{sessionId}.jsonl` files as the single source of truth. Use pre-generated UUIDs for session IDs that are passed to agent-cli-sdk via `--session-id` flag, eliminating temporary ID complexity. WebSocket streaming provides real-time message updates from Claude. A sync mechanism detects CLI-created sessions and adds them to the database on project load.\n\n## Files to Touch\n\n### Existing Files\n\n- `prisma/schema.prisma` - Add AgentSession model with user/project relations\n- `apps/web/src/server/index.ts` - Register new session routes\n- `apps/web/src/server/websocket.ts` - Add chat WebSocket handler for streaming\n- `apps/web/src/shared/types/index.ts` - Export new session types\n- `apps/web/src/client/App.tsx` - Add ChatProvider to context hierarchy\n- `apps/web/src/client/pages/ProjectChat.tsx` - Integrate real WebSocket and session management\n- `apps/web/src/client/components/chat/ChatInterface.tsx` - Replace mock data with real WebSocket streaming\n- `apps/web/src/client/hooks/useClaudeSession.ts` - Update to support WebSocket connections\n- `apps/web/src/client/components/AppInnerSidebar.tsx` - Replace mock sessions with real API data\n- `apps/web/src/client/layouts/ProjectDetailLayout.tsx` - Add ChatProvider wrapper\n\n### New Files\n\n- `apps/web/src/shared/types/agent-session.types.ts` - AgentSession type definitions\n- `apps/web/src/server/services/agent-session.service.ts` - Session CRUD and sync logic\n- `apps/web/src/server/routes/sessions.ts` - REST API endpoints for sessions\n- `apps/web/src/server/schemas/session.schema.ts` - Zod validation schemas\n- `apps/web/src/client/contexts/ChatContext.tsx` - Global chat state management\n- `apps/web/src/client/hooks/useAgentSessions.ts` - React Query hook for session list\n- `apps/web/src/client/hooks/useChatWebSocket.ts` - WebSocket streaming hook\n- `apps/web/src/client/components/chat/SessionListItem.tsx` - Individual session preview component\n- `apps/web/src/client/components/chat/NewSessionButton.tsx` - Create session button component\n\n## Implementation Plan\n\n### Phase 1: Foundation\n\nSet up database schema, type definitions, and core validation schemas. This establishes the data model and shared contracts between frontend and backend.\n\n### Phase 2: Core Implementation\n\nBuild backend services for session management, WebSocket handling, and agent-cli-sdk integration. Implement frontend hooks and context for state management and real-time updates.\n\n### Phase 3: Integration\n\nConnect UI components to real data sources, update existing chat interface for streaming, and wire up sidebar navigation to display live session data.\n\n## Step by Step Tasks\n\n### 1: Database Schema and Types\n\n<!-- prettier-ignore -->\n- [ ] 1.1 Update Prisma schema with AgentSession model\n        - Add AgentSession model with id, projectId, userId, type, metadata fields\n        - Add relations to Project and User models\n        - Add indexes on [projectId, type, lastMessageAt] and [userId, lastMessageAt]\n        - File: `apps/web/prisma/schema.prisma`\n- [ ] 1.2 Generate Prisma client and run migration\n        - Run: `cd apps/web && pnpm prisma:generate && pnpm prisma:migrate dev --name add_agent_sessions`\n        - Verify migration created successfully\n- [ ] 1.3 Create shared type definitions\n        - Define AgentSessionType, AgentSessionMetadata, CreateSessionRequest, etc.\n        - Export from shared types index\n        - File: `apps/web/src/shared/types/agent-session.types.ts`\n        - File: `apps/web/src/shared/types/index.ts`\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### 2: Backend Services and Validation\n\n<!-- prettier-ignore -->\n- [ ] 2.1 Create Zod validation schemas\n        - Define createSessionSchema, sessionIdSchema, syncSessionsSchema\n        - Include request/response validation\n        - File: `apps/web/src/server/schemas/session.schema.ts`\n- [ ] 2.2 Implement AgentSessionService class\n        - Method: `syncProjectSessions(projectId, userId)` - scan .claude dir, sync with DB\n        - Method: `getSessionsByProject(projectId, userId, type?)` - fast DB query\n        - Method: `getSessionMessages(sessionId)` - read JSONL file, parse messages\n        - Method: `createSession(projectId, userId, sessionId, type)` - create DB record\n        - Method: `updateSessionMetadata(sessionId, metadata)` - update after messages\n        - Include error handling for missing files, permission issues\n        - File: `apps/web/src/server/services/agent-session.service.ts`\n- [ ] 2.3 Implement session REST API routes\n        - GET `/api/projects/:id/sessions?type=chat` - list sessions with query filter\n        - GET `/api/projects/:id/sessions/:sessionId/messages` - load conversation from JSONL\n        - POST `/api/projects/:id/sessions` - create session with pre-generated UUID\n        - POST `/api/projects/:id/sessions/sync` - trigger manual sync\n        - Include JWT authentication middleware on all routes\n        - File: `apps/web/src/server/routes/sessions.ts`\n- [ ] 2.4 Register session routes in server\n        - Import and register sessionRoutes in Fastify app\n        - File: `apps/web/src/server/index.ts`\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### 3: WebSocket Integration with Agent CLI SDK\n\n<!-- prettier-ignore -->\n- [ ] 3.1 Update WebSocket handler for chat route\n        - Add route handler for `/ws/chat/:sessionId`\n        - Parse incoming message: { type: 'send_message', sessionId, message, images?, config? }\n        - Extract userId from JWT token in WebSocket connection\n        - File: `apps/web/src/server/websocket.ts`\n- [ ] 3.2 Integrate agent-cli-sdk for message sending\n        - Import and initialize AgentClient with createClaudeAdapter\n        - On 'send_message': create session with pre-generated sessionId and project workingDirectory\n        - Use session.send() with streaming callbacks (onEvent, onOutput)\n        - Stream events back to client: { type: 'stream_event', sessionId, event: StreamEvent }\n        - File: `apps/web/src/server/websocket.ts`\n- [ ] 3.3 Update session metadata on message completion\n        - On message complete: extract token usage from response\n        - Call agentSessionService.updateSessionMetadata() with new tokens, messageCount, lastMessageAt\n        - Send completion event to client: { type: 'message_complete', sessionId, metadata }\n        - File: `apps/web/src/server/websocket.ts`\n- [ ] 3.4 Handle WebSocket errors and disconnections\n        - Catch agent-cli-sdk errors, send to client: { type: 'error', message, sessionId }\n        - Clean up active sessions on WebSocket close\n        - Add reconnection handling\n        - File: `apps/web/src/server/websocket.ts`\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### 4: Frontend State Management and Hooks\n\n<!-- prettier-ignore -->\n- [ ] 4.1 Create ChatContext for global state\n        - State: activeSessions Map, currentSessionId, WebSocket connections\n        - Actions: setCurrentSession, createSession, updateSessionMetadata\n        - Context provider component\n        - File: `apps/web/src/client/contexts/ChatContext.tsx`\n- [ ] 4.2 Create useAgentSessions hook\n        - Use TanStack Query to fetch session list from API\n        - Query: GET `/api/projects/:id/sessions?type=chat`\n        - Support refetch on project change\n        - Return: { sessions, isLoading, error, refetch }\n        - File: `apps/web/src/client/hooks/useAgentSessions.ts`\n- [ ] 4.3 Create useChatWebSocket hook\n        - Manage WebSocket connection for session\n        - Connect to `/ws/chat/:sessionId` with JWT token\n        - Handle incoming events: stream_event, message_complete, error\n        - Update local message state on events\n        - Return: { messages, isConnected, sendMessage, error }\n        - File: `apps/web/src/client/hooks/useChatWebSocket.ts`\n- [ ] 4.4 Update useClaudeSession hook for WebSocket\n        - Remove mock data fetching logic\n        - Use useChatWebSocket for real-time streaming\n        - Keep JSONL parsing for initial message load\n        - File: `apps/web/src/client/hooks/useClaudeSession.ts`\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### 5: UI Components - Session Management\n\n<!-- prettier-ignore -->\n- [ ] 5.1 Create SessionListItem component\n        - Display session preview: firstMessagePreview, lastMessageAt, messageCount, totalTokens\n        - Show relative timestamp (e.g., \"2 hours ago\")\n        - Highlight active session\n        - Handle click to navigate: `/projects/:id/chat/:sessionId`\n        - File: `apps/web/src/client/components/chat/SessionListItem.tsx`\n- [ ] 5.2 Create NewSessionButton component\n        - Generate UUID on click: `crypto.randomUUID()`\n        - Call API: POST `/api/projects/:id/sessions { sessionId, type: 'chat' }`\n        - Navigate to new session on success\n        - Show loading state during creation\n        - File: `apps/web/src/client/components/chat/NewSessionButton.tsx`\n- [ ] 5.3 Update AppInnerSidebar with real session data\n        - Replace mock sessions with useAgentSessions hook\n        - Map AgentSessionMetadata to display format\n        - Use SessionListItem for rendering\n        - Add NewSessionButton in collapsible content\n        - Show session count badge on project\n        - File: `apps/web/src/client/components/AppInnerSidebar.tsx`\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### 6: Chat Interface Integration\n\n<!-- prettier-ignore -->\n- [ ] 6.1 Update ProjectChat page with real WebSocket\n        - Use useChatSession hook for active session\n        - Extract sessionId from URL params: `/projects/:id/chat/:sessionId`\n        - Call useChatWebSocket to establish connection\n        - Implement handleSubmit to send messages via WebSocket\n        - Add file picker for image uploads (save to temp dir, send paths)\n        - File: `apps/web/src/client/pages/ProjectChat.tsx`\n- [ ] 6.2 Update ChatInterface for streaming messages\n        - Remove mock data loading (useClaudeSession with mock file)\n        - Accept messages from parent (ProjectChat) via props\n        - Display streaming messages with isStreaming indicator\n        - Auto-scroll on new message chunks\n        - File: `apps/web/src/client/components/chat/ChatInterface.tsx`\n- [ ] 6.3 Add ChatProvider to app context hierarchy\n        - Wrap relevant routes with ChatProvider\n        - Ensure context available in ProjectChat and children\n        - File: `apps/web/src/client/App.tsx`\n        - File: `apps/web/src/client/layouts/ProjectDetailLayout.tsx`\n- [ ] 6.4 Add token usage display in chat UI\n        - Show session totalTokens in header/footer\n        - Update in real-time as messages stream\n        - Format with commas (e.g., \"1,234 tokens\")\n        - File: `apps/web/src/client/pages/ProjectChat.tsx` or `ChatInterface.tsx`\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### 7: Session Sync and CLI Integration\n\n<!-- prettier-ignore -->\n- [ ] 7.1 Implement session sync on project load\n        - Call syncProjectSessions() when user navigates to project\n        - Show sync indicator during scan\n        - Update sidebar session list after sync completes\n        - File: `apps/web/src/client/pages/ProjectChat.tsx` or `ProjectDetailLayout.tsx`\n- [ ] 7.2 Handle CLI-created sessions in sync\n        - Scan .claude directory for JSONL files not in database\n        - Parse JSONL metadata: lastMessageAt, messageCount, firstMessage\n        - Create AgentSession records with current userId\n        - Update existing sessions if JSONL modified timestamp changed\n        - File: `apps/web/src/server/services/agent-session.service.ts`\n- [ ] 7.3 Add manual sync button in UI\n        - Add sync/refresh button in AppInnerSidebar header\n        - Call POST `/api/projects/:id/sessions/sync` on click\n        - Show loading spinner during sync\n        - Display success/error toast notification\n        - File: `apps/web/src/client/components/AppInnerSidebar.tsx`\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### 8: Error Handling and Edge Cases\n\n<!-- prettier-ignore -->\n- [ ] 8.1 Handle missing JSONL files gracefully\n        - If session in DB but JSONL missing: show error, offer \"Remove from list\" button\n        - If sync finds JSONL deleted: remove from database\n        - Display user-friendly error messages\n        - File: `apps/web/src/server/services/agent-session.service.ts`\n        - File: `apps/web/src/client/components/chat/ChatInterface.tsx`\n- [ ] 8.2 Handle WebSocket disconnection and reconnection\n        - Show \"Disconnected\" banner when WebSocket closes\n        - Add \"Reconnect\" button to re-establish connection\n        - Queue messages sent during disconnect, retry on reconnect\n        - File: `apps/web/src/client/hooks/useChatWebSocket.ts`\n- [ ] 8.3 Handle agent-cli-sdk errors\n        - Display error messages in chat (e.g., \"Claude CLI not authenticated\")\n        - Add retry button for failed messages\n        - Show specific error types: timeout, permission denied, CLI not found\n        - File: `apps/web/src/client/pages/ProjectChat.tsx`\n- [ ] 8.4 Handle empty states\n        - No sessions yet: Show \"Create your first chat session\" empty state\n        - No messages in session: Show \"Send a message to start\" placeholder\n        - File: `apps/web/src/client/components/chat/ChatInterface.tsx`\n        - File: `apps/web/src/client/components/AppInnerSidebar.tsx`\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n## Acceptance Criteria\n\n**Must Work:**\n\n- [ ] User can click \"New Session\" and create a chat session with pre-generated UUID\n- [ ] User can send a message and receive streaming responses from Claude in real-time\n- [ ] User can see all sessions for a project in the left sidebar, sorted by most recent\n- [ ] User can click a session in sidebar and view full conversation history\n- [ ] User can switch between sessions without losing context or state\n- [ ] Token usage increments correctly and displays in UI for each session\n- [ ] Sessions created via CLI appear in sidebar after sync/project load\n- [ ] User can upload images via file picker and send to Claude\n- [ ] WebSocket automatically reconnects after disconnect\n- [ ] URL updates when switching sessions: `/projects/:id/chat/:sessionId`\n\n**Should Not:**\n\n- [ ] Break existing project, file browser, or shell functionality\n- [ ] Allow users to access sessions from other users\n- [ ] Create duplicate session records during sync\n- [ ] Lose messages during WebSocket disconnect/reconnect\n- [ ] Expose sensitive file paths or project data outside project directory\n- [ ] Cause performance degradation when loading projects with 100+ sessions\n\n## Validation\n\nExecute these commands to verify the feature works correctly:\n\n**Automated Verification:**\n\n```bash\n# Type checking\ncd apps/web && pnpm check-types\n# Expected: No type errors\n\n# Linting\ncd apps/web && pnpm lint\n# Expected: No lint errors\n\n# Build verification\ncd apps/web && pnpm build\n# Expected: Successful build with no errors\n\n# Database schema check\ncd apps/web && pnpm prisma:validate\n# Expected: Prisma schema is valid\n```\n\n**Manual Verification:**\n\n1. Start application: `cd apps/web && pnpm dev`\n2. Navigate to: `http://localhost:5173/projects`\n3. Open a project and go to Chat tab\n4. Verify: Sidebar shows session list (or empty state if no sessions)\n5. Click \"New Session\" button\n6. Verify: New session created, URL updates to `/projects/:id/chat/:sessionId`\n7. Send a test message: \"Hello, Claude!\"\n8. Verify: Message streams back in real-time, token count updates\n9. Create another session, send messages\n10. Verify: Can switch between sessions, history persists\n11. Check console: No errors or warnings\n\n**Feature-Specific Checks:**\n\n- Open terminal, run `claude` CLI in project directory, create a session\n- Refresh web app, verify CLI session appears in sidebar after sync\n- Check `.claude/projects/{projectPath}/{sessionId}.jsonl` file exists with correct UUID\n- Verify database has AgentSession record with matching sessionId\n- Test WebSocket disconnect: Stop server, verify reconnect button appears, restart server, click reconnect\n- Test with 50+ sessions: Verify sidebar scrollable, performance acceptable\n- Test file picker: Select image, verify path sent to Claude, Claude can reference it\n- Test token display: Send multiple messages, verify cumulative token count correct\n\n## Definition of Done\n\n- [ ] All tasks completed\n- [ ] Database migration created and tested\n- [ ] All endpoints return correct data with proper authentication\n- [ ] WebSocket streaming works with real agent-cli-sdk integration\n- [ ] Tests passing (automated checks)\n- [ ] Lint and Type Checks pass\n- [ ] Manual testing confirms working (all feature-specific checks pass)\n- [ ] No console errors or warnings in browser\n- [ ] Code follows existing patterns (service/route/hook structure)\n- [ ] Session sync correctly handles CLI-created sessions\n- [ ] README or CLAUDE.md updated with session management info (if needed)\n\n## Notes\n\n**Dependencies:**\n- Requires `@repo/agent-cli-sdk` package with Session support and --session-id flag\n- Requires Prisma client regeneration after schema changes\n- WebSocket support must be enabled in Fastify configuration\n\n**Future Considerations:**\n- Session search and filtering by date/content\n- Session deletion UI (currently CLI only)\n- Custom session naming/renaming\n- Session export/import functionality\n- Model and permission mode configuration UI\n- Session sharing between users (when multi-tenancy added)\n- Session analytics and usage reports\n- Auto-archive old sessions after N days\n\n**Rollback Plan:**\nIf critical issues arise, rollback by:\n1. Revert Prisma migration: `pnpm prisma migrate resolve --rolled-back <migration_name>`\n2. Remove session routes from server index\n3. Revert UI changes to ProjectChat and AppInnerSidebar\n4. Deploy previous working version\n5. Sessions remain in .claude files, no data loss\n"
+    }
+  }
+]

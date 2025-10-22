@@ -1,0 +1,391 @@
+[
+  {
+    "session_id": "17760934-3cec-4aeb-8759-d3389b633a96",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/17760934-3cec-4aeb-8759-d3389b633a96.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.claude/commands/generate-feature.md"
+    },
+    "tool_response": {
+      "type": "text",
+      "file": {
+        "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.claude/commands/generate-feature.md",
+        "content": "---\ndescription: Generate implementation spec with phased approach and validation\nargument-hint: [featureName, context, format]\n---\n\n# Implementation Spec Generator\n\nGenerate a well-defined spec file based on the provided context. Read Instructions and then follow Workflow instructions in the exact order.\n\n## Variables\n\n- $featureName: $1 (optional)\n- $context: $2 (optional) - If context is not provided, use existing context from the chat window\n- $format: $3 (optional) - Output format: \"text\" or \"json\" (defaults to \"text\" if not provided)\n\n## Instructions\n\n- **IMPORTANT**: Use your reasoning model: THINK HARD about the feature requirements, design, and implementation approach.\n- Normalize $featureName (lowercase, hyphenated) for the output path\n- Replace ALL <placeholders> with specific details relevant to that section\n- Order tasks for dependencies (foundation \u2192 core \u2192 integration)\n- Include specific file paths, not generic names\n- Make all commands copy-pasteable with expected outputs\n- **Verification Commands**: Include comprehensive verification covering build, tests, linting, and manual feature-specific checks\n- Add E2E test tasks if feature has UI\n- Keep acceptance criteria measurable\n- Include rollback considerations in notes\n- If $format is not provided, default to \"text\"\n\n## Workflow\n\n1.  Read and analyze `./agent/specs/${featureName}-prd.md` (if the file exists. if it does not exist, igore this step)\n2.  Research codebase for existing patterns\n3.  IMPORTANT: If you have any questions or unclear about anything within the implementation, do the following:\n    a. Ask the user your questions ONE AT A TIME.\n    b. Follow this template below (provide two options and specify which you recommend and why)\n\n                ```md\n                **Question**: The question you have\n                **Suggestions**\n                1: Something (recommended)\n                2: Something else\n                3: Other - user specifies\n                ```\n\n4.  Once you are confident that you have all the context needed to successfully implement this feature, generate a focused spec following the exact structure outlined in Template below. Be concise but comprehensive. Skip sections only if truly not applicable.\n5.  Create spec in: `./agent/specs/${featureName}-spec.md`\n\n## Template\n\n```md\n# Feature: <feature name>\n\n## What We're Building\n\n<2-3 sentences describing the feature and its value to users>\n\n## User Story\n\nAs a <user type>\nI want to <action/goal>  \nSo that <benefit/value>\n\n## Technical Approach\n\n<brief description of implementation strategy and key design decisions>\n\n## Files to Touch\n\n### Existing Files\n\n- `<filepath>` - <reason for modification>\n- <list all files that need changes>\n\n### New Files\n\n- `<filepath>` - <purpose of this file>\n- <list all new files to create>\n\n## Implementation Plan\n\n### Phase 1: Foundation\n\n<describe foundational work: schemas, configurations, types, base infrastructure>\n\n### Phase 2: Core Implementation\n\n<describe main feature work: business logic, APIs, UI components, core functionality>\n\n### Phase 3: Integration\n\n<describe integration work: connecting to existing systems, navigation, polish>\n\n## Step by Step Tasks\n\n**IMPORTANT: Execute every step in order, top to bottom**\n\n### <Task Group Number>: <Task Group Name>\n\n<!-- prettier-ignore -->\n- [ ] <task id> <specific task description> \n        - <implementation detail or note> \n        - File: `<specific filepath>` \n        - <any commands to run>\n- [ ] <next task> \n        - <details>\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### <Next Task Group>\n\n<!-- prettier-ignore -->\n- [ ] <specific task>\n        - <details>\n\n<continue with all tasks needed, grouped logically>\n\n## Acceptance Criteria\n\n**Must Work:**\n\n- [ ] <specific functional requirement>\n- [ ] <another requirement>\n- [ ] <edge case handling>\n- [ ] <performance requirement>\n\n**Should Not:**\n\n- [ ] <what must not break>\n- [ ] <performance degradation to avoid>\n- [ ] <security issues to prevent>\n\n## Validation\n\nExecute these commands to verify the feature works correctly:\n\n**Automated Verification:**\n\n    # Build verification\n    <build command>\n    # Expected: <successful build output>\n\n    # Type checking\n    <type check command>\n    # Expected: <no type errors>\n\n    # Linting\n    <lint command>\n    # Expected: <no lint errors>\n\n    # Unit tests\n    <unit test command>\n    # Expected: <all tests pass>\n\n    # Integration tests (if applicable)\n    <integration test command>\n    # Expected: <all tests pass>\n\n    # E2E tests (if applicable)\n    <e2e test command>\n    # Expected: <all tests pass>\n\n**Manual Verification:**\n\n1. Start application: `<start command>`\n2. Navigate to: `<URL or path>`\n3. Verify: <specific feature behavior to check>\n4. Test edge cases: <specific scenarios to test>\n5. Check console: No errors or warnings\n\n**Feature-Specific Checks:**\n\n- <specific verification step for this feature>\n- <another feature-specific check>\n- <edge case or integration point to manually verify>\n\n## Definition of Done\n\n- [ ] All tasks completed\n- [ ] Tests passing\n- [ ] Lint and Type Checks\n- [ ] Manual testing confirms working\n- [ ] No console errors\n- [ ] Code follows existing patterns\n- [ ] <any project-specific requirements>\n\n## Notes\n\n<any dependencies, future considerations, or important context>\n```\n\n## Report\n\n### JSON\n\n**IMPORTANT**: If $format is \"json\", return raw JSON output (no ```json code fences, no markdown):\n\n```json\n{\n  \"success\": true,\n  \"spec_path\": \".agent/specs/featureName-spec.md\",\n  \"feature_name\": \"$featureName\",\n  \"phases\": [\"Foundation\", \"Core Implementation\", \"Integration\"],\n  \"task_groups\": 5,\n  \"total_tasks\": 15,\n  \"files_to_modify\": [\"src/file1.ts\", \"src/file2.ts\"],\n  \"files_to_create\": [\"src/new-file.ts\"],\n  \"has_acceptance_criteria\": true,\n  \"has_validation\": true\n}\n```\n\n**JSON Field Descriptions:**\n\n- `success`: Always true if spec generation completed\n- `spec_path`: Path to the generated spec file\n- `feature_name`: Normalized feature name (lowercase, hyphenated)\n- `phases`: Array of phase names from Implementation Plan\n- `task_groups`: Number of task groups in Step by Step Tasks section\n- `total_tasks`: Total number of tasks across all groups\n- `files_to_modify`: Array of existing files that will be modified\n- `files_to_create`: Array of new files that will be created\n- `has_acceptance_criteria`: True if Acceptance Criteria section has items\n- `has_validation`: True if Validation section has commands\n\n### Text\n\nOtherwise, provide this human-readable information to the user:\n\n- IMPORTANT: Return exclusively the path to the spec file created and nothing else.\n",
+        "numLines": 233,
+        "startLine": 1,
+        "totalLines": 233
+      }
+    }
+  },
+  {
+    "session_id": "17760934-3cec-4aeb-8759-d3389b633a96",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/17760934-3cec-4aeb-8759-d3389b633a96.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "ExitPlanMode",
+    "tool_input": {
+      "plan": "Update the `/generate-feature` command to consistently use `.agents/specs/` as the output directory by fixing three path references (lines 32, 47, and 202) that currently incorrectly reference `agent/specs/` or `.agent/specs/`."
+    },
+    "tool_response": {
+      "plan": "Update the `/generate-feature` command to consistently use `.agents/specs/` as the output directory by fixing three path references (lines 32, 47, and 202) that currently incorrectly reference `agent/specs/` or `.agent/specs/`.",
+      "isAgent": false
+    }
+  },
+  {
+    "session_id": "17760934-3cec-4aeb-8759-d3389b633a96",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/17760934-3cec-4aeb-8759-d3389b633a96.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Fix path reference on line 32 to use .agents/specs/",
+          "status": "in_progress",
+          "activeForm": "Fixing path reference on line 32"
+        },
+        {
+          "content": "Fix path reference on line 47 to use .agents/specs/",
+          "status": "pending",
+          "activeForm": "Fixing path reference on line 47"
+        },
+        {
+          "content": "Fix path reference on line 202 in JSON example to use .agents/specs/",
+          "status": "pending",
+          "activeForm": "Fixing path reference on line 202"
+        }
+      ]
+    },
+    "tool_response": {
+      "oldTodos": [],
+      "newTodos": [
+        {
+          "content": "Fix path reference on line 32 to use .agents/specs/",
+          "status": "in_progress",
+          "activeForm": "Fixing path reference on line 32"
+        },
+        {
+          "content": "Fix path reference on line 47 to use .agents/specs/",
+          "status": "pending",
+          "activeForm": "Fixing path reference on line 47"
+        },
+        {
+          "content": "Fix path reference on line 202 in JSON example to use .agents/specs/",
+          "status": "pending",
+          "activeForm": "Fixing path reference on line 202"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "17760934-3cec-4aeb-8759-d3389b633a96",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/17760934-3cec-4aeb-8759-d3389b633a96.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.claude/commands/generate-feature.md",
+      "old_string": "1.  Read and analyze `./agent/specs/${featureName}-prd.md` (if the file exists. if it does not exist, igore this step)",
+      "new_string": "1.  Read and analyze `./.agents/specs/${featureName}-prd.md` (if the file exists. if it does not exist, igore this step)"
+    },
+    "tool_response": {
+      "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.claude/commands/generate-feature.md",
+      "oldString": "1.  Read and analyze `./agent/specs/${featureName}-prd.md` (if the file exists. if it does not exist, igore this step)",
+      "newString": "1.  Read and analyze `./.agents/specs/${featureName}-prd.md` (if the file exists. if it does not exist, igore this step)",
+      "originalFile": "---\ndescription: Generate implementation spec with phased approach and validation\nargument-hint: [featureName, context, format]\n---\n\n# Implementation Spec Generator\n\nGenerate a well-defined spec file based on the provided context. Read Instructions and then follow Workflow instructions in the exact order.\n\n## Variables\n\n- $featureName: $1 (optional)\n- $context: $2 (optional) - If context is not provided, use existing context from the chat window\n- $format: $3 (optional) - Output format: \"text\" or \"json\" (defaults to \"text\" if not provided)\n\n## Instructions\n\n- **IMPORTANT**: Use your reasoning model: THINK HARD about the feature requirements, design, and implementation approach.\n- Normalize $featureName (lowercase, hyphenated) for the output path\n- Replace ALL <placeholders> with specific details relevant to that section\n- Order tasks for dependencies (foundation \u2192 core \u2192 integration)\n- Include specific file paths, not generic names\n- Make all commands copy-pasteable with expected outputs\n- **Verification Commands**: Include comprehensive verification covering build, tests, linting, and manual feature-specific checks\n- Add E2E test tasks if feature has UI\n- Keep acceptance criteria measurable\n- Include rollback considerations in notes\n- If $format is not provided, default to \"text\"\n\n## Workflow\n\n1.  Read and analyze `./agent/specs/${featureName}-prd.md` (if the file exists. if it does not exist, igore this step)\n2.  Research codebase for existing patterns\n3.  IMPORTANT: If you have any questions or unclear about anything within the implementation, do the following:\n    a. Ask the user your questions ONE AT A TIME.\n    b. Follow this template below (provide two options and specify which you recommend and why)\n\n                ```md\n                **Question**: The question you have\n                **Suggestions**\n                1: Something (recommended)\n                2: Something else\n                3: Other - user specifies\n                ```\n\n4.  Once you are confident that you have all the context needed to successfully implement this feature, generate a focused spec following the exact structure outlined in Template below. Be concise but comprehensive. Skip sections only if truly not applicable.\n5.  Create spec in: `./agent/specs/${featureName}-spec.md`\n\n## Template\n\n```md\n# Feature: <feature name>\n\n## What We're Building\n\n<2-3 sentences describing the feature and its value to users>\n\n## User Story\n\nAs a <user type>\nI want to <action/goal>  \nSo that <benefit/value>\n\n## Technical Approach\n\n<brief description of implementation strategy and key design decisions>\n\n## Files to Touch\n\n### Existing Files\n\n- `<filepath>` - <reason for modification>\n- <list all files that need changes>\n\n### New Files\n\n- `<filepath>` - <purpose of this file>\n- <list all new files to create>\n\n## Implementation Plan\n\n### Phase 1: Foundation\n\n<describe foundational work: schemas, configurations, types, base infrastructure>\n\n### Phase 2: Core Implementation\n\n<describe main feature work: business logic, APIs, UI components, core functionality>\n\n### Phase 3: Integration\n\n<describe integration work: connecting to existing systems, navigation, polish>\n\n## Step by Step Tasks\n\n**IMPORTANT: Execute every step in order, top to bottom**\n\n### <Task Group Number>: <Task Group Name>\n\n<!-- prettier-ignore -->\n- [ ] <task id> <specific task description> \n        - <implementation detail or note> \n        - File: `<specific filepath>` \n        - <any commands to run>\n- [ ] <next task> \n        - <details>\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### <Next Task Group>\n\n<!-- prettier-ignore -->\n- [ ] <specific task>\n        - <details>\n\n<continue with all tasks needed, grouped logically>\n\n## Acceptance Criteria\n\n**Must Work:**\n\n- [ ] <specific functional requirement>\n- [ ] <another requirement>\n- [ ] <edge case handling>\n- [ ] <performance requirement>\n\n**Should Not:**\n\n- [ ] <what must not break>\n- [ ] <performance degradation to avoid>\n- [ ] <security issues to prevent>\n\n## Validation\n\nExecute these commands to verify the feature works correctly:\n\n**Automated Verification:**\n\n    # Build verification\n    <build command>\n    # Expected: <successful build output>\n\n    # Type checking\n    <type check command>\n    # Expected: <no type errors>\n\n    # Linting\n    <lint command>\n    # Expected: <no lint errors>\n\n    # Unit tests\n    <unit test command>\n    # Expected: <all tests pass>\n\n    # Integration tests (if applicable)\n    <integration test command>\n    # Expected: <all tests pass>\n\n    # E2E tests (if applicable)\n    <e2e test command>\n    # Expected: <all tests pass>\n\n**Manual Verification:**\n\n1. Start application: `<start command>`\n2. Navigate to: `<URL or path>`\n3. Verify: <specific feature behavior to check>\n4. Test edge cases: <specific scenarios to test>\n5. Check console: No errors or warnings\n\n**Feature-Specific Checks:**\n\n- <specific verification step for this feature>\n- <another feature-specific check>\n- <edge case or integration point to manually verify>\n\n## Definition of Done\n\n- [ ] All tasks completed\n- [ ] Tests passing\n- [ ] Lint and Type Checks\n- [ ] Manual testing confirms working\n- [ ] No console errors\n- [ ] Code follows existing patterns\n- [ ] <any project-specific requirements>\n\n## Notes\n\n<any dependencies, future considerations, or important context>\n```\n\n## Report\n\n### JSON\n\n**IMPORTANT**: If $format is \"json\", return raw JSON output (no ```json code fences, no markdown):\n\n```json\n{\n  \"success\": true,\n  \"spec_path\": \".agent/specs/featureName-spec.md\",\n  \"feature_name\": \"$featureName\",\n  \"phases\": [\"Foundation\", \"Core Implementation\", \"Integration\"],\n  \"task_groups\": 5,\n  \"total_tasks\": 15,\n  \"files_to_modify\": [\"src/file1.ts\", \"src/file2.ts\"],\n  \"files_to_create\": [\"src/new-file.ts\"],\n  \"has_acceptance_criteria\": true,\n  \"has_validation\": true\n}\n```\n\n**JSON Field Descriptions:**\n\n- `success`: Always true if spec generation completed\n- `spec_path`: Path to the generated spec file\n- `feature_name`: Normalized feature name (lowercase, hyphenated)\n- `phases`: Array of phase names from Implementation Plan\n- `task_groups`: Number of task groups in Step by Step Tasks section\n- `total_tasks`: Total number of tasks across all groups\n- `files_to_modify`: Array of existing files that will be modified\n- `files_to_create`: Array of new files that will be created\n- `has_acceptance_criteria`: True if Acceptance Criteria section has items\n- `has_validation`: True if Validation section has commands\n\n### Text\n\nOtherwise, provide this human-readable information to the user:\n\n- IMPORTANT: Return exclusively the path to the spec file created and nothing else.\n",
+      "structuredPatch": [
+        {
+          "oldStart": 29,
+          "oldLines": 7,
+          "newStart": 29,
+          "newLines": 7,
+          "lines": [
+            " ",
+            " ## Workflow",
+            " ",
+            "-1.  Read and analyze `./agent/specs/${featureName}-prd.md` (if the file exists. if it does not exist, igore this step)",
+            "+1.  Read and analyze `./.agents/specs/${featureName}-prd.md` (if the file exists. if it does not exist, igore this step)",
+            " 2.  Research codebase for existing patterns",
+            " 3.  IMPORTANT: If you have any questions or unclear about anything within the implementation, do the following:",
+            "     a. Ask the user your questions ONE AT A TIME."
+          ]
+        }
+      ],
+      "userModified": false,
+      "replaceAll": false
+    }
+  },
+  {
+    "session_id": "17760934-3cec-4aeb-8759-d3389b633a96",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/17760934-3cec-4aeb-8759-d3389b633a96.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Fix path reference on line 32 to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 32"
+        },
+        {
+          "content": "Fix path reference on line 47 to use .agents/specs/",
+          "status": "in_progress",
+          "activeForm": "Fixing path reference on line 47"
+        },
+        {
+          "content": "Fix path reference on line 202 in JSON example to use .agents/specs/",
+          "status": "pending",
+          "activeForm": "Fixing path reference on line 202"
+        }
+      ]
+    },
+    "tool_response": {
+      "oldTodos": [
+        {
+          "content": "Fix path reference on line 32 to use .agents/specs/",
+          "status": "in_progress",
+          "activeForm": "Fixing path reference on line 32"
+        },
+        {
+          "content": "Fix path reference on line 47 to use .agents/specs/",
+          "status": "pending",
+          "activeForm": "Fixing path reference on line 47"
+        },
+        {
+          "content": "Fix path reference on line 202 in JSON example to use .agents/specs/",
+          "status": "pending",
+          "activeForm": "Fixing path reference on line 202"
+        }
+      ],
+      "newTodos": [
+        {
+          "content": "Fix path reference on line 32 to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 32"
+        },
+        {
+          "content": "Fix path reference on line 47 to use .agents/specs/",
+          "status": "in_progress",
+          "activeForm": "Fixing path reference on line 47"
+        },
+        {
+          "content": "Fix path reference on line 202 in JSON example to use .agents/specs/",
+          "status": "pending",
+          "activeForm": "Fixing path reference on line 202"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "17760934-3cec-4aeb-8759-d3389b633a96",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/17760934-3cec-4aeb-8759-d3389b633a96.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.claude/commands/generate-feature.md",
+      "old_string": "4.  Once you are confident that you have all the context needed to successfully implement this feature, generate a focused spec following the exact structure outlined in Template below. Be concise but comprehensive. Skip sections only if truly not applicable.\n5.  Create spec in: `./agent/specs/${featureName}-spec.md`",
+      "new_string": "4.  Once you are confident that you have all the context needed to successfully implement this feature, generate a focused spec following the exact structure outlined in Template below. Be concise but comprehensive. Skip sections only if truly not applicable.\n5.  Create spec in: `./.agents/specs/${featureName}-spec.md`"
+    },
+    "tool_response": {
+      "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.claude/commands/generate-feature.md",
+      "oldString": "4.  Once you are confident that you have all the context needed to successfully implement this feature, generate a focused spec following the exact structure outlined in Template below. Be concise but comprehensive. Skip sections only if truly not applicable.\n5.  Create spec in: `./agent/specs/${featureName}-spec.md`",
+      "newString": "4.  Once you are confident that you have all the context needed to successfully implement this feature, generate a focused spec following the exact structure outlined in Template below. Be concise but comprehensive. Skip sections only if truly not applicable.\n5.  Create spec in: `./.agents/specs/${featureName}-spec.md`",
+      "originalFile": "---\ndescription: Generate implementation spec with phased approach and validation\nargument-hint: [featureName, context, format]\n---\n\n# Implementation Spec Generator\n\nGenerate a well-defined spec file based on the provided context. Read Instructions and then follow Workflow instructions in the exact order.\n\n## Variables\n\n- $featureName: $1 (optional)\n- $context: $2 (optional) - If context is not provided, use existing context from the chat window\n- $format: $3 (optional) - Output format: \"text\" or \"json\" (defaults to \"text\" if not provided)\n\n## Instructions\n\n- **IMPORTANT**: Use your reasoning model: THINK HARD about the feature requirements, design, and implementation approach.\n- Normalize $featureName (lowercase, hyphenated) for the output path\n- Replace ALL <placeholders> with specific details relevant to that section\n- Order tasks for dependencies (foundation \u2192 core \u2192 integration)\n- Include specific file paths, not generic names\n- Make all commands copy-pasteable with expected outputs\n- **Verification Commands**: Include comprehensive verification covering build, tests, linting, and manual feature-specific checks\n- Add E2E test tasks if feature has UI\n- Keep acceptance criteria measurable\n- Include rollback considerations in notes\n- If $format is not provided, default to \"text\"\n\n## Workflow\n\n1.  Read and analyze `./.agents/specs/${featureName}-prd.md` (if the file exists. if it does not exist, igore this step)\n2.  Research codebase for existing patterns\n3.  IMPORTANT: If you have any questions or unclear about anything within the implementation, do the following:\n    a. Ask the user your questions ONE AT A TIME.\n    b. Follow this template below (provide two options and specify which you recommend and why)\n\n                ```md\n                **Question**: The question you have\n                **Suggestions**\n                1: Something (recommended)\n                2: Something else\n                3: Other - user specifies\n                ```\n\n4.  Once you are confident that you have all the context needed to successfully implement this feature, generate a focused spec following the exact structure outlined in Template below. Be concise but comprehensive. Skip sections only if truly not applicable.\n5.  Create spec in: `./agent/specs/${featureName}-spec.md`\n\n## Template\n\n```md\n# Feature: <feature name>\n\n## What We're Building\n\n<2-3 sentences describing the feature and its value to users>\n\n## User Story\n\nAs a <user type>\nI want to <action/goal>  \nSo that <benefit/value>\n\n## Technical Approach\n\n<brief description of implementation strategy and key design decisions>\n\n## Files to Touch\n\n### Existing Files\n\n- `<filepath>` - <reason for modification>\n- <list all files that need changes>\n\n### New Files\n\n- `<filepath>` - <purpose of this file>\n- <list all new files to create>\n\n## Implementation Plan\n\n### Phase 1: Foundation\n\n<describe foundational work: schemas, configurations, types, base infrastructure>\n\n### Phase 2: Core Implementation\n\n<describe main feature work: business logic, APIs, UI components, core functionality>\n\n### Phase 3: Integration\n\n<describe integration work: connecting to existing systems, navigation, polish>\n\n## Step by Step Tasks\n\n**IMPORTANT: Execute every step in order, top to bottom**\n\n### <Task Group Number>: <Task Group Name>\n\n<!-- prettier-ignore -->\n- [ ] <task id> <specific task description> \n        - <implementation detail or note> \n        - File: `<specific filepath>` \n        - <any commands to run>\n- [ ] <next task> \n        - <details>\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### <Next Task Group>\n\n<!-- prettier-ignore -->\n- [ ] <specific task>\n        - <details>\n\n<continue with all tasks needed, grouped logically>\n\n## Acceptance Criteria\n\n**Must Work:**\n\n- [ ] <specific functional requirement>\n- [ ] <another requirement>\n- [ ] <edge case handling>\n- [ ] <performance requirement>\n\n**Should Not:**\n\n- [ ] <what must not break>\n- [ ] <performance degradation to avoid>\n- [ ] <security issues to prevent>\n\n## Validation\n\nExecute these commands to verify the feature works correctly:\n\n**Automated Verification:**\n\n    # Build verification\n    <build command>\n    # Expected: <successful build output>\n\n    # Type checking\n    <type check command>\n    # Expected: <no type errors>\n\n    # Linting\n    <lint command>\n    # Expected: <no lint errors>\n\n    # Unit tests\n    <unit test command>\n    # Expected: <all tests pass>\n\n    # Integration tests (if applicable)\n    <integration test command>\n    # Expected: <all tests pass>\n\n    # E2E tests (if applicable)\n    <e2e test command>\n    # Expected: <all tests pass>\n\n**Manual Verification:**\n\n1. Start application: `<start command>`\n2. Navigate to: `<URL or path>`\n3. Verify: <specific feature behavior to check>\n4. Test edge cases: <specific scenarios to test>\n5. Check console: No errors or warnings\n\n**Feature-Specific Checks:**\n\n- <specific verification step for this feature>\n- <another feature-specific check>\n- <edge case or integration point to manually verify>\n\n## Definition of Done\n\n- [ ] All tasks completed\n- [ ] Tests passing\n- [ ] Lint and Type Checks\n- [ ] Manual testing confirms working\n- [ ] No console errors\n- [ ] Code follows existing patterns\n- [ ] <any project-specific requirements>\n\n## Notes\n\n<any dependencies, future considerations, or important context>\n```\n\n## Report\n\n### JSON\n\n**IMPORTANT**: If $format is \"json\", return raw JSON output (no ```json code fences, no markdown):\n\n```json\n{\n  \"success\": true,\n  \"spec_path\": \".agent/specs/featureName-spec.md\",\n  \"feature_name\": \"$featureName\",\n  \"phases\": [\"Foundation\", \"Core Implementation\", \"Integration\"],\n  \"task_groups\": 5,\n  \"total_tasks\": 15,\n  \"files_to_modify\": [\"src/file1.ts\", \"src/file2.ts\"],\n  \"files_to_create\": [\"src/new-file.ts\"],\n  \"has_acceptance_criteria\": true,\n  \"has_validation\": true\n}\n```\n\n**JSON Field Descriptions:**\n\n- `success`: Always true if spec generation completed\n- `spec_path`: Path to the generated spec file\n- `feature_name`: Normalized feature name (lowercase, hyphenated)\n- `phases`: Array of phase names from Implementation Plan\n- `task_groups`: Number of task groups in Step by Step Tasks section\n- `total_tasks`: Total number of tasks across all groups\n- `files_to_modify`: Array of existing files that will be modified\n- `files_to_create`: Array of new files that will be created\n- `has_acceptance_criteria`: True if Acceptance Criteria section has items\n- `has_validation`: True if Validation section has commands\n\n### Text\n\nOtherwise, provide this human-readable information to the user:\n\n- IMPORTANT: Return exclusively the path to the spec file created and nothing else.\n",
+      "structuredPatch": [
+        {
+          "oldStart": 44,
+          "oldLines": 7,
+          "newStart": 44,
+          "newLines": 7,
+          "lines": [
+            "                 ```",
+            " ",
+            " 4.  Once you are confident that you have all the context needed to successfully implement this feature, generate a focused spec following the exact structure outlined in Template below. Be concise but comprehensive. Skip sections only if truly not applicable.",
+            "-5.  Create spec in: `./agent/specs/${featureName}-spec.md`",
+            "+5.  Create spec in: `./.agents/specs/${featureName}-spec.md`",
+            " ",
+            " ## Template",
+            " "
+          ]
+        }
+      ],
+      "userModified": false,
+      "replaceAll": false
+    }
+  },
+  {
+    "session_id": "17760934-3cec-4aeb-8759-d3389b633a96",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/17760934-3cec-4aeb-8759-d3389b633a96.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Fix path reference on line 32 to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 32"
+        },
+        {
+          "content": "Fix path reference on line 47 to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 47"
+        },
+        {
+          "content": "Fix path reference on line 202 in JSON example to use .agents/specs/",
+          "status": "in_progress",
+          "activeForm": "Fixing path reference on line 202"
+        }
+      ]
+    },
+    "tool_response": {
+      "oldTodos": [
+        {
+          "content": "Fix path reference on line 32 to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 32"
+        },
+        {
+          "content": "Fix path reference on line 47 to use .agents/specs/",
+          "status": "in_progress",
+          "activeForm": "Fixing path reference on line 47"
+        },
+        {
+          "content": "Fix path reference on line 202 in JSON example to use .agents/specs/",
+          "status": "pending",
+          "activeForm": "Fixing path reference on line 202"
+        }
+      ],
+      "newTodos": [
+        {
+          "content": "Fix path reference on line 32 to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 32"
+        },
+        {
+          "content": "Fix path reference on line 47 to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 47"
+        },
+        {
+          "content": "Fix path reference on line 202 in JSON example to use .agents/specs/",
+          "status": "in_progress",
+          "activeForm": "Fixing path reference on line 202"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "17760934-3cec-4aeb-8759-d3389b633a96",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/17760934-3cec-4aeb-8759-d3389b633a96.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.claude/commands/generate-feature.md",
+      "old_string": "```json\n{\n  \"success\": true,\n  \"spec_path\": \".agent/specs/featureName-spec.md\",\n  \"feature_name\": \"$featureName\",\n  \"phases\": [\"Foundation\", \"Core Implementation\", \"Integration\"],\n  \"task_groups\": 5,\n  \"total_tasks\": 15,\n  \"files_to_modify\": [\"src/file1.ts\", \"src/file2.ts\"],\n  \"files_to_create\": [\"src/new-file.ts\"],\n  \"has_acceptance_criteria\": true,\n  \"has_validation\": true\n}\n```",
+      "new_string": "```json\n{\n  \"success\": true,\n  \"spec_path\": \"./.agents/specs/featureName-spec.md\",\n  \"feature_name\": \"$featureName\",\n  \"phases\": [\"Foundation\", \"Core Implementation\", \"Integration\"],\n  \"task_groups\": 5,\n  \"total_tasks\": 15,\n  \"files_to_modify\": [\"src/file1.ts\", \"src/file2.ts\"],\n  \"files_to_create\": [\"src/new-file.ts\"],\n  \"has_acceptance_criteria\": true,\n  \"has_validation\": true\n}\n```"
+    },
+    "tool_response": {
+      "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.claude/commands/generate-feature.md",
+      "oldString": "```json\n{\n  \"success\": true,\n  \"spec_path\": \".agent/specs/featureName-spec.md\",\n  \"feature_name\": \"$featureName\",\n  \"phases\": [\"Foundation\", \"Core Implementation\", \"Integration\"],\n  \"task_groups\": 5,\n  \"total_tasks\": 15,\n  \"files_to_modify\": [\"src/file1.ts\", \"src/file2.ts\"],\n  \"files_to_create\": [\"src/new-file.ts\"],\n  \"has_acceptance_criteria\": true,\n  \"has_validation\": true\n}\n```",
+      "newString": "```json\n{\n  \"success\": true,\n  \"spec_path\": \"./.agents/specs/featureName-spec.md\",\n  \"feature_name\": \"$featureName\",\n  \"phases\": [\"Foundation\", \"Core Implementation\", \"Integration\"],\n  \"task_groups\": 5,\n  \"total_tasks\": 15,\n  \"files_to_modify\": [\"src/file1.ts\", \"src/file2.ts\"],\n  \"files_to_create\": [\"src/new-file.ts\"],\n  \"has_acceptance_criteria\": true,\n  \"has_validation\": true\n}\n```",
+      "originalFile": "---\ndescription: Generate implementation spec with phased approach and validation\nargument-hint: [featureName, context, format]\n---\n\n# Implementation Spec Generator\n\nGenerate a well-defined spec file based on the provided context. Read Instructions and then follow Workflow instructions in the exact order.\n\n## Variables\n\n- $featureName: $1 (optional)\n- $context: $2 (optional) - If context is not provided, use existing context from the chat window\n- $format: $3 (optional) - Output format: \"text\" or \"json\" (defaults to \"text\" if not provided)\n\n## Instructions\n\n- **IMPORTANT**: Use your reasoning model: THINK HARD about the feature requirements, design, and implementation approach.\n- Normalize $featureName (lowercase, hyphenated) for the output path\n- Replace ALL <placeholders> with specific details relevant to that section\n- Order tasks for dependencies (foundation \u2192 core \u2192 integration)\n- Include specific file paths, not generic names\n- Make all commands copy-pasteable with expected outputs\n- **Verification Commands**: Include comprehensive verification covering build, tests, linting, and manual feature-specific checks\n- Add E2E test tasks if feature has UI\n- Keep acceptance criteria measurable\n- Include rollback considerations in notes\n- If $format is not provided, default to \"text\"\n\n## Workflow\n\n1.  Read and analyze `./.agents/specs/${featureName}-prd.md` (if the file exists. if it does not exist, igore this step)\n2.  Research codebase for existing patterns\n3.  IMPORTANT: If you have any questions or unclear about anything within the implementation, do the following:\n    a. Ask the user your questions ONE AT A TIME.\n    b. Follow this template below (provide two options and specify which you recommend and why)\n\n                ```md\n                **Question**: The question you have\n                **Suggestions**\n                1: Something (recommended)\n                2: Something else\n                3: Other - user specifies\n                ```\n\n4.  Once you are confident that you have all the context needed to successfully implement this feature, generate a focused spec following the exact structure outlined in Template below. Be concise but comprehensive. Skip sections only if truly not applicable.\n5.  Create spec in: `./.agents/specs/${featureName}-spec.md`\n\n## Template\n\n```md\n# Feature: <feature name>\n\n## What We're Building\n\n<2-3 sentences describing the feature and its value to users>\n\n## User Story\n\nAs a <user type>\nI want to <action/goal>  \nSo that <benefit/value>\n\n## Technical Approach\n\n<brief description of implementation strategy and key design decisions>\n\n## Files to Touch\n\n### Existing Files\n\n- `<filepath>` - <reason for modification>\n- <list all files that need changes>\n\n### New Files\n\n- `<filepath>` - <purpose of this file>\n- <list all new files to create>\n\n## Implementation Plan\n\n### Phase 1: Foundation\n\n<describe foundational work: schemas, configurations, types, base infrastructure>\n\n### Phase 2: Core Implementation\n\n<describe main feature work: business logic, APIs, UI components, core functionality>\n\n### Phase 3: Integration\n\n<describe integration work: connecting to existing systems, navigation, polish>\n\n## Step by Step Tasks\n\n**IMPORTANT: Execute every step in order, top to bottom**\n\n### <Task Group Number>: <Task Group Name>\n\n<!-- prettier-ignore -->\n- [ ] <task id> <specific task description> \n        - <implementation detail or note> \n        - File: `<specific filepath>` \n        - <any commands to run>\n- [ ] <next task> \n        - <details>\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### <Next Task Group>\n\n<!-- prettier-ignore -->\n- [ ] <specific task>\n        - <details>\n\n<continue with all tasks needed, grouped logically>\n\n## Acceptance Criteria\n\n**Must Work:**\n\n- [ ] <specific functional requirement>\n- [ ] <another requirement>\n- [ ] <edge case handling>\n- [ ] <performance requirement>\n\n**Should Not:**\n\n- [ ] <what must not break>\n- [ ] <performance degradation to avoid>\n- [ ] <security issues to prevent>\n\n## Validation\n\nExecute these commands to verify the feature works correctly:\n\n**Automated Verification:**\n\n    # Build verification\n    <build command>\n    # Expected: <successful build output>\n\n    # Type checking\n    <type check command>\n    # Expected: <no type errors>\n\n    # Linting\n    <lint command>\n    # Expected: <no lint errors>\n\n    # Unit tests\n    <unit test command>\n    # Expected: <all tests pass>\n\n    # Integration tests (if applicable)\n    <integration test command>\n    # Expected: <all tests pass>\n\n    # E2E tests (if applicable)\n    <e2e test command>\n    # Expected: <all tests pass>\n\n**Manual Verification:**\n\n1. Start application: `<start command>`\n2. Navigate to: `<URL or path>`\n3. Verify: <specific feature behavior to check>\n4. Test edge cases: <specific scenarios to test>\n5. Check console: No errors or warnings\n\n**Feature-Specific Checks:**\n\n- <specific verification step for this feature>\n- <another feature-specific check>\n- <edge case or integration point to manually verify>\n\n## Definition of Done\n\n- [ ] All tasks completed\n- [ ] Tests passing\n- [ ] Lint and Type Checks\n- [ ] Manual testing confirms working\n- [ ] No console errors\n- [ ] Code follows existing patterns\n- [ ] <any project-specific requirements>\n\n## Notes\n\n<any dependencies, future considerations, or important context>\n```\n\n## Report\n\n### JSON\n\n**IMPORTANT**: If $format is \"json\", return raw JSON output (no ```json code fences, no markdown):\n\n```json\n{\n  \"success\": true,\n  \"spec_path\": \".agent/specs/featureName-spec.md\",\n  \"feature_name\": \"$featureName\",\n  \"phases\": [\"Foundation\", \"Core Implementation\", \"Integration\"],\n  \"task_groups\": 5,\n  \"total_tasks\": 15,\n  \"files_to_modify\": [\"src/file1.ts\", \"src/file2.ts\"],\n  \"files_to_create\": [\"src/new-file.ts\"],\n  \"has_acceptance_criteria\": true,\n  \"has_validation\": true\n}\n```\n\n**JSON Field Descriptions:**\n\n- `success`: Always true if spec generation completed\n- `spec_path`: Path to the generated spec file\n- `feature_name`: Normalized feature name (lowercase, hyphenated)\n- `phases`: Array of phase names from Implementation Plan\n- `task_groups`: Number of task groups in Step by Step Tasks section\n- `total_tasks`: Total number of tasks across all groups\n- `files_to_modify`: Array of existing files that will be modified\n- `files_to_create`: Array of new files that will be created\n- `has_acceptance_criteria`: True if Acceptance Criteria section has items\n- `has_validation`: True if Validation section has commands\n\n### Text\n\nOtherwise, provide this human-readable information to the user:\n\n- IMPORTANT: Return exclusively the path to the spec file created and nothing else.\n",
+      "structuredPatch": [
+        {
+          "oldStart": 200,
+          "oldLines": 7,
+          "newStart": 200,
+          "newLines": 7,
+          "lines": [
+            " ```json",
+            " {",
+            "   \"success\": true,",
+            "-  \"spec_path\": \".agent/specs/featureName-spec.md\",",
+            "+  \"spec_path\": \"./.agents/specs/featureName-spec.md\",",
+            "   \"feature_name\": \"$featureName\",",
+            "   \"phases\": [\"Foundation\", \"Core Implementation\", \"Integration\"],",
+            "   \"task_groups\": 5,"
+          ]
+        }
+      ],
+      "userModified": false,
+      "replaceAll": false
+    }
+  },
+  {
+    "session_id": "17760934-3cec-4aeb-8759-d3389b633a96",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/17760934-3cec-4aeb-8759-d3389b633a96.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Fix path reference on line 32 to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 32"
+        },
+        {
+          "content": "Fix path reference on line 47 to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 47"
+        },
+        {
+          "content": "Fix path reference on line 202 in JSON example to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 202"
+        }
+      ]
+    },
+    "tool_response": {
+      "oldTodos": [
+        {
+          "content": "Fix path reference on line 32 to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 32"
+        },
+        {
+          "content": "Fix path reference on line 47 to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 47"
+        },
+        {
+          "content": "Fix path reference on line 202 in JSON example to use .agents/specs/",
+          "status": "in_progress",
+          "activeForm": "Fixing path reference on line 202"
+        }
+      ],
+      "newTodos": [
+        {
+          "content": "Fix path reference on line 32 to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 32"
+        },
+        {
+          "content": "Fix path reference on line 47 to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 47"
+        },
+        {
+          "content": "Fix path reference on line 202 in JSON example to use .agents/specs/",
+          "status": "completed",
+          "activeForm": "Fixing path reference on line 202"
+        }
+      ]
+    }
+  }
+]

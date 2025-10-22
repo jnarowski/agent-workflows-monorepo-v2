@@ -1,0 +1,66 @@
+[
+  {
+    "session_id": "f85c92fc-b3cc-40eb-bc40-a543924db00a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f85c92fc-b3cc-40eb-bc40-a543924db00a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "/use-browser test e2e tests in '/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.agent/specs/live-chat-sessions-spec.md'  we're still getting a 401 when hitting: http://localhost:5173/api/projects/cmh0h2ub80001ya2z3h246ivy/sessions"
+  },
+  {
+    "session_id": "f85c92fc-b3cc-40eb-bc40-a543924db00a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f85c92fc-b3cc-40eb-bc40-a543924db00a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Is it wired up to the @apps/web/src/client/components/chat/ChatPromptInput.tsx to submit the chat question to the backend?"
+  },
+  {
+    "session_id": "f85c92fc-b3cc-40eb-bc40-a543924db00a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f85c92fc-b3cc-40eb-bc40-a543924db00a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "I am not seeing anything come back from the server. also should we just do a post request when the user submits a message instead of using websocket? Let's add debugging and figure out what's going on"
+  },
+  {
+    "session_id": "f85c92fc-b3cc-40eb-bc40-a543924db00a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f85c92fc-b3cc-40eb-bc40-a543924db00a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "what do you suggest? "
+  },
+  {
+    "session_id": "f85c92fc-b3cc-40eb-bc40-a543924db00a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f85c92fc-b3cc-40eb-bc40-a543924db00a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "what do you suggest? "
+  },
+  {
+    "session_id": "f85c92fc-b3cc-40eb-bc40-a543924db00a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f85c92fc-b3cc-40eb-bc40-a543924db00a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "how does @apps/claudecodeui do it?"
+  },
+  {
+    "session_id": "f85c92fc-b3cc-40eb-bc40-a543924db00a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f85c92fc-b3cc-40eb-bc40-a543924db00a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "no we want to use agent-cli-sdk. does claudecodeui submit the message from user to backend via websocket or http request"
+  },
+  {
+    "session_id": "f85c92fc-b3cc-40eb-bc40-a543924db00a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f85c92fc-b3cc-40eb-bc40-a543924db00a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "we need our fastify server to respond to the messages send from the frontend, then spawn a claude agent with agent-cli-sdk. Is that not what's happening now?"
+  }
+]

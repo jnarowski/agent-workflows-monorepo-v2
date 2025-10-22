@@ -1,0 +1,58 @@
+[
+  {
+    "session_id": "16befbce-10a6-4237-9d69-92c2ec303d3b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/16befbce-10a6-4237-9d69-92c2ec303d3b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Let's implement a project sync script. This will run on application full load. It should\\\n\\\n1. import all projects from .claude/projects\\\n2. create sessions for the most recent 5 sessions in each project\\\n\\\nsee @apps/claudecodeui for how they implemented it. We have projects and agent_sessions, so we'll need to adopt the code to our process. We also have syncProjectSessions, so we can leverage that when importing projects."
+  },
+  {
+    "session_id": "16befbce-10a6-4237-9d69-92c2ec303d3b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/16befbce-10a6-4237-9d69-92c2ec303d3b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "How will these projects load once they are imported? Should the frontend call some sort of /settings or /init endpoint that triggers this and then when done the frontend can refresh the projects list?"
+  },
+  {
+    "session_id": "16befbce-10a6-4237-9d69-92c2ec303d3b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/16befbce-10a6-4237-9d69-92c2ec303d3b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Integrate this into the frontend. Create a react hook for it and call it after getProjects"
+  },
+  {
+    "session_id": "16befbce-10a6-4237-9d69-92c2ec303d3b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/16befbce-10a6-4237-9d69-92c2ec303d3b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": ";et"
+  },
+  {
+    "session_id": "16befbce-10a6-4237-9d69-92c2ec303d3b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/16befbce-10a6-4237-9d69-92c2ec303d3b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "let's add this new syncProjects after fetchProjects() is called in App"
+  },
+  {
+    "session_id": "16befbce-10a6-4237-9d69-92c2ec303d3b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/16befbce-10a6-4237-9d69-92c2ec303d3b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Where are we fetching projects currently for the project list?"
+  },
+  {
+    "session_id": "16befbce-10a6-4237-9d69-92c2ec303d3b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/16befbce-10a6-4237-9d69-92c2ec303d3b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "/generate-feature project-sync"
+  }
+]

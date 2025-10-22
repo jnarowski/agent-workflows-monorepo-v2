@@ -1,0 +1,215 @@
+[
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/pages/ProjectShell.tsx"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Glob",
+    "tool_input": {
+      "pattern": "**/ProjectDetailLayout.tsx"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Glob",
+    "tool_input": {
+      "pattern": "**/ProtectedLayout.tsx"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/layouts/ProjectDetailLayout.tsx"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/App.tsx"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/main.tsx"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/components/terminal/ShellControls.tsx"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/index.css"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Glob",
+    "tool_input": {
+      "pattern": "**/index.html",
+      "path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/index.html"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "ExitPlanMode",
+    "tool_input": {
+      "plan": "## Plan: Simplify Terminal Component and Fix Layout\n\n### 1. Fix the layout chain (highest priority)\n- Add `h-screen` to root containers to establish proper viewport height\n- Ensure flexbox chain works: `html/body \u2192 #root \u2192 App \u2192 ProtectedLayout \u2192 ProjectDetailLayout \u2192 ProjectShell \u2192 Terminal`\n- Add `overflow-hidden` to prevent scrolling issues\n\n### 2. Simplify Terminal.tsx (inspired by react-xtermjs)\n- **Remove terminal instance caching/persistence from ShellContext** - this adds unnecessary complexity\n- **Single useEffect for terminal creation** - create terminal once on mount, dispose on unmount\n- **Use ref pattern directly** like react-xtermjs: just attach terminal to ref, no state juggling\n- **Simplify resize handling** - use ResizeObserver properly or remove it\n- **Remove setTimeout hacks** - fix the root cause (parent dimensions) instead\n\n### 3. Clean up the component hierarchy\n- `Terminal.tsx`: Just handle xterm.js instance, input/output, and WebSocket\n- `ProjectShell.tsx`: Already simple - keep as is\n- `ShellContext.tsx`: Remove terminal instance storage, keep only WebSocket session state\n\n### 4. Specific changes\n**index.css:**\n```css\nhtml, body, #root {\n  height: 100vh;\n  overflow: hidden;\n}\n```\n\n**Terminal.tsx:**\n- Remove persistence logic (lines 55-67, 191-197)\n- Single useEffect for terminal creation\n- Clean ref attachment\n- Remove complex timing hacks\n- Keep WebSocket integration simple\n\nThis approach will:\n- Fix the positioning issue immediately\n- Make the terminal code maintainable and debuggable\n- Follow react-xtermjs patterns (simple and effective)\n- Remove ~100 lines of unnecessary complexity"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/components/ui/sidebar.tsx"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "ExitPlanMode",
+    "tool_input": {
+      "plan": "## Plan: Fix Terminal Positioning with Shadcn-Compatible Approach\n\n### Issue Root Cause\nThe terminal appears way down the page because of incorrect flex nesting in `ProtectedLayout.tsx`. The `<div className=\"flex flex-1 flex-col\">` wrapper is unnecessary and breaks the shadcn sidebar's built-in height management.\n\n### Changes Needed\n\n**1. Fix ProtectedLayout.tsx (line 35-38)**\nRemove the unnecessary wrapper div - `SidebarInset` already handles flex layout:\n```tsx\n// Current (WRONG):\n<SidebarInset>\n  <div className=\"flex flex-1 flex-col\">\n    <Outlet />\n  </div>\n</SidebarInset>\n\n// Fixed (RIGHT):\n<SidebarInset>\n  <Outlet />\n</SidebarInset>\n```\n\n**2. Simplify Terminal.tsx**\nFollowing react-xtermjs pattern:\n- Remove terminal instance persistence/caching (lines 55-67, 191-197)\n- Single focused useEffect for terminal creation\n- Clean up timing hacks (setTimeout calls)\n- Direct ref pattern like react-xtermjs\n- Keep WebSocket integration clean\n\n**3. What NOT to change**\n- No changes to index.css (respect shadcn patterns)\n- No changes to SidebarProvider/SidebarInset (they're correct)\n- ProjectDetailLayout is fine (properly uses h-full)\n- ProjectShell is fine (properly uses h-full)\n\n### Why This Works\nShadcn's `SidebarProvider` sets `min-h-svh` automatically (sidebar.tsx:142). By removing the unnecessary wrapper div in ProtectedLayout, the flex chain flows correctly: SidebarInset (flex-1) \u2192 Outlet \u2192 ProjectDetailLayout (h-full) \u2192 Terminal (h-full)."
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Glob",
+    "tool_input": {
+      "pattern": "**/agent/specs/*.md"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "ls -la agent/specs 2>&1 || echo \"Directory does not exist\"",
+      "description": "Check if agent/specs directory exists"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/hooks/useShellWebSocket.ts"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/contexts/ShellContext.tsx"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "mkdir -p agent/specs",
+      "description": "Create agent/specs directory"
+    }
+  },
+  {
+    "session_id": "c142cf19-56d5-414b-8ccb-ae133492a6dd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c142cf19-56d5-414b-8ccb-ae133492a6dd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/agent/specs/terminal-layout-fix-spec.md",
+      "content": "# Feature: Terminal Layout Fix and Component Simplification\n\n## What We're Building\n\nFix the terminal positioning issue where the terminal renders way down the page instead of at the top of the viewport. Simultaneously simplify the Terminal component by removing over-engineered terminal instance caching and following react-xtermjs patterns for better maintainability and debuggability.\n\n## User Story\n\nAs a developer using the shell interface\nI want the terminal to render at the top of the available viewport area\nSo that I can immediately see and interact with the shell without scrolling\n\n## Technical Approach\n\nThe issue stems from a broken flexbox chain in the ProtectedLayout component. The SidebarInset from shadcn already provides proper flex layout (`flex w-full flex-1 flex-col`), but an unnecessary wrapper div in ProtectedLayout.tsx breaks this chain. We'll remove the redundant wrapper and simplify the Terminal component to follow react-xtermjs patterns: direct ref attachment, single focused useEffect, and no terminal instance caching. This maintains shadcn's built-in viewport height management (`min-h-svh`) without adding global CSS overrides.\n\n## Files to Touch\n\n### Existing Files\n\n- `apps/web/src/client/layouts/ProtectedLayout.tsx` - Remove unnecessary flex wrapper div that breaks shadcn's layout chain\n- `apps/web/src/client/components/terminal/Terminal.tsx` - Simplify component following react-xtermjs patterns, remove instance caching\n- `apps/web/src/client/contexts/ShellContext.tsx` - Remove terminal instance storage from context (lines 17-25)\n\n### New Files\n\nNone - this is a refactoring/fix of existing code\n\n## Implementation Plan\n\n### Phase 1: Foundation\n\nFix the root cause layout issue in ProtectedLayout.tsx by removing the redundant flex wrapper that breaks shadcn's sidebar layout chain. This immediately resolves the positioning problem.\n\n### Phase 2: Core Implementation\n\nSimplify Terminal.tsx by removing terminal instance persistence logic, consolidating multiple useEffects into a single focused creation effect, eliminating setTimeout hacks, and implementing direct ref pattern like react-xtermjs.\n\n### Phase 3: Integration\n\nUpdate ShellContext to remove terminal instance storage (keep only WebSocket session state), verify WebSocket integration still works correctly, and ensure terminal state management is clean and maintainable.\n\n## Step by Step Tasks\n\n### 1: Fix Layout Chain in ProtectedLayout\n\n<!-- prettier-ignore -->\n- [ ] 1.1 Remove unnecessary wrapper div in ProtectedLayout.tsx\n        - The SidebarInset already provides `flex-1 flex-col` layout\n        - Remove the redundant `<div className=\"flex flex-1 flex-col\">` wrapper (lines 36-38)\n        - Change from: `<SidebarInset><div className=\"flex flex-1 flex-col\"><Outlet /></div></SidebarInset>`\n        - Change to: `<SidebarInset><Outlet /></SidebarInset>`\n        - File: `apps/web/src/client/layouts/ProtectedLayout.tsx`\n- [ ] 1.2 Verify shadcn sidebar layout still works\n        - Test with sidebar expanded and collapsed\n        - Check responsive behavior on mobile\n        - Ensure SidebarProvider's `min-h-svh` is flowing correctly\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### 2: Update ShellContext Types\n\n<!-- prettier-ignore -->\n- [ ] 2.1 Remove terminal instance fields from TerminalSession interface\n        - Remove `terminal: Terminal | null` (line 19)\n        - Remove `fitAddon: FitAddon | null` (line 20)\n        - Remove `containerElement: HTMLDivElement | null` (line 21)\n        - Keep: id, projectId, status, sessionId, error\n        - File: `apps/web/src/client/contexts/ShellContext.tsx`\n- [ ] 2.2 Update removeSession to not dispose terminal\n        - Remove terminal disposal logic (lines 58-60)\n        - Terminal disposal will be handled in Terminal.tsx cleanup\n        - File: `apps/web/src/client/contexts/ShellContext.tsx`\n- [ ] 2.3 Remove terminal-related imports\n        - Remove `import type { Terminal } from '@xterm/xterm'` (line 8)\n        - Remove `import type { FitAddon } from '@xterm/addon-fit'` (line 9)\n        - File: `apps/web/src/client/contexts/ShellContext.tsx`\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### 3: Simplify Terminal Component - Remove Persistence Logic\n\n<!-- prettier-ignore -->\n- [ ] 3.1 Remove terminal instance reuse logic\n        - Delete lines 55-67 (existingSession checks and terminal reuse)\n        - Terminal will be created fresh on each mount\n        - File: `apps/web/src/client/components/terminal/Terminal.tsx`\n- [ ] 3.2 Remove terminal state saving on unmount\n        - Delete lines 191-197 (updateSession with terminal/fitAddon)\n        - Terminal cleanup will simply dispose, not save state\n        - File: `apps/web/src/client/components/terminal/Terminal.tsx`\n- [ ] 3.3 Update addSession call to not include terminal instances\n        - Remove `terminal` and `fitAddon` from addSession call (lines 133-139)\n        - Only pass: projectId, status, containerElement: null\n        - File: `apps/web/src/client/components/terminal/Terminal.tsx`\n- [ ] 3.4 Remove unused refs and state\n        - Remove `resizeObserverRef` (line 27) - declared but never used\n        - Remove `lastDimensionsRef` if not needed for resize\n        - File: `apps/web/src/client/components/terminal/Terminal.tsx`\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### 4: Simplify Terminal Component - Consolidate Effects\n\n<!-- prettier-ignore -->\n- [ ] 4.1 Consolidate terminal initialization into single useEffect\n        - Merge terminal creation, addon loading, and event handlers into one effect\n        - Remove complex dependency arrays that cause re-runs\n        - Pattern: create terminal \u2192 load addons \u2192 attach handlers \u2192 fit \u2192 return cleanup\n        - File: `apps/web/src/client/components/terminal/Terminal.tsx`\n- [ ] 4.2 Remove setTimeout hacks\n        - Remove setTimeout for initialFit (line 184)\n        - Remove setTimeout for connect (line 215)\n        - Fix root cause: ensure parent has dimensions before fitting\n        - Use ResizeObserver or rely on FitAddon's proposeDimensions\n        - File: `apps/web/src/client/components/terminal/Terminal.tsx`\n- [ ] 4.3 Implement proper ResizeObserver\n        - Either implement ResizeObserver properly to handle parent resize\n        - Or remove it entirely if not needed\n        - react-xtermjs doesn't use ResizeObserver - just fits on mount\n        - File: `apps/web/src/client/components/terminal/Terminal.tsx`\n- [ ] 4.4 Simplify connection effect\n        - Keep connection logic but remove timing hacks\n        - Ensure terminal is ready before connecting\n        - Use callback refs if needed to ensure DOM is mounted\n        - File: `apps/web/src/client/components/terminal/Terminal.tsx`\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### 5: Clean Up Terminal Component Structure\n\n<!-- prettier-ignore -->\n- [ ] 5.1 Organize component into clear sections\n        - Section 1: Refs and state\n        - Section 2: WebSocket hooks\n        - Section 3: Single terminal initialization effect\n        - Section 4: Connection effect\n        - Section 5: Render\n        - File: `apps/web/src/client/components/terminal/Terminal.tsx`\n- [ ] 5.2 Add clear comments for each section\n        - Document why terminal is created fresh each time\n        - Document WebSocket integration approach\n        - Document fit/resize strategy\n        - File: `apps/web/src/client/components/terminal/Terminal.tsx`\n- [ ] 5.3 Ensure cleanup is comprehensive\n        - Dispose terminal in cleanup\n        - Disconnect WebSocket in cleanup\n        - Clear all timeouts/observers\n        - File: `apps/web/src/client/components/terminal/Terminal.tsx`\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### 6: Update ShellContext Implementation\n\n<!-- prettier-ignore -->\n- [ ] 6.1 Verify TerminalSession interface is correct\n        - Should only contain: id, projectId, status, sessionId?, error?\n        - No terminal instances or DOM refs\n        - File: `apps/web/src/client/contexts/ShellContext.tsx`\n- [ ] 6.2 Update addSession calls throughout codebase\n        - Search for all addSession calls\n        - Ensure none are passing terminal/fitAddon\n        - Command: `grep -r \"addSession\" apps/web/src/client/`\n- [ ] 6.3 Update getSession usage throughout codebase\n        - Search for all getSession calls\n        - Ensure none are accessing terminal/fitAddon properties\n        - Command: `grep -r \"getSession\" apps/web/src/client/`\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n## Acceptance Criteria\n\n**Must Work:**\n\n- [ ] Terminal renders at the top of the viewport, not way down the page\n- [ ] Terminal fills available height between ShellControls and bottom of viewport\n- [ ] WebSocket connection works correctly (input/output/resize)\n- [ ] Terminal displays shell output correctly with proper formatting\n- [ ] Keyboard shortcuts work (Cmd/Ctrl+C for copy when text selected, Cmd/Ctrl+V for paste)\n- [ ] Terminal reconnects properly on WebSocket disconnect (up to 5 attempts)\n- [ ] Terminal fits properly on window resize\n- [ ] Terminal state is clean on mount/unmount (no memory leaks)\n- [ ] Multiple shells can be opened in different projects without interference\n\n**Should Not:**\n\n- [ ] Break existing sidebar layout or navigation\n- [ ] Break mobile responsive behavior\n- [ ] Cause console errors or warnings\n- [ ] Re-render unnecessarily causing terminal flicker\n- [ ] Leave zombie terminal instances or WebSocket connections\n- [ ] Require global CSS overrides that conflict with shadcn patterns\n- [ ] Break when switching between Chat/Shell/Files tabs\n\n## Validation\n\nExecute these commands to verify the feature works correctly:\n\n**Automated Verification:**\n\n```bash\n# Type checking\npnpm check-types\n# Expected: No type errors in Terminal.tsx, ProtectedLayout.tsx, ShellContext.tsx\n\n# Linting\npnpm lint\n# Expected: No lint errors\n\n# Build verification\npnpm build\n# Expected: Successful build with no errors\n```\n\n**Manual Verification:**\n\n1. Start application: `pnpm dev`\n2. Navigate to: `http://localhost:5173/projects/{project-id}/shell`\n3. Verify: Terminal appears immediately at top of viewport (not scrolled down)\n4. Verify: Terminal fills available height correctly\n5. Test: Type commands in terminal, verify output appears correctly\n6. Test: Resize browser window, verify terminal resizes properly\n7. Test: Switch to Chat tab and back to Shell tab, verify terminal reconnects\n8. Test: Toggle sidebar collapsed/expanded, verify terminal adjusts\n9. Test: Open DevTools Console, verify no errors or warnings\n10. Test: Navigate between different projects' shells\n11. Check console: No errors, warnings, or memory leak messages\n\n**Feature-Specific Checks:**\n\n- Inspect element on terminal container, verify it has proper height from parent\n- Check flex chain: ProtectedLayout \u2192 SidebarInset \u2192 Outlet \u2192 ProjectDetailLayout \u2192 ProjectShell \u2192 Terminal\n- Verify SidebarInset has `flex-1` and ProjectDetailLayout has `h-full`\n- Open React DevTools, verify no excessive re-renders on Terminal component\n- Check Network tab, verify WebSocket connection is established correctly\n- Verify terminal scrollback works (type long output, scroll up/down)\n- Test edge case: Kill WebSocket from server side, verify reconnection attempts\n- Test edge case: Navigate away during connection, verify cleanup happens\n\n## Definition of Done\n\n- [ ] All tasks completed\n- [ ] Terminal positioning issue resolved\n- [ ] Terminal component simplified (no instance caching)\n- [ ] ShellContext cleaned up (no terminal storage)\n- [ ] Type checks passing\n- [ ] Lint checks passing\n- [ ] Build succeeds\n- [ ] Manual testing confirms terminal works correctly\n- [ ] No console errors or warnings\n- [ ] Code follows react-xtermjs patterns\n- [ ] WebSocket integration still works\n- [ ] No memory leaks or zombie connections\n- [ ] Responsive behavior maintained\n\n## Notes\n\n**Key Design Decisions:**\n\n1. **No global CSS overrides**: We respect shadcn's built-in `min-h-svh` pattern rather than adding `height: 100vh` to html/body/#root\n2. **No terminal instance caching**: Terminal is created fresh on each mount, disposed on unmount. This simplifies state management and prevents stale state bugs.\n3. **Single responsibility**: ShellContext manages WebSocket session state only. Terminal component manages xterm.js instance lifecycle.\n4. **React patterns**: Follow react-xtermjs approach - simple ref attachment, focused effects, clear cleanup\n\n**Dependencies:**\n\n- No new dependencies required\n- Existing dependencies: @xterm/xterm, @xterm/addon-fit, @xterm/addon-clipboard\n\n**Future Considerations:**\n\n- Consider adding ResizeObserver for more robust terminal resizing\n- Consider adding terminal session persistence (save/restore terminal history)\n- Consider adding terminal customization UI (font size, theme, etc.)\n- Monitor performance with many terminal sessions open\n\n**Rollback Plan:**\n\nIf issues arise, revert changes in reverse order:\n1. Revert ShellContext changes\n2. Revert Terminal.tsx simplification\n3. Revert ProtectedLayout.tsx layout fix\n\nEach file can be reverted independently using git.\n"
+    }
+  }
+]

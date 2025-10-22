@@ -1,0 +1,34 @@
+[
+  {
+    "session_id": "c630522a-6dbc-4c76-bdaf-5dfa3250cbfd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c630522a-6dbc-4c76-bdaf-5dfa3250cbfd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can you make sure the register page uses the same layout as login"
+  },
+  {
+    "session_id": "c630522a-6dbc-4c76-bdaf-5dfa3250cbfd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c630522a-6dbc-4c76-bdaf-5dfa3250cbfd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can you make the signup use the exact same styles as login. they look similar but not the same"
+  },
+  {
+    "session_id": "c630522a-6dbc-4c76-bdaf-5dfa3250cbfd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c630522a-6dbc-4c76-bdaf-5dfa3250cbfd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "remove the signin with google buttons on login and signup"
+  },
+  {
+    "session_id": "c630522a-6dbc-4c76-bdaf-5dfa3250cbfd",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c630522a-6dbc-4c76-bdaf-5dfa3250cbfd.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can we also use tabindex to have username tab to password and not forgot password"
+  }
+]

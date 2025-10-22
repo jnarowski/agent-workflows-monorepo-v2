@@ -1,0 +1,30 @@
+[
+  {
+    "session_id": "d3880eae-2b9f-4c1f-85f2-e3aa1c5c40f3",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/d3880eae-2b9f-4c1f-85f2-e3aa1c5c40f3.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "d3880eae-2b9f-4c1f-85f2-e3aa1c5c40f3",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/d3880eae-2b9f-4c1f-85f2-e3aa1c5c40f3.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "d3880eae-2b9f-4c1f-85f2-e3aa1c5c40f3",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/d3880eae-2b9f-4c1f-85f2-e3aa1c5c40f3.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "d3880eae-2b9f-4c1f-85f2-e3aa1c5c40f3",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/d3880eae-2b9f-4c1f-85f2-e3aa1c5c40f3.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  }
+]

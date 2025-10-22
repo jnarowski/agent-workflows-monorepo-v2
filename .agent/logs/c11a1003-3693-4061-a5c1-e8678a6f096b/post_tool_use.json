@@ -1,0 +1,276 @@
+[
+  {
+    "session_id": "c11a1003-3693-4061-a5c1-e8678a6f096b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c11a1003-3693-4061-a5c1-e8678a6f096b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/server/index.ts"
+    },
+    "tool_response": {
+      "type": "text",
+      "file": {
+        "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/server/index.ts",
+        "content": "#!/usr/bin/env tsx\nimport Fastify from 'fastify';\nimport fastifyStatic from '@fastify/static';\nimport fastifyWebsocket from '@fastify/websocket';\nimport cors from '@fastify/cors';\nimport rateLimit from '@fastify/rate-limit';\nimport {\n  serializerCompiler,\n  validatorCompiler,\n  ZodTypeProvider\n} from 'fastify-type-provider-zod';\nimport { fileURLToPath } from 'url';\nimport { dirname, join } from 'path';\nimport { existsSync } from 'fs';\nimport { registerRoutes } from '@/server/routes';\nimport { registerWebSocket } from '@/server/websocket';\nimport { registerShellRoute } from '@/server/routes/shell';\nimport { authPlugin } from '@/server/plugins/auth';\n\nconst __filename = fileURLToPath(import.meta.url);\nconst __dirname = dirname(__filename);\n\nexport async function createServer() {\n  const fastify = Fastify({\n    logger: process.env.NODE_ENV === 'production'\n      ? {\n          level: process.env.LOG_LEVEL || 'info',\n          transport: {\n            targets: [\n              // Console output (for Docker, PM2, systemd)\n              {\n                target: 'pino/file',\n                options: { destination: 1 }, // stdout\n                level: 'info'\n              },\n              // File output\n              {\n                target: 'pino/file',\n                options: {\n                  destination: process.env.LOG_FILE || './logs/app.log',\n                  mkdir: true\n                },\n                level: process.env.LOG_LEVEL || 'info'\n              }\n            ]\n          }\n        }\n      : {\n          // Development: pretty-print to console + log file\n          level: process.env.LOG_LEVEL || 'info',\n          transport: {\n            targets: [\n              // Pretty console output\n              {\n                target: 'pino-pretty',\n                options: {\n                  colorize: true,\n                  translateTime: 'HH:MM:ss Z',\n                  ignore: 'pid,hostname'\n                },\n                level: process.env.LOG_LEVEL || 'info'\n              },\n              // File output (plain JSON)\n              {\n                target: 'pino/file',\n                options: {\n                  destination: process.env.LOG_FILE || './logs/app.log',\n                  mkdir: true\n                },\n                level: process.env.LOG_LEVEL || 'info'\n              }\n            ]\n          }\n        }\n  }).withTypeProvider<ZodTypeProvider>();\n\n  // Set up Zod validation\n  fastify.setValidatorCompiler(validatorCompiler);\n  fastify.setSerializerCompiler(serializerCompiler);\n\n  // Custom error handler for Zod validation\n  fastify.setErrorHandler((error, request, reply) => {\n    if (error.validation) {\n      return reply.status(400).send({\n        error: {\n          message: 'Validation failed',\n          code: 'VALIDATION_ERROR',\n          details: error.validation,\n          statusCode: 400,\n        },\n      });\n    }\n\n    const statusCode = error.statusCode || 500;\n    fastify.log.error({\n      err: error,\n      url: request.url,\n      method: request.method,\n    }, 'Request error');\n\n    return reply.status(statusCode).send({\n      error: {\n        message: error.message,\n        statusCode,\n      },\n    });\n  });\n\n  // Configure JSON parser to allow empty bodies\n  fastify.addContentTypeParser(\n    'application/json',\n    { parseAs: 'string' },\n    (req, body, done) => {\n      try {\n        // Allow empty bodies (e.g., DELETE requests with Content-Type: application/json)\n        const json = body === '' ? {} : JSON.parse(body as string);\n        done(null, json);\n      } catch (err) {\n        done(err as Error, undefined);\n      }\n    }\n  );\n\n  // Register CORS\n  await fastify.register(cors, {\n    origin: process.env.ALLOWED_ORIGINS?.split(',') || 'http://localhost:5173',\n    credentials: true,\n  });\n\n  // Register rate limiting (global: false - only on specific routes)\n  await fastify.register(rateLimit, {\n    global: false,\n  });\n\n  // Register auth plugin (JWT)\n  await fastify.register(authPlugin);\n\n  // Register WebSocket support\n  await fastify.register(fastifyWebsocket);\n\n  // Register API routes\n  await registerRoutes(fastify);\n\n  // Register WebSocket handler\n  await registerWebSocket(fastify);\n\n  // Register Shell WebSocket handler\n  await registerShellRoute(fastify);\n\n  // Serve static files from dist/client/ (production build only)\n  // In production, the built client files are in dist/client/\n  const distDir = join(__dirname, '../../dist/client');\n  const hasDistDir = existsSync(distDir);\n\n  if (hasDistDir) {\n    await fastify.register(fastifyStatic, {\n      root: distDir,\n      prefix: '/',\n    });\n\n    // SPA fallback: serve index.html for all non-API routes\n    fastify.setNotFoundHandler((request, reply) => {\n      if (request.url.startsWith('/api') || request.url.startsWith('/ws') || request.url.startsWith('/shell')) {\n        reply.code(404).send({ error: 'Not found' });\n      } else {\n        reply.sendFile('index.html');\n      }\n    });\n  } else {\n    // Development mode: no static files, just API and WebSocket\n    fastify.setNotFoundHandler((request, reply) => {\n      if (request.url.startsWith('/api') || request.url.startsWith('/ws') || request.url.startsWith('/shell')) {\n        reply.code(404).send({ error: 'Not found' });\n      } else {\n        reply.code(200).send({\n          message: 'Development mode: Frontend not built',\n          hint: 'Run \"pnpm dev\" to start both frontend (Vite) and backend servers',\n          viteUrl: 'http://localhost:5173',\n          apiUrl: 'http://localhost:3456/api',\n        });\n      }\n    });\n  }\n\n  return fastify;\n}\n\n// Start server when run directly (not imported as module)\nif (import.meta.url === `file://${process.argv[1]}`) {\n  const PORT = parseInt(process.env.PORT || '3456');\n  const HOST = process.env.HOST || '127.0.0.1';\n\n  const server = await createServer();\n\n  await server.listen({\n    port: PORT,\n    host: HOST,\n  });\n\n  console.log('');\n  console.log('\ud83d\ude80 Fastify server running at:');\n  console.log(`   http://${HOST}:${PORT}`);\n  console.log('');\n}\n",
+        "numLines": 205,
+        "startLine": 1,
+        "totalLines": 205
+      }
+    }
+  },
+  {
+    "session_id": "c11a1003-3693-4061-a5c1-e8678a6f096b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c11a1003-3693-4061-a5c1-e8678a6f096b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "PrismaClient",
+      "path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/server",
+      "output_mode": "files_with_matches"
+    },
+    "tool_response": {
+      "mode": "files_with_matches",
+      "filenames": [
+        "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/server/services/agent-session.service.ts",
+        "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/server/services/project.service.ts",
+        "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/server/routes/auth.ts"
+      ],
+      "numFiles": 3
+    }
+  },
+  {
+    "session_id": "c11a1003-3693-4061-a5c1-e8678a6f096b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c11a1003-3693-4061-a5c1-e8678a6f096b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Glob",
+    "tool_input": {
+      "pattern": "**/prisma/schema.prisma"
+    },
+    "tool_response": {
+      "filenames": [
+        "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/prisma/schema.prisma"
+      ],
+      "durationMs": 55,
+      "numFiles": 1,
+      "truncated": false
+    }
+  },
+  {
+    "session_id": "c11a1003-3693-4061-a5c1-e8678a6f096b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c11a1003-3693-4061-a5c1-e8678a6f096b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/shared/prisma.ts"
+    },
+    "tool_response": {
+      "type": "text",
+      "file": {
+        "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/shared/prisma.ts",
+        "content": "import { PrismaClient } from '@prisma/client';\n\nconst globalForPrisma = globalThis as unknown as {\n  prisma: PrismaClient | undefined;\n};\n\nexport const prisma = globalForPrisma.prisma ?? new PrismaClient({\n  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],\n});\n\nif (process.env.NODE_ENV !== 'production') {\n  globalForPrisma.prisma = prisma;\n}\n",
+        "numLines": 14,
+        "startLine": 1,
+        "totalLines": 14
+      }
+    }
+  },
+  {
+    "session_id": "c11a1003-3693-4061-a5c1-e8678a6f096b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c11a1003-3693-4061-a5c1-e8678a6f096b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/package.json"
+    },
+    "tool_response": {
+      "type": "text",
+      "file": {
+        "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/package.json",
+        "content": "{\n  \"name\": \"@repo/web\",\n  \"private\": true,\n  \"version\": \"0.0.0\",\n  \"type\": \"module\",\n  \"main\": \"src/server/index.ts\",\n  \"bin\": {\n    \"web\": \"src/server/index.ts\"\n  },\n  \"files\": [\n    \"src/server/\",\n    \"src/shared/\",\n    \"dist/\",\n    \"README.md\"\n  ],\n  \"scripts\": {\n    \"dev\": \"concurrently --kill-others \\\"npm run dev:server\\\" \\\"npm run dev:client\\\"\",\n    \"dev:server\": \"tsx watch src/server/index.ts\",\n    \"dev:client\": \"vite --host\",\n    \"dev:force\": \"bash kill-ports.sh\",\n    \"build\": \"tsc -b && vite build\",\n    \"check\": \"npm run lint && npm run check-types && npm run test:run\",\n    \"check-types\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\",\n    \"preview\": \"vite preview\",\n    \"start\": \"npm run build && tsx src/server/index.ts\",\n    \"test\": \"vitest\",\n    \"test:ui\": \"vitest --ui\",\n    \"test:run\": \"vitest run\",\n    \"test:coverage\": \"vitest run --coverage\",\n    \"prisma:generate\": \"prisma generate\",\n    \"prisma:migrate\": \"prisma migrate dev\",\n    \"prisma:studio\": \"prisma studio\"\n  },\n  \"dependencies\": {\n    \"@ai-sdk/anthropic\": \"^2.0.35\",\n    \"@ai-sdk/openai\": \"^2.0.53\",\n    \"@codemirror/lang-css\": \"^6.3.1\",\n    \"@codemirror/lang-html\": \"^6.4.9\",\n    \"@codemirror/lang-javascript\": \"^6.2.4\",\n    \"@codemirror/lang-json\": \"^6.0.1\",\n    \"@codemirror/lang-markdown\": \"^6.3.3\",\n    \"@codemirror/lang-python\": \"^6.2.1\",\n    \"@codemirror/state\": \"^6.4.1\",\n    \"@codemirror/theme-one-dark\": \"^6.1.2\",\n    \"@codemirror/view\": \"^6.37.2\",\n    \"@fastify/cors\": \"^11.1.0\",\n    \"@fastify/jwt\": \"^10.0.0\",\n    \"@fastify/rate-limit\": \"^10.3.0\",\n    \"@fastify/static\": \"^8.3.0\",\n    \"@fastify/websocket\": \"^11.2.0\",\n    \"@hookform/resolvers\": \"^5.2.2\",\n    \"@prisma/client\": \"^6.17.1\",\n    \"@radix-ui/react-accordion\": \"^1.2.12\",\n    \"@radix-ui/react-alert-dialog\": \"^1.1.15\",\n    \"@radix-ui/react-aspect-ratio\": \"^1.1.7\",\n    \"@radix-ui/react-avatar\": \"^1.1.10\",\n    \"@radix-ui/react-checkbox\": \"^1.3.3\",\n    \"@radix-ui/react-collapsible\": \"^1.1.12\",\n    \"@radix-ui/react-context-menu\": \"^2.2.16\",\n    \"@radix-ui/react-dialog\": \"^1.1.15\",\n    \"@radix-ui/react-dropdown-menu\": \"^2.1.16\",\n    \"@radix-ui/react-hover-card\": \"^1.1.15\",\n    \"@radix-ui/react-label\": \"^2.1.7\",\n    \"@radix-ui/react-menubar\": \"^1.1.16\",\n    \"@radix-ui/react-navigation-menu\": \"^1.2.14\",\n    \"@radix-ui/react-popover\": \"^1.1.15\",\n    \"@radix-ui/react-progress\": \"^1.1.7\",\n    \"@radix-ui/react-radio-group\": \"^1.3.8\",\n    \"@radix-ui/react-scroll-area\": \"^1.2.10\",\n    \"@radix-ui/react-select\": \"^2.2.6\",\n    \"@radix-ui/react-separator\": \"^1.1.7\",\n    \"@radix-ui/react-slider\": \"^1.3.6\",\n    \"@radix-ui/react-slot\": \"^1.2.3\",\n    \"@radix-ui/react-switch\": \"^1.2.6\",\n    \"@radix-ui/react-tabs\": \"^1.1.13\",\n    \"@radix-ui/react-toggle\": \"^1.1.10\",\n    \"@radix-ui/react-toggle-group\": \"^1.1.11\",\n    \"@radix-ui/react-tooltip\": \"^1.2.8\",\n    \"@radix-ui/react-use-controllable-state\": \"^1.2.2\",\n    \"@repo/agent-cli-sdk\": \"workspace:*\",\n    \"@sourceborn/agent-workflows\": \"workspace:*\",\n    \"@tailwindcss/vite\": \"^4.0.6\",\n    \"@tanstack/react-query\": \"^5.90.5\",\n    \"@tanstack/react-query-devtools\": \"^5.90.2\",\n    \"@types/bcrypt\": \"^6.0.0\",\n    \"@uiw/react-codemirror\": \"^4.23.13\",\n    \"@xterm/addon-clipboard\": \"^0.1.0\",\n    \"@xterm/addon-fit\": \"^0.10.0\",\n    \"@xterm/addon-webgl\": \"^0.18.0\",\n    \"@xterm/xterm\": \"^5.5.0\",\n    \"@xyflow/react\": \"^12.9.0\",\n    \"ai\": \"^5.0.76\",\n    \"bcrypt\": \"^6.0.0\",\n    \"class-variance-authority\": \"^0.7.1\",\n    \"clsx\": \"^2.1.1\",\n    \"cmdk\": \"^1.1.1\",\n    \"date-fns\": \"^4.1.0\",\n    \"diff\": \"^8.0.2\",\n    \"embla-carousel-react\": \"^8.6.0\",\n    \"fastify\": \"^5.6.1\",\n    \"fastify-plugin\": \"^5.1.0\",\n    \"fastify-type-provider-zod\": \"^6.0.0\",\n    \"input-otp\": \"^1.4.2\",\n    \"lucide-react\": \"^0.544.0\",\n    \"motion\": \"^12.23.24\",\n    \"nanoid\": \"^5.1.6\",\n    \"next-themes\": \"^0.4.6\",\n    \"node-pty\": \"^1.0.0\",\n    \"react\": \"^19.1.1\",\n    \"react-day-picker\": \"^9.11.1\",\n    \"react-dom\": \"^19.1.1\",\n    \"react-hook-form\": \"^7.65.0\",\n    \"react-markdown\": \"^10.1.0\",\n    \"react-resizable-panels\": \"^3.0.6\",\n    \"react-router-dom\": \"^7.9.4\",\n    \"react-syntax-highlighter\": \"^15.6.6\",\n    \"recharts\": \"2.15.4\",\n    \"remark-gfm\": \"^4.0.1\",\n    \"shiki\": \"^3.13.0\",\n    \"sonner\": \"^2.0.7\",\n    \"streamdown\": \"^1.4.0\",\n    \"tailwind-merge\": \"^3.0.2\",\n    \"tailwindcss\": \"^4.1.15\",\n    \"tokenlens\": \"^1.3.1\",\n    \"use-stick-to-bottom\": \"^1.1.1\",\n    \"vaul\": \"^1.1.2\",\n    \"ws\": \"^8.14.2\",\n    \"zod\": \"^4.1.12\"\n  },\n  \"devDependencies\": {\n    \"@eslint/js\": \"^9.36.0\",\n    \"@playwright/mcp\": \"^0.0.43\",\n    \"@playwright/test\": \"^1.56.1\",\n    \"@tailwindcss/typography\": \"^0.5.16\",\n    \"@testing-library/react\": \"^16.3.0\",\n    \"@testing-library/react-hooks\": \"^8.0.1\",\n    \"@types/node\": \"^24.9.0\",\n    \"@types/react\": \"^19.1.16\",\n    \"@types/react-dom\": \"^19.1.9\",\n    \"@types/react-syntax-highlighter\": \"^15.5.13\",\n    \"@vitejs/plugin-react\": \"^5.0.4\",\n    \"@vitest/ui\": \"^3.2.4\",\n    \"concurrently\": \"^8.2.2\",\n    \"eslint\": \"^9.36.0\",\n    \"eslint-plugin-react-hooks\": \"^5.2.0\",\n    \"eslint-plugin-react-refresh\": \"^0.4.22\",\n    \"globals\": \"^16.4.0\",\n    \"happy-dom\": \"^20.0.8\",\n    \"pino-pretty\": \"^13.1.2\",\n    \"playwright\": \"^1.56.1\",\n    \"prisma\": \"^6.17.1\",\n    \"tsx\": \"^4.20.6\",\n    \"tw-animate-css\": \"^1.3.6\",\n    \"typescript\": \"~5.9.3\",\n    \"typescript-eslint\": \"^8.45.0\",\n    \"vite\": \"^7.1.7\",\n    \"vitest\": \"^3.2.4\"\n  }\n}\n",
+        "numLines": 161,
+        "startLine": 1,
+        "totalLines": 161
+      }
+    }
+  },
+  {
+    "session_id": "c11a1003-3693-4061-a5c1-e8678a6f096b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c11a1003-3693-4061-a5c1-e8678a6f096b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/shared/prisma.ts",
+      "old_string": "import { PrismaClient } from '@prisma/client';\n\nconst globalForPrisma = globalThis as unknown as {\n  prisma: PrismaClient | undefined;\n};\n\nexport const prisma = globalForPrisma.prisma ?? new PrismaClient({\n  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],\n});\n\nif (process.env.NODE_ENV !== 'production') {\n  globalForPrisma.prisma = prisma;\n}",
+      "new_string": "import { PrismaClient } from '@prisma/client';\n\nconst globalForPrisma = globalThis as unknown as {\n  prisma: PrismaClient | undefined;\n};\n\nconst isDevelopment = process.env.NODE_ENV === 'development';\n\nexport const prisma = globalForPrisma.prisma ?? new PrismaClient({\n  log: isDevelopment\n    ? [\n        { emit: 'event', level: 'query' },\n        { emit: 'stdout', level: 'error' },\n        { emit: 'stdout', level: 'warn' },\n      ]\n    : ['error'],\n});\n\n// Pretty-print Prisma queries in development mode\nif (isDevelopment) {\n  prisma.$on('query' as never, (e: { query: string; params: string; duration: number }) => {\n    const colors = {\n      reset: '\\x1b[0m',\n      cyan: '\\x1b[36m',\n      yellow: '\\x1b[33m',\n      gray: '\\x1b[90m',\n      green: '\\x1b[32m',\n    };\n\n    // Format the query with better readability\n    const formattedQuery = e.query\n      .replace(/`main`\\./g, '') // Remove `main`.\n      .replace(/\\s+/g, ' ') // Normalize whitespace\n      .trim();\n\n    // Parse and format params\n    const params = JSON.parse(e.params);\n    const formattedParams = params.length > 0\n      ? params.map((p: unknown) => {\n          if (typeof p === 'string') return `\"${p}\"`;\n          if (p === null) return 'null';\n          if (typeof p === 'object') return JSON.stringify(p);\n          return String(p);\n        }).join(', ')\n      : '';\n\n    console.log(`${colors.cyan}prisma:query${colors.reset} ${colors.gray}(${e.duration}ms)${colors.reset}`);\n    console.log(`  ${colors.green}${formattedQuery}${colors.reset}`);\n    if (formattedParams) {\n      console.log(`  ${colors.yellow}Params: [${formattedParams}]${colors.reset}`);\n    }\n    console.log('');\n  });\n}\n\nif (process.env.NODE_ENV !== 'production') {\n  globalForPrisma.prisma = prisma;\n}"
+    },
+    "tool_response": {
+      "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/shared/prisma.ts",
+      "oldString": "import { PrismaClient } from '@prisma/client';\n\nconst globalForPrisma = globalThis as unknown as {\n  prisma: PrismaClient | undefined;\n};\n\nexport const prisma = globalForPrisma.prisma ?? new PrismaClient({\n  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],\n});\n\nif (process.env.NODE_ENV !== 'production') {\n  globalForPrisma.prisma = prisma;\n}",
+      "newString": "import { PrismaClient } from '@prisma/client';\n\nconst globalForPrisma = globalThis as unknown as {\n  prisma: PrismaClient | undefined;\n};\n\nconst isDevelopment = process.env.NODE_ENV === 'development';\n\nexport const prisma = globalForPrisma.prisma ?? new PrismaClient({\n  log: isDevelopment\n    ? [\n        { emit: 'event', level: 'query' },\n        { emit: 'stdout', level: 'error' },\n        { emit: 'stdout', level: 'warn' },\n      ]\n    : ['error'],\n});\n\n// Pretty-print Prisma queries in development mode\nif (isDevelopment) {\n  prisma.$on('query' as never, (e: { query: string; params: string; duration: number }) => {\n    const colors = {\n      reset: '\\x1b[0m',\n      cyan: '\\x1b[36m',\n      yellow: '\\x1b[33m',\n      gray: '\\x1b[90m',\n      green: '\\x1b[32m',\n    };\n\n    // Format the query with better readability\n    const formattedQuery = e.query\n      .replace(/`main`\\./g, '') // Remove `main`.\n      .replace(/\\s+/g, ' ') // Normalize whitespace\n      .trim();\n\n    // Parse and format params\n    const params = JSON.parse(e.params);\n    const formattedParams = params.length > 0\n      ? params.map((p: unknown) => {\n          if (typeof p === 'string') return `\"${p}\"`;\n          if (p === null) return 'null';\n          if (typeof p === 'object') return JSON.stringify(p);\n          return String(p);\n        }).join(', ')\n      : '';\n\n    console.log(`${colors.cyan}prisma:query${colors.reset} ${colors.gray}(${e.duration}ms)${colors.reset}`);\n    console.log(`  ${colors.green}${formattedQuery}${colors.reset}`);\n    if (formattedParams) {\n      console.log(`  ${colors.yellow}Params: [${formattedParams}]${colors.reset}`);\n    }\n    console.log('');\n  });\n}\n\nif (process.env.NODE_ENV !== 'production') {\n  globalForPrisma.prisma = prisma;\n}",
+      "originalFile": "import { PrismaClient } from '@prisma/client';\n\nconst globalForPrisma = globalThis as unknown as {\n  prisma: PrismaClient | undefined;\n};\n\nexport const prisma = globalForPrisma.prisma ?? new PrismaClient({\n  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],\n});\n\nif (process.env.NODE_ENV !== 'production') {\n  globalForPrisma.prisma = prisma;\n}\n",
+      "structuredPatch": [
+        {
+          "oldStart": 4,
+          "oldLines": 10,
+          "newStart": 4,
+          "newLines": 55,
+          "lines": [
+            "   prisma: PrismaClient | undefined;",
+            " };",
+            " ",
+            "+const isDevelopment = process.env.NODE_ENV === 'development';",
+            "+",
+            " export const prisma = globalForPrisma.prisma ?? new PrismaClient({",
+            "-  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],",
+            "+  log: isDevelopment",
+            "+    ? [",
+            "+        { emit: 'event', level: 'query' },",
+            "+        { emit: 'stdout', level: 'error' },",
+            "+        { emit: 'stdout', level: 'warn' },",
+            "+      ]",
+            "+    : ['error'],",
+            " });",
+            " ",
+            "+// Pretty-print Prisma queries in development mode",
+            "+if (isDevelopment) {",
+            "+  prisma.$on('query' as never, (e: { query: string; params: string; duration: number }) => {",
+            "+    const colors = {",
+            "+      reset: '\\x1b[0m',",
+            "+      cyan: '\\x1b[36m',",
+            "+      yellow: '\\x1b[33m',",
+            "+      gray: '\\x1b[90m',",
+            "+      green: '\\x1b[32m',",
+            "+    };",
+            "+",
+            "+    // Format the query with better readability",
+            "+    const formattedQuery = e.query",
+            "+      .replace(/`main`\\./g, '') // Remove `main`.",
+            "+      .replace(/\\s+/g, ' ') // Normalize whitespace",
+            "+      .trim();",
+            "+",
+            "+    // Parse and format params",
+            "+    const params = JSON.parse(e.params);",
+            "+    const formattedParams = params.length > 0",
+            "+      ? params.map((p: unknown) => {",
+            "+          if (typeof p === 'string') return `\"${p}\"`;",
+            "+          if (p === null) return 'null';",
+            "+          if (typeof p === 'object') return JSON.stringify(p);",
+            "+          return String(p);",
+            "+        }).join(', ')",
+            "+      : '';",
+            "+",
+            "+    console.log(`${colors.cyan}prisma:query${colors.reset} ${colors.gray}(${e.duration}ms)${colors.reset}`);",
+            "+    console.log(`  ${colors.green}${formattedQuery}${colors.reset}`);",
+            "+    if (formattedParams) {",
+            "+      console.log(`  ${colors.yellow}Params: [${formattedParams}]${colors.reset}`);",
+            "+    }",
+            "+    console.log('');",
+            "+  });",
+            "+}",
+            "+",
+            " if (process.env.NODE_ENV !== 'production') {",
+            "   globalForPrisma.prisma = prisma;",
+            " }"
+          ]
+        }
+      ],
+      "userModified": false,
+      "replaceAll": false
+    }
+  },
+  {
+    "session_id": "c11a1003-3693-4061-a5c1-e8678a6f096b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c11a1003-3693-4061-a5c1-e8678a6f096b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "WebSearch",
+    "tool_input": {
+      "query": "Prisma pretty print format queries development 2025"
+    },
+    "tool_response": {
+      "query": "Prisma pretty print format queries development 2025",
+      "results": [
+        {
+          "tool_use_id": "srvtoolu_019wcMXegQLb5fLMTroP5pY2",
+          "content": [
+            {
+              "title": "Printing full SQL queries with parameters in debug mode \u00b7 Issue #5026 \u00b7 prisma/prisma",
+              "url": "https://github.com/prisma/prisma/issues/5026"
+            },
+            {
+              "title": "How to print a SQL query without executing it \u00b7 prisma/prisma \u00b7 Discussion #9626",
+              "url": "https://github.com/prisma/prisma/discussions/9626"
+            },
+            {
+              "title": "Raw queries | Prisma Documentation",
+              "url": "https://www.prisma.io/docs/orm/prisma-client/queries/raw-database-access/raw-queries"
+            },
+            {
+              "title": "Is there any way to use SQL files in my $queryRaw calls / auto formatting SQL? \u00b7 prisma/prisma \u00b7 Discussion #12438",
+              "url": "https://github.com/prisma/prisma/discussions/12438"
+            },
+            {
+              "title": "Configuring error formatting (Concepts) | Prisma Documentation",
+              "url": "https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/error-formatting"
+            },
+            {
+              "title": "Prisma | Instant Postgres plus an ORM for simpler db workflows",
+              "url": "https://www.prisma.io/"
+            },
+            {
+              "title": "Prisma ORM Roadmap: March \u2013 May 2025 \u00b7 Issue #26592 \u00b7 prisma/prisma",
+              "url": "https://github.com/prisma/prisma/issues/26592"
+            },
+            {
+              "title": "Prisma CLI reference | Prisma Documentation",
+              "url": "https://www.prisma.io/docs/orm/reference/prisma-cli-reference"
+            },
+            {
+              "title": "Prisma ORM Roadmap: June - August 2025 \u00b7 Issue #27503 \u00b7 prisma/prisma",
+              "url": "https://github.com/prisma/prisma/issues/27503"
+            },
+            {
+              "title": "Prisma Client Queries | Prisma Documentation",
+              "url": "https://www.prisma.io/docs/orm/prisma-client/queries"
+            }
+          ]
+        },
+        "Based on the search results, here's what I found about Prisma pretty print format queries in development for 2025:\n\n## Recent Developments (2025)\n\nThis quarter (March-May 2025), Prisma's two major objectives are to deliver the Query Compiler to Preview and to enable the Prisma CLI to work in web contexts, such as StackBlitz or other web-based editors.\n\n## Query Formatting Solutions\n\n### For SQL in Code\nYou can format embedded SQL languages in JS/TS files with the plugin prettier-plugin-embed. This addresses the challenge where SQL formatting tools typically only handle auto-formatting SQL placed in .sql files.\n\n### Error Formatting\nBy default, Prisma Client uses ANSI escape characters to pretty print the error stack and give recommendations on how to fix a problem. You can control this behavior:\n- Pretty Error (default) includes a full stack trace with colors, syntax highlighting, and extended error messages\n- If NODE_ENV is set to production, only the minimal error will be printed\n\n### Schema Formatting\nThe `prisma format` command formats the Prisma schema file, including validating, formatting, and persisting the schema.\n\n### Debug Query Logging\nThere's a known limitation where debug mode prints SQL queries with parameter placeholders (`?`) rather than actual values, though this has been a longstanding community request."
+      ],
+      "durationSeconds": 15.922209999999032
+    }
+  },
+  {
+    "session_id": "c11a1003-3693-4061-a5c1-e8678a6f096b",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c11a1003-3693-4061-a5c1-e8678a6f096b.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "WebFetch",
+    "tool_input": {
+      "url": "https://github.com/prisma/prisma/issues/5026",
+      "prompt": "Does Prisma have a built-in way to pretty print SQL queries with parameters in development mode? What are the official recommendations?"
+    },
+    "tool_response": {
+      "bytes": 296746,
+      "code": 200,
+      "codeText": "OK",
+      "result": "# Prisma SQL Query Logging with Parameters\n\nBased on the GitHub issue discussion, Prisma doesn't have a built-in \"pretty print\" feature for SQL queries with parameters in debug mode. However, there's an **official recommended approach**:\n\n## Recommended Solution\n\nUse Prisma's event-based logging system instead of the basic debug flag:\n\n```typescript\nconst prisma = new PrismaClient({\n  log: [\n    {\n      emit: \"event\",\n      level: \"query\",\n    },\n  ],\n});\n\nprisma.$on(\"query\", async (e) => {\n  console.log(`${e.query} ${e.params}`);\n});\n```\n\nAs a Prisma contributor noted: *\"Right now you can use events to log the parameters like so\"* and this approach gives you access to both the query and its parameters programmatically.\n\n## Why Not Built-in?\n\nThe Prisma team considers masked output safer by default, as exposing parameters could reveal sensitive information unexpectedly. The event-based approach lets developers opt-in to full query logging when needed.\n\nThis solution works in all frameworks, including NestJS applications.",
+      "durationMs": 5417,
+      "url": "https://github.com/prisma/prisma/issues/5026"
+    }
+  }
+]

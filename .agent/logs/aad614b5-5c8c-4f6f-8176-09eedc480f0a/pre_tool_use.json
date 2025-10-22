@@ -1,0 +1,304 @@
+[
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Glob",
+    "tool_input": {
+      "pattern": "apps/claudecodeui/**/*.{ts,tsx,js,jsx}"
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "\\.claude/projects",
+      "output_mode": "files_with_matches"
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "session.*load|load.*session",
+      "output_mode": "files_with_matches",
+      "-i": true
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/claudecodeui/server/projects.js"
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/claudecodeui/src/components/ChatInterface.jsx"
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/claudecodeui/src/App.jsx"
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "getSessionMessages|session.*messages",
+      "path": "apps/claudecodeui",
+      "output_mode": "files_with_matches",
+      "-i": true
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/claudecodeui/src/components/ChatInterface.jsx",
+      "offset": 0,
+      "limit": 200
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/claudecodeui/src/utils/api.js"
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "/api/projects/.*sessions|sessions.*endpoint",
+      "path": "apps/claudecodeui/server",
+      "output_mode": "content",
+      "-n": true
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/claudecodeui/server/index.js",
+      "offset": 225,
+      "limit": 50
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/claudecodeui/src/components/ChatInterface.jsx",
+      "offset": 400,
+      "limit": 100
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "useEffect.*sessionMessages|loadMessages|fetchMessages",
+      "path": "apps/claudecodeui/src/components/ChatInterface.jsx",
+      "output_mode": "content",
+      "-A": 10,
+      "-n": true
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/claudecodeui/src/components/ChatInterface.jsx",
+      "offset": 1849,
+      "limit": 100
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "const loadSessionMessages|function loadSessionMessages",
+      "path": "apps/claudecodeui/src/components/ChatInterface.jsx",
+      "output_mode": "content",
+      "-A": 30,
+      "-n": true
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/pages/ProjectChat.tsx",
+      "offset": 0,
+      "limit": 100
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "session.*load|loadSession|getSession",
+      "path": "apps/web/src/server",
+      "output_mode": "files_with_matches",
+      "-i": true
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/server/services/agent-session.service.ts",
+      "offset": 0,
+      "limit": 150
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "getSessionMessages|getSession.*messages",
+      "path": "apps/web/src/server/services/agent-session.service.ts",
+      "output_mode": "content",
+      "-A": 40,
+      "-n": true
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/server/routes/sessions.ts"
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "ExitPlanMode",
+    "tool_input": {
+      "plan": "# Plan: Load Session Messages from `.claude/projects` When Viewing a Session\n\n## Overview\nImplement functionality to load historical chat messages from `.claude/projects/*.jsonl` files when viewing a session, similar to how `claudecodeui` does it.\n\n## How claudecodeui Works\n\n**Backend (`apps/claudecodeui/server/projects.js`):**\n1. Reads JSONL files from `~/.claude/projects/{projectName}/{sessionId}.jsonl`\n2. Parses each line as a JSON message\n3. Sorts messages by timestamp\n4. Returns them via API endpoint `/api/projects/:projectName/sessions/:sessionId/messages`\n\n**Frontend (`apps/claudecodeui/src/components/ChatInterface.jsx`):**\n1. When session is selected, calls `api.sessionMessages(projectName, sessionId)`\n2. Loads messages into state\n3. Displays them in the chat interface\n\n## Your Current Implementation\n\n**Backend:**\n- \u2705 `AgentSessionService.getSessionMessages()` already reads from `.claude/projects`\n- \u2705 Route exists at `/api/projects/:id/sessions/:sessionId/messages`\n- \u2705 Authentication is in place\n\n**Frontend:**\n- \u274c `ProjectChat` component loads session via WebSocket but doesn't fetch historical messages\n- \u274c No API call to load messages from JSONL files\n\n## Implementation Steps\n\n### 1. **Update `useClaudeSession` hook** (`apps/web/src/client/hooks/useClaudeSession.ts`)\n   - Add functionality to load historical messages when session is selected\n   - Only load via API when `sessionId` is provided but WebSocket isn't sending history\n   - Add state for historical messages loading\n\n### 2. **Update `ProjectChat` component** (`apps/web/src/client/pages/ProjectChat.tsx`)\n   - Call session messages API when `sessionId` changes\n   - Merge historical messages with real-time WebSocket messages\n   - Handle loading states\n\n### 3. **Update `ChatInterface` component** (`apps/web/src/client/components/chat/ChatInterface.tsx`)\n   - Accept both real-time and historical messages\n   - Display historical messages before new ones\n   - Show loading indicator when fetching history\n\n### 4. **Optional: Add API client helper**\n   - Create a utility function in a client API module to fetch session messages\n   - Type-safe request/response handling\n\n## Key Differences from claudecodeui\n\n1. **Your app uses Fastify + TypeScript** (claudecodeui uses Express + JS)\n2. **You have authentication** (JWT tokens required)\n3. **You use React Query patterns** (claudecodeui uses direct state)\n4. **Your backend already has the logic** - just need to wire up the frontend\n\n## Success Criteria\n\n- [ ] When viewing a session, historical messages from JSONL file are loaded\n- [ ] Messages are displayed chronologically in the chat interface\n- [ ] Loading state is shown while fetching messages\n- [ ] New messages from WebSocket are appended to historical messages\n- [ ] Error handling for missing or corrupted JSONL files"
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "ExitPlanMode",
+    "tool_input": {
+      "plan": "# Plan: Load Session Messages from `.claude/projects` Using React Query\n\n## Overview\nImplement functionality to load historical chat messages from `.claude/projects/*.jsonl` files when viewing a session, using React Query for data fetching.\n\n## How claudecodeui Works\n\n**Backend:** Reads JSONL files from `~/.claude/projects/{projectName}/{sessionId}.jsonl` and returns via `/api/projects/:projectName/sessions/:sessionId/messages`\n\n**Frontend:** Calls API and loads messages into component state\n\n## Your Current Implementation\n\n**Backend:**\n- \u2705 `AgentSessionService.getSessionMessages()` already reads from `.claude/projects`\n- \u2705 Route exists at `/api/projects/:id/sessions/:sessionId/messages`\n- \u2705 Authentication is in place\n\n**Frontend:**\n- \u274c No React Query hook to fetch session messages\n- \u274c Messages not loaded when viewing a session\n\n## Implementation Steps\n\n### 1. **Create API client function** (`apps/web/src/client/lib/api.ts` or similar)\n   - Add `getSessionMessages(projectId: string, sessionId: string)` function\n   - Uses authenticated fetch to `/api/projects/:id/sessions/:sessionId/messages`\n   - Returns typed response with message array\n\n### 2. **Create React Query hook** (`apps/web/src/client/hooks/useSessionMessages.ts`)\n   - Use `useQuery` to fetch session messages\n   - Key: `['sessions', sessionId, 'messages']`\n   - Enabled only when `sessionId` is provided\n   - Returns: `{ messages, isLoading, error, refetch }`\n   - Auto-refetch disabled (historical data doesn't change via API)\n\n### 3. **Update `ProjectChat` component** (`apps/web/src/client/pages/ProjectChat.tsx`)\n   - Import and use `useSessionMessages(projectId, sessionId)`\n   - Merge historical messages with real-time WebSocket messages\n   - Pass combined messages to `ChatInterface`\n   - Handle loading state\n\n### 4. **Update `ChatInterface` component** (`apps/web/src/client/components/chat/ChatInterface.tsx`)\n   - Accept `isLoadingHistory` prop\n   - Show loading skeleton/spinner while fetching historical messages\n   - Display messages chronologically\n\n## Key Decisions\n\n- **React Query over direct state** - Better caching, deduplication, and loading states\n- **Merge strategy** - Historical messages first, then WebSocket messages (dedupe by message ID if needed)\n- **Cache time** - Set `staleTime` to Infinity since historical messages don't change\n- **Error handling** - Show error state if JSONL file is missing or corrupted\n\n## Success Criteria\n\n- [ ] React Query hook fetches messages from API endpoint\n- [ ] Historical messages load when session is viewed\n- [ ] Loading indicator shows while fetching\n- [ ] Messages merge correctly with WebSocket real-time messages\n- [ ] Errors are handled gracefully"
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "date +\"%y%m%d%H%M\"",
+      "description": "Get current timestamp for spec filename"
+    }
+  },
+  {
+    "session_id": "aad614b5-5c8c-4f6f-8176-09eedc480f0a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aad614b5-5c8c-4f6f-8176-09eedc480f0a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.agent/specs/2510220446-load-session-messages-spec.md",
+      "content": "# Spec: Load Session Messages from .claude/projects\n\n**Created:** 2025-10-22 04:46\n**Status:** Draft\n**Priority:** High\n\n## Overview\n\nImplement functionality to load historical chat messages from `.claude/projects/*.jsonl` files when viewing a session, using React Query for efficient data fetching and caching.\n\n## Problem Statement\n\nCurrently, when a user navigates to a session (e.g., `/projects/:id/sessions/:sessionId`), the chat interface only shows new messages from the WebSocket connection. Historical messages stored in `.claude/projects/{encodedPath}/{sessionId}.jsonl` files are not loaded, preventing users from viewing conversation history.\n\n## Reference Implementation\n\nThe `claudecodeui` app successfully implements this pattern:\n\n**Backend (`apps/claudecodeui/server/projects.js`):**\n- Reads JSONL files from `~/.claude/projects/{projectName}/{sessionId}.jsonl`\n- Parses each line as a JSON message\n- Sorts messages by timestamp\n- Returns via endpoint `/api/projects/:projectName/sessions/:sessionId/messages`\n\n**Frontend (`apps/claudecodeui/src/components/ChatInterface.jsx`):**\n- Calls `api.sessionMessages(projectName, sessionId)` on session load\n- Loads messages into component state\n- Displays in chat interface\n\n## Current State Analysis\n\n### Backend (\u2705 Already Implemented)\n\n**File:** `apps/web/src/server/services/agent-session.service.ts`\n\n```typescript\nasync getSessionMessages(sessionId: string, userId: string): Promise<any[]> {\n  // Reads from ~/.claude/projects/{encodedPath}/{sessionId}.jsonl\n  // Returns array of parsed message objects\n}\n```\n\n**Route:** `apps/web/src/server/routes/sessions.ts`\n```\nGET /api/projects/:id/sessions/:sessionId/messages\n```\n\n**Features:**\n- \u2705 JWT authentication required\n- \u2705 JSONL parsing\n- \u2705 Error handling (ENOENT returns empty array)\n- \u2705 User authorization check\n\n### Frontend (\u274c Not Implemented)\n\n**Current behavior:**\n- `ProjectChat` component connects via WebSocket\n- Only real-time messages are displayed\n- No historical message loading\n\n**Missing pieces:**\n1. API client function to fetch session messages\n2. React Query hook for data fetching\n3. Integration in `ProjectChat` component\n4. Message merging logic (historical + real-time)\n5. Loading state UI\n\n## Technical Design\n\n### 1. API Client Function\n\n**Location:** `apps/web/src/client/lib/api.ts` (create if doesn't exist)\n\n```typescript\nexport async function getSessionMessages(\n  projectId: string,\n  sessionId: string\n): Promise<any[]> {\n  const response = await fetch(\n    `/api/projects/${projectId}/sessions/${sessionId}/messages`,\n    {\n      headers: {\n        'Authorization': `Bearer ${getAuthToken()}`,\n      },\n    }\n  );\n\n  if (!response.ok) {\n    throw new Error('Failed to fetch session messages');\n  }\n\n  const { data } = await response.json();\n  return data;\n}\n```\n\n### 2. React Query Hook\n\n**Location:** `apps/web/src/client/hooks/useSessionMessages.ts`\n\n```typescript\nimport { useQuery } from '@tanstack/react-query';\nimport { getSessionMessages } from '../lib/api';\n\nexport function useSessionMessages(projectId: string, sessionId: string) {\n  return useQuery({\n    queryKey: ['projects', projectId, 'sessions', sessionId, 'messages'],\n    queryFn: () => getSessionMessages(projectId, sessionId),\n    enabled: !!projectId && !!sessionId,\n    staleTime: Infinity, // Historical messages don't change\n    refetchOnWindowFocus: false,\n    retry: 1,\n  });\n}\n```\n\n**Returns:**\n```typescript\n{\n  data: Message[] | undefined,\n  isLoading: boolean,\n  isError: boolean,\n  error: Error | null,\n  refetch: () => void\n}\n```\n\n### 3. ProjectChat Component Integration\n\n**Location:** `apps/web/src/client/pages/ProjectChat.tsx`\n\n**Changes:**\n\n```typescript\n// Add import\nimport { useSessionMessages } from '../hooks/useSessionMessages';\n\n// Inside component\nconst {\n  data: historicalMessages = [],\n  isLoading: isLoadingHistory\n} = useSessionMessages(id!, sessionId || '');\n\n// Merge messages\nconst allMessages = useMemo(() => {\n  // Combine historical and WebSocket messages\n  // Deduplicate by message ID/timestamp if needed\n  return [...historicalMessages, ...messages];\n}, [historicalMessages, messages]);\n```\n\n**Pass to ChatInterface:**\n```typescript\n<ChatInterface\n  messages={allMessages}\n  isLoadingHistory={isLoadingHistory}\n  // ... other props\n/>\n```\n\n### 4. ChatInterface Updates\n\n**Location:** `apps/web/src/client/components/chat/ChatInterface.tsx`\n\n**Changes:**\n\n```typescript\ninterface ChatInterfaceProps {\n  // ... existing props\n  isLoadingHistory?: boolean;\n}\n\n// Show loading skeleton\n{isLoadingHistory && (\n  <div className=\"flex items-center gap-2 p-4 text-gray-500\">\n    <Spinner size=\"sm\" />\n    <span>Loading conversation history...</span>\n  </div>\n)}\n```\n\n### 5. Message Deduplication Strategy\n\nSince WebSocket may resend some historical messages, implement deduplication:\n\n```typescript\nconst allMessages = useMemo(() => {\n  const messageMap = new Map();\n\n  // Add historical messages first\n  historicalMessages.forEach(msg => {\n    const key = msg.id || msg.timestamp;\n    messageMap.set(key, msg);\n  });\n\n  // Add/overwrite with WebSocket messages\n  messages.forEach(msg => {\n    const key = msg.id || msg.timestamp;\n    messageMap.set(key, msg);\n  });\n\n  // Sort by timestamp\n  return Array.from(messageMap.values()).sort(\n    (a, b) => new Date(a.timestamp) - new Date(b.timestamp)\n  );\n}, [historicalMessages, messages]);\n```\n\n## Implementation Steps\n\n### Phase 1: API Client & Hook\n1. Create `apps/web/src/client/lib/api.ts`\n2. Add `getSessionMessages()` function\n3. Create `apps/web/src/client/hooks/useSessionMessages.ts`\n4. Implement React Query hook with proper configuration\n\n### Phase 2: Component Integration\n5. Update `ProjectChat.tsx` to use `useSessionMessages` hook\n6. Implement message merging and deduplication logic\n7. Pass merged messages to `ChatInterface`\n\n### Phase 3: UI Polish\n8. Add loading state to `ChatInterface`\n9. Add error state handling (empty state, error message)\n10. Test with various session states (empty, large history, corrupted files)\n\n### Phase 4: Testing\n11. Test with existing sessions that have JSONL files\n12. Test with new sessions (no JSONL yet)\n13. Test WebSocket message merging\n14. Test loading states and error handling\n\n## Edge Cases\n\n1. **No JSONL file exists** - Backend returns empty array, show empty state\n2. **Corrupted JSONL** - Backend throws error, show error message\n3. **Large message history** - Consider pagination or virtualization (future enhancement)\n4. **WebSocket disconnection** - Historical messages persist, reconnection adds new ones\n5. **Session ID changes** - React Query automatically refetches with new key\n\n## Success Criteria\n\n- [ ] When viewing a session, historical messages from JSONL file are loaded\n- [ ] Messages are displayed chronologically in the chat interface\n- [ ] Loading state is shown while fetching messages\n- [ ] New messages from WebSocket are appended to historical messages\n- [ ] No duplicate messages are shown\n- [ ] Error handling for missing or corrupted JSONL files\n- [ ] Performance remains acceptable with large message histories\n\n## Future Enhancements\n\n1. **Pagination** - Load messages in chunks for very long conversations\n2. **Infinite scroll** - Load older messages as user scrolls up\n3. **Message search** - Search across historical messages\n4. **Export conversation** - Download JSONL or formatted transcript\n\n## References\n\n- `apps/claudecodeui/server/projects.js:712-779` - getSessionMessages implementation\n- `apps/claudecodeui/src/components/ChatInterface.jsx:1304-1334` - loadSessionMessages function\n- `apps/claudecodeui/src/utils/api.js:46-55` - sessionMessages API client\n- `apps/web/src/server/services/agent-session.service.ts:266-301` - Your existing backend implementation\n- `apps/web/src/server/routes/sessions.ts:49-111` - Your existing route handler\n"
+    }
+  }
+]

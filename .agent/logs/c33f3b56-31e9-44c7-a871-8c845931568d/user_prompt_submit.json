@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "c33f3b56-31e9-44c7-a871-8c845931568d",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c33f3b56-31e9-44c7-a871-8c845931568d.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "/implement-spec @'/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.agent/specs/interactive-shell-spec.md'"
+  }
+]

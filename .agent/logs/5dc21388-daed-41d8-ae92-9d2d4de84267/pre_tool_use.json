@@ -1,0 +1,194 @@
+[
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "React\\.(useState|useEffect|useCallback|useMemo|useRef|useContext|useReducer|useLayoutEffect|useImperativeHandle|forwardRef|memo|lazy|Suspense|Fragment|createElement|cloneElement|createContext|Component|PureComponent)",
+      "output_mode": "files_with_matches",
+      "type": "tsx"
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "React\\.(useState|useEffect|useCallback|useMemo|useRef|useContext|useReducer|useLayoutEffect|useImperativeHandle|forwardRef|memo|lazy|Suspense|Fragment|createElement|cloneElement|createContext|Component|PureComponent)",
+      "output_mode": "files_with_matches",
+      "type": "ts"
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/hooks/use-mobile.ts"
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/components/ui/button.tsx"
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/components/ui/form.tsx"
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/components/app-sidebar.tsx"
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "React\\.(ComponentProps|ElementRef|ReactNode|ReactElement|JSX|FC|FunctionComponent)",
+      "output_mode": "content",
+      "-n": true,
+      "type": "tsx",
+      "head_limit": 30
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": "React\\.ComponentProps",
+      "output_mode": "files_with_matches",
+      "type": "tsx"
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Grep",
+    "tool_input": {
+      "pattern": ": React\\.",
+      "output_mode": "content",
+      "-n": true,
+      "type": "tsx",
+      "head_limit": 50
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "ExitPlanMode",
+    "tool_input": {
+      "plan": "## React Import Cleanup Plan\n\n### Overview\nClean up 60 files to use direct React imports instead of `React.` prefixed APIs, following modern React best practices.\n\n### Pattern Changes\nTransform:\n```tsx\n// Before\nimport * as React from \"react\"\nReact.useState()\nReact.useEffect()\nReact.useContext()\nReact.useMemo()\nReact.useId()\nReact.createContext()\nReact.ComponentProps<>\n```\n\nTo:\n```tsx\n// After\nimport { useState, useEffect, useContext, useMemo, useId, createContext, ComponentProps } from \"react\"\nuseState()\nuseEffect()\nuseContext()\nuseMemo()\nuseId()\ncreateContext()\nComponentProps<>\n```\n\n### Affected Files (60 total)\n\n**Component Files:**\n- `apps/web/src/client/components/AppInnerSidebar.tsx`\n- `apps/web/src/client/components/signup-form.tsx`\n- `apps/web/src/client/components/login-form.tsx`\n- `apps/web/src/client/components/ai-elements/reasoning.tsx`\n- `apps/web/src/client/components/ai-elements/sources.tsx`\n- `apps/web/src/client/components/app-sidebar.tsx`\n\n**UI Components (54 files):**\n- `apps/web/src/client/components/ui/accordion.tsx`\n- `apps/web/src/client/components/ui/alert.tsx`\n- `apps/web/src/client/components/ui/alert-dialog.tsx`\n- `apps/web/src/client/components/ui/aspect-ratio.tsx`\n- `apps/web/src/client/components/ui/avatar.tsx`\n- `apps/web/src/client/components/ui/badge.tsx`\n- `apps/web/src/client/components/ui/breadcrumb.tsx`\n- `apps/web/src/client/components/ui/button.tsx`\n- `apps/web/src/client/components/ui/button-group.tsx`\n- `apps/web/src/client/components/ui/calendar.tsx`\n- `apps/web/src/client/components/ui/card.tsx`\n- `apps/web/src/client/components/ui/carousel.tsx`\n- `apps/web/src/client/components/ui/chart.tsx`\n- `apps/web/src/client/components/ui/checkbox.tsx`\n- `apps/web/src/client/components/ui/collapsible.tsx`\n- `apps/web/src/client/components/ui/command.tsx`\n- `apps/web/src/client/components/ui/context-menu.tsx`\n- `apps/web/src/client/components/ui/dialog.tsx`\n- `apps/web/src/client/components/ui/drawer.tsx`\n- `apps/web/src/client/components/ui/dropdown-menu.tsx`\n- `apps/web/src/client/components/ui/empty.tsx`\n- `apps/web/src/client/components/ui/field.tsx`\n- `apps/web/src/client/components/ui/form.tsx`\n- `apps/web/src/client/components/ui/hover-card.tsx`\n- `apps/web/src/client/components/ui/input.tsx`\n- `apps/web/src/client/components/ui/input-group.tsx`\n- `apps/web/src/client/components/ui/input-otp.tsx`\n- `apps/web/src/client/components/ui/item.tsx`\n- `apps/web/src/client/components/ui/kbd.tsx`\n- `apps/web/src/client/components/ui/label.tsx`\n- `apps/web/src/client/components/ui/menubar.tsx`\n- `apps/web/src/client/components/ui/navigation-menu.tsx`\n- `apps/web/src/client/components/ui/pagination.tsx`\n- `apps/web/src/client/components/ui/popover.tsx`\n- `apps/web/src/client/components/ui/progress.tsx`\n- `apps/web/src/client/components/ui/radio-group.tsx`\n- `apps/web/src/client/components/ui/resizable.tsx`\n- `apps/web/src/client/components/ui/scroll-area.tsx`\n- `apps/web/src/client/components/ui/select.tsx`\n- `apps/web/src/client/components/ui/separator.tsx`\n- `apps/web/src/client/components/ui/sheet.tsx`\n- `apps/web/src/client/components/ui/sidebar.tsx`\n- `apps/web/src/client/components/ui/skeleton.tsx`\n- `apps/web/src/client/components/ui/slider.tsx`\n- `apps/web/src/client/components/ui/spinner.tsx`\n- `apps/web/src/client/components/ui/switch.tsx`\n- `apps/web/src/client/components/ui/table.tsx`\n- `apps/web/src/client/components/ui/tabs.tsx`\n- `apps/web/src/client/components/ui/textarea.tsx`\n- `apps/web/src/client/components/ui/toggle.tsx`\n- `apps/web/src/client/components/ui/toggle-group.tsx`\n- `apps/web/src/client/components/ui/tooltip.tsx`\n\n**Hooks & Tests:**\n- `apps/web/src/client/hooks/use-mobile.ts`\n- `apps/web/src/client/hooks/__tests__/useProjects.test.ts`\n\n### Implementation Steps\n1. Process each file to identify specific React APIs used\n2. Update import statement from `import * as React from \"react\"` to named imports\n3. Replace all `React.` prefixed calls with direct function calls\n4. Verify no `React` namespace is needed (keep it only if truly necessary)\n5. Run type checking to ensure no regressions\n\n### Benefits\n- Cleaner, more modern code\n- Better tree-shaking for smaller bundle sizes\n- Consistent with project coding standards (per CLAUDE.md)\n- Improved IDE autocomplete and navigation"
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/components/ui/carousel.tsx"
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/components/ui/dialog.tsx"
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/src/client/components/ui/accordion.tsx"
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/package.json"
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "date +%y%m%d%H%M",
+      "description": "Get current timestamp for spec filename"
+    }
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.agents/specs/2510220631-fix-react-import-all-spec.md",
+      "content": "# Feature: Fix React Import Patterns\n\n## What We're Building\n\nModernize React imports across 60 files to use direct named imports instead of namespace imports with `React.` prefix. This refactoring improves code cleanliness, enables better tree-shaking for smaller bundle sizes, and aligns with the project's coding standards as documented in CLAUDE.md.\n\n## User Story\n\nAs a developer maintaining this codebase\nI want to use modern React import patterns with direct named imports\nSo that the code is cleaner, more maintainable, and benefits from better tree-shaking optimization\n\n## Technical Approach\n\nTransform all files currently using `import * as React from \"react\"` to use named imports like `import { useState, useEffect, ComponentProps } from \"react\"`. Replace all `React.hook()` calls with direct `hook()` calls and `React.ComponentProps<>` type references with `ComponentProps<>`. This is a mechanical refactoring that requires:\n\n1. Analyzing each file to identify which React APIs are used\n2. Converting the import statement to named imports\n3. Replacing all `React.` prefixed references with direct calls\n4. Removing unused React namespace imports entirely\n\n## Files to Touch\n\n### Existing Files (60 total)\n\n**Component Files:**\n- `apps/web/src/client/components/AppInnerSidebar.tsx` - Uses useState, useMemo\n- `apps/web/src/client/components/signup-form.tsx` - Uses useState, ComponentProps\n- `apps/web/src/client/components/login-form.tsx` - Uses useState, ComponentProps\n- `apps/web/src/client/components/ai-elements/reasoning.tsx` - Uses ComponentProps\n- `apps/web/src/client/components/ai-elements/sources.tsx` - Uses ComponentProps\n- `apps/web/src/client/components/app-sidebar.tsx` - Uses useState, useMemo, ComponentProps\n\n**UI Components (54 files in `apps/web/src/client/components/ui/`):**\n- `accordion.tsx` - Uses ComponentProps\n- `alert.tsx` - Uses ComponentProps, forwardRef\n- `alert-dialog.tsx` - Uses ComponentProps\n- `aspect-ratio.tsx` - Uses ComponentProps\n- `avatar.tsx` - Uses ComponentProps, forwardRef\n- `badge.tsx` - Uses ComponentProps\n- `breadcrumb.tsx` - Uses ComponentProps, forwardRef\n- `button.tsx` - Uses ComponentProps\n- `button-group.tsx` - Uses ComponentProps\n- `calendar.tsx` - Uses ComponentProps\n- `card.tsx` - Uses ComponentProps, forwardRef\n- `carousel.tsx` - Uses createContext, useContext, useState, useCallback, useEffect, ComponentProps, KeyboardEvent\n- `chart.tsx` - Uses ComponentProps, useId, useMemo, useContext, createContext\n- `checkbox.tsx` - Uses ComponentProps, forwardRef\n- `collapsible.tsx` - Uses ComponentProps\n- `command.tsx` - Uses ComponentProps, forwardRef\n- `context-menu.tsx` - Uses ComponentProps, forwardRef\n- `dialog.tsx` - Uses ComponentProps\n- `drawer.tsx` - Uses ComponentProps\n- `dropdown-menu.tsx` - Uses ComponentProps, forwardRef\n- `empty.tsx` - Uses ComponentProps\n- `field.tsx` - Uses ComponentProps, forwardRef\n- `form.tsx` - Uses createContext, useContext, useId, ComponentProps\n- `hover-card.tsx` - Uses ComponentProps\n- `input.tsx` - Uses ComponentProps, forwardRef\n- `input-group.tsx` - Uses ComponentProps, forwardRef\n- `input-otp.tsx` - Uses ComponentProps, forwardRef\n- `item.tsx` - Uses ComponentProps, forwardRef\n- `kbd.tsx` - Uses ComponentProps\n- `label.tsx` - Uses ComponentProps, forwardRef\n- `menubar.tsx` - Uses ComponentProps, forwardRef\n- `navigation-menu.tsx` - Uses ComponentProps, forwardRef\n- `pagination.tsx` - Uses ComponentProps, forwardRef\n- `popover.tsx` - Uses ComponentProps\n- `progress.tsx` - Uses ComponentProps, forwardRef\n- `radio-group.tsx` - Uses ComponentProps, forwardRef\n- `resizable.tsx` - Uses ComponentProps\n- `scroll-area.tsx` - Uses ComponentProps, forwardRef\n- `select.tsx` - Uses ComponentProps, forwardRef\n- `separator.tsx` - Uses ComponentProps, forwardRef\n- `sheet.tsx` - Uses ComponentProps\n- `sidebar.tsx` - Uses ComponentProps, forwardRef, createContext, useContext, useMemo, useCallback, useState, useEffect\n- `skeleton.tsx` - Uses ComponentProps\n- `slider.tsx` - Uses ComponentProps, forwardRef\n- `spinner.tsx` - Uses ComponentProps, forwardRef\n- `switch.tsx` - Uses ComponentProps, forwardRef\n- `table.tsx` - Uses ComponentProps, forwardRef\n- `tabs.tsx` - Uses ComponentProps, forwardRef\n- `textarea.tsx` - Uses ComponentProps, forwardRef\n- `toggle.tsx` - Uses ComponentProps, forwardRef\n- `toggle-group.tsx` - Uses ComponentProps, forwardRef\n- `tooltip.tsx` - Uses ComponentProps\n\n**Hooks & Tests:**\n- `apps/web/src/client/hooks/use-mobile.ts` - Uses useState, useEffect\n- `apps/web/src/client/hooks/__tests__/useProjects.test.ts` - Uses ComponentProps or other React types\n\n### New Files\n\nNone - this is a pure refactoring task\n\n## Implementation Plan\n\n### Phase 1: Foundation\n\nPrepare tooling and validation approach:\n- Verify current build, type checking, and tests all pass before making changes\n- Establish baseline for comparison\n- Confirm all 60 files are accessible and can be modified\n\n### Phase 2: Core Implementation\n\nTransform all React imports systematically:\n- Process files in batches (UI components, regular components, hooks, tests)\n- For each file: analyze used APIs, update import, replace all `React.` references\n- Maintain exact same functionality - this is a pure refactoring\n\n### Phase 3: Integration\n\nVerify and validate all changes:\n- Run full type checking across all modified files\n- Execute test suite to ensure no behavioral changes\n- Run linting to catch any style issues\n- Perform build to confirm no runtime issues\n\n## Step by Step Tasks\n\n**IMPORTANT: Execute every step in order, top to bottom**\n\n### Task Group 1: Pre-flight Validation\n\n<!-- prettier-ignore -->\n- [ ] 1.1 Run baseline checks to ensure clean starting state\n        - Verify build passes: `pnpm build`\n        - Verify type checking passes: `pnpm check-types`\n        - Verify tests pass: `pnpm test:run`\n        - Verify linting passes: `pnpm lint`\n        - Document any pre-existing issues to avoid false positives\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### Task Group 2: Transform Hook Files (2 files)\n\n<!-- prettier-ignore -->\n- [ ] 2.1 Update `apps/web/src/client/hooks/use-mobile.ts`\n        - Change import to: `import { useState, useEffect } from \"react\"`\n        - Replace `React.useState` \u2192 `useState`\n        - Replace `React.useEffect` \u2192 `useEffect`\n\n- [ ] 2.2 Update `apps/web/src/client/hooks/__tests__/useProjects.test.ts`\n        - Analyze file for React API usage\n        - Update imports accordingly\n        - Replace all `React.` prefixed calls\n\n- [ ] 2.3 Verify hook files compile\n        - Run: `pnpm check-types`\n        - Expected: No type errors in hooks directory\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### Task Group 3: Transform Main Component Files (6 files)\n\n<!-- prettier-ignore -->\n- [ ] 3.1 Update `apps/web/src/client/components/AppInnerSidebar.tsx`\n        - Identify used React APIs (useState, useMemo, ComponentProps, etc.)\n        - Change import to named imports\n        - Replace all `React.` prefixed references\n\n- [ ] 3.2 Update `apps/web/src/client/components/signup-form.tsx`\n        - Identify used React APIs\n        - Change import to named imports\n        - Replace all `React.` prefixed references\n\n- [ ] 3.3 Update `apps/web/src/client/components/login-form.tsx`\n        - Identify used React APIs\n        - Change import to named imports\n        - Replace all `React.` prefixed references\n\n- [ ] 3.4 Update `apps/web/src/client/components/ai-elements/reasoning.tsx`\n        - Identify used React APIs\n        - Change import to named imports\n        - Replace all `React.` prefixed references\n\n- [ ] 3.5 Update `apps/web/src/client/components/ai-elements/sources.tsx`\n        - Identify used React APIs\n        - Change import to named imports\n        - Replace all `React.` prefixed references\n\n- [ ] 3.6 Update `apps/web/src/client/components/app-sidebar.tsx`\n        - Identify used React APIs (useState, useMemo, ComponentProps)\n        - Change import to named imports\n        - Replace all `React.` prefixed references\n\n- [ ] 3.7 Verify component files compile\n        - Run: `pnpm check-types`\n        - Expected: No type errors in components directory\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### Task Group 4: Transform UI Components - Batch 1 (accordion to collapsible - 15 files)\n\n<!-- prettier-ignore -->\n- [ ] 4.1 Update `apps/web/src/client/components/ui/accordion.tsx`\n- [ ] 4.2 Update `apps/web/src/client/components/ui/alert.tsx`\n- [ ] 4.3 Update `apps/web/src/client/components/ui/alert-dialog.tsx`\n- [ ] 4.4 Update `apps/web/src/client/components/ui/aspect-ratio.tsx`\n- [ ] 4.5 Update `apps/web/src/client/components/ui/avatar.tsx`\n- [ ] 4.6 Update `apps/web/src/client/components/ui/badge.tsx`\n- [ ] 4.7 Update `apps/web/src/client/components/ui/breadcrumb.tsx`\n- [ ] 4.8 Update `apps/web/src/client/components/ui/button.tsx`\n- [ ] 4.9 Update `apps/web/src/client/components/ui/button-group.tsx`\n- [ ] 4.10 Update `apps/web/src/client/components/ui/calendar.tsx`\n- [ ] 4.11 Update `apps/web/src/client/components/ui/card.tsx`\n- [ ] 4.12 Update `apps/web/src/client/components/ui/carousel.tsx`\n- [ ] 4.13 Update `apps/web/src/client/components/ui/chart.tsx`\n- [ ] 4.14 Update `apps/web/src/client/components/ui/checkbox.tsx`\n- [ ] 4.15 Update `apps/web/src/client/components/ui/collapsible.tsx`\n        - For each file: Analyze React API usage, convert import, replace all React. references\n\n- [ ] 4.16 Verify batch 1 compiles\n        - Run: `pnpm check-types`\n        - Expected: No type errors\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### Task Group 5: Transform UI Components - Batch 2 (command to input-otp - 15 files)\n\n<!-- prettier-ignore -->\n- [ ] 5.1 Update `apps/web/src/client/components/ui/command.tsx`\n- [ ] 5.2 Update `apps/web/src/client/components/ui/context-menu.tsx`\n- [ ] 5.3 Update `apps/web/src/client/components/ui/dialog.tsx`\n- [ ] 5.4 Update `apps/web/src/client/components/ui/drawer.tsx`\n- [ ] 5.5 Update `apps/web/src/client/components/ui/dropdown-menu.tsx`\n- [ ] 5.6 Update `apps/web/src/client/components/ui/empty.tsx`\n- [ ] 5.7 Update `apps/web/src/client/components/ui/field.tsx`\n- [ ] 5.8 Update `apps/web/src/client/components/ui/form.tsx`\n- [ ] 5.9 Update `apps/web/src/client/components/ui/hover-card.tsx`\n- [ ] 5.10 Update `apps/web/src/client/components/ui/input.tsx`\n- [ ] 5.11 Update `apps/web/src/client/components/ui/input-group.tsx`\n- [ ] 5.12 Update `apps/web/src/client/components/ui/input-otp.tsx`\n        - For each file: Analyze React API usage, convert import, replace all React. references\n\n- [ ] 5.13 Verify batch 2 compiles\n        - Run: `pnpm check-types`\n        - Expected: No type errors\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### Task Group 6: Transform UI Components - Batch 3 (item to radio-group - 12 files)\n\n<!-- prettier-ignore -->\n- [ ] 6.1 Update `apps/web/src/client/components/ui/item.tsx`\n- [ ] 6.2 Update `apps/web/src/client/components/ui/kbd.tsx`\n- [ ] 6.3 Update `apps/web/src/client/components/ui/label.tsx`\n- [ ] 6.4 Update `apps/web/src/client/components/ui/menubar.tsx`\n- [ ] 6.5 Update `apps/web/src/client/components/ui/navigation-menu.tsx`\n- [ ] 6.6 Update `apps/web/src/client/components/ui/pagination.tsx`\n- [ ] 6.7 Update `apps/web/src/client/components/ui/popover.tsx`\n- [ ] 6.8 Update `apps/web/src/client/components/ui/progress.tsx`\n- [ ] 6.9 Update `apps/web/src/client/components/ui/radio-group.tsx`\n        - For each file: Analyze React API usage, convert import, replace all React. references\n\n- [ ] 6.10 Verify batch 3 compiles\n        - Run: `pnpm check-types`\n        - Expected: No type errors\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### Task Group 7: Transform UI Components - Batch 4 (resizable to tooltip - 12 files)\n\n<!-- prettier-ignore -->\n- [ ] 7.1 Update `apps/web/src/client/components/ui/resizable.tsx`\n- [ ] 7.2 Update `apps/web/src/client/components/ui/scroll-area.tsx`\n- [ ] 7.3 Update `apps/web/src/client/components/ui/select.tsx`\n- [ ] 7.4 Update `apps/web/src/client/components/ui/separator.tsx`\n- [ ] 7.5 Update `apps/web/src/client/components/ui/sheet.tsx`\n- [ ] 7.6 Update `apps/web/src/client/components/ui/sidebar.tsx`\n- [ ] 7.7 Update `apps/web/src/client/components/ui/skeleton.tsx`\n- [ ] 7.8 Update `apps/web/src/client/components/ui/slider.tsx`\n- [ ] 7.9 Update `apps/web/src/client/components/ui/spinner.tsx`\n- [ ] 7.10 Update `apps/web/src/client/components/ui/switch.tsx`\n- [ ] 7.11 Update `apps/web/src/client/components/ui/table.tsx`\n- [ ] 7.12 Update `apps/web/src/client/components/ui/tabs.tsx`\n- [ ] 7.13 Update `apps/web/src/client/components/ui/textarea.tsx`\n- [ ] 7.14 Update `apps/web/src/client/components/ui/toggle.tsx`\n- [ ] 7.15 Update `apps/web/src/client/components/ui/toggle-group.tsx`\n- [ ] 7.16 Update `apps/web/src/client/components/ui/tooltip.tsx`\n        - For each file: Analyze React API usage, convert import, replace all React. references\n\n- [ ] 7.17 Verify batch 4 compiles\n        - Run: `pnpm check-types`\n        - Expected: No type errors\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n### Task Group 8: Final Validation\n\n<!-- prettier-ignore -->\n- [ ] 8.1 Run complete type checking\n        - Command: `pnpm check-types`\n        - Expected: No type errors across entire codebase\n        - Fix any issues discovered\n\n- [ ] 8.2 Run linting\n        - Command: `pnpm lint`\n        - Expected: No lint errors\n        - Fix any auto-fixable issues\n\n- [ ] 8.3 Run test suite\n        - Command: `pnpm test:run`\n        - Expected: All tests pass with same results as baseline\n        - Investigate and fix any test failures\n\n- [ ] 8.4 Run full build\n        - Command: `pnpm build`\n        - Expected: Successful build with no errors\n        - Compare bundle size (should be same or smaller due to better tree-shaking)\n\n- [ ] 8.5 Verify no regressions\n        - Confirm all 60 files were updated\n        - Spot check 5-10 files to verify transformations are correct\n        - Ensure no `import * as React` statements remain (except where truly needed)\n\n#### Completion Notes\n\n(This will be filled in by the agent implementing this phase)\n\n## Acceptance Criteria\n\n**Must Work:**\n\n- [ ] All 60 identified files use direct named imports instead of namespace imports\n- [ ] No `React.useState`, `React.useEffect`, etc. calls remain in any file\n- [ ] No `React.ComponentProps` type references remain (should be `ComponentProps`)\n- [ ] All TypeScript type checks pass without errors\n- [ ] All existing tests continue to pass\n- [ ] Application builds successfully\n- [ ] No console errors when running the application\n- [ ] Code follows modern React import patterns per CLAUDE.md\n\n**Should Not:**\n\n- [ ] Break any existing functionality\n- [ ] Introduce any new TypeScript errors\n- [ ] Cause any test failures\n- [ ] Increase bundle size (should decrease slightly due to better tree-shaking)\n- [ ] Leave any files with unnecessary `import * as React` statements\n\n## Validation\n\nExecute these commands to verify the feature works correctly:\n\n**Automated Verification:**\n\n```bash\n# Type checking\npnpm check-types\n# Expected: No type errors, clean output\n\n# Linting\npnpm lint\n# Expected: No lint errors\n\n# Unit tests\npnpm test:run\n# Expected: All tests pass, no failures or errors\n\n# Build verification\npnpm build\n# Expected: Successful build, dist/ directory created with client and server bundles\n```\n\n**Manual Verification:**\n\n1. Start application: `pnpm dev`\n2. Navigate to: `http://localhost:5173`\n3. Verify: Application loads without console errors\n4. Test: Navigate through different pages (Projects, Dashboard, Login/Signup forms)\n5. Check: All UI components render correctly\n6. Verify: No runtime errors in browser console\n7. Test: Interactive components work (forms, dialogs, carousels, accordions, etc.)\n\n**Feature-Specific Checks:**\n\n- Search codebase to confirm no `React.useState`, `React.useEffect`, `React.useContext` patterns remain:\n  ```bash\n  grep -r \"React\\\\.useState\" apps/web/src/client/ || echo \"\u2713 No React.useState found\"\n  grep -r \"React\\\\.useEffect\" apps/web/src/client/ || echo \"\u2713 No React.useEffect found\"\n  grep -r \"React\\\\.useContext\" apps/web/src/client/ || echo \"\u2713 No React.useContext found\"\n  grep -r \"React\\\\.ComponentProps\" apps/web/src/client/ || echo \"\u2713 No React.ComponentProps found\"\n  ```\n- Verify all hooks files use direct imports:\n  ```bash\n  grep \"import.*from.*react\" apps/web/src/client/hooks/use-mobile.ts\n  ```\n  Expected: `import { useState, useEffect } from \"react\"`\n- Spot check 3 random UI components to verify proper transformation\n- Compare bundle size before/after (should be same or smaller)\n\n## Definition of Done\n\n- [ ] All 60 tasks completed\n- [ ] Tests passing (`pnpm test:run`)\n- [ ] Lint and Type Checks pass (`pnpm check-types` and `pnpm lint`)\n- [ ] Build succeeds (`pnpm build`)\n- [ ] Manual testing confirms application works correctly\n- [ ] No console errors in browser\n- [ ] Code follows modern React import patterns\n- [ ] No `React.` prefixed hook or API calls remain\n- [ ] All imports use direct named imports from \"react\"\n\n## Notes\n\n**Transformation Pattern:**\n\nBefore:\n```tsx\nimport * as React from \"react\"\n\nfunction Component({ className, ...props }: React.ComponentProps<\"div\">) {\n  const [state, setState] = React.useState(false)\n\n  React.useEffect(() => {\n    // effect\n  }, [])\n\n  return <div {...props} />\n}\n```\n\nAfter:\n```tsx\nimport { useState, useEffect, ComponentProps } from \"react\"\n\nfunction Component({ className, ...props }: ComponentProps<\"div\">) {\n  const [state, setState] = useState(false)\n\n  useEffect(() => {\n    // effect\n  }, [])\n\n  return <div {...props} />\n}\n```\n\n**Common React APIs to Import:**\n\n- Hooks: `useState`, `useEffect`, `useCallback`, `useMemo`, `useRef`, `useContext`, `useReducer`, `useLayoutEffect`, `useId`\n- Context: `createContext`\n- Types: `ComponentProps`, `ReactNode`, `ReactElement`, `JSX`, `KeyboardEvent`, `MouseEvent`, etc.\n- Components: `forwardRef`, `memo`, `lazy`, `Suspense`, `Fragment`\n\n**Files with Complex Hook Usage:**\n\n- `carousel.tsx`: Uses createContext, useContext, useState, useCallback, useEffect, ComponentProps, KeyboardEvent\n- `sidebar.tsx`: Uses createContext, useContext, useState, useEffect, useCallback, useMemo, forwardRef, ComponentProps\n- `form.tsx`: Uses createContext, useContext, useId, ComponentProps\n- `chart.tsx`: Uses createContext, useContext, useId, useMemo, ComponentProps\n\n**Rollback Considerations:**\n\nIf issues arise, this change can be easily rolled back using git:\n```bash\ngit checkout HEAD -- apps/web/src/client/\n```\n\nHowever, since this is a mechanical refactoring with no functional changes, rollback should not be necessary if proper validation is performed at each step.\n"
+    }
+  }
+]

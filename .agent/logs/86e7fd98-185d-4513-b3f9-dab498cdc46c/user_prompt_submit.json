@@ -1,0 +1,18 @@
+[
+  {
+    "session_id": "86e7fd98-185d-4513-b3f9-dab498cdc46c",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/86e7fd98-185d-4513-b3f9-dab498cdc46c.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Let's add a way to hide projects. Hidden projects can show up at the bottom in a hidden folder"
+  },
+  {
+    "session_id": "86e7fd98-185d-4513-b3f9-dab498cdc46c",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/86e7fd98-185d-4513-b3f9-dab498cdc46c.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "/generate-feature \"hide-projects\""
+  }
+]

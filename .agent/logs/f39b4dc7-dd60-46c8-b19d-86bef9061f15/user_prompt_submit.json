@@ -1,0 +1,18 @@
+[
+  {
+    "session_id": "f39b4dc7-dd60-46c8-b19d-86bef9061f15",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f39b4dc7-dd60-46c8-b19d-86bef9061f15.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "in the @apps/web/src/client/components/AppInnerSidebar.tsx can you show just the most recent 5 conversations with a \"more\" button for the rest"
+  },
+  {
+    "session_id": "f39b4dc7-dd60-46c8-b19d-86bef9061f15",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f39b4dc7-dd60-46c8-b19d-86bef9061f15.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Get rid of the token count in AppInnerSidebar. We want the display a bit more compact"
+  }
+]

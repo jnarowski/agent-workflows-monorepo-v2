@@ -1,0 +1,30 @@
+[
+  {
+    "session_id": "fc0f1be9-c958-44d7-a848-65950155b36a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/fc0f1be9-c958-44d7-a848-65950155b36a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your attention"
+  },
+  {
+    "session_id": "fc0f1be9-c958-44d7-a848-65950155b36a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/fc0f1be9-c958-44d7-a848-65950155b36a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "fc0f1be9-c958-44d7-a848-65950155b36a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/fc0f1be9-c958-44d7-a848-65950155b36a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "hook_event_name": "Notification",
+    "message": "Claude Code needs your approval for the plan"
+  },
+  {
+    "session_id": "fc0f1be9-c958-44d7-a848-65950155b36a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/fc0f1be9-c958-44d7-a848-65950155b36a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  }
+]

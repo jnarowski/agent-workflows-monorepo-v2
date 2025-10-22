@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "8f926311-1475-4ed4-9625-c4725ed38534",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/8f926311-1475-4ed4-9625-c4725ed38534.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "let's implement the loading of a session's data when you click it"
+  }
+]

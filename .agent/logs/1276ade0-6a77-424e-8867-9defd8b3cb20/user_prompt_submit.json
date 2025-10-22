@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "1276ade0-6a77-424e-8867-9defd8b3cb20",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/1276ade0-6a77-424e-8867-9defd8b3cb20.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Have you implemented syncProjectSessions yet? Is it in use?"
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "78b1387b-9e0c-468e-8f1f-393005ef939e",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/78b1387b-9e0c-468e-8f1f-393005ef939e.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "run pnpm check and make sure all tests and linting has no errors or warnings"
+  }
+]

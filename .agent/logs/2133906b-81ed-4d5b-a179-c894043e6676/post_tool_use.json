@@ -1,0 +1,40 @@
+[
+  {
+    "session_id": "2133906b-81ed-4d5b-a179-c894043e6676",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/2133906b-81ed-4d5b-a179-c894043e6676.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.mcp.json.shadcn",
+      "old_string": "    \"shadcn\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"shadcn@latest\",\n        \"mcp\"\n      ]\n    },\n  }",
+      "new_string": "    \"shadcn\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"shadcn@latest\",\n        \"mcp\"\n      ]\n    }\n  }"
+    },
+    "tool_response": {
+      "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.mcp.json.shadcn",
+      "oldString": "    \"shadcn\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"shadcn@latest\",\n        \"mcp\"\n      ]\n    },\n  }",
+      "newString": "    \"shadcn\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"shadcn@latest\",\n        \"mcp\"\n      ]\n    }\n  }",
+      "originalFile": "{\n  \"mcpServers\": {\n    \"shadcn\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"shadcn@latest\",\n        \"mcp\"\n      ]\n    },\n  }\n}\n",
+      "structuredPatch": [
+        {
+          "oldStart": 6,
+          "oldLines": 6,
+          "newStart": 6,
+          "newLines": 6,
+          "lines": [
+            "         \"shadcn@latest\",",
+            "         \"mcp\"",
+            "       ]",
+            "-    },",
+            "+    }",
+            "   }",
+            " }"
+          ]
+        }
+      ],
+      "userModified": false,
+      "replaceAll": false
+    }
+  }
+]

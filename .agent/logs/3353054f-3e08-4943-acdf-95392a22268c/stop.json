@@ -1,0 +1,18 @@
+[
+  {
+    "session_id": "3353054f-3e08-4943-acdf-95392a22268c",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3353054f-3e08-4943-acdf-95392a22268c.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "Stop",
+    "stop_hook_active": false
+  },
+  {
+    "session_id": "3353054f-3e08-4943-acdf-95392a22268c",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3353054f-3e08-4943-acdf-95392a22268c.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "Stop",
+    "stop_hook_active": false
+  }
+]

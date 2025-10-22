@@ -1,0 +1,9 @@
+[
+  {
+    "session_id": "1f01a5e3-a131-43ec-a81d-c482af96ce9a",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/1f01a5e3-a131-43ec-a81d-c482af96ce9a.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "session_id": "c627251b-5bfb-43b0-b6e5-7a278e589c50",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c627251b-5bfb-43b0-b6e5-7a278e589c50.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can you make the agent font smaller (same size as UserMessage)"
+  },
+  {
+    "session_id": "c627251b-5bfb-43b0-b6e5-7a278e589c50",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c627251b-5bfb-43b0-b6e5-7a278e589c50.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "'/var/folders/sr/6t367_f55y3d5cf8mvmj_c800000gn/T/TemporaryItems/NSIRD_screencaptureui_oQEoYM/Screenshot 2025-10-22 at 5.18.44\u202fAM.png' can you tighten spacing in all prose for chat. Lots of top and bottom space for this numbered list for example"
+  }
+]

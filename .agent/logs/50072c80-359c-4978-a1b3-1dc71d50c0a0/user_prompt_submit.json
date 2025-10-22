@@ -1,0 +1,18 @@
+[
+  {
+    "session_id": "50072c80-359c-4978-a1b3-1dc71d50c0a0",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/50072c80-359c-4978-a1b3-1dc71d50c0a0.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "'/var/folders/sr/6t367_f55y3d5cf8mvmj_c800000gn/T/TemporaryItems/NSIRD_screencaptureui_miKPZn/Screenshot 2025-10-22 at 6.12.25\u202fAM.png' is the project sync getting called twice?"
+  },
+  {
+    "session_id": "50072c80-359c-4978-a1b3-1dc71d50c0a0",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/50072c80-359c-4978-a1b3-1dc71d50c0a0.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "/implement-spec '/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.agent/specs/hide-projects-spec.md'"
+  }
+]

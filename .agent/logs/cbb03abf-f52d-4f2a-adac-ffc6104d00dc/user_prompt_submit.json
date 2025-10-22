@@ -1,0 +1,42 @@
+[
+  {
+    "session_id": "cbb03abf-f52d-4f2a-adac-ffc6104d00dc",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/cbb03abf-f52d-4f2a-adac-ffc6104d00dc.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "On the chat page within a project, let's add this library:\\\nhttps://ai-sdk.dev/elements/overview\\\n\\\nPlease read the docs and examples in detail before implementing.\\\\\nWe're going to add a chat experience to our app so the user can chat back and forth with claude. There will be tool calls and other information as well. Don't connect it to the backend yet, let's first focus on the user experience. \\\n\\\nFirst review how @apps/claudecodeui/ does it. Create examples of all the key behaviors we'll need.\\\n\\\nI'd like a cleaner and simpler display of the content than what claudecodeui does, but you can get the idea of the format and content. I've also added '/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/mocks/8f079ffe-995f-42ba-b089-84de56817b6f.jsonl' which is an example claude session.\\\n\\\nultrathink"
+  },
+  {
+    "session_id": "cbb03abf-f52d-4f2a-adac-ffc6104d00dc",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/cbb03abf-f52d-4f2a-adac-ffc6104d00dc.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Even though we won't make real endpoints, let's think through how it would work so it's easy to wire in later. How does claudecodeui do it?"
+  },
+  {
+    "session_id": "cbb03abf-f52d-4f2a-adac-ffc6104d00dc",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/cbb03abf-f52d-4f2a-adac-ffc6104d00dc.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "look at the event types in agent-cli-sdk. Do we need to make any changes to support your proposed structure in agent-cli-sdk or in the design to match what agent-cli-sdk has?"
+  },
+  {
+    "session_id": "cbb03abf-f52d-4f2a-adac-ffc6104d00dc",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/cbb03abf-f52d-4f2a-adac-ffc6104d00dc.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "yes"
+  },
+  {
+    "session_id": "cbb03abf-f52d-4f2a-adac-ffc6104d00dc",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/cbb03abf-f52d-4f2a-adac-ffc6104d00dc.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "/generate-feature chat-ui"
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "session_id": "bbcaf2ef-f775-4176-b72f-0557199b1a43",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/bbcaf2ef-f775-4176-b72f-0557199b1a43.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can you audit our fastify implementation in apps/web/src/server and provide suggestions for best practices and clean up. We want to ensure there are strong patterns here and the implementation is clean and well documented."
+  },
+  {
+    "session_id": "bbcaf2ef-f775-4176-b72f-0557199b1a43",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/bbcaf2ef-f775-4176-b72f-0557199b1a43.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can you outline your plan in further detail"
+  },
+  {
+    "session_id": "bbcaf2ef-f775-4176-b72f-0557199b1a43",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/bbcaf2ef-f775-4176-b72f-0557199b1a43.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "this is still a startup app so we don't need everything enterprise-grade, just want some good best practices in place, eliminating duplication, leveraging built in types and zod etc"
+  },
+  {
+    "session_id": "bbcaf2ef-f775-4176-b72f-0557199b1a43",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/bbcaf2ef-f775-4176-b72f-0557199b1a43.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can we use the zod plugin instead of using zod directly?"
+  },
+  {
+    "session_id": "bbcaf2ef-f775-4176-b72f-0557199b1a43",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/bbcaf2ef-f775-4176-b72f-0557199b1a43.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "yes"
+  },
+  {
+    "session_id": "bbcaf2ef-f775-4176-b72f-0557199b1a43",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/bbcaf2ef-f775-4176-b72f-0557199b1a43.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "create this plan in .agent/specs/[your-plan.md]"
+  }
+]

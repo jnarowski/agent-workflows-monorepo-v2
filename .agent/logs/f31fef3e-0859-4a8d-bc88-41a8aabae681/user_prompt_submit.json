@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "f31fef3e-0859-4a8d-bc88-41a8aabae681",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/f31fef3e-0859-4a8d-bc88-41a8aabae681.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "/use-browser we need the chat pane to be in the bottom middle (always present) even when the user is at the top of the page. think harder on how to fix this, as you have not been able to yet. You might need to relocate the PromptPane within the dom or change the css heirachy. \\\n\\\nLook at claude.ai and chatgpt.com to see how they do it. They both have this mechanism. "
+  }
+]

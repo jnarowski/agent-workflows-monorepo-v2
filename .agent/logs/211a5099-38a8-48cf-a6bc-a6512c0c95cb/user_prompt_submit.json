@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "211a5099-38a8-48cf-a6bc-a6512c0c95cb",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/211a5099-38a8-48cf-a6bc-a6512c0c95cb.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "We can you use playright to login and load the terminal and wait until you see the terminal loaded?\\\nhttp://localhost:5173/projects/cmh0h2ub80001ya2z3h246ivy\\\\\n\\\nWe we're working on the \"shell\" feature but it continues to have issues.\\\n\\\nThe login is \"jnarowski\" and the pasword is \"tester\"\\\n\\\nIterate until you successfully see the terminal loading"
+  }
+]

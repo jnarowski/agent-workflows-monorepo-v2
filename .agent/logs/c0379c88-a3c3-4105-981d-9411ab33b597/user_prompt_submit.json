@@ -1,0 +1,42 @@
+[
+  {
+    "session_id": "c0379c88-a3c3-4105-981d-9411ab33b597",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c0379c88-a3c3-4105-981d-9411ab33b597.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "/use-browser ensure the new shell feature content starts at the top like '/Users/jnarowski/Desktop/Screenshots/Screenshot 2025-10-21 at 6.55.54\u202fAM.png'. visit this url and press shell:\\\nhttp://localhost:5173/projects/cmh0h2ub80001ya2z3h246ivy"
+  },
+  {
+    "session_id": "c0379c88-a3c3-4105-981d-9411ab33b597",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c0379c88-a3c3-4105-981d-9411ab33b597.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "'/var/folders/sr/6t367_f55y3d5cf8mvmj_c800000gn/T/TemporaryItems/NSIRD_screencaptureui_gZXdX5/Screenshot 2025-10-21 at 7.01.38\u202fAM.png' this is not starting at the top still. "
+  },
+  {
+    "session_id": "c0379c88-a3c3-4105-981d-9411ab33b597",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c0379c88-a3c3-4105-981d-9411ab33b597.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "It looks like the terminal scrollbar continues to grow over time. seems like a bug on the react side"
+  },
+  {
+    "session_id": "c0379c88-a3c3-4105-981d-9411ab33b597",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c0379c88-a3c3-4105-981d-9411ab33b597.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "what port are you running on?\nI am seeing the same scrollbar behavior happening"
+  },
+  {
+    "session_id": "c0379c88-a3c3-4105-981d-9411ab33b597",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c0379c88-a3c3-4105-981d-9411ab33b597.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "but now there is even more black space above the terminal.'/var/folders/sr/6t367_f55y3d5cf8mvmj_c800000gn/T/TemporaryItems/NSIRD_screencaptureui_KsYmBr/Screenshot 2025-10-21 at 7.18.44\u202fAM.png'. The information should start at the top. If you look at the dom there are a lot of blank divs"
+  }
+]

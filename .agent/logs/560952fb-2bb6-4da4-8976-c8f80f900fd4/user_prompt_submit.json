@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "560952fb-2bb6-4da4-8976-c8f80f900fd4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/560952fb-2bb6-4da4-8976-c8f80f900fd4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "/use-browser test e2e tests in '/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.agent/specs/live-chat-sessions-spec.md'  we're still getting a 401 when hitting: http://localhost:5173/api/projects/cmh0h2ub80001ya2z3h246ivy/sessions"
+  }
+]

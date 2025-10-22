@@ -1,0 +1,90 @@
+[
+  {
+    "session_id": "c1d63313-a9ae-49fe-95b5-c20117d9df23",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c1d63313-a9ae-49fe-95b5-c20117d9df23.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "I have received the response from the claude CLI, back to the frontend, but it's not rendering. Here's the format it is sending. What format is it expecting?\\\n\\\n\nmetadata\n: \nnull\nresponse\n: \nduration\n: \n3899\nexitCode\n: \n0\nmetadata\n: \n{tokensUsed: 50}\nmodelUsage\n: \n{claude-sonnet-4-5-20250929: {\u2026}}\noutput\n: \n\"Hello! I'm here to help you with your project. How can I assist you today?\"\nraw\n: \nevents\n: \n(3) [{\u2026}, {\u2026}, {\u2026}]\nstderr\n: \n\"\"\nstdout\n: \n\"{\\\"type\\\":\\\"system\\\",\\\"subtype\\\":\\\"init\\\",\\\"cwd\\\":\\\"/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web\\\",\\\"session_id\\\":\\\"7902e559-d070-40bc-b73f-21b22df913b3\\\",\\\"tools\\\":[\\\"Task\\\",\\\"Bash\\\",\\\"Glob\\\",\\\"Grep\\\",\\\"ExitPlanMode\\\",\\\"Read\\\",\\\"Edit\\\",\\\"Write\\\",\\\"NotebookEdit\\\",\\\"WebFetch\\\",\\\"TodoWrite\\\",\\\"WebSearch\\\",\\\"BashOutput\\\",\\\"KillShell\\\",\\\"Skill\\\",\\\"SlashCommand\\\"],\\\"mcp_servers\\\":[],\\\"model\\\":\\\"claude-sonnet-4-5-20250929\\\",\\\"permissionMode\\\":\\\"acceptEdits\\\",\\\"slash_commands\\\":[\\\"tools\\\",\\\"commit\\\",\\\"pull-request\\\",\\\"prime\\\",\\\"use-browser\\\",\\\"review-spec-implementation\\\",\\\"check\\\",\\\"generate-feature\\\",\\\"implement-spec\\\",\\\"generate-research\\\",\\\"generate-prd\\\",\\\"generate-slash-command\\\",\\\"fix\\\",\\\"e2e:chat\\\",\\\"linear:implement-issue\\\",\\\"compact\\\",\\\"context\\\",\\\"cost\\\",\\\"init\\\",\\\"output-style:new\\\",\\\"pr-comments\\\",\\\"release-notes\\\",\\\"todos\\\",\\\"review\\\",\\\"security-review\\\"],\\\"apiKeySource\\\":\\\"none\\\",\\\"claude_code_version\\\":\\\"2.0.24\\\",\\\"output_style\\\":\\\"default\\\",\\\"agents\\\":[\\\"general-purpose\\\",\\\"statusline-setup\\\",\\\"output-style-setup\\\",\\\"Explore\\\"],\\\"skills\\\":[],\\\"uuid\\\":\\\"b7e40c8e-cae3-4312-8fd6-40ad4e27a3af\\\"}\\n{\\\"type\\\":\\\"assistant\\\",\\\"message\\\":{\\\"model\\\":\\\"claude-sonnet-4-5-20250929\\\",\\\"id\\\":\\\"msg_01RN2ngVKXqciEqjoGrEhPYY\\\",\\\"type\\\":\\\"message\\\",\\\"role\\\":\\\"assistant\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Hello! I'm here to help you with your project. How can I assist you today?\\\"}],\\\"stop_reason\\\":null,\\\"stop_sequence\\\":null,\\\"usage\\\":{\\\"input_tokens\\\":3,\\\"cache_creation_input_tokens\\\":17306,\\\"cache_read_input_tokens\\\":0,\\\"cache_creation\\\":{\\\"ephemeral_5m_input_tokens\\\":17306,\\\"ephemeral_1h_input_tokens\\\":0},\\\"output_tokens\\\":22,\\\"service_tier\\\":\\\"standard\\\"}},\\\"parent_tool_use_id\\\":null,\\\"session_id\\\":\\\"7902e559-d070-40bc-b73f-21b22df913b3\\\",\\\"uuid\\\":\\\"37551b07-024e-4c4a-a250-ee990cfac52b\\\"}\\n{\\\"type\\\":\\\"result\\\",\\\"subtype\\\":\\\"success\\\",\\\"is_error\\\":false,\\\"duration_ms\\\":2013,\\\"duration_api_ms\\\":2004,\\\"num_turns\\\":1,\\\"result\\\":\\\"Hello! I'm here to help you with your project. How can I assist you today?\\\",\\\"session_id\\\":\\\"7902e559-d070-40bc-b73f-21b22df913b3\\\",\\\"total_cost_usd\\\":0.0652365,\\\"usage\\\":{\\\"input_tokens\\\":3,\\\"cache_creation_input_tokens\\\":17306,\\\"cache_read_input_tokens\\\":0,\\\"output_tokens\\\":22,\\\"server_tool_use\\\":{\\\"web_search_requests\\\":0},\\\"service_tier\\\":\\\"standard\\\",\\\"cache_creation\\\":{\\\"ephemeral_1h_input_tokens\\\":0,\\\"ephemeral_5m_input_tokens\\\":17306}},\\\"modelUsage\\\":{\\\"claude-sonnet-4-5-20250929\\\":{\\\"inputTokens\\\":3,\\\"outputTokens\\\":22,\\\"cacheReadInputTokens\\\":0,\\\"cacheCreationInputTokens\\\":17306,\\\"webSearchRequests\\\":0,\\\"costUSD\\\":0.0652365,\\\"contextWindow\\\":200000}},\\\"permission_denials\\\":[],\\\"uuid\\\":\\\"352c1ac5-c0ad-4740-a3fc-6907e20ebcc6\\\"}\\n\"\n[[Prototype]]\n: \nObject\nsessionId\n: \n\"7902e559-d070-40bc-b73f-21b22df913b3\"\nstatus\n: \n\"success\"\nusage\n: \n{inputTokens: 6, outputTokens: 44, totalTokens: 50}\n[[Prototype]]\n: \nObject\nsessionId\n: \n\"7902e559-d070-40bc-b73f-21b22df913b3\"\ntype\n: \n\"message_complete\"\n[[Prototype]]\n: \nObject\\\n\\\nWe can modify the agent-cli-sdk if it's cleaner to do so. I'm not seeing a parsed version of STDOUT in the response"
+  },
+  {
+    "session_id": "c1d63313-a9ae-49fe-95b5-c20117d9df23",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c1d63313-a9ae-49fe-95b5-c20117d9df23.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "instead of this, should we \\\nprocess a parsed version of stdout? - \"{\"type\":\"system\",\"subtype\":\"init\",\"cwd\":\"/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web\",\"session_id\":\"7902e559-d070-40bc-b73f-21b22df913b3\",\"tools\":[\"Task\",\"Bash\",\"Glob\",\"Grep\",\"ExitPlanMode\",\"Read\",\"Edit\",\"Write\",\"NotebookEdit\",\"WebFetch\",\"TodoWrite\",\"WebSearch\",\"BashOutput\",\"KillShell\",\"Skill\",\"SlashCommand\"],\"mcp_servers\":[],\"model\":\"claude-sonnet-4-5-20250929\",\"permissionMode\":\"acceptEdits\",\"slash_commands\":[\"tools\",\"commit\",\"pull-request\",\"prime\",\"use-browser\",\"review-spec-implementation\",\"check\",\"generate-feature\",\"implement-spec\",\"generate-research\",\"generate-prd\",\"generate-slash-command\",\"fix\",\"e2e:chat\",\"linear:implement-issue\",\"compact\",\"context\",\"cost\",\"init\",\"output-style:new\",\"pr-comments\",\"release-notes\",\"todos\",\"review\",\"security-review\"],\"apiKeySource\":\"none\",\"claude_code_version\":\"2.0.24\",\"output_style\":\"default\",\"agents\":[\"general-purpose\",\"statusline-setup\",\"output-style-setup\",\"Explore\"],\"skills\":[],\"uuid\":\"b7e40c8e-cae3-4312-8fd6-40ad4e27a3af\"}\n{\"type\":\"assistant\",\"message\":{\"model\":\"claude-sonnet-4-5-20250929\",\"id\":\"msg_01RN2ngVKXqciEqjoGrEhPYY\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"Hello! I'm here to help you with your project. How can I assist you today?\"}],\"stop_reason\":null,\"stop_sequence\":null,\"usage\":{\"input_tokens\":3,\"cache_creation_input_tokens\":17306,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":17306,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":22,\"service_tier\":\"standard\"}},\"parent_tool_use_id\":null,\"session_id\":\"7902e559-d070-40bc-b73f-21b22df913b3\",\"uuid\":\"37551b07-024e-4c4a-a250-ee990cfac52b\"}\n{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":2013,\"duration_api_ms\":2004,\"num_turns\":1,\"result\":\"Hello! I'm here to help you with your project. How can I assist you today?\",\"session_id\":\"7902e559-d070-40bc-b73f-21b22df913b3\",\"total_cost_usd\":0.0652365,\"usage\":{\"input_tokens\":3,\"cache_creation_input_tokens\":17306,\"cache_read_input_tokens\":0,\"output_tokens\":22,\"server_tool_use\":{\"web_search_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5m_input_tokens\":17306}},\"modelUsage\":{\"claude-sonnet-4-5-20250929\":{\"inputTokens\":3,\"outputTokens\":22,\"cacheReadInputTokens\":0,\"cacheCreationInputTokens\":17306,\"webSearchRequests\":0,\"costUSD\":0.0652365,\"contextWindow\":200000}},\"permission_denials\":[],\"uuid\":\"352c1ac5-c0ad-4740-a3fc-6907e20ebcc6\"}\n\"\\\nor raw.events?\n'/var/folders/sr/6t367_f55y3d5cf8mvmj_c800000gn/T/TemporaryItems/NSIRD_screencaptureui_aCuFcS/Screenshot 2025-10-21 at 4.03.45\u202fPM.png'\\\n\\\nWhat is the ideal output for the stream?"
+  },
+  {
+    "session_id": "c1d63313-a9ae-49fe-95b5-c20117d9df23",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c1d63313-a9ae-49fe-95b5-c20117d9df23.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "I am trying to emulate what is in the root .claude jsonl file. Is that going to be raw.stdout?\\\n\\\n\"{\"type\":\"system\",\"subtype\":\"init\",\"cwd\":\"/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web\",\"session_id\":\"c0787029-c8b2-43a8-85ff-8ce5d79c0cef\",\"tools\":[\"Task\",\"Bash\",\"Glob\",\"Grep\",\"ExitPlanMode\",\"Read\",\"Edit\",\"Write\",\"NotebookEdit\",\"WebFetch\",\"TodoWrite\",\"WebSearch\",\"BashOutput\",\"KillShell\",\"Skill\",\"SlashCommand\"],\"mcp_servers\":[],\"model\":\"claude-sonnet-4-5-20250929\",\"permissionMode\":\"acceptEdits\",\"slash_commands\":[\"tools\",\"commit\",\"pull-request\",\"prime\",\"use-browser\",\"review-spec-implementation\",\"check\",\"generate-feature\",\"implement-spec\",\"generate-research\",\"generate-prd\",\"generate-slash-command\",\"fix\",\"e2e:chat\",\"linear:implement-issue\",\"compact\",\"context\",\"cost\",\"init\",\"output-style:new\",\"pr-comments\",\"release-notes\",\"todos\",\"review\",\"security-review\"],\"apiKeySource\":\"none\",\"claude_code_version\":\"2.0.25\",\"output_style\":\"default\",\"agents\":[\"general-purpose\",\"statusline-setup\",\"output-style-setup\",\"Explore\"],\"skills\":[],\"uuid\":\"ca283012-6f2f-4f24-87d6-b09b68e74c5b\"}\n{\"type\":\"assistant\",\"message\":{\"model\":\"claude-sonnet-4-5-20250929\",\"id\":\"msg_01MJErbuuU6UM92m6QGRphMZ\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"Hey! How can I help you today?\"}],\"stop_reason\":null,\"stop_sequence\":null,\"usage\":{\"input_tokens\":3,\"cache_creation_input_tokens\":17301,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":17301,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":1,\"service_tier\":\"standard\"}},\"parent_tool_use_id\":null,\"session_id\":\"c0787029-c8b2-43a8-85ff-8ce5d79c0cef\",\"uuid\":\"1ce024f9-fae6-4a83-a9a0-0c0a34699c73\"}\n{\"type\":\"result\",\"subtype\":\"success\",\"is_error\":false,\"duration_ms\":2474,\"duration_api_ms\":2464,\"num_turns\":1,\"result\":\"Hey! How can I help you today?\",\"session_id\":\"c0787029-c8b2-43a8-85ff-8ce5d79c0cef\",\"total_cost_usd\":0.06506775,\"usage\":{\"input_tokens\":3,\"cache_creation_input_tokens\":17301,\"cache_read_input_tokens\":0,\"output_tokens\":12,\"server_tool_use\":{\"web_search_requests\":0},\"service_tier\":\"standard\",\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5m_input_tokens\":17301}},\"modelUsage\":{\"claude-sonnet-4-5-20250929\":{\"inputTokens\":3,\"outputTokens\":12,\"cacheReadInputTokens\":0,\"cacheCreationInputTokens\":17301,\"webSearchRequests\":0,\"costUSD\":0.06506775,\"contextWindow\":200000}},\"permission_denials\":[],\"uuid\":\"4c4ceba3-183c-4028-a5d3-06a60d1bb030\"}\n\""
+  },
+  {
+    "session_id": "c1d63313-a9ae-49fe-95b5-c20117d9df23",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c1d63313-a9ae-49fe-95b5-c20117d9df23.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "what is stdout then?"
+  },
+  {
+    "session_id": "c1d63313-a9ae-49fe-95b5-c20117d9df23",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c1d63313-a9ae-49fe-95b5-c20117d9df23.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "raw.stdout"
+  },
+  {
+    "session_id": "c1d63313-a9ae-49fe-95b5-c20117d9df23",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c1d63313-a9ae-49fe-95b5-c20117d9df23.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "I don't think they contain the same data. raw.stdout is an object while events is an array"
+  },
+  {
+    "session_id": "c1d63313-a9ae-49fe-95b5-c20117d9df23",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c1d63313-a9ae-49fe-95b5-c20117d9df23.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "it's a string right now. let's just add a parsed stdout to ai-cli-sdk. what should we call it?"
+  },
+  {
+    "session_id": "c1d63313-a9ae-49fe-95b5-c20117d9df23",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c1d63313-a9ae-49fe-95b5-c20117d9df23.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "how about adding response.data for the parsed output to ai-cli-sdk?"
+  },
+  {
+    "session_id": "c1d63313-a9ae-49fe-95b5-c20117d9df23",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c1d63313-a9ae-49fe-95b5-c20117d9df23.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "ok so then let's try raw.events. Should we move this to response.data instead?"
+  },
+  {
+    "session_id": "c1d63313-a9ae-49fe-95b5-c20117d9df23",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c1d63313-a9ae-49fe-95b5-c20117d9df23.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "ok let's move it to response.data. I am not sure why it would belong in raw anyways. Please evaluate the package and all of its tests to see what you'll have to update by making this change. Don't worry about backwards compatibility"
+  },
+  {
+    "session_id": "c1d63313-a9ae-49fe-95b5-c20117d9df23",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/c1d63313-a9ae-49fe-95b5-c20117d9df23.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "since stream_output is faster, should we listen to that instead?"
+  }
+]

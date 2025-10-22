@@ -1,0 +1,154 @@
+[
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "please review '/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.agent/specs/live-chat-sessions-spec.md' and let me know if you need anything else clarified or have any other quesitons.\\\n\\\nplease add an e2e section if it's not already present for user stories to test"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "any additional quesitons you have on that spec?"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "ask one at a time"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Let's go with option A. this means we should add a claude_code_project_path to the project database and once it's detected, add the path to the claude project directory with the sessions to the db."
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "unless we can derive the path from the encodedProjectPath name?"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "sure let's do A for now."
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "A"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "actually let's make the user id a uuid and adjust the schema for user as well"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "what will sesson types be used for? not sure if we need it"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "A"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "what is standard and what do you recommend?"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "ok A"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "what do you suggest?"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "also how does claudecodeui do it?"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "ok let's do that too"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Let's add a refresh button '/var/folders/sr/6t367_f55y3d5cf8mvmj_c800000gn/T/TemporaryItems/NSIRD_screencaptureui_VdQGIP/Screenshot 2025-10-21 at 1.12.09\u202fPM.png' like this and when pressed, sync the projects again"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "actually, why don't we add project sync on full page load and skip the sync button (initial app load)"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "how is claudecodeui tracking tokens? context is very important in a conversation"
+  },
+  {
+    "session_id": "3a7d73c2-80ec-4795-8312-577fa1cf71f1",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/3a7d73c2-80ec-4795-8312-577fa1cf71f1.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Nope please update the summary with this info"
+  }
+]

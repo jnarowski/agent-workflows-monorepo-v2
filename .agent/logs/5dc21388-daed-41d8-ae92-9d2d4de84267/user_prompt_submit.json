@@ -1,0 +1,18 @@
+[
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Let's create a plan to clean up React imports and favor \"import { useEffect } from\" etc instead of React.useEffect, React.setState etc. Please identify every affected file and include that in your plan"
+  },
+  {
+    "session_id": "5dc21388-daed-41d8-ae92-9d2d4de84267",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5dc21388-daed-41d8-ae92-9d2d4de84267.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "/generate-feature \"fix-react-import-all\""
+  }
+]

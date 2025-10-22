@@ -1,0 +1,122 @@
+[
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Can you replace the existing @apps/web/src/client/components/chat/ChatPromptInput.tsx with this layout, but keep the functionality like onSubmit?\\\n\\\n'use client';\n\nimport {\n  PromptInput,\n  PromptInputActionAddAttachments,\n  PromptInputActionMenu,\n  PromptInputActionMenuContent,\n  PromptInputActionMenuTrigger,\n  PromptInputAttachment,\n  PromptInputAttachments,\n  PromptInputBody,\n  PromptInputButton,\n  type PromptInputMessage,\n  PromptInputModelSelect,\n  PromptInputModelSelectContent,\n  PromptInputModelSelectItem,\n  PromptInputModelSelectTrigger,\n  PromptInputModelSelectValue,\n  PromptInputSpeechButton,\n  PromptInputSubmit,\n  PromptInputTextarea,\n  PromptInputFooter,\n  PromptInputTools,\n} from '@/components/ai-elements/prompt-input';\nimport { GlobeIcon } from 'lucide-react';\nimport { useRef, useState } from 'react';\n\nconst models = [\n  { id: 'gpt-4', name: 'GPT-4' },\n  { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo' },\n  { id: 'claude-2', name: 'Claude 2' },\n  { id: 'claude-instant', name: 'Claude Instant' },\n  { id: 'palm-2', name: 'PaLM 2' },\n  { id: 'llama-2-70b', name: 'Llama 2 70B' },\n  { id: 'llama-2-13b', name: 'Llama 2 13B' },\n  { id: 'cohere-command', name: 'Command' },\n  { id: 'mistral-7b', name: 'Mistral 7B' },\n];\n\nconst SUBMITTING_TIMEOUT = 200;\nconst STREAMING_TIMEOUT = 2000;\n\nconst Example = () => {\n  const [text, setText] = useState<string>('');\n  const [model, setModel] = useState<string>(models[0].id);\n  const [status, setStatus] = useState<\n    'submitted' | 'streaming' | 'ready' | 'error'\n  >('ready');\n  const timeoutRef = useRef<NodeJS.Timeout | null>(null);\n  const textareaRef = useRef<HTMLTextAreaElement>(null);\n\n  const stop = () => {\n    console.log('Stopping request...');\n\n    // Clear any pending timeouts\n    if (timeoutRef.current) {\n      clearTimeout(timeoutRef.current);\n      timeoutRef.current = null;\n    }\n\n    setStatus('ready');\n  };\n\n  const handleSubmit = (message: PromptInputMessage) => {\n    // If currently streaming or submitted, stop instead of submitting\n    if (status === 'streaming' || status === 'submitted') {\n      stop();\n      return;\n    }\n\n    const hasText = Boolean(message.text);\n    const hasAttachments = Boolean(message.files?.length);\n\n    if (!(hasText || hasAttachments)) {\n      return;\n    }\n\n    setStatus('submitted');\n\n    console.log('Submitting message:', message);\n\n    setTimeout(() => {\n      setStatus('streaming');\n    }, SUBMITTING_TIMEOUT);\n\n    timeoutRef.current = setTimeout(() => {\n      setStatus('ready');\n      timeoutRef.current = null;\n    }, STREAMING_TIMEOUT);\n  };\n\n  return (\n    <div className=\"flex flex-col justify-end size-full\">\n      <PromptInput globalDrop multiple onSubmit={handleSubmit}>\n        <PromptInputBody>\n          <PromptInputAttachments>\n            {(attachment) => <PromptInputAttachment data={attachment} />}\n          </PromptInputAttachments>\n          <PromptInputTextarea\n            onChange={(e) => setText(e.target.value)}\n            ref={textareaRef}\n            value={text}\n          />\n        </PromptInputBody>\n        <PromptInputFooter>\n          <PromptInputTools>\n            <PromptInputActionMenu>\n              <PromptInputActionMenuTrigger />\n              <PromptInputActionMenuContent>\n                <PromptInputActionAddAttachments />\n              </PromptInputActionMenuContent>\n            </PromptInputActionMenu>\n            <PromptInputSpeechButton\n              onTranscriptionChange={setText}\n              textareaRef={textareaRef}\n            />\n            <PromptInputButton>\n              <GlobeIcon size={16} />\n              <span>Search</span>\n            </PromptInputButton>\n            <PromptInputModelSelect onValueChange={setModel} value={model}>\n              <PromptInputModelSelectTrigger>\n                <PromptInputModelSelectValue />\n              </PromptInputModelSelectTrigger>\n              <PromptInputModelSelectContent>\n                {models.map((modelOption) => (\n                  <PromptInputModelSelectItem\n                    key={modelOption.id}\n                    value={modelOption.id}\n                  >\n                    {modelOption.name}\n                  </PromptInputModelSelectItem>\n                ))}\n              </PromptInputModelSelectContent>\n            </PromptInputModelSelect>\n          </PromptInputTools>\n          <PromptInputSubmit className=\"!h-8\" status={status} />\n        </PromptInputFooter>\n      </PromptInput>\n    </div>\n  );\n};\n\nexport default Example;\n"
+  },
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can you add the @ button and it's menu contents from this code:\\\n\\\n'use client';\n\nimport {\n  PromptInput,\n  PromptInputAttachment,\n  PromptInputAttachments,\n  PromptInputBody,\n  PromptInputButton,\n  PromptInputCommand,\n  PromptInputCommandEmpty,\n  PromptInputCommandGroup,\n  PromptInputCommandInput,\n  PromptInputCommandItem,\n  PromptInputCommandList,\n  PromptInputCommandSeparator,\n  PromptInputFooter,\n  PromptInputHeader,\n  PromptInputHoverCard,\n  PromptInputHoverCardContent,\n  PromptInputHoverCardTrigger,\n  type PromptInputMessage,\n  PromptInputModelSelect,\n  PromptInputModelSelectContent,\n  PromptInputModelSelectItem,\n  PromptInputModelSelectTrigger,\n  PromptInputModelSelectValue,\n  PromptInputProvider,\n  PromptInputSubmit,\n  PromptInputTab,\n  PromptInputTabBody,\n  PromptInputTabItem,\n  PromptInputTabLabel,\n  PromptInputTextarea,\n  PromptInputTools,\n} from '@/components/ai-elements/prompt-input';\nimport {\n  AtSignIcon,\n  FilesIcon,\n  GlobeIcon,\n  ImageIcon,\n  RulerIcon,\n} from 'lucide-react';\nimport { useRef, useState } from 'react';\nimport { Button } from '@/components/ui/button';\n\nconst models = [\n  { id: 'gpt-4', name: 'GPT-4' },\n  { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo' },\n  { id: 'claude-2', name: 'Claude 2' },\n  { id: 'claude-instant', name: 'Claude Instant' },\n  { id: 'palm-2', name: 'PaLM 2' },\n  { id: 'llama-2-70b', name: 'Llama 2 70B' },\n  { id: 'llama-2-13b', name: 'Llama 2 13B' },\n  { id: 'cohere-command', name: 'Command' },\n  { id: 'mistral-7b', name: 'Mistral 7B' },\n];\n\nconst SUBMITTING_TIMEOUT = 200;\nconst STREAMING_TIMEOUT = 2000;\n\nconst sampleFiles = {\n  activeTabs: [{ path: 'prompt-input.tsx', location: 'packages/elements/src' }],\n  recents: [\n    { path: 'queue.tsx', location: 'apps/test/app/examples' },\n    { path: 'queue.tsx', location: 'packages/elements/src' },\n  ],\n  added: [\n    { path: 'prompt-input.tsx', location: 'packages/elements/src' },\n    { path: 'queue.tsx', location: 'apps/test/app/examples' },\n    { path: 'queue.tsx', location: 'packages/elements/src' },\n  ],\n  filesAndFolders: [\n    { path: 'prompt-input.tsx', location: 'packages/elements/src' },\n    { path: 'queue.tsx', location: 'apps/test/app/examples' },\n  ],\n  code: [{ path: 'prompt-input.tsx', location: 'packages/elements/src' }],\n  docs: [{ path: 'README.md', location: 'packages/elements' }],\n};\n\nconst sampleTabs = {\n  active: [{ path: 'packages/elements/src/task-queue-panel.tsx' }],\n  recents: [\n    { path: 'apps/test/app/examples/task-queue-panel.tsx' },\n    { path: 'apps/test/app/page.tsx' },\n    { path: 'packages/elements/src/task.tsx' },\n    { path: 'apps/test/app/examples/prompt-input.tsx' },\n    { path: 'packages/elements/src/queue.tsx' },\n    { path: 'apps/test/app/examples/queue.tsx' },\n  ],\n};\n\nconst Example = () => {\n  const [model, setModel] = useState<string>(models[0].id);\n  const [status, setStatus] = useState<\n    'submitted' | 'streaming' | 'ready' | 'error'\n  >('ready');\n  const textareaRef = useRef<HTMLTextAreaElement>(null);\n\n  const handleSubmit = (message: PromptInputMessage) => {\n    const hasText = Boolean(message.text);\n    const hasAttachments = Boolean(message.files?.length);\n\n    if (!(hasText || hasAttachments)) {\n      return;\n    }\n\n    setStatus('submitted');\n\n    console.log('Submitting message:', message);\n\n    setTimeout(() => {\n      setStatus('streaming');\n    }, SUBMITTING_TIMEOUT);\n\n    setTimeout(() => {\n      setStatus('ready');\n    }, STREAMING_TIMEOUT);\n  };\n\n  return (\n    <div className=\"flex flex-col justify-end size-full\">\n      <PromptInputProvider>\n        <PromptInput globalDrop multiple onSubmit={handleSubmit}>\n          <PromptInputHeader>\n            <PromptInputHoverCard>\n              <PromptInputHoverCardTrigger>\n                <PromptInputButton\n                  size=\"icon-sm\"\n                  variant=\"outline\"\n                  className=\"!h-8\"\n                >\n                  <AtSignIcon className=\"text-muted-foreground\" size={12} />\n                </PromptInputButton>\n              </PromptInputHoverCardTrigger>\n              <PromptInputHoverCardContent className=\"w-[400px] p-0\">\n                <PromptInputCommand>\n                  <PromptInputCommandInput\n                    className=\"border-none focus-visible:ring-0\"\n                    placeholder=\"Add files, folders, docs...\"\n                  />\n                  <PromptInputCommandList>\n                    <PromptInputCommandEmpty className=\"p-3 text-muted-foreground text-sm\">\n                      No results found.\n                    </PromptInputCommandEmpty>\n                    <PromptInputCommandGroup heading=\"Added\">\n                      <PromptInputCommandItem>\n                        <GlobeIcon />\n                        <span>Active Tabs</span>\n                        <span className=\"ml-auto text-muted-foreground\">\u2713</span>\n                      </PromptInputCommandItem>\n                    </PromptInputCommandGroup>\n                    <PromptInputCommandSeparator />\n                    <PromptInputCommandGroup heading=\"Other Files\">\n                      {sampleFiles.added.map((file, index) => (\n                        <PromptInputCommandItem key={`${file.path}-${index}`}>\n                          <GlobeIcon className=\"text-primary\" />\n                          <div className=\"flex flex-col\">\n                            <span className=\"font-medium text-sm\">\n                              {file.path}\n                            </span>\n                            <span className=\"text-muted-foreground text-xs\">\n                              {file.location}\n                            </span>\n                          </div>\n                        </PromptInputCommandItem>\n                      ))}\n                    </PromptInputCommandGroup>\n                  </PromptInputCommandList>\n                </PromptInputCommand>\n              </PromptInputHoverCardContent>\n            </PromptInputHoverCard>\n            <PromptInputHoverCard>\n              <PromptInputHoverCardTrigger>\n                <PromptInputButton size=\"sm\" variant=\"outline\">\n                  <RulerIcon className=\"text-muted-foreground\" size={12} />\n                  <span>1</span>\n                </PromptInputButton>\n              </PromptInputHoverCardTrigger>\n              <PromptInputHoverCardContent className=\"divide-y overflow-hidden p-0\">\n                <div className=\"space-y-2 p-3\">\n                  <p className=\"font-medium text-muted-foreground text-sm\">\n                    Attached Project Rules\n                  </p>\n                  <p className=\"ml-4 text-muted-foreground text-sm\">\n                    Always Apply:\n                  </p>\n                  <p className=\"ml-8 text-sm\">ultracite.mdc</p>\n                </div>\n                <p className=\"bg-sidebar px-4 py-3 text-muted-foreground text-sm\">\n                  Click to manage\n                </p>\n              </PromptInputHoverCardContent>\n            </PromptInputHoverCard>\n            <PromptInputHoverCard>\n              <PromptInputHoverCardTrigger>\n                <PromptInputButton size=\"sm\" variant=\"outline\">\n                  <FilesIcon className=\"text-muted-foreground\" size={12} />\n                  <span>1 Tab</span>\n                </PromptInputButton>\n              </PromptInputHoverCardTrigger>\n              <PromptInputHoverCardContent className=\"w-[300px] space-y-4 px-0 py-3\">\n                <PromptInputTab>\n                  <PromptInputTabLabel>Active Tabs</PromptInputTabLabel>\n                  <PromptInputTabBody>\n                    {sampleTabs.active.map((tab) => (\n                      <PromptInputTabItem key={tab.path}>\n                        <GlobeIcon className=\"text-primary\" size={16} />\n                        <span className=\"truncate\" dir=\"rtl\">\n                          {tab.path}\n                        </span>\n                      </PromptInputTabItem>\n                    ))}\n                  </PromptInputTabBody>\n                </PromptInputTab>\n                <PromptInputTab>\n                  <PromptInputTabLabel>Recents</PromptInputTabLabel>\n                  <PromptInputTabBody>\n                    {sampleTabs.recents.map((tab) => (\n                      <PromptInputTabItem key={tab.path}>\n                        <GlobeIcon className=\"text-primary\" size={16} />\n                        <span className=\"truncate\" dir=\"rtl\">\n                          {tab.path}\n                        </span>\n                      </PromptInputTabItem>\n                    ))}\n                  </PromptInputTabBody>\n                </PromptInputTab>\n                <div className=\"border-t px-3 pt-2 text-muted-foreground text-xs\">\n                  Only file paths are included\n                </div>\n              </PromptInputHoverCardContent>\n            </PromptInputHoverCard>\n          </PromptInputHeader>\n          <PromptInputBody>\n            <PromptInputAttachments>\n              {(attachment) => <PromptInputAttachment data={attachment} />}\n            </PromptInputAttachments>\n            <PromptInputTextarea\n              placeholder=\"Plan, search, build anything\"\n              ref={textareaRef}\n            />\n          </PromptInputBody>\n          <PromptInputFooter>\n            <PromptInputTools>\n              <PromptInputModelSelect onValueChange={setModel} value={model}>\n                <PromptInputModelSelectTrigger>\n                  <PromptInputModelSelectValue />\n                </PromptInputModelSelectTrigger>\n                <PromptInputModelSelectContent>\n                  {models.map((modelOption) => (\n                    <PromptInputModelSelectItem\n                      key={modelOption.id}\n                      value={modelOption.id}\n                    >\n                      {modelOption.name}\n                    </PromptInputModelSelectItem>\n                  ))}\n                </PromptInputModelSelectContent>\n              </PromptInputModelSelect>\n            </PromptInputTools>\n            <div className=\"flex items-center gap-2\">\n              <Button variant=\"ghost\" size=\"icon-sm\">\n                <ImageIcon size={16} className=\"text-muted-foreground\" />\n              </Button>\n              <PromptInputSubmit className=\"!h-8\" status={status} />\n            </div>\n          </PromptInputFooter>\n        </PromptInput>\n      </PromptInputProvider>\n    </div>\n  );\n};\n\nexport default Example;\n"
+  },
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Can we put it in the bottom next to the + button"
+  },
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "When the user types the @ command, can we have the @ menu open and have the search area focused?"
+  },
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Can we extract this @ functionality into it's own component ChatPromptInputFiles"
+  },
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "now let's scope the remaining functionality:\\\n\\\n1. I want @apps/web/src/client/components/chat/ChatPromptInputFiles.tsx to load up the files for this project based on the project.path that the user is currently in. \\\n2. In added, I want to show the files that are present in the search currently.\\\n3. When a user selects a file, it should replace the @ with the relative file path (relative to this project root)\\\n4. In \"added\" section, I want to show a list of all the files that are added. If the user unchecks a file, it will remove it from the prompt in all the areas it was referenced\\\n\\\ndo you have any questions?"
+  },
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "'/var/folders/sr/6t367_f55y3d5cf8mvmj_c800000gn/T/TemporaryItems/NSIRD_screencaptureui_jznvVb/Screenshot 2025-10-22 at 9.39.04\u202fAM.png' let's make the search results look something like this where we have the file and then the path to the right lighter (so the user can verify it's the right file)"
+  },
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "what fuzzy search library do you recommend and why?"
+  },
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "yes let's add fusejs"
+  },
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Is there anything else unclear about this project?"
+  },
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "also make sure to add unit tests to the project plan"
+  },
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "/generate-feature \"file-picker\""
+  },
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "we're using fuse.js now so do we need this? What is it for?"
+  },
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "let's go with simple parsing"
+  },
+  {
+    "session_id": "70c9d958-0414-4f6d-b236-1d3083402605",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/70c9d958-0414-4f6d-b236-1d3083402605.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "single component with simple text but different colors. all the same width"
+  }
+]

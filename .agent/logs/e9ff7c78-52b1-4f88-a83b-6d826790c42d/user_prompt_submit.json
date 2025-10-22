@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "e9ff7c78-52b1-4f88-a83b-6d826790c42d",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/e9ff7c78-52b1-4f88-a83b-6d826790c42d.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can you add a playwright mcp server for this project so you can login and verify changes"
+  }
+]

@@ -1,0 +1,25 @@
+[
+  {
+    "session_id": "a1a9cd45-bdc8-4848-b90a-9b20d48f63cc",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/a1a9cd45-bdc8-4848-b90a-9b20d48f63cc.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web/package.json"
+    }
+  },
+  {
+    "session_id": "a1a9cd45-bdc8-4848-b90a-9b20d48f63cc",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/a1a9cd45-bdc8-4848-b90a-9b20d48f63cc.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web && pnpm add ai @ai-sdk/openai @ai-sdk/anthropic",
+      "description": "Install Vercel AI SDK packages"
+    }
+  }
+]

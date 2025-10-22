@@ -1,0 +1,42 @@
+[
+  {
+    "session_id": "35dfd4d8-3dca-456d-9816-36c6a9fe8b68",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/35dfd4d8-3dca-456d-9816-36c6a9fe8b68.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "let's use different icon colors but make all the tool calls, thinking panes etc - the same background color like happy cli. They have a clean and streamlined way to present this claude session '/Users/jnarowski/Downloads/Screenshot 2025-10-21 at 10.29.54\u202fAM.png'. Spacing matters, especially when we're optimizing for mobile. think hard. we're going for shadcn, minimal and clean."
+  },
+  {
+    "session_id": "35dfd4d8-3dca-456d-9816-36c6a9fe8b68",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/35dfd4d8-3dca-456d-9816-36c6a9fe8b68.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can we get rid of the assistant and time, not really important and takes up a lot of space"
+  },
+  {
+    "session_id": "35dfd4d8-3dca-456d-9816-36c6a9fe8b68",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/35dfd4d8-3dca-456d-9816-36c6a9fe8b68.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "let's remove the robot icon too'/var/folders/sr/6t367_f55y3d5cf8mvmj_c800000gn/T/TemporaryItems/NSIRD_screencaptureui_zSRmHq/Screenshot 2025-10-21 at 10.51.19\u202fAM.png'"
+  },
+  {
+    "session_id": "35dfd4d8-3dca-456d-9816-36c6a9fe8b68",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/35dfd4d8-3dca-456d-9816-36c6a9fe8b68.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "'/var/folders/sr/6t367_f55y3d5cf8mvmj_c800000gn/T/TemporaryItems/NSIRD_screencaptureui_wBB8hC/Screenshot 2025-10-21 at 10.55.01\u202fAM.png' can we add special css for prose within this pane to make the headings smaller and more compact"
+  },
+  {
+    "session_id": "35dfd4d8-3dca-456d-9816-36c6a9fe8b68",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/35dfd4d8-3dca-456d-9816-36c6a9fe8b68.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "'/Users/jnarowski/Desktop/Screenshots/Screenshot 2025-10-21 at 10.57.48\u202fAM.png' can we make that not bold and red"
+  }
+]
