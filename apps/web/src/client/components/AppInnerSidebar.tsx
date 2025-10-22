@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo, useEffect, type MouseEvent } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useActiveProject } from "@/client/hooks/navigation";
 import {
   ChevronRight,
   Folder,
@@ -60,12 +61,12 @@ export function AppInnerSidebar({
   onProjectClick,
 }: AppInnerSidebarProps) {
   const navigate = useNavigate();
-  const params = useParams<{ id: string }>();
+  const { projectId: activeProjectIdFromHook } = useActiveProject();
   const { data: projectsData, isLoading, error } = useProjects();
   const { isMobile } = useSidebar();
 
-  // Use URL param if available, otherwise use prop
-  const activeProjectId = params.id || activeProjectIdProp;
+  // Use navigation hook if available, otherwise use prop
+  const activeProjectId = activeProjectIdFromHook || activeProjectIdProp;
 
   const [openProjects, setOpenProjects] = useState<string[]>(
     activeProjectId ? [activeProjectId] : []

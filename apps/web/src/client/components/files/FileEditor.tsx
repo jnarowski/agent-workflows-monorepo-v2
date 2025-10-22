@@ -56,6 +56,7 @@ export function FileEditor({
   onClose,
 }: FileEditorProps) {
   const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
+  const token = useAuthStore((s) => s.token);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -71,8 +72,6 @@ export function FileEditor({
     const loadFileContent = async () => {
       try {
         setLoading(true);
-
-        const token = localStorage.getItem("token");
         const response = await fetch(
           `/api/projects/${projectId}/files/content?path=${encodeURIComponent(filePath)}`,
           {
@@ -106,12 +105,11 @@ export function FileEditor({
     };
 
     loadFileContent();
-  }, [projectId, filePath, fileName, handleInvalidToken]);
+  }, [projectId, filePath, fileName, handleInvalidToken, token]);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      const token = localStorage.getItem("token");
       const response = await fetch(
         `/api/projects/${projectId}/files/content`,
         {
@@ -148,7 +146,7 @@ export function FileEditor({
     } finally {
       setSaving(false);
     }
-  }, [projectId, filePath, content, handleInvalidToken]);
+  }, [projectId, filePath, content, handleInvalidToken, token]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);

@@ -17,6 +17,7 @@ export function ImageViewer({
   onClose,
 }: ImageViewerProps) {
   const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
+  const token = useAuthStore((s) => s.token);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +27,6 @@ export function ImageViewer({
     const loadImage = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem("token");
         const response = await fetch(
           `/api/projects/${projectId}/files/content?path=${encodeURIComponent(filePath)}`,
           {
@@ -65,7 +65,7 @@ export function ImageViewer({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId, filePath]);
+  }, [projectId, filePath, handleInvalidToken, token]);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">

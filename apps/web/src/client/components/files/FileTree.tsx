@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from "react";
-import { useParams } from "react-router-dom";
 import {
   Folder,
   FolderOpen,
@@ -12,6 +11,8 @@ import {
   X,
 } from "lucide-react";
 import { useProjectFiles } from "@/client/hooks/useFiles";
+import { useActiveProject } from "@/client/hooks/navigation";
+import { useFilesStore } from "@/client/stores";
 import type { FileTreeItem } from "@/shared/types/file.types";
 import { Input } from "@/client/components/ui/input";
 import { Button } from "@/client/components/ui/button";
@@ -152,20 +153,25 @@ function FileTreeItemComponent({
 }
 
 export function FileTree() {
-  const { id } = useParams<{ id: string }>();
-  const { data: files, isLoading, error } = useProjectFiles(id!);
+  const { projectId } = useActiveProject();
+  const { data: files, isLoading, error } = useProjectFiles(projectId!);
 
-  const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFile, setSelectedFile] = useState<FileTreeItem | null>(null);
+  // Use filesStore for UI state
+  const expandedDirs = useFilesStore((s) => s.expandedDirs);
+  const toggleDir = useFilesStore((s) => s.toggleDir);
+  const searchQuery = useFilesStore((s) => s.searchQuery);
+  const setSearch = useFilesStore((s) => s.setSearch);
+  const selectedFileFromStore = useFilesStore((s) => s.selectedFile);
+  const setSelectedFile = useFilesStore((s) => s.setSelectedFile);
+  const clearSelection = useFilesStore((s) => s.clearSelection);
+
+  const [selectedFileItem, setSelectedFileItem] = useState<FileTreeItem | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
 
   // Auto-expand directories containing search matches
   useEffect(() => {
     if (searchQuery && files) {
-      const newExpanded = new Set<string>();
-
       function collectExpandedPaths(
         items: FileTreeItem[],
         currentPath: string[] = []
@@ -186,10 +192,8 @@ export function FileTree() {
             }
 
             if (hasMatch(item)) {
-              // Add all parent paths
-              for (let i = 1; i <= itemPath.length; i++) {
-                newExpanded.add(item.path);
-              }
+              // Expand this directory using store action
+              useFilesStore.getState().expandDir(item.path);
             }
 
             if (item.children) {
@@ -200,7 +204,6 @@ export function FileTree() {
       }
 
       collectExpandedPaths(files);
-      setExpandedDirs(newExpanded);
     }
   }, [searchQuery, files]);
 
@@ -210,19 +213,12 @@ export function FileTree() {
   }, [files, searchQuery]);
 
   const handleToggle = (path: string) => {
-    setExpandedDirs((prev) => {
-      const next = new Set(prev);
-      if (next.has(path)) {
-        next.delete(path);
-      } else {
-        next.add(path);
-      }
-      return next;
-    });
+    toggleDir(path);
   };
 
   const handleFileClick = (item: FileTreeItem) => {
-    setSelectedFile(item);
+    setSelectedFileItem(item);
+    setSelectedFile(item.path);
     if (isImageFile(item.name)) {
       setIsImageViewerOpen(true);
     } else {
@@ -232,16 +228,18 @@ export function FileTree() {
 
   const handleCloseEditor = () => {
     setIsEditorOpen(false);
-    setSelectedFile(null);
+    setSelectedFileItem(null);
+    clearSelection();
   };
 
   const handleCloseImageViewer = () => {
     setIsImageViewerOpen(false);
-    setSelectedFile(null);
+    setSelectedFileItem(null);
+    clearSelection();
   };
 
   const handleClearSearch = () => {
-    setSearchQuery("");
+    setSearch("");
   };
 
   // Loading state
@@ -295,7 +293,7 @@ export function FileTree() {
               type="text"
               placeholder="Search files..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               className="pl-9 pr-9"
             />
             {searchQuery && (
@@ -336,7 +334,7 @@ export function FileTree() {
               type="text"
               placeholder="Search files..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               className="pl-9 pr-9"
             />
             {searchQuery && (
@@ -368,21 +366,21 @@ export function FileTree() {
       </div>
 
       {/* File Editor Modal */}
-      {isEditorOpen && selectedFile && (
+      {isEditorOpen && selectedFileItem && (
         <FileEditor
-          projectId={id!}
-          filePath={selectedFile.path}
-          fileName={selectedFile.name}
+          projectId={projectId!}
+          filePath={selectedFileItem.path}
+          fileName={selectedFileItem.name}
           onClose={handleCloseEditor}
         />
       )}
 
       {/* Image Viewer Modal */}
-      {isImageViewerOpen && selectedFile && (
+      {isImageViewerOpen && selectedFileItem && (
         <ImageViewer
-          projectId={id!}
-          filePath={selectedFile.path}
-          fileName={selectedFile.name}
+          projectId={projectId!}
+          filePath={selectedFileItem.path}
+          fileName={selectedFileItem.name}
           onClose={handleCloseImageViewer}
         />
       )}
