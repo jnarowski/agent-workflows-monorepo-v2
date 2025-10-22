@@ -14,6 +14,43 @@ This is a **Turborepo monorepo** for agent workflow tools. The `web` app is a fu
   - Server imports: `@/server/*` (routes, services, schemas, plugins, etc.)
   - Shared imports: `@/shared/*` (types, utilities, Prisma client)
 
+### useEffect Dependency Rules
+
+**Critical**: Incorrect useEffect dependencies cause infinite re-renders, unnecessary API calls, and performance issues.
+
+**Golden Rules:**
+1. **Only include primitive values and stable references** in dependency arrays
+   - ✅ Good: `[id, userId, isEnabled]` (primitives)
+   - ❌ Bad: `[user, project, data]` (object references change every render)
+
+2. **Object/Array dependencies from React Query or props will cause infinite loops**
+   - Problem: `const { data: project } = useQuery(...)` creates a new object reference each render
+   - ✅ Solution: Extract the primitive you need: `[project?.id]` or use only the ID
+   - ✅ Better: Don't depend on the object at all if you only need it for the initial check
+
+3. **Functions from hooks/stores are stable - don't include them**
+   - ✅ Zustand store functions: `const handleInvalidToken = useAuthStore(s => s.handleInvalidToken)` (stable)
+   - ✅ React Router: `navigate`, `location` from `useNavigate()` (stable)
+   - ✅ Use `// eslint-disable-next-line react-hooks/exhaustive-deps` when intentionally omitting stable functions
+
+4. **Common Patterns:**
+   ```typescript
+   // ❌ BAD - Runs on every render because 'project' object changes
+   useEffect(() => {
+     if (!id || !project) return;
+     doSomething();
+   }, [id, project, handleInvalidToken, navigate]);
+
+   // ✅ GOOD - Only runs when ID changes
+   useEffect(() => {
+     if (!id) return;
+     doSomething();
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [id]);
+   ```
+
+5. **When in doubt**: Use only primitive values (strings, numbers, booleans) in the dependency array
+
 ## Development Commands
 
 ### Starting the Application
@@ -212,3 +249,4 @@ See `.env.example` for complete configuration template.
 6. **WebSocket authentication**: The `/shell` endpoint requires JWT authentication passed as a query parameter (`?token=...`) since browser WebSocket API doesn't support custom headers
 
 7. **AI Elements components**: The `ai-elements/` directory contains reusable chat UI components (Conversation, Message, PromptInput, etc.) for building AI chat interfaces
+- Debugging tip: server outputs to log/app.log agent can use it to see the latest output

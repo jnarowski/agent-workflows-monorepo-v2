@@ -1256,6 +1256,63 @@ export const PromptInputModelSelectValue = ({
   <SelectValue className={cn(className)} {...props} />
 );
 
+export type PromptInputPermissionModeSelectProps = ComponentProps<typeof Select>;
+
+export const PromptInputPermissionModeSelect = (
+  props: PromptInputPermissionModeSelectProps
+) => <Select {...props} />;
+
+export type PromptInputPermissionModeSelectTriggerProps = ComponentProps<
+  typeof SelectTrigger
+>;
+
+export const PromptInputPermissionModeSelectTrigger = ({
+  className,
+  ...props
+}: PromptInputPermissionModeSelectTriggerProps) => (
+  <SelectTrigger
+    className={cn(
+      "border-none bg-transparent font-medium text-muted-foreground shadow-none transition-colors",
+      'hover:bg-accent hover:text-foreground [&[aria-expanded="true"]]:bg-accent [&[aria-expanded="true"]]:text-foreground',
+      className
+    )}
+    {...props}
+  />
+);
+
+export type PromptInputPermissionModeSelectContentProps = ComponentProps<
+  typeof SelectContent
+>;
+
+export const PromptInputPermissionModeSelectContent = ({
+  className,
+  ...props
+}: PromptInputPermissionModeSelectContentProps) => (
+  <SelectContent className={cn(className)} {...props} />
+);
+
+export type PromptInputPermissionModeSelectItemProps = ComponentProps<
+  typeof SelectItem
+>;
+
+export const PromptInputPermissionModeSelectItem = ({
+  className,
+  ...props
+}: PromptInputPermissionModeSelectItemProps) => (
+  <SelectItem className={cn(className)} {...props} />
+);
+
+export type PromptInputPermissionModeSelectValueProps = ComponentProps<
+  typeof SelectValue
+>;
+
+export const PromptInputPermissionModeSelectValue = ({
+  className,
+  ...props
+}: PromptInputPermissionModeSelectValueProps) => (
+  <SelectValue className={cn(className)} {...props} />
+);
+
 export type PromptInputHoverCardProps = ComponentProps<typeof HoverCard>;
 
 export const PromptInputHoverCard = ({

@@ -136,6 +136,9 @@ export class AgentSessionService {
     projectId: string,
     userId: string
   ): Promise<SyncSessionsResponse> {
+    console.log('🔍 [syncProjectSessions] CALLED for projectId:', projectId);
+    console.log('🔍 [syncProjectSessions] Stack trace:', new Error().stack);
+
     const project = await prisma.project.findUnique({
       where: { id: projectId },
     });
@@ -162,40 +165,51 @@ export class AgentSessionService {
       const files = await fs.readdir(projectSessionsDir);
       const jsonlFiles = files.filter((file) => file.endsWith('.jsonl'));
 
+      // Fetch all existing sessions for this project in one query
+      const dbSessions = await prisma.agentSession.findMany({
+        where: { projectId },
+      });
+
+      const existingSessionsMap = new Map(
+        dbSessions.map((session) => [session.id, session])
+      );
+
+      const jsonlSessionIds = new Set<string>();
+      const sessionsToCreate: Array<{
+        id: string;
+        projectId: string;
+        userId: string;
+        metadata: any;
+      }> = [];
+      const sessionsToUpdate: Array<{
+        id: string;
+        metadata: any;
+      }> = [];
+
+      // Parse all JSONL files and prepare batch operations
       for (const file of jsonlFiles) {
         const sessionId = path.basename(file, '.jsonl');
         const filePath = path.join(projectSessionsDir, file);
+        jsonlSessionIds.add(sessionId);
 
         try {
           // Parse JSONL file to extract metadata
           const metadata = await this.parseJSONLFile(filePath);
 
-          // Check if session already exists in database
-          const existingSession = await prisma.agentSession.findUnique({
-            where: { id: sessionId },
-          });
-
-          if (existingSession) {
-            // Update existing session
-            await prisma.agentSession.update({
-              where: { id: sessionId },
-              data: {
-                metadata: metadata as any,
-                // updated_at is automatically set by Prisma @updatedAt directive
-              },
+          if (existingSessionsMap.has(sessionId)) {
+            // Prepare update
+            sessionsToUpdate.push({
+              id: sessionId,
+              metadata: metadata as any,
             });
-            updated++;
           } else {
-            // Create new session
-            await prisma.agentSession.create({
-              data: {
-                id: sessionId,
-                projectId,
-                userId,
-                metadata: metadata as any,
-              },
+            // Prepare create
+            sessionsToCreate.push({
+              id: sessionId,
+              projectId,
+              userId,
+              metadata: metadata as any,
             });
-            created++;
           }
 
           synced++;
@@ -204,22 +218,41 @@ export class AgentSessionService {
         }
       }
 
-      // Check for sessions in DB that no longer have JSONL files
-      const dbSessions = await prisma.agentSession.findMany({
-        where: { projectId },
-      });
+      // Batch create new sessions
+      if (sessionsToCreate.length > 0) {
+        await prisma.agentSession.createMany({
+          data: sessionsToCreate,
+        });
+        created = sessionsToCreate.length;
+      }
 
-      const jsonlSessionIds = new Set(
-        jsonlFiles.map((f) => path.basename(f, '.jsonl'))
-      );
+      // Batch update existing sessions
+      if (sessionsToUpdate.length > 0) {
+        console.log(`🔍 [syncProjectSessions] Updating ${sessionsToUpdate.length} sessions for project ${projectId}`);
+        await prisma.$transaction(
+          sessionsToUpdate.map((session) =>
+            prisma.agentSession.update({
+              where: { id: session.id },
+              data: {
+                metadata: session.metadata,
+              },
+            })
+          )
+        );
+        updated = sessionsToUpdate.length;
+      }
 
-      for (const session of dbSessions) {
-        if (!jsonlSessionIds.has(session.id)) {
-          // Delete orphaned session
-          await prisma.agentSession.delete({
-            where: { id: session.id },
-          });
-        }
+      // Batch delete orphaned sessions
+      const orphanedSessionIds = dbSessions
+        .filter((session) => !jsonlSessionIds.has(session.id))
+        .map((session) => session.id);
+
+      if (orphanedSessionIds.length > 0) {
+        await prisma.agentSession.deleteMany({
+          where: {
+            id: { in: orphanedSessionIds },
+          },
+        });
       }
     } catch (error: any) {
       // Directory doesn't exist or can't be accessed

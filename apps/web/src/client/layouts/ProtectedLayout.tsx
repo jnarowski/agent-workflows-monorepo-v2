@@ -11,6 +11,7 @@ function ProtectedLayout() {
 
   // Sync projects from Claude CLI on mount
   useEffect(() => {
+    console.log("Syncing project.......");
     syncProjects.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array = run once on mount

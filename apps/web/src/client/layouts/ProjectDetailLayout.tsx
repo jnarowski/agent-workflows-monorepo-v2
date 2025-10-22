@@ -46,7 +46,7 @@ export default function ProjectDetailLayout() {
 
   // Sync sessions on initial mount only
   useEffect(() => {
-    if (!id || !project) return;
+    if (!id) return;
 
     const syncSessions = async () => {
       try {
@@ -81,7 +81,8 @@ export default function ProjectDetailLayout() {
     };
 
     syncSessions();
-  }, [id, project, handleInvalidToken, navigate]); // Only run when project ID changes (initial mount)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]); // Only run when project ID changes
 
   // Loading state
   if (isLoading) {

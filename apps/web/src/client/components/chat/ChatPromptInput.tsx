@@ -11,6 +11,11 @@ import {
   PromptInputModelSelectItem,
   PromptInputModelSelectTrigger,
   PromptInputModelSelectValue,
+  PromptInputPermissionModeSelect,
+  PromptInputPermissionModeSelectContent,
+  PromptInputPermissionModeSelectItem,
+  PromptInputPermissionModeSelectTrigger,
+  PromptInputPermissionModeSelectValue,
   PromptInputProvider,
   PromptInputSpeechButton,
   PromptInputSubmit,
@@ -25,6 +30,10 @@ import { ChatPromptInputSlashCommands } from "@/client/components/chat/ChatPromp
 import { GlobeIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigationStore } from "@/client/stores/navigationStore";
+import {
+  useSessionStore,
+  type ClaudePermissionMode,
+} from "@/client/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation/useActiveProject";
 import { insertAtCursor, removeAllOccurrences } from "@/client/lib/fileUtils";
 
@@ -38,6 +47,17 @@ const models = [
   { id: "llama-2-13b", name: "Llama 2 13B" },
   { id: "cohere-command", name: "Command" },
   { id: "mistral-7b", name: "Mistral 7B" },
+];
+
+const permissionModes: Array<{
+  id: ClaudePermissionMode;
+  name: string;
+  color: string;
+}> = [
+  { id: "default", name: "Default", color: "bg-gray-500" },
+  { id: "plan", name: "Plan Mode", color: "bg-green-500" },
+  { id: "acceptEdits", name: "Accept Edits", color: "bg-purple-500" },
+  { id: "reject", name: "Reject", color: "bg-red-500" },
 ];
 
 const SUBMITTING_TIMEOUT = 200;
@@ -66,9 +86,54 @@ const ChatPromptInputInner = ({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Get active project ID from navigation store
-  const { activeProjectId } = useNavigationStore();
+  // Get active project and session IDs from navigation store
+  const { activeProjectId, activeSessionId } = useNavigationStore();
   const { project } = useActiveProject();
+
+  // Session store for permission modes
+  const {
+    getSessionPermissionMode,
+    setSessionPermissionMode,
+    defaultPermissionMode,
+  } = useSessionStore();
+
+  // Initialize permission mode from store (session-specific or default)
+  const [permissionMode, setPermissionMode] = useState<ClaudePermissionMode>(
+    () => {
+      if (activeSessionId) {
+        return getSessionPermissionMode(activeSessionId);
+      }
+      return defaultPermissionMode;
+    }
+  );
+
+  // Sync permission mode when session changes
+  useEffect(() => {
+    if (activeSessionId) {
+      const sessionMode = getSessionPermissionMode(activeSessionId);
+      setPermissionMode(sessionMode);
+    } else {
+      setPermissionMode(defaultPermissionMode);
+    }
+  }, [activeSessionId, getSessionPermissionMode, defaultPermissionMode]);
+
+  // Handle permission mode change
+  const handlePermissionModeChange = (mode: ClaudePermissionMode) => {
+    setPermissionMode(mode);
+    if (activeSessionId) {
+      setSessionPermissionMode(activeSessionId, mode);
+    }
+  };
+
+  // Cycle to next permission mode
+  const cyclePermissionMode = () => {
+    const currentIndex = permissionModes.findIndex(
+      (m) => m.id === permissionMode
+    );
+    const nextIndex = (currentIndex + 1) % permissionModes.length;
+    const nextMode = permissionModes[nextIndex].id;
+    handlePermissionModeChange(nextMode);
+  };
 
   // Access text from controller instead of local state
   const text = controller.textInput.value;
@@ -81,6 +146,15 @@ const ChatPromptInputInner = ({
       setStatus("ready");
     }
   }, [externalIsStreaming, status]);
+
+  // Handle keyboard shortcuts
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Shift+Tab to cycle permission modes
+    if (e.key === "Tab" && e.shiftKey) {
+      e.preventDefault();
+      cyclePermissionMode();
+    }
+  };
 
   // Handle text change and detect @ and / commands
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -238,7 +312,11 @@ const ChatPromptInputInner = ({
           <PromptInputAttachments>
             {(attachment) => <PromptInputAttachment data={attachment} />}
           </PromptInputAttachments>
-          <PromptInputTextarea onChange={handleTextChange} ref={textareaRef} />
+          <PromptInputTextarea
+            onChange={handleTextChange}
+            onKeyDown={handleKeyDown}
+            ref={textareaRef}
+          />
         </PromptInputBody>
         <PromptInputFooter>
           <PromptInputTools>
@@ -261,21 +339,27 @@ const ChatPromptInputInner = ({
               onTranscriptionChange={controller.textInput.setInput}
               textareaRef={textareaRef}
             />
-            <PromptInputModelSelect onValueChange={setModel} value={model}>
-              <PromptInputModelSelectTrigger>
-                <PromptInputModelSelectValue />
-              </PromptInputModelSelectTrigger>
-              <PromptInputModelSelectContent>
-                {models.map((modelOption) => (
-                  <PromptInputModelSelectItem
-                    key={modelOption.id}
-                    value={modelOption.id}
+            <PromptInputPermissionModeSelect
+              onValueChange={handlePermissionModeChange}
+              value={permissionMode}
+            >
+              <PromptInputPermissionModeSelectTrigger>
+                <PromptInputPermissionModeSelectValue />
+              </PromptInputPermissionModeSelectTrigger>
+              <PromptInputPermissionModeSelectContent>
+                {permissionModes.map((mode) => (
+                  <PromptInputPermissionModeSelectItem
+                    key={mode.id}
+                    value={mode.id}
                   >
-                    {modelOption.name}
-                  </PromptInputModelSelectItem>
+                    <div className="flex items-center gap-2">
+                      <div className={`size-2 rounded-full ${mode.color}`} />
+                      <span>{mode.name}</span>
+                    </div>
+                  </PromptInputPermissionModeSelectItem>
                 ))}
-              </PromptInputModelSelectContent>
-            </PromptInputModelSelect>
+              </PromptInputPermissionModeSelectContent>
+            </PromptInputPermissionModeSelect>
           </PromptInputTools>
           <PromptInputSubmit className="!h-8" status={status} />
         </PromptInputFooter>

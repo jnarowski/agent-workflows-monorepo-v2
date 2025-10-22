@@ -1,14 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Calculator,
-  Calendar,
-  CreditCard,
-  Settings,
-  Smile,
-  User,
-} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Folder, MessageSquare, Terminal, FileText } from "lucide-react";
 
 import {
   CommandDialog,
@@ -17,12 +11,15 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
-  CommandShortcut,
 } from "@/client/components/ui/command";
+import { useProjects } from "@/client/hooks/useProjects";
+import { useAgentSessions } from "@/client/hooks/useAgentSessions";
+import { Button } from "@/client/components/ui/button";
 
 export function CommandMenu() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const { data: projects = [], isLoading: projectsLoading } = useProjects();
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -36,6 +33,16 @@ export function CommandMenu() {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setOpen(false);
+  };
+
+  // Filter out hidden projects and sort alphabetically by name
+  const sortedProjects = [...projects]
+    .filter((project) => !project.is_hidden)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
   return (
     <>
       <button
@@ -48,43 +55,110 @@ export function CommandMenu() {
         </kbd>
       </button>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Type a command or search..." />
+        <CommandInput placeholder="Search projects and sessions..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Suggestions">
-            <CommandItem>
-              <Calendar />
-              <span>Calendar</span>
-            </CommandItem>
-            <CommandItem>
-              <Smile />
-              <span>Search Emoji</span>
-            </CommandItem>
-            <CommandItem>
-              <Calculator />
-              <span>Calculator</span>
-            </CommandItem>
-          </CommandGroup>
-          <CommandSeparator />
-          <CommandGroup heading="Settings">
-            <CommandItem>
-              <User />
-              <span>Profile</span>
-              <CommandShortcut>⌘P</CommandShortcut>
-            </CommandItem>
-            <CommandItem>
-              <CreditCard />
-              <span>Billing</span>
-              <CommandShortcut>⌘B</CommandShortcut>
-            </CommandItem>
-            <CommandItem>
-              <Settings />
-              <span>Settings</span>
-              <CommandShortcut>⌘S</CommandShortcut>
-            </CommandItem>
-          </CommandGroup>
+          {projectsLoading ? (
+            <div className="py-6 text-center text-sm text-muted-foreground">
+              Loading...
+            </div>
+          ) : (
+            sortedProjects.map((project) => (
+              <ProjectGroup
+                key={project.id}
+                project={project}
+                onNavigate={handleNavigate}
+              />
+            ))
+          )}
         </CommandList>
       </CommandDialog>
     </>
+  );
+}
+
+interface ProjectGroupProps {
+  project: {
+    id: string;
+    name: string;
+    path: string;
+  };
+  onNavigate: (path: string) => void;
+}
+
+function ProjectGroup({ project, onNavigate }: ProjectGroupProps) {
+  const { data: sessions = [] } = useAgentSessions({
+    projectId: project.id,
+  });
+
+  // Get the 5 most recent sessions, sorted by lastMessageAt
+  const recentSessions = [...sessions]
+    .sort((a, b) => {
+      const dateA = new Date(a.metadata.lastMessageAt).getTime();
+      const dateB = new Date(b.metadata.lastMessageAt).getTime();
+      return dateB - dateA; // Most recent first
+    })
+    .slice(0, 5);
+
+  return (
+    <CommandGroup
+      heading={
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2">
+            <Folder className="h-4 w-4" />
+            <span>{project.name}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                onNavigate(`/projects/${project.id}/chat`);
+              }}
+            >
+              <MessageSquare className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                onNavigate(`/projects/${project.id}/shell`);
+              }}
+            >
+              <Terminal className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                onNavigate(`/projects/${project.id}/files`);
+              }}
+            >
+              <FileText className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      }
+    >
+      {recentSessions.map((session) => (
+        <CommandItem
+          key={session.id}
+          onSelect={() =>
+            onNavigate(`/projects/${project.id}/chat/${session.id}`)
+          }
+        >
+          <MessageSquare className="mr-2 h-4 w-4" />
+          <span className="truncate">
+            {session.metadata.firstMessagePreview || "New session"}
+          </span>
+        </CommandItem>
+      ))}
+    </CommandGroup>
   );
 }

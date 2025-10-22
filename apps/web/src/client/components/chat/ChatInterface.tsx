@@ -108,7 +108,7 @@ export function ChatInterface({
       data-project-id={projectId}
       data-session-id={sessionId}
     >
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-4">
         {messages.map((message, index) => (
           <MessageRenderer
             key={message.id || `message-${index}`}

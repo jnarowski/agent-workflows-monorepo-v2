@@ -163,6 +163,7 @@ export async function sessionRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
+      console.log(`🔍 [POST /api/projects/:id/sessions/sync] PER-PROJECT SYNC called for projectId: ${request.params.id}`);
       const userId = request.user?.id;
       if (!userId) {
         return reply.code(401).send({
