@@ -1,21 +1,32 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { ChatInterface } from "@/client/components/chat/ChatInterface";
 import { ChatPromptInput } from "@/client/components/chat/ChatPromptInput";
 import { useClaudeSession } from "@/client/hooks/useClaudeSession";
-import { useActiveProject, useActiveSession } from "@/client/hooks/navigation";
+import { useActiveProject } from "@/client/hooks/navigation";
 import { useSessionMessages } from "@/client/hooks/useSessionMessages";
-import { useAuthStore } from "@/client/stores";
+import { useAuthStore, useNavigationStore } from "@/client/stores";
 import type { AgentSessionMetadata } from "@/shared/types";
 import { v4 as uuidv4 } from "uuid";
 
 export default function ProjectChat() {
   const navigate = useNavigate();
   const location = useLocation();
+  const params = useParams<{ sessionId?: string }>();
   const { projectId } = useActiveProject();
-  const { sessionId } = useActiveSession();
+  const setActiveSession = useNavigationStore((s) => s.setActiveSession);
   const token = useAuthStore((s) => s.token);
   const initialMessageSentRef = useRef(false);
+
+  // Get sessionId from URL params
+  const sessionId = params.sessionId || null;
+
+  // Sync sessionId to navigationStore when it changes
+  useEffect(() => {
+    if (sessionId) {
+      setActiveSession(sessionId);
+    }
+  }, [sessionId, setActiveSession]);
 
   // Track session metadata locally (per spec: messages stay in component state initially)
   const [sessionMetadata, setSessionMetadata] = useState<AgentSessionMetadata | undefined>();
