@@ -4,6 +4,7 @@ import type {
   FilesResponse,
   FileErrorResponse,
 } from "../../shared/types/file.types";
+import { useAuth } from "../contexts/AuthContext";
 
 // Query keys factory - centralized key management
 export const fileKeys = {
@@ -18,7 +19,11 @@ function getAuthToken(): string | null {
 }
 
 // Helper to make authenticated API calls
-async function fetchWithAuth(url: string, options: RequestInit = {}) {
+async function fetchWithAuth(
+  url: string,
+  options: RequestInit = {},
+  onUnauthorized?: () => void
+) {
   const token = getAuthToken();
 
   const response = await fetch(url, {
@@ -31,6 +36,12 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   });
 
   if (!response.ok) {
+    // Handle 401 Unauthorized - invalid or missing token
+    if (response.status === 401 && onUnauthorized) {
+      onUnauthorized();
+      throw new Error("Session expired");
+    }
+
     const error: FileErrorResponse = await response.json().catch(() => ({
       error: "An error occurred",
     }));
@@ -43,8 +54,8 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 /**
  * Fetch file tree for a project
  */
-async function fetchProjectFiles(projectId: string): Promise<FileTreeItem[]> {
-  const data: FilesResponse = await fetchWithAuth(`/api/projects/${projectId}/files`);
+async function fetchProjectFiles(projectId: string, onUnauthorized?: () => void): Promise<FileTreeItem[]> {
+  const data: FilesResponse = await fetchWithAuth(`/api/projects/${projectId}/files`, {}, onUnauthorized);
   return data.data;
 }
 
@@ -52,9 +63,11 @@ async function fetchProjectFiles(projectId: string): Promise<FileTreeItem[]> {
  * Hook to fetch file tree for a project
  */
 export function useProjectFiles(projectId: string): UseQueryResult<FileTreeItem[], Error> {
+  const { handleInvalidToken } = useAuth();
+
   return useQuery({
     queryKey: fileKeys.project(projectId),
-    queryFn: () => fetchProjectFiles(projectId),
+    queryFn: () => fetchProjectFiles(projectId, handleInvalidToken),
     enabled: !!projectId, // Only run if projectId is provided
   });
 }

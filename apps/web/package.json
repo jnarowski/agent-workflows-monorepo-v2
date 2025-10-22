@@ -17,6 +17,7 @@
     "dev": "concurrently --kill-others \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "tsx watch src/server/index.ts",
     "dev:client": "vite --host",
+    "dev:force": "bash kill-ports.sh",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",

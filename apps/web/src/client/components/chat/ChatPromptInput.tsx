@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   PromptInput,
@@ -32,89 +32,134 @@ import {
   PromptInputTabLabel,
   PromptInputTextarea,
   PromptInputTools,
-} from '@/components/ai-elements/prompt-input';
+} from "@/components/ai-elements/prompt-input";
 import {
   AtSignIcon,
   FilesIcon,
   GlobeIcon,
   ImageIcon,
   RulerIcon,
-} from 'lucide-react';
-import { useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const models = [
-  { id: 'gpt-4', name: 'GPT-4' },
-  { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo' },
-  { id: 'claude-2', name: 'Claude 2' },
-  { id: 'claude-instant', name: 'Claude Instant' },
-  { id: 'palm-2', name: 'PaLM 2' },
-  { id: 'llama-2-70b', name: 'Llama 2 70B' },
-  { id: 'llama-2-13b', name: 'Llama 2 13B' },
-  { id: 'cohere-command', name: 'Command' },
-  { id: 'mistral-7b', name: 'Mistral 7B' },
+  { id: "gpt-4", name: "GPT-4" },
+  { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo" },
+  { id: "claude-2", name: "Claude 2" },
+  { id: "claude-instant", name: "Claude Instant" },
+  { id: "palm-2", name: "PaLM 2" },
+  { id: "llama-2-70b", name: "Llama 2 70B" },
+  { id: "llama-2-13b", name: "Llama 2 13B" },
+  { id: "cohere-command", name: "Command" },
+  { id: "mistral-7b", name: "Mistral 7B" },
 ];
 
 const SUBMITTING_TIMEOUT = 200;
 const STREAMING_TIMEOUT = 2000;
 
 const sampleFiles = {
-  activeTabs: [{ path: 'prompt-input.tsx', location: 'packages/elements/src' }],
+  activeTabs: [{ path: "prompt-input.tsx", location: "packages/elements/src" }],
   recents: [
-    { path: 'queue.tsx', location: 'apps/test/app/examples' },
-    { path: 'queue.tsx', location: 'packages/elements/src' },
+    { path: "queue.tsx", location: "apps/test/app/examples" },
+    { path: "queue.tsx", location: "packages/elements/src" },
   ],
   added: [
-    { path: 'prompt-input.tsx', location: 'packages/elements/src' },
-    { path: 'queue.tsx', location: 'apps/test/app/examples' },
-    { path: 'queue.tsx', location: 'packages/elements/src' },
+    { path: "prompt-input.tsx", location: "packages/elements/src" },
+    { path: "queue.tsx", location: "apps/test/app/examples" },
+    { path: "queue.tsx", location: "packages/elements/src" },
   ],
   filesAndFolders: [
-    { path: 'prompt-input.tsx', location: 'packages/elements/src' },
-    { path: 'queue.tsx', location: 'apps/test/app/examples' },
+    { path: "prompt-input.tsx", location: "packages/elements/src" },
+    { path: "queue.tsx", location: "apps/test/app/examples" },
   ],
-  code: [{ path: 'prompt-input.tsx', location: 'packages/elements/src' }],
-  docs: [{ path: 'README.md', location: 'packages/elements' }],
+  code: [{ path: "prompt-input.tsx", location: "packages/elements/src" }],
+  docs: [{ path: "README.md", location: "packages/elements" }],
 };
 
 const sampleTabs = {
-  active: [{ path: 'packages/elements/src/task-queue-panel.tsx' }],
+  active: [{ path: "packages/elements/src/task-queue-panel.tsx" }],
   recents: [
-    { path: 'apps/test/app/examples/task-queue-panel.tsx' },
-    { path: 'apps/test/app/page.tsx' },
-    { path: 'packages/elements/src/task.tsx' },
-    { path: 'apps/test/app/examples/prompt-input.tsx' },
-    { path: 'packages/elements/src/queue.tsx' },
-    { path: 'apps/test/app/examples/queue.tsx' },
+    { path: "apps/test/app/examples/task-queue-panel.tsx" },
+    { path: "apps/test/app/page.tsx" },
+    { path: "packages/elements/src/task.tsx" },
+    { path: "apps/test/app/examples/prompt-input.tsx" },
+    { path: "packages/elements/src/queue.tsx" },
+    { path: "apps/test/app/examples/queue.tsx" },
   ],
 };
 
-export const ChatPromptInput = () => {
+interface ChatPromptInputProps {
+  onSubmit?: (message: string, images?: File[]) => void | Promise<void>;
+  disabled?: boolean;
+  isStreaming?: boolean;
+}
+
+export const ChatPromptInput = ({
+  onSubmit,
+  disabled = false,
+  isStreaming: externalIsStreaming = false,
+}: ChatPromptInputProps) => {
   const [model, setModel] = useState<string>(models[0].id);
   const [status, setStatus] = useState<
-    'submitted' | 'streaming' | 'ready' | 'error'
-  >('ready');
+    "submitted" | "streaming" | "ready" | "error"
+  >("ready");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSubmit = (message: PromptInputMessage) => {
+  // Update status based on external streaming state
+  useEffect(() => {
+    if (externalIsStreaming) {
+      setStatus("streaming");
+    } else if (status === "streaming") {
+      setStatus("ready");
+    }
+  }, [externalIsStreaming]);
+
+  const handleSubmit = async (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
     const hasAttachments = Boolean(message.files?.length);
 
     if (!(hasText || hasAttachments)) {
+      console.log("[ChatPromptInput] No text or attachments, skipping submit");
       return;
     }
 
-    setStatus('submitted');
+    if (disabled) {
+      console.log("[ChatPromptInput] Submit disabled, skipping");
+      return;
+    }
 
-    console.log('Submitting message:', message);
+    console.log("[ChatPromptInput] Submitting message:", {
+      text: message.text,
+      filesCount: message.files?.length || 0,
+      hasOnSubmit: !!onSubmit,
+    });
 
-    setTimeout(() => {
-      setStatus('streaming');
-    }, SUBMITTING_TIMEOUT);
+    setStatus("submitted");
 
-    setTimeout(() => {
-      setStatus('ready');
-    }, STREAMING_TIMEOUT);
+    // If external onSubmit provided, use it
+    if (onSubmit) {
+      try {
+        await onSubmit(message.text || "", message.files);
+        console.log("[ChatPromptInput] Message submitted successfully");
+      } catch (error) {
+        console.error("[ChatPromptInput] Error submitting message:", error);
+        setStatus("error");
+        return;
+      }
+    } else {
+      console.warn(
+        "[ChatPromptInput] No onSubmit handler provided, using mock"
+      );
+      // Mock behavior for demo
+      setTimeout(() => {
+        setStatus("streaming");
+      }, SUBMITTING_TIMEOUT);
+
+      setTimeout(() => {
+        setStatus("ready");
+      }, STREAMING_TIMEOUT);
+    }
   };
 
   return (

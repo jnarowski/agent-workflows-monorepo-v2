@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface User {
-  id: number;
+  id: string;
   username: string;
 }
 
@@ -12,11 +13,13 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<void>;
   signup: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  handleInvalidToken: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(() => {
     // Check if user is stored in localStorage
     const storedUser = localStorage.getItem("user");
@@ -90,6 +93,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     toast.success("Logged out successfully");
   };
 
+  const handleInvalidToken = () => {
+    setUser(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    toast.error("Session expired. Please log in again.");
+    navigate("/login");
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -98,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         signup,
         logout,
+        handleInvalidToken,
       }}
     >
       {children}

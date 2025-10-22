@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { X } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface ImageViewerProps {
   projectId: string;
@@ -15,6 +16,7 @@ export function ImageViewer({
   fileName,
   onClose,
 }: ImageViewerProps) {
+  const { handleInvalidToken } = useAuth();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +37,11 @@ export function ImageViewer({
         );
 
         if (!response.ok) {
+          // Handle 401 Unauthorized - invalid or missing token
+          if (response.status === 401) {
+            handleInvalidToken();
+            return;
+          }
           throw new Error(`Failed to load image: ${response.status}`);
         }
 

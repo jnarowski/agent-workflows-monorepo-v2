@@ -31,15 +31,17 @@ export function UserMessage({ message }: UserMessageProps) {
   }
 
   return (
-    <div className="w-full">
-      {/* Text content */}
-      {hasText && (
-        <div className="text-base text-foreground">
-          <div className="whitespace-pre-wrap break-words">
-            {textBlocks.map((block: TextBlock) => block.text).join('\n\n')}
+    <div className="flex justify-end mb-4">
+      <div className="max-w-[80%]">
+        {/* Text content */}
+        {hasText && (
+          <div className="rounded-lg bg-primary text-primary-foreground px-4 py-3 shadow-sm">
+            <div className="whitespace-pre-wrap break-words text-sm">
+              {textBlocks.map((block: TextBlock) => block.text).join('\n\n')}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

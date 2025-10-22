@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { NavLink, Outlet, useNavigate, useParams } from "react-router-dom";
 import { useProject } from "../hooks/useProjects";
 import { Button } from "../components/ui/button";
@@ -10,11 +11,51 @@ import {
   FileText,
 } from "lucide-react";
 import { Alert, AlertDescription } from "../components/ui/alert";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function ProjectDetailLayout() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { handleInvalidToken } = useAuth();
   const { data: project, isLoading, error } = useProject(id!);
+  const [isSyncing, setIsSyncing] = React.useState(false);
+
+  // Sync sessions on initial mount only
+  React.useEffect(() => {
+    if (!id || !project) return;
+
+    const syncSessions = async () => {
+      try {
+        setIsSyncing(true);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/projects/${id}/sessions/sync`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          // Handle 401 Unauthorized - invalid or missing token
+          if (response.status === 401) {
+            handleInvalidToken();
+            return;
+          }
+          console.error('Failed to sync sessions:', response.statusText);
+        } else {
+          const result = await response.json();
+          console.log('Sessions synced:', result);
+        }
+      } catch (err) {
+        console.error('Error syncing sessions:', err);
+      } finally {
+        setIsSyncing(false);
+      }
+    };
+
+    syncSessions();
+  }, [id, handleInvalidToken]); // Only run when project ID changes (initial mount)
 
   // Loading state
   if (isLoading) {

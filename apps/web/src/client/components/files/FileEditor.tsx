@@ -11,6 +11,7 @@ import { EditorView } from "@codemirror/view";
 import { X, Save, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useTheme } from "next-themes";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface FileEditorProps {
   projectId: string;
@@ -54,6 +55,7 @@ export function FileEditor({
   fileName,
   onClose,
 }: FileEditorProps) {
+  const { handleInvalidToken } = useAuth();
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -81,6 +83,11 @@ export function FileEditor({
         );
 
         if (!response.ok) {
+          // Handle 401 Unauthorized - invalid or missing token
+          if (response.status === 401) {
+            handleInvalidToken();
+            return;
+          }
           throw new Error(
             `Failed to load file: ${response.status} ${response.statusText}`
           );
@@ -99,7 +106,7 @@ export function FileEditor({
     };
 
     loadFileContent();
-  }, [projectId, filePath, fileName]);
+  }, [projectId, filePath, fileName, handleInvalidToken]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -121,6 +128,11 @@ export function FileEditor({
       );
 
       if (!response.ok) {
+        // Handle 401 Unauthorized - invalid or missing token
+        if (response.status === 401) {
+          handleInvalidToken();
+          return;
+        }
         const errorData = await response.json();
         throw new Error(errorData.error || `Save failed: ${response.status}`);
       }

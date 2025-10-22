@@ -6,9 +6,48 @@ import type {
   ChatMessage,
   ClaudeSessionRow,
   ClaudeUserMessageRow,
-  ClaudeAssistantMessageRow
+  ClaudeAssistantMessageRow,
+  ContentBlock
 } from '../../shared/types/chat';
 import { isUserMessage, isAssistantMessage } from '../../shared/types/chat';
+
+/**
+ * Normalize a single message object to ensure content is in ContentBlock[] format
+ * Handles both raw API messages and pre-normalized messages
+ */
+export function normalizeMessage(msg: any): ChatMessage {
+  let content: string | ContentBlock[];
+
+  // If content is already an array, use it as-is
+  if (Array.isArray(msg.content)) {
+    content = msg.content;
+  }
+  // If content is a string, keep it as a string (components handle both formats)
+  else if (typeof msg.content === 'string') {
+    content = msg.content;
+  }
+  // Handle message.content from Claude CLI format (nested in message object)
+  else if (msg.message?.content) {
+    if (typeof msg.message.content === 'string') {
+      // Convert string to text block array
+      content = [{ type: 'text', text: msg.message.content }];
+    } else {
+      content = msg.message.content;
+    }
+  }
+  // Fallback to empty string
+  else {
+    content = '';
+  }
+
+  return {
+    id: msg.id || msg.uuid || crypto.randomUUID(),
+    role: msg.role || msg.type,
+    content,
+    timestamp: msg.timestamp ? new Date(msg.timestamp).getTime() : Date.now(),
+    isStreaming: false,
+  };
+}
 
 /**
  * Normalize a JSONL line into a standard event format

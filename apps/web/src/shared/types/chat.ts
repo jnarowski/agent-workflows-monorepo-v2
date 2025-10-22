@@ -82,6 +82,7 @@ export type ContentBlock = TextBlock | ThinkingBlock | ToolUseBlock | ToolResult
 
 /**
  * Chat message structure
+ * Content is always an array of ContentBlocks for consistent rendering
  */
 export interface ChatMessage {
   id: string;
@@ -89,6 +90,7 @@ export interface ChatMessage {
   content: ContentBlock[];
   timestamp: number;
   isStreaming?: boolean;
+  isError?: boolean;
 }
 
 /**

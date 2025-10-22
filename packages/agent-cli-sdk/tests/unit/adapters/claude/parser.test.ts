@@ -519,9 +519,9 @@ describe('parseStreamOutput', () => {
 
       const response = await parseStreamOutput(stdout, 100, 0);
 
-      expect(response.raw?.events).toHaveLength(2);
-      expect(response.raw?.events?.[0].type).toBe('start');
-      expect(response.raw?.events?.[1].type).toBe('result');
+      expect(response.data).toHaveLength(2);
+      expect(response.data?.[0].type).toBe('start');
+      expect(response.data?.[1].type).toBe('result');
     });
 
     it('should set stderr to empty string', async () => {
@@ -597,7 +597,7 @@ describe('parseStreamOutput', () => {
       const response = await parseStreamOutput(stdout, 100, 0);
 
       expect(response.output).toBe('output');
-      expect(response.raw?.events).toHaveLength(2);
+      expect(response.data).toHaveLength(2);
     });
 
     it('should handle zero duration', async () => {

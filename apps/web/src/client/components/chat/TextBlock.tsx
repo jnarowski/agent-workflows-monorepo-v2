@@ -2,17 +2,19 @@
  * Text content block with Markdown rendering
  */
 
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface TextBlockProps {
   text: string;
   className?: string;
 }
 
-export function TextBlock({ text, className = '' }: TextBlockProps) {
+export function TextBlock({ text, className = "" }: TextBlockProps) {
   return (
-    <div className={`prose dark:prose-invert max-w-none ${className}`}>
+    <div
+      className={`prose dark:prose-invert max-w-none prose-hr:my-2 ${className}`}
+    >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -61,13 +63,13 @@ export function TextBlock({ text, className = '' }: TextBlockProps) {
           },
           // Custom code inline rendering
           code({ className, children, ...props }) {
-            const match = /language-(\w+)/.exec(className || '');
+            const match = /language-(\w+)/.exec(className || "");
             const isInline = !match;
 
             if (isInline) {
               return (
                 <code
-                  className="px-1.5 py-0.5 rounded bg-muted font-mono text-sm font-normal"
+                  className="px-1.5 py-0.5 rounded bg-muted text-blue-700 font-mono text-sm font-normal"
                   {...props}
                 >
                   {children}
@@ -106,7 +108,7 @@ export function TextBlock({ text, className = '' }: TextBlockProps) {
                 {children}
               </blockquote>
             );
-          }
+          },
         }}
       >
         {text}

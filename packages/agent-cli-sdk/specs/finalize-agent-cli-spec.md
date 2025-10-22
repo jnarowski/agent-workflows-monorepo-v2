@@ -210,7 +210,7 @@ Tests expect certain events in logs that aren't being captured:
 The synthetic event generation in cli-wrapper.ts:128-196 may not be persisting to log files properly.
 
 **Fix:**
-1. Verify events are written to `raw.events` array in execution response
+1. Verify events are written to `response.data` array in execution response
 2. Ensure log files include all synthetic events
 3. Fix event ordering if needed
 

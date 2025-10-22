@@ -10,11 +10,7 @@ import type {
   SessionOptions,
 } from '../../types';
 import { BaseAdapter } from '../../core/base-adapter';
-import {
-  CLINotFoundError,
-  AuthenticationError,
-  ExecutionError,
-} from '../../core/errors';
+import { CLINotFoundError, AuthenticationError, ExecutionError } from '../../core/errors';
 import { detectClaudeCLI } from './cli-detector';
 import { executeClaudeCLI } from './cli-wrapper';
 import { parseStreamOutput } from './parser';
@@ -29,19 +25,13 @@ export class ClaudeAdapter extends BaseAdapter {
     const resolvedPath = config.cliPath || detectClaudeCLI();
 
     if (!resolvedPath) {
-      throw new CLINotFoundError(
-        'claude',
-        'Claude CLI not found. Install it or set CLAUDE_CLI_PATH'
-      );
+      throw new CLINotFoundError('claude', 'Claude CLI not found. Install it or set CLAUDE_CLI_PATH');
     }
 
     super(resolvedPath, config as Record<string, unknown>);
   }
 
-  async execute<T = string>(
-    prompt: string,
-    options: ClaudeExecutionOptions = {}
-  ): Promise<ExecutionResponse<T>> {
+  async execute<T = string>(prompt: string, options: ClaudeExecutionOptions = {}): Promise<ExecutionResponse<T>> {
     // Validate inputs
     this.validatePrompt(prompt);
     this.validateOptions(options);
@@ -64,11 +54,7 @@ export class ClaudeAdapter extends BaseAdapter {
 
     try {
       // Execute CLI
-      const result = await executeClaudeCLI(
-        this.cliPath,
-        prompt,
-        mergedOptions as ClaudeExecutionOptions
-      );
+      const result = await executeClaudeCLI(this.cliPath, prompt, mergedOptions as ClaudeExecutionOptions);
 
       // Parse output
       response = await parseStreamOutput<T>(
@@ -87,12 +73,7 @@ export class ClaudeAdapter extends BaseAdapter {
     } finally {
       // Always log (non-blocking)
       if (mergedOptions.logPath) {
-        await this.safeWriteLogs(
-          String(mergedOptions.logPath),
-          inputData,
-          response,
-          executionError
-        );
+        await this.safeWriteLogs(String(mergedOptions.logPath), inputData, response, executionError);
       }
     }
 
@@ -101,15 +82,12 @@ export class ClaudeAdapter extends BaseAdapter {
       if (executionError.message.includes('not authenticated')) {
         throw new AuthenticationError('claude');
       }
-      throw new ExecutionError(
-        `Claude execution failed: ${executionError.message}`
-      );
+
+      throw new ExecutionError(`Claude execution failed: ${executionError.message}`);
     }
 
     if (!response) {
-      throw new ExecutionError(
-        'Execution completed but no response generated'
-      );
+      throw new ExecutionError('Execution completed but no response generated');
     }
 
     return response;

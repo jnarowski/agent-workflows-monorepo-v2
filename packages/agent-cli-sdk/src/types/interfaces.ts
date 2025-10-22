@@ -76,6 +76,7 @@ export interface AdapterCapabilities {
  */
 export interface ExecutionResponse<T = string> {
   output: T;
+  data?: StreamEvent[];
   sessionId: string;
   status: 'success' | 'error' | 'timeout';
   exitCode: number;
@@ -100,7 +101,6 @@ export interface ExecutionResponse<T = string> {
   raw?: {
     stdout: string;
     stderr: string;
-    events?: StreamEvent[];
   };
 
   // Error details (if status is 'error')

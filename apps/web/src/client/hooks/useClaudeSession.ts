@@ -1,40 +1,52 @@
 /**
- * Hook to load and parse Claude session JSONL data
- * Currently loads from mock files, ready to be replaced with WebSocket streaming
+ * Hook to load and parse Claude session JSONL data with WebSocket streaming support
  */
 
 import { useState, useEffect } from 'react';
 import type { ChatMessage } from '../../shared/types/chat';
 import { parseJSONLSession, extractToolResults } from '../utils/parseClaudeSession';
+import { normalizeMessage } from '../utils/sessionAdapters';
+import { useChatWebSocket } from './useChatWebSocket';
+import { useAuth } from '../contexts/AuthContext';
+
+interface UseClaudeSessionOptions {
+  sessionId: string;
+  projectId: string;
+  enableWebSocket?: boolean;
+}
 
 interface UseClaudeSessionReturn {
   messages: ChatMessage[];
   toolResults: Map<string, { content: string; is_error?: boolean }>;
   isLoading: boolean;
   error: Error | null;
+  isConnected?: boolean;
+  isStreaming?: boolean;
+  sendMessage?: (options: { message: string; images?: string[]; config?: Record<string, any> }) => void;
+  reconnect?: () => void;
 }
 
 /**
- * Load and parse a Claude session from JSONL file
+ * Load and parse a Claude session from JSONL file with optional WebSocket streaming
  *
- * @param sessionFile - Filename in /mocks/ directory (default: demo session)
- * @returns Parsed messages, tool results, loading state, and error
+ * @param options - Session options including sessionId, projectId, and enableWebSocket
+ * @returns Parsed messages, tool results, loading state, error, and WebSocket controls
  *
  * @example
  * ```tsx
- * const { messages, toolResults, isLoading, error } = useClaudeSession();
+ * const { messages, isLoading, sendMessage } = useClaudeSession({
+ *   sessionId: 'abc-123',
+ *   projectId: 'project-1',
+ *   enableWebSocket: true
+ * });
  * ```
- *
- * @future
- * Replace this hook with useAgentWebSocket that receives real-time events:
- * - Connect to WebSocket endpoint `/ws/session/{id}`
- * - Listen for StreamEvent messages
- * - Build messages array incrementally as events arrive
- * - Update UI in real-time as assistant responds
  */
 export function useClaudeSession(
-  sessionFile: string = '955542ae-9772-459d-a33f-d12f5586d961.jsonl'
+  options: UseClaudeSessionOptions
 ): UseClaudeSessionReturn {
+  const { sessionId, projectId, enableWebSocket = false } = options;
+  const { handleInvalidToken } = useAuth();
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [toolResults, setToolResults] = useState<Map<string, { content: string; is_error?: boolean }>>(
     new Map()
@@ -42,41 +54,88 @@ export function useClaudeSession(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Always call useChatWebSocket (Rules of Hooks - must be called unconditionally)
+  // We'll conditionally use its return values based on enableWebSocket flag
+  const webSocket = useChatWebSocket(sessionId, projectId);
+
+  // Load initial messages from JSONL file
   useEffect(() => {
     let cancelled = false;
 
-    const loadSession = async () => {
+    const loadSessionMessages = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // Fetch JSONL file from public/mocks directory
-        console.log('Loading session from:', `/mocks/${sessionFile}`);
-        const response = await fetch(`/mocks/${sessionFile}`);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/projects/${projectId}/sessions/${sessionId}/messages`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
 
         if (!response.ok) {
-          throw new Error(`Failed to load session: ${response.statusText}`);
+          // Handle 401 Unauthorized - invalid or missing token
+          if (response.status === 401) {
+            handleInvalidToken();
+            throw new Error('Session expired');
+          }
+          // Handle 404 - session doesn't exist yet (new session)
+          if (response.status === 404) {
+            console.log('Session not found - this is a new session');
+            if (cancelled) return;
+            setMessages([]);
+            setToolResults(new Map());
+            if (enableWebSocket && webSocket.setMessages) {
+              webSocket.setMessages([]);
+            }
+            return;
+          }
+          throw new Error(`Failed to load session messages: ${response.statusText}`);
         }
 
-        const jsonlContent = await response.text();
-        console.log('Loaded JSONL content, length:', jsonlContent.length);
+        const data = await response.json();
+        const messagesArray = data.data || [];
 
         if (cancelled) return;
 
-        // Parse JSONL into messages
-        const parsedMessages = parseJSONLSession(jsonlContent);
-        const parsedToolResults = extractToolResults(jsonlContent);
+        // API already returns parsed messages array - normalize them
+        const parsedMessages: ChatMessage[] = messagesArray.map((msg: any) => normalizeMessage(msg));
 
-        console.log('Parsed messages:', parsedMessages.length);
-        console.log('Parsed tool results:', parsedToolResults.size);
+        // Extract tool results from messages
+        const toolResultsMap = new Map<string, { content: string; is_error?: boolean }>();
+        messagesArray.forEach((msg: any) => {
+          if (msg.role === 'assistant' && Array.isArray(msg.content)) {
+            msg.content.forEach((block: any) => {
+              if (block.type === 'tool_result' && block.tool_use_id) {
+                toolResultsMap.set(block.tool_use_id, {
+                  content: typeof block.content === 'string' ? block.content : JSON.stringify(block.content),
+                  is_error: block.is_error,
+                });
+              }
+            });
+          }
+        });
+
+        console.log('Loaded session messages:', parsedMessages.length);
 
         setMessages(parsedMessages);
-        setToolResults(parsedToolResults);
+        setToolResults(toolResultsMap);
+
+        // If WebSocket is enabled, initialize it with existing messages
+        if (enableWebSocket && webSocket.setMessages) {
+          webSocket.setMessages(parsedMessages.map(msg => ({
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content,
+            timestamp: msg.timestamp,
+            images: msg.images,
+          })));
+        }
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err : new Error('Unknown error loading session'));
-          setMessages([]);
-          setToolResults(new Map());
+          const errorMessage = err instanceof Error ? err.message : 'Unknown error loading session';
+          setError(new Error(errorMessage));
+          console.error('Error loading session:', err);
         }
       } finally {
         if (!cancelled) {
@@ -85,50 +144,27 @@ export function useClaudeSession(
       }
     };
 
-    loadSession();
+    if (sessionId && projectId) {
+      loadSessionMessages();
+    }
 
     return () => {
       cancelled = true;
     };
-  }, [sessionFile]);
+  }, [sessionId, projectId, enableWebSocket]);
+
+  // Merge JSONL messages with WebSocket messages when WebSocket is enabled
+  const finalMessages = enableWebSocket ? webSocket.messages : messages;
+  const finalError = error || (enableWebSocket && webSocket.error ? new Error(webSocket.error) : null);
 
   return {
-    messages,
+    messages: finalMessages,
     toolResults,
     isLoading,
-    error
+    error: finalError,
+    isConnected: enableWebSocket ? webSocket.isConnected : undefined,
+    isStreaming: enableWebSocket ? webSocket.isStreaming : undefined,
+    sendMessage: enableWebSocket ? webSocket.sendMessage : undefined,
+    reconnect: enableWebSocket ? webSocket.reconnect : undefined,
   };
 }
-
-/**
- * Future WebSocket-based hook signature for reference
- *
- * @example
- * ```tsx
- * interface UseAgentWebSocketOptions {
- *   sessionId: string;
- *   projectId?: string;
- *   autoConnect?: boolean;
- * }
- *
- * function useAgentWebSocket(options: UseAgentWebSocketOptions) {
- *   const [messages, setMessages] = useState<ChatMessage[]>([]);
- *   const [isConnected, setIsConnected] = useState(false);
- *   const [error, setError] = useState<Error | null>(null);
- *
- *   useEffect(() => {
- *     const ws = new WebSocket(`ws://localhost:3456/ws/session/${options.sessionId}`);
- *
- *     ws.onmessage = (event) => {
- *       const streamEvent = JSON.parse(event.data);
- *       // Update messages based on streamEvent.type
- *       // Handle: message_start, content_block_start, content_block_delta, etc.
- *     };
- *
- *     return () => ws.close();
- *   }, [options.sessionId]);
- *
- *   return { messages, isConnected, error, sendMessage: (text) => {...} };
- * }
- * ```
- */

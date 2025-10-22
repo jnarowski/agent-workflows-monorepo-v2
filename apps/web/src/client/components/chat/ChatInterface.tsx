@@ -1,37 +1,38 @@
 /**
  * Main chat interface component
- * Displays conversation history with auto-scroll
+ * Displays conversation history with auto-scroll and WebSocket streaming support
  */
 
 import { useEffect, useRef } from "react";
-import { MessageCircle, AlertCircle } from "lucide-react";
-import { useClaudeSession } from "../../hooks/useClaudeSession";
+import { MessageCircle, AlertCircle, Loader2 } from "lucide-react";
 import { MessageRenderer } from "./MessageRenderer";
 import { ChatSkeleton } from "./ChatSkeleton";
 import { Alert, AlertDescription } from "../ui/alert";
+import type { ChatMessage } from "../../../shared/types/chat";
 
 interface ChatInterfaceProps {
   projectId: string;
-  sessionFile?: string;
+  sessionId?: string;
+  messages?: ChatMessage[];
+  toolResults?: Map<string, { content: string; is_error?: boolean }>;
+  isLoading?: boolean;
+  error?: Error | null;
+  isStreaming?: boolean;
 }
 
 /**
  * Chat interface component for displaying Claude conversations
- *
- * @future WebSocket Integration
- * To enable real-time streaming:
- * 1. Replace useClaudeSession with useAgentWebSocket hook
- * 2. Connect to WebSocket endpoint: `/ws/session/${sessionId}`
- * 3. Listen for StreamEvent messages from agent-cli-sdk
- * 4. Update messages array as events arrive (message_start, content_block_*, message_stop)
- * 5. Enable bi-directional communication (send user messages via WebSocket)
- *
- * The message types and ContentBlock structure are already aligned with
- * agent-cli-sdk's event format, so no type mapping is needed.
+ * Supports both static JSONL message display and real-time WebSocket streaming
  */
-export function ChatInterface({ projectId, sessionFile }: ChatInterfaceProps) {
-  const { messages, toolResults, isLoading, error } =
-    useClaudeSession(sessionFile);
+export function ChatInterface({
+  projectId,
+  sessionId,
+  messages = [],
+  toolResults = new Map(),
+  isLoading = false,
+  error = null,
+  isStreaming = false,
+}: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const previousScrollHeight = useRef(0);
@@ -94,15 +95,22 @@ export function ChatInterface({ projectId, sessionFile }: ChatInterfaceProps) {
       ref={containerRef}
       className="h-full overflow-y-auto"
       data-project-id={projectId}
+      data-session-id={sessionId}
     >
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-        {messages.map((message) => (
+        {messages.map((message, index) => (
           <MessageRenderer
-            key={message.id}
+            key={message.id || `message-${index}`}
             message={message}
             toolResults={toolResults}
           />
         ))}
+        {isStreaming && (
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Claude is typing...</span>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
     </div>

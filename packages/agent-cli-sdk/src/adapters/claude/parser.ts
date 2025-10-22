@@ -206,6 +206,7 @@ export async function parseStreamOutput<T = string>(
 
   return {
     output,
+    data: events.length > 0 ? events : undefined,
     sessionId,
     status,
     exitCode,
@@ -221,7 +222,6 @@ export async function parseStreamOutput<T = string>(
     raw: {
       stdout,
       stderr: '',
-      events,
     },
     error,
   };

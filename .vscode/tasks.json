@@ -4,7 +4,7 @@
     {
       "label": "pnpm dev",
       "type": "shell",
-      "command": "pnpm dev",
+      "command": "pnpm dev; exec zsh",
       "icon": {
         "id": "server",
         "color": "terminal.ansiGreen"
@@ -40,7 +40,7 @@
     {
       "label": "claude - worker",
       "type": "shell",
-      "command": "zsh -i -c 'claude --dangerously-skip-permissions'",
+      "command": "zsh -i -c 'claude --dangerously-skip-permissions; exec zsh'",
       "icon": {
         "id": "rocket",
         "color": "terminal.ansiBlue"
@@ -58,7 +58,7 @@
     {
       "label": "claude - worker 2",
       "type": "shell",
-      "command": "zsh -i -c 'claude --dangerously-skip-permissions'",
+      "command": "zsh -i -c 'claude --dangerously-skip-permissions; exec zsh'",
       "icon": {
         "id": "rocket",
         "color": "terminal.ansiBlue"
@@ -76,7 +76,7 @@
     {
       "label": "claude - research",
       "type": "shell",
-      "command": "zsh -i -c 'claude --dangerously-skip-permissions'",
+      "command": "zsh -i -c 'claude --dangerously-skip-permissions'; exec zsh",
       "icon": {
         "id": "globe",
         "color": "terminal.ansiBlue"
@@ -94,7 +94,7 @@
     {
       "label": "claude - playwright",
       "type": "shell",
-      "command": "zsh -i -c 'c --mcp-config .mcp.json.playwright'",
+      "command": "zsh -i -c 'c --mcp-config .mcp.json.playwright'; exec zsh",
       "icon": {
         "id": "globe",
         "color": "terminal.ansiBlue"

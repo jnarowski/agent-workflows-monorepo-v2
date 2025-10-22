@@ -13,5 +13,6 @@
       "path": "C:\\Program Files\\Git\\bin\\bash.exe"
     }
   },
-  "terminal.integrated.defaultProfile.windows": "Dev Server"
+  "terminal.integrated.defaultProfile.windows": "Dev Server",
+  "terminal.integrated.tabs.showActiveTerminal": "never"
 }

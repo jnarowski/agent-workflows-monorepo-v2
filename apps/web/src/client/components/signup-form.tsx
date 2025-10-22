@@ -16,36 +16,40 @@ import {
 import { Input } from "@/components/ui/input"
 import type { FormEvent } from "react"
 
-interface LoginFormProps extends React.ComponentProps<"div"> {
+interface SignupFormProps extends React.ComponentProps<"div"> {
   username: string
   password: string
+  confirmPassword: string
   isLoading?: boolean
   error?: string
   onUsernameChange: (username: string) => void
   onPasswordChange: (password: string) => void
+  onConfirmPasswordChange: (password: string) => void
   onSubmit: (e: FormEvent) => void
-  onSignUpClick?: () => void
+  onLoginClick?: () => void
 }
 
-export function LoginForm({
+export function SignupForm({
   className,
   username,
   password,
+  confirmPassword,
   isLoading = false,
   error,
   onUsernameChange,
   onPasswordChange,
+  onConfirmPasswordChange,
   onSubmit,
-  onSignUpClick,
+  onLoginClick,
   ...props
-}: LoginFormProps) {
+}: SignupFormProps) {
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>Create an account</CardTitle>
           <CardDescription>
-            Enter your username below to login to your account
+            Enter your information below to create your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -65,42 +69,46 @@ export function LoginForm({
                   value={username}
                   onChange={(e) => onUsernameChange(e.target.value)}
                   required
+                  minLength={3}
                 />
               </Field>
               <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
-                    href="#"
-                    tabIndex={-1}
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
-                </div>
+                <FieldLabel htmlFor="password">Password</FieldLabel>
                 <Input
                   id="password"
                   type="password"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => onPasswordChange(e.target.value)}
                   required
                 />
               </Field>
               <Field>
+                <FieldLabel htmlFor="confirmPassword">Confirm Password</FieldLabel>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => onConfirmPasswordChange(e.target.value)}
+                  required
+                />
+              </Field>
+              <Field>
                 <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? "Signing in..." : "Login"}
+                  {isLoading ? "Creating account..." : "Sign Up"}
                 </Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account?{" "}
+                  Already have an account?{" "}
                   <a
                     href="#"
                     onClick={(e) => {
                       e.preventDefault()
-                      onSignUpClick?.()
+                      onLoginClick?.()
                     }}
                     className="underline"
                   >
-                    Sign up
+                    Sign in
                   </a>
                 </FieldDescription>
               </Field>
