@@ -4,15 +4,28 @@ import { useAuthStore } from "@/client/stores";
 import { useSyncProjects } from "@/client/hooks/useProjects";
 import { AppSidebar } from "@/client/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/client/components/ui/sidebar";
+import {
+  shouldSyncProjects,
+  markProjectsSynced,
+} from "@/client/lib/projectSync";
 
 function ProtectedLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
   const syncProjects = useSyncProjects();
 
-  // Sync projects from Claude CLI on mount
+  // Sync projects from Claude CLI on mount (only if needed based on localStorage)
   useEffect(() => {
-    console.log("Syncing project.......");
-    syncProjects.mutate();
+    if (shouldSyncProjects(user?.id)) {
+      console.log("Syncing projects from Claude CLI...");
+      syncProjects.mutate(undefined, {
+        onSuccess: () => {
+          markProjectsSynced(user?.id);
+        },
+      });
+    } else {
+      console.log("Skipping project sync - recently synced");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array = run once on mount
 

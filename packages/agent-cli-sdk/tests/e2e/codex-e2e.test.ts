@@ -228,7 +228,7 @@ describeE2E("Codex E2E Tests", () => {
     it("should respect working directory", async () => {
       const client = new AgentClient({
         adapter: createCodexAdapter(),
-        workingDirectory: process.cwd(),
+        workingDir: process.cwd(),
       });
 
       const result = await client.execute("What is the current directory?", {

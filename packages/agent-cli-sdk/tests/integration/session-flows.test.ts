@@ -310,7 +310,7 @@ describe('Session Flows - Integration', () => {
     it('should pass options to adapter session', async () => {
       const session = client.createSession({
         logPath: './logs/test',
-        workingDirectory: '/test/dir',
+        workingDir: '/test/dir',
       });
 
       const result = await session.send('Test');
@@ -320,11 +320,11 @@ describe('Session Flows - Integration', () => {
 
     it('should allow per-message option overrides', async () => {
       const session = client.createSession({
-        workingDirectory: '/default/dir',
+        workingDir: '/default/dir',
       });
 
       const result = await session.send('Test', {
-        workingDirectory: '/override/dir',
+        workingDir: '/override/dir',
       });
 
       expect(result.status).toBe('success');

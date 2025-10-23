@@ -77,7 +77,16 @@ export async function sessionRoutes(fastify: FastifyInstance) {
 
         return reply.send({ data: messages });
       } catch (error: any) {
-        fastify.log.error({ error, sessionId: request.params.sessionId }, 'Error fetching session messages');
+        fastify.log.error({
+          error: {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+          },
+          sessionId: request.params.sessionId,
+          projectId: request.params.id,
+          userId
+        }, 'Error fetching session messages');
 
         if (
           error.message === "Session not found" ||
@@ -138,11 +147,19 @@ export async function sessionRoutes(fastify: FastifyInstance) {
         });
       }
 
+      console.log('[POST /sessions] Creating session:', {
+        projectId: request.params.id,
+        userId,
+        sessionId: request.body.sessionId,
+      });
+
       const session = await agentSessionService.createSession(
         request.params.id,
         userId,
         request.body.sessionId
       );
+
+      console.log('[POST /sessions] Session created successfully:', session.id);
 
       return reply.code(201).send({ data: session });
     }

@@ -135,7 +135,7 @@ describe("AgentClient - Workflow Integration", () => {
     it("should apply default configuration to executions", async () => {
       const configuredClient = new AgentClient({
         adapter: mockAdapter,
-        workingDirectory: "/test/dir",
+        workingDir: "/test/dir",
         verbose: true,
       });
 
@@ -147,11 +147,11 @@ describe("AgentClient - Workflow Integration", () => {
     it("should allow execution options to override defaults", async () => {
       const configuredClient = new AgentClient({
         adapter: mockAdapter,
-        workingDirectory: "/default/dir",
+        workingDir: "/default/dir",
       });
 
       const result = await configuredClient.execute("Test", {
-        workingDirectory: "/override/dir",
+        workingDir: "/override/dir",
       });
 
       expect(result.status).toBe("success");

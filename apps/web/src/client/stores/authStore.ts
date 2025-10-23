@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { toast } from "sonner";
+import { clearProjectSyncState } from "@/client/lib/projectSync";
 
 /**
  * User interface matching the API response
@@ -147,6 +148,8 @@ export const useAuthStore = create<AuthStore>()(
           token: null,
           isAuthenticated: false,
         });
+        // Clear project sync state on logout
+        clearProjectSyncState();
         toast.success("Logged out successfully");
       },
 
@@ -170,6 +173,8 @@ export const useAuthStore = create<AuthStore>()(
           token: null,
           isAuthenticated: false,
         });
+        // Clear project sync state on invalid token
+        clearProjectSyncState();
         toast.error("Session expired. Please log in again.");
         // Navigation will be handled by the caller since we can't access router here
         // Components should use this in conjunction with useNavigate

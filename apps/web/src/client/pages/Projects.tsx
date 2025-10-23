@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProjects } from "@/client/hooks/useProjects";
+import { useProjects, useSyncProjects } from "@/client/hooks/useProjects";
 import { Button } from "@/client/components/ui/button";
 import {
   Table,
@@ -12,18 +12,30 @@ import {
 } from "@/client/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/client/components/ui/card";
 import { Skeleton } from "@/client/components/ui/skeleton";
-import { AlertCircle, FolderOpen, Plus, Pencil, Trash2 } from "lucide-react";
+import { AlertCircle, FolderOpen, Plus, Pencil, Trash2, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { ProjectDialog } from "@/client/components/projects/ProjectDialog";
 import { DeleteProjectDialog } from "@/client/components/projects/DeleteProjectDialog";
 import type { Project } from "@/shared/types/project.types";
+import { useAuthStore } from "@/client/stores";
+import { markProjectsSynced } from "@/client/lib/projectSync";
 
 export default function Projects() {
   const navigate = useNavigate();
   const { data: projects, isLoading, error } = useProjects();
+  const syncProjects = useSyncProjects();
+  const user = useAuthStore((state) => state.user);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [deletingProject, setDeletingProject] = useState<Project | null>(null);
+
+  const handleManualSync = () => {
+    syncProjects.mutate(undefined, {
+      onSuccess: () => {
+        markProjectsSynced(user?.id);
+      },
+    });
+  };
 
   // Filter out hidden projects
   const visibleProjects = projects?.filter(project => !project.is_hidden) ?? [];
@@ -74,10 +86,20 @@ export default function Projects() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Projects</h1>
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Project
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleManualSync}
+              disabled={syncProjects.isPending}
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${syncProjects.isPending ? 'animate-spin' : ''}`} />
+              Sync Projects
+            </Button>
+            <Button onClick={() => setIsCreateDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              New Project
+            </Button>
+          </div>
         </div>
 
         <Card>
@@ -108,10 +130,20 @@ export default function Projects() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Projects</h1>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Project
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleManualSync}
+            disabled={syncProjects.isPending}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${syncProjects.isPending ? 'animate-spin' : ''}`} />
+            Sync Projects
+          </Button>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Project
+          </Button>
+        </div>
       </div>
 
       <Card>

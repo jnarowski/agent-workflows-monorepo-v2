@@ -187,7 +187,7 @@ describeE2E('Claude E2E Tests', () => {
     it('should respect working directory', async () => {
       const client = new AgentClient({
         adapter: createClaudeAdapter(),
-        workingDirectory: process.cwd(),
+        workingDir: process.cwd(),
       });
 
       const result = await client.execute('What is the current directory?', {

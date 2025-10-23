@@ -1,0 +1,49 @@
+[
+  {
+    "session_id": "aecd19a1-3ff5-4ab7-9291-bb4c4524ff6e",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aecd19a1-3ff5-4ab7-9291-bb4c4524ff6e.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "BashOutput",
+    "tool_input": {
+      "bash_id": "dd69bb"
+    }
+  },
+  {
+    "session_id": "aecd19a1-3ff5-4ab7-9291-bb4c4524ff6e",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aecd19a1-3ff5-4ab7-9291-bb4c4524ff6e.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "lsof -ti:3456 | xargs kill -9 2>/dev/null || true",
+      "description": "Kill any process using port 3456"
+    }
+  },
+  {
+    "session_id": "aecd19a1-3ff5-4ab7-9291-bb4c4524ff6e",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aecd19a1-3ff5-4ab7-9291-bb4c4524ff6e.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web && pnpm dev:server",
+      "description": "Start development server with verbose logging",
+      "run_in_background": true
+    }
+  },
+  {
+    "session_id": "aecd19a1-3ff5-4ab7-9291-bb4c4524ff6e",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aecd19a1-3ff5-4ab7-9291-bb4c4524ff6e.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "BashOutput",
+    "tool_input": {
+      "bash_id": "33a259"
+    }
+  }
+]

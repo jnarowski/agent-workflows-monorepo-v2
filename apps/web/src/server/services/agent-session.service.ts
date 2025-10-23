@@ -332,41 +332,59 @@ export class AgentSessionService {
    * @returns Array of messages from JSONL file
    */
   async getSessionMessages(sessionId: string, userId: string): Promise<any[]> {
-    // Verify session exists and user has access
-    const session = await prisma.agentSession.findUnique({
-      where: { id: sessionId },
-      include: { project: true },
-    });
-
-    if (!session) {
-      throw new Error(`Session not found: ${sessionId}`);
-    }
-
-    if (session.userId !== userId) {
-      throw new Error('Unauthorized access to session');
-    }
-
-    const filePath = this.getSessionFilePath(session.project.path, sessionId);
-
     try {
-      const content = await fs.readFile(filePath, 'utf-8');
-      const lines = content.trim().split('\n').filter(Boolean);
+      console.log('[getSessionMessages] Starting - sessionId:', sessionId, 'userId:', userId);
 
-      return lines
-        .map((line) => {
-          try {
-            const entry = JSON.parse(line);
-            return this.transformToChatMessage(entry);
-          } catch {
-            return null;
-          }
-        })
-        .filter(Boolean);
-    } catch (error: any) {
-      if (error.code === 'ENOENT') {
-        // Return empty array for new sessions without messages yet
-        return [];
+      // Verify session exists and user has access
+      const session = await prisma.agentSession.findUnique({
+        where: { id: sessionId },
+        include: { project: true },
+      });
+
+      console.log('[getSessionMessages] Session found:', !!session);
+      console.log('[getSessionMessages] Session project:', session?.project?.id);
+
+      if (!session) {
+        throw new Error(`Session not found: ${sessionId}`);
       }
+
+      if (session.userId !== userId) {
+        throw new Error('Unauthorized access to session');
+      }
+
+      const filePath = this.getSessionFilePath(session.project.path, sessionId);
+      console.log('[getSessionMessages] Session file path:', filePath);
+      console.log('[getSessionMessages] Project path:', session.project.path);
+      console.log('[getSessionMessages] Session ID:', sessionId);
+
+      try {
+        const content = await fs.readFile(filePath, 'utf-8');
+        const lines = content.trim().split('\n').filter(Boolean);
+
+        const messages = lines
+          .map((line) => {
+            try {
+              const entry = JSON.parse(line);
+              return this.transformToChatMessage(entry);
+            } catch {
+              return null;
+            }
+          })
+          .filter(Boolean);
+
+        console.log('[getSessionMessages] Successfully loaded', messages.length, 'messages');
+        return messages;
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          console.log('[getSessionMessages] File not found, returning empty array');
+          // Return empty array for new sessions without messages yet
+          return [];
+        }
+        console.error('[getSessionMessages] Error reading file:', error);
+        throw error;
+      }
+    } catch (error: any) {
+      console.error('[getSessionMessages] Top-level error:', error.message, error.stack);
       throw error;
     }
   }
@@ -384,6 +402,12 @@ export class AgentSessionService {
     userId: string,
     sessionId: string
   ): Promise<SessionResponse> {
+    console.log('[AgentSessionService.createSession] Called with:', {
+      projectId,
+      userId,
+      sessionId,
+    });
+
     // Initialize with empty metadata
     const metadata: AgentSessionMetadata = {
       totalTokens: 0,
@@ -392,6 +416,8 @@ export class AgentSessionService {
       firstMessagePreview: '',
     };
 
+    console.log('[AgentSessionService.createSession] About to insert into database');
+
     const session = await prisma.agentSession.create({
       data: {
         id: sessionId,
@@ -399,6 +425,12 @@ export class AgentSessionService {
         userId,
         metadata: metadata as any,
       },
+    });
+
+    console.log('[AgentSessionService.createSession] Database insert successful:', {
+      id: session.id,
+      projectId: session.projectId,
+      userId: session.userId,
     });
 
     return {

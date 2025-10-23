@@ -178,7 +178,7 @@ describe('Session', () => {
     it('should merge session options with send options', async () => {
       const sessionWithOptions = new Session(mockAdapter, adapterSession, {
         timeout: 5000,
-        workingDirectory: '/default/dir',
+        workingDir: '/default/dir',
       });
 
       const sendSpy = vi.spyOn(adapterSession, 'send');
@@ -191,7 +191,7 @@ describe('Session', () => {
         'Test',
         expect.objectContaining({
           timeout: 10000,
-          workingDirectory: '/default/dir',
+          workingDir: '/default/dir',
         })
       );
     });
@@ -428,7 +428,7 @@ describe('Session', () => {
 
       const sendOptions = {
         timeout: 10000, // Override
-        workingDirectory: '/work', // New option
+        workingDir: '/work', // New option
       };
 
       const sessionWithOptions = new Session(mockAdapter, adapterSession, sessionOptions);
@@ -442,7 +442,7 @@ describe('Session', () => {
           timeout: 10000,
           verbose: true,
           logPath: '/logs',
-          workingDirectory: '/work',
+          workingDir: '/work',
         })
       );
     });

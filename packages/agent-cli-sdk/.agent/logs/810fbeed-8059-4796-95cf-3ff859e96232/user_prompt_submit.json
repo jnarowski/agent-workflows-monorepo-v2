@@ -1,0 +1,34 @@
+[
+  {
+    "session_id": "810fbeed-8059-4796-95cf-3ff859e96232",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/810fbeed-8059-4796-95cf-3ff859e96232.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "It is not passing in the right working directory! Here's what it has:\\\n@repo/web:dev: [0] [agent-cli-sdk:spawn] Working Directory (cwd): /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web"
+  },
+  {
+    "session_id": "810fbeed-8059-4796-95cf-3ff859e96232",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/810fbeed-8059-4796-95cf-3ff859e96232.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "ok"
+  },
+  {
+    "session_id": "810fbeed-8059-4796-95cf-3ff859e96232",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/810fbeed-8059-4796-95cf-3ff859e96232.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "wait, can't we fetch the project from the session_id?"
+  },
+  {
+    "session_id": "810fbeed-8059-4796-95cf-3ff859e96232",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/810fbeed-8059-4796-95cf-3ff859e96232.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "did you migrate the logic to getting the current project id to using navigationStore?"
+  }
+]

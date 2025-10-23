@@ -30,6 +30,16 @@ export async function writeExecutionLogs(
   try {
     const paths = getLogPaths(baseLogPath);
 
+    // Verbose logging for debugging
+    console.log('[agent-cli-sdk:logger] ========== WRITING EXECUTION LOGS ==========');
+    console.log('[agent-cli-sdk:logger] Base Log Path:', paths.base);
+    console.log('[agent-cli-sdk:logger] Input Log Path:', paths.input);
+    console.log('[agent-cli-sdk:logger] Output Log Path:', paths.output);
+    console.log('[agent-cli-sdk:logger] Error Log Path:', paths.error);
+    console.log('[agent-cli-sdk:logger] Has Output:', !!output);
+    console.log('[agent-cli-sdk:logger] Has Error:', !!error);
+    console.log('[agent-cli-sdk:logger] ==========================================');
+
     // Ensure directory exists
     await mkdir(paths.base, { recursive: true });
 
@@ -68,9 +78,12 @@ export async function writeExecutionLogs(
     }
 
     await Promise.all(writes);
+
+    console.log('[agent-cli-sdk:logger] ✓ Successfully wrote execution logs to:', paths.base);
   } catch (logError) {
     // Logging errors are silently ignored
-    console.error('[logger] Failed to write execution logs:', logError);
+    console.error('[agent-cli-sdk:logger] ✗ Failed to write execution logs:', logError);
+    console.error('[agent-cli-sdk:logger] Base path attempted:', baseLogPath);
   }
 }
 

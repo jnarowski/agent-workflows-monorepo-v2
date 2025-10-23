@@ -92,7 +92,7 @@ describe('AgentClient', () => {
     it('should merge client config with execution options', async () => {
       const clientWithConfig = new AgentClient({
         adapter: mockAdapter,
-        workingDirectory: '/test/dir',
+        workingDir: '/test/dir',
         verbose: true,
       });
 
@@ -255,7 +255,7 @@ describe('AgentClient', () => {
     it('should use client-level options as defaults', async () => {
       const clientWithDefaults = new AgentClient({
         adapter: mockAdapter,
-        workingDirectory: '/default/dir',
+        workingDir: '/default/dir',
         verbose: true,
         timeout: 5000,
       });
@@ -280,7 +280,7 @@ describe('AgentClient', () => {
     it('should merge nested options', async () => {
       const clientWithDefaults = new AgentClient({
         adapter: mockAdapter,
-        workingDirectory: '/default',
+        workingDir: '/default',
         verbose: false,
       });
 

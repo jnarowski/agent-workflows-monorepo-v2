@@ -31,10 +31,7 @@ export interface SpawnWithCallbacksOptions {
 /**
  * Spawn a process and collect output
  */
-export async function spawnProcess(
-  command: string,
-  options: SpawnWithCallbacksOptions = {}
-): Promise<SpawnResult> {
+export async function spawnProcess(command: string, options: SpawnWithCallbacksOptions = {}): Promise<SpawnResult> {
   const { args = [], cwd, env, timeout, onStdout, onStderr } = options;
 
   const startTime = Date.now();
@@ -48,6 +45,26 @@ export async function spawnProcess(
     env: env ? { ...process.env, ...env } : process.env,
     stdio: ['ignore', 'pipe', 'pipe'],
   };
+
+  // Verbose logging for debugging
+  // console.log('[agent-cli-sdk:spawn] ========== SPAWNING PROCESS ==========');
+  // console.log('[agent-cli-sdk:spawn] Command:', command);
+  // console.log('[agent-cli-sdk:spawn] Arguments:', JSON.stringify(args, null, 2));
+  // console.log('[agent-cli-sdk:spawn] Working Directory (cwd):', spawnOptions.cwd);
+  // console.log('[agent-cli-sdk:spawn] Timeout:', timeout ? `${timeout}ms` : 'none');
+
+  // Log environment variables (redact sensitive keys)
+  if (env) {
+    const redactedEnv = { ...env };
+    if (redactedEnv['ANTHROPIC_API_KEY']) {
+      redactedEnv['ANTHROPIC_API_KEY'] = '***REDACTED***';
+    }
+    if (redactedEnv['CLAUDE_CODE_OAUTH_TOKEN']) {
+      redactedEnv['CLAUDE_CODE_OAUTH_TOKEN'] = '***REDACTED***';
+    }
+    console.log('[agent-cli-sdk:spawn] Environment Variables (custom):', redactedEnv);
+  }
+  console.log('[agent-cli-sdk:spawn] ==========================================');
 
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, spawnOptions);
@@ -95,12 +112,7 @@ export async function spawnProcess(
       const duration = Date.now() - startTime;
 
       if (timedOut) {
-        reject(
-          new TimeoutError(
-            timeout!,
-            `Process exceeded timeout of ${timeout}ms`
-          )
-        );
+        reject(new TimeoutError(timeout!, `Process exceeded timeout of ${timeout}ms`));
         return;
       }
 
@@ -118,9 +130,7 @@ export async function spawnProcess(
         clearTimeout(timeoutHandle);
       }
 
-      reject(
-        new ExecutionError(`Failed to spawn process: ${err.message}`, undefined, stderr)
-      );
+      reject(new ExecutionError(`Failed to spawn process: ${err.message}`, undefined, stderr));
     });
   });
 }

@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "aecd19a1-3ff5-4ab7-9291-bb4c4524ff6e",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/aecd19a1-3ff5-4ab7-9291-bb4c4524ff6e.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "Stop",
+    "stop_hook_active": false
+  }
+]

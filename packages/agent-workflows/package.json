@@ -1,5 +1,5 @@
 {
-  "name": "@sourceborn/agent-workflows",
+  "name": "@repo/agent-workflows",
   "version": "0.1.18",
   "description": "Agent workflow utilities",
   "type": "module",

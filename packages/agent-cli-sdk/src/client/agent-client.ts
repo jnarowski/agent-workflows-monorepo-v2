@@ -37,11 +37,15 @@ export class AgentClient {
 
     this.adapter = options.adapter;
 
+    console.log('[AgentClient] Constructor called with options.workingDir:', options.workingDir);
+
     this.config = {
-      workingDirectory: options.workingDirectory,
+      workingDir: options.workingDir,
       verbose: options.verbose,
       logPath: options.logPath,
     };
+
+    console.log('[AgentClient] Config set with workingDir:', this.config.workingDir);
   }
 
   /**
@@ -53,11 +57,13 @@ export class AgentClient {
   ): Promise<ExecutionResponse<T>> {
     // Merge client config with execution options
     const mergedOptions = {
-      workingDirectory: this.config.workingDirectory,
+      workingDir: this.config.workingDir,
       verbose: this.config.verbose,
       logPath: this.config.logPath,
       ...options,
     };
+
+    console.log('[AgentClient.execute] mergedOptions.workingDir:', mergedOptions.workingDir);
 
     // Set up streaming if callbacks are provided
     if (options.onOutput || options.onEvent) {
@@ -74,7 +80,7 @@ export class AgentClient {
   createSession(options: SessionOptions = {}): Session {
     // Merge client config with session options
     const mergedOptions = {
-      workingDirectory: this.config.workingDirectory,
+      workingDir: this.config.workingDir,
       verbose: this.config.verbose,
       logPath: this.config.logPath,
       ...options,

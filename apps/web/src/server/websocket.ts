@@ -110,7 +110,7 @@ export async function registerWebSocket(fastify: FastifyInstance) {
               "Chat WebSocket authenticated"
             );
 
-            // Verify session exists and user has access
+            // Get project from session
             const session = await prisma.agentSession.findUnique({
               where: { id: sessionId },
               include: { project: true },
@@ -141,6 +141,12 @@ export async function registerWebSocket(fastify: FastifyInstance) {
             }
 
             projectPath = session.project.path;
+            console.log('[WebSocket] Session loaded:', {
+              sessionId: session.id,
+              projectId: session.project.id,
+              projectName: session.project.name,
+              projectPath: session.project.path
+            });
 
             // Send connection success
             socket.send(
@@ -197,14 +203,27 @@ export async function registerWebSocket(fastify: FastifyInstance) {
                 let sessionData = activeSessions.get(sessionId);
 
                 if (!sessionData && projectPath && userId) {
+                  console.log('[WebSocket] ========== CREATING AGENT CLIENT ==========');
+                  console.log('[WebSocket] projectPath variable:', projectPath);
+                  console.log('[WebSocket] sessionId:', sessionId);
+                  console.log('[WebSocket] userId:', userId);
+
                   // Create Claude adapter
                   const claudeAdapter = createClaudeAdapter();
 
-                  // Create agent client
+                  // Create agent client with verbose mode enabled
                   const agentClient = new AgentClient({
                     adapter: claudeAdapter,
-                    workingDirectory: projectPath,
+                    workingDir: projectPath,
+                    verbose: true, // Enable verbose logging for debugging
                   });
+
+                  fastify.log.info(
+                    { projectPath, sessionId },
+                    "[WebSocket] Created AgentClient with verbose mode and working directory"
+                  );
+                  console.log('[WebSocket] AgentClient created successfully with workingDir:', projectPath);
+                  console.log('[WebSocket] ===============================================');
 
                   sessionData = {
                     agentClient,

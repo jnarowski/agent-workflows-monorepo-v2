@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { Terminal as XTerm } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { ClipboardAddon } from "@xterm/addon-clipboard";
+import { useTheme } from "next-themes";
 import { useShell } from "@/client/contexts/ShellContext";
 import { useShellWebSocket } from "@/client/hooks/useShellWebSocket";
 import "@xterm/xterm/css/xterm.css";
@@ -22,6 +23,7 @@ export function Terminal({
   // ============================================================================
   // Refs and State
   // ============================================================================
+  const { theme } = useTheme();
   const { addSession, removeSession } = useShell();
   const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<XTerm | null>(null);
@@ -59,13 +61,17 @@ export function Terminal({
     // Guard against double initialization (StrictMode, HMR)
     if (!terminalRef.current || xtermRef.current) return;
 
+    // Determine if we should use dark theme
+    const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+
     // Create new terminal instance
     const terminal = new XTerm({
       cursorBlink: true,
       fontSize: 14,
       fontFamily: '"Cascadia Code", "Fira Code", "Courier New", monospace',
       scrollback: 10000,
-      theme: {
+      theme: isDark ? {
+        // Dark theme
         background: "#1e1e1e",
         foreground: "#d4d4d4",
         cursor: "#ffffff",
@@ -88,6 +94,30 @@ export function Terminal({
         brightMagenta: "#d670d6",
         brightCyan: "#29b8db",
         brightWhite: "#ffffff",
+      } : {
+        // Light theme
+        background: "#ffffff",
+        foreground: "#000000",
+        cursor: "#000000",
+        cursorAccent: "#ffffff",
+        selectionBackground: "#add6ff",
+        // ANSI colors (16-color palette)
+        black: "#000000",
+        red: "#cd3131",
+        green: "#00bc00",
+        yellow: "#949800",
+        blue: "#0451a5",
+        magenta: "#bc05bc",
+        cyan: "#0598bc",
+        white: "#555555",
+        brightBlack: "#666666",
+        brightRed: "#cd3131",
+        brightGreen: "#14ce14",
+        brightYellow: "#b5ba00",
+        brightBlue: "#0451a5",
+        brightMagenta: "#bc05bc",
+        brightCyan: "#0598bc",
+        brightWhite: "#a5a5a5",
       },
     });
 
@@ -191,7 +221,7 @@ export function Terminal({
       removeSession(sessionId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId, projectId]); // Only re-run if session/project changes
+  }, [sessionId, projectId, theme]); // Re-run if session/project/theme changes
 
   // ============================================================================
   // Connection Callbacks
@@ -208,8 +238,10 @@ export function Terminal({
   // ============================================================================
   // Render
   // ============================================================================
+  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+
   return (
-    <div className="h-full overflow-hidden relative bg-[#1e1e1e]">
+    <div className="h-full overflow-hidden relative" style={{ backgroundColor: isDark ? "#1e1e1e" : "#ffffff" }}>
       <div
         ref={terminalRef}
         className="h-full w-full p-4"

@@ -84,6 +84,14 @@ export async function executeClaudeCLI(
 ): Promise<SpawnResult> {
   const args = buildClaudeArgs(prompt, options);
 
+  // Verbose logging for debugging
+  console.log('[agent-cli-sdk:claude] ========== EXECUTING CLAUDE CLI ==========');
+  console.log('[agent-cli-sdk:claude] CLI Path:', cliPath);
+  console.log('[agent-cli-sdk:claude] Prompt (truncated):', prompt.substring(0, 100) + (prompt.length > 100 ? '...' : ''));
+  console.log('[agent-cli-sdk:claude] Working Directory:', options.workingDir || '(not set, will use process.cwd())');
+  console.log('[agent-cli-sdk:claude] Arguments:', JSON.stringify(args, null, 2));
+  console.log('[agent-cli-sdk:claude] ==========================================');
+
   // Set up environment
   let env: Record<string, string> | undefined;
 

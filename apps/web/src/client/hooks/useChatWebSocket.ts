@@ -68,8 +68,20 @@ function useChatWebSocketImpl({ sessionId, projectId, onMetadataUpdate }: UseCha
   const isMountedRef = useRef(true);
   const isFirstMessageRef = useRef(true);
 
+  // Use refs to track sessionId and projectId to avoid recreating connect callback
+  const sessionIdRef = useRef(sessionId);
+  const projectIdRef = useRef(projectId);
+
+  useEffect(() => {
+    sessionIdRef.current = sessionId;
+    projectIdRef.current = projectId;
+  }, [sessionId, projectId]);
+
   const connect = useCallback(() => {
-    if (!sessionId || !projectId || !isMountedRef.current) return;
+    const currentSessionId = sessionIdRef.current;
+    const currentProjectId = projectIdRef.current;
+
+    if (!currentSessionId || !currentProjectId || !isMountedRef.current) return;
 
     const token = getAuthToken();
     if (!token) {
@@ -93,12 +105,13 @@ function useChatWebSocketImpl({ sessionId, projectId, onMetadataUpdate }: UseCha
     }
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws/chat/${sessionId}?token=${token}`;
+    const wsUrl = `${protocol}//${window.location.host}/ws/chat/${currentSessionId}?token=${token}`;
 
+    console.log('[useChatWebSocket] Connecting to WebSocket:', { sessionId: currentSessionId, projectId: currentProjectId });
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-      console.log("WebSocket connected for session:", sessionId);
+      console.log("WebSocket connected for session:", currentSessionId);
       setIsConnected(true);
       setError(null);
       reconnectAttemptsRef.current = 0;
@@ -332,7 +345,7 @@ function useChatWebSocketImpl({ sessionId, projectId, onMetadataUpdate }: UseCha
     };
 
     ws.onclose = () => {
-      console.log("WebSocket closed for session:", sessionId);
+      console.log("WebSocket closed for session:", currentSessionId);
       setIsConnected(false);
 
       // Only clear wsRef if it's the current connection
@@ -364,8 +377,7 @@ function useChatWebSocketImpl({ sessionId, projectId, onMetadataUpdate }: UseCha
         }, delay);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId, projectId]);
+  }, []); // Empty deps - stable callback that uses refs
 
   const handleStreamEvent = useCallback(
     (event: { type: string; data?: any }) => {
@@ -420,8 +432,10 @@ function useChatWebSocketImpl({ sessionId, projectId, onMetadataUpdate }: UseCha
 
   const sendMessage = useCallback(
     ({ message, images, config }: SendMessageOptions) => {
+      const currentSessionId = sessionIdRef.current;
+
       console.log("[useChatWebSocket] sendMessage called:", {
-        sessionId,
+        sessionId: currentSessionId,
         message: message.substring(0, 100),
         imagesCount: images?.length || 0,
         wsState: wsRef.current?.readyState,
@@ -465,13 +479,13 @@ function useChatWebSocketImpl({ sessionId, projectId, onMetadataUpdate }: UseCha
       const mergedConfig = {
         ...config,
         // Add resume: true for all messages after the first
-        ...(isFirstMessageRef.current ? {} : { resume: true, sessionId }),
+        ...(isFirstMessageRef.current ? {} : { resume: true, sessionId: currentSessionId }),
       };
 
       // Send message via WebSocket
       const payload = {
         type: "send_message",
-        sessionId,
+        sessionId: currentSessionId,
         message,
         images,
         config: mergedConfig,
@@ -484,7 +498,7 @@ function useChatWebSocketImpl({ sessionId, projectId, onMetadataUpdate }: UseCha
         isFirstMessageRef.current = false;
       }
     },
-    [sessionId]
+    [] // Empty deps - stable callback that uses refs
   );
 
   const reconnect = useCallback(() => {
@@ -513,17 +527,31 @@ function useChatWebSocketImpl({ sessionId, projectId, onMetadataUpdate }: UseCha
         wsRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId, projectId]); // Only depend on sessionId and projectId, not connect
+  }, [connect]); // connect is now stable due to empty deps
 
-  // Update isFirstMessageRef when messages are set from outside (e.g., loaded from API)
+  // Handle sessionId/projectId changes - reconnect if they change
   useEffect(() => {
-    if (messages.length > 0) {
-      // If we have messages, it means this session already has history
-      // So the next message should use resume: true
-      isFirstMessageRef.current = false;
+    // If we already have a connection and the session/project has changed, reconnect
+    if (wsRef.current && (sessionId || projectId)) {
+      console.log('[useChatWebSocket] Session or project changed, reconnecting...');
+      connect();
     }
-  }, [messages.length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId, projectId]); // Only reconnect when these specific values change
+
+  // Wrapper around setMessages to also update isFirstMessageRef
+  const setMessagesWrapper = useCallback((newMessages: ChatMessage[] | ((prev: ChatMessage[]) => ChatMessage[])) => {
+    setMessages((prev) => {
+      const updatedMessages = typeof newMessages === 'function' ? newMessages(prev) : newMessages;
+
+      // If we're setting messages with history, mark that we're not on the first message anymore
+      if (updatedMessages.length > 0) {
+        isFirstMessageRef.current = false;
+      }
+
+      return updatedMessages;
+    });
+  }, []);
 
   return {
     messages,
@@ -532,7 +560,7 @@ function useChatWebSocketImpl({ sessionId, projectId, onMetadataUpdate }: UseCha
     error,
     sendMessage,
     reconnect,
-    setMessages,
+    setMessages: setMessagesWrapper,
   };
 }
 

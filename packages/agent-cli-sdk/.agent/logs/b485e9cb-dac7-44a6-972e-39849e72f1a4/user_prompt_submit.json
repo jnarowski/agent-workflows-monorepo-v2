@@ -1,0 +1,74 @@
+[
+  {
+    "session_id": "b485e9cb-dac7-44a6-972e-39849e72f1a4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b485e9cb-dac7-44a6-972e-39849e72f1a4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "looks like it's not getting the correct workingDir still from the project. It also looks like it might be submitting multiple times.\\\n\\\n[0] ssssssending.... again\n[0] [agent-cli-sdk:claude] ========== EXECUTING CLAUDE CLI ==========\n[0] [agent-cli-sdk:claude] CLI Path: /Users/jnarowski/.claude/local/claude\n[0] [agent-cli-sdk:claude] Prompt (truncated): again\n[0] [agent-cli-sdk:claude] Working Directory: (not set, will use process.cwd())\n[0] [agent-cli-sdk:claude] Arguments: [\n[0]   \"-p\",\n[0]   \"--model\",\n[0]   \"sonnet\",\n[0]   \"--resume\",\n[0]   \"049c2f76-ffc1-44d8-a9b1-7ae0b7979bc4\",\n[0]   \"--permission-mode\",\n[0]   \"acceptEdits\",\n[0]   \"--output-format\",\n[0]   \"stream-json\",\n[0]   \"--verbose\",\n[0]   \"again\"\n[0] ]\n[0] [agent-cli-sdk:claude] ==========================================\n[0] [agent-cli-sdk:spawn] ========== SPAWNING PROCESS ==========\n[0] [agent-cli-sdk:spawn] Command: /Users/jnarowski/.claude/local/claude\n[0] [agent-cli-sdk:spawn] Arguments: [\n[0]   \"-p\",\n[0]   \"--model\",\n[0]   \"sonnet\",\n[0]   \"--resume\",\n[0]   \"049c2f76-ffc1-44d8-a9b1-7ae0b7979bc4\",\n[0]   \"--permission-mode\",\n[0]   \"acceptEdits\",\n[0]   \"--output-format\",\n[0]   \"stream-json\",\n[0]   \"--verbose\",\n[0]   \"again\"\n[0] ]\n[0] [agent-cli-sdk:spawn] Working Directory (cwd): /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web\n[0] [agent-cli-sdk:spawn] Timeout: none\n[0] [agent-cli-sdk:spawn] =========================================="
+  },
+  {
+    "session_id": "b485e9cb-dac7-44a6-972e-39849e72f1a4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b485e9cb-dac7-44a6-972e-39849e72f1a4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "[0] [WebSocket] ========== CREATING AGENT CLIENT ==========\n[0] [WebSocket] projectPath variable: /Users/jnarowski/Dev/spectora/src/agentic-boilerplate\n[0] [WebSocket] sessionId: 0178d747-7257-4ef6-8613-d067038d6048\n[0] [WebSocket] userId: 682506e4-e768-4f8e-aa73-6a4c9bb9fc3c\n[0] [WebSocket] AgentClient created successfully with workingDir: /Users/jnarowski/Dev/spectora/src/agentic-boilerplate\n[0] [WebSocket] ===============================================\n[0] ssssssending.... JANK\n[0] [agent-cli-sdk:claude] ========== EXECUTING CLAUDE CLI ==========\n[0] [agent-cli-sdk:claude] CLI Path: /Users/jnarowski/.claude/local/claude\n[0] [agent-cli-sdk:claude] Prompt (truncated): JANK\n[0] [agent-cli-sdk:claude] Working Directory: (not set, will use process.cwd())\n[0] [agent-cli-sdk:claude] Arguments: [\n[0]   \"-p\",\n[0]   \"--model\",\n[0]   \"sonnet\",\n[0]   \"--session-id\",\n[0]   \"0178d747-7257-4ef6-8613-d067038d6048\",\n[0]   \"--permission-mode\",\n[0]   \"acceptEdits\",\n[0]   \"--output-format\",\n[0]   \"stream-json\",\n[0]   \"--verbose\",\n[0]   \"JANK\"\n[0] ]\n[0] [agent-cli-sdk:claude] ==========================================\n[0] [agent-cli-sdk:spawn] ========== SPAWNING PROCESS ==========\n[0] [agent-cli-sdk:spawn] Command: /Users/jnarowski/.claude/local/claude\n[0] [agent-cli-sdk:spawn] Arguments: [\n[0]   \"-p\",\n[0]   \"--model\",\n[0]   \"sonnet\",\n[0]   \"--session-id\",\n[0]   \"0178d747-7257-4ef6-8613-d067038d6048\",\n[0]   \"--permission-mode\",\n[0]   \"acceptEdits\",\n[0]   \"--output-format\",\n[0]   \"stream-json\",\n[0]   \"--verbose\",\n[0]   \"JANK\"\n[0] ]\n[0] [agent-cli-sdk:spawn] Working Directory (cwd): /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web\n[0] [agent-cli-sdk:spawn] Timeout: none\n[0] [agent-cli-sdk:spawn] ==========================================\n[0] [15:43:46 UTC] INFO: [WebSocket] Received message from client\n[0]     sessionId: \"0178d747-7257-4ef6-8613-d067038d6048\"\n[0]     userId: \"682506e4-e768-4f8e-aa73-6a4c9bb9fc3c\"\n[0]     messageLength: 115\n[0] [15:43:46 UTC] INFO: [WebSocket] Parsed message data\n[0]     type: \"send_message\"\n[0]     sessionId: \"0178d747-7257-4ef6-8613-d067038d6048\"\n[0]     hasMessage: true\n[0]     imagesCount: 0\n[0] [15:43:46 UTC] INFO: [WebSocket] Processing send_message request\n[0]     sessionId: \"0178d747-7257-4ef6-8613-d067038d6048\"\n[0]     userId: \"682506e4-e768-4f8e-aa73-6a4c9bb9fc3c\"\n[0]     messagePreview: \"JANK\"\n[0] [15:43:46 UTC] INFO: [WebSocket] Created AgentClient with verbose mode and working directory\n[0]     projectPath: \"/Users/jnarowski/Dev/spectora/src/agentic-boilerplate\"\n[0]     sessionId: \"0178d747-7257-4ef6-8613-d067038d6048\"\n[0] [15:43:46 UTC] INFO: [WebSocket] Sending message to agent-cli-sdk\n[0]     sessionId: \"0178d747-7257-4ef6-8613-d067038d6048\"\n[0]     messageLength: 4\n[0]     imagePaths: 0\n[0] [15:43:48 UTC] INFO:\n[0]     sessionId: \"0178d747-7257-4ef6-8613-d067038d6048\"\n[0]     outputType: \"object\"\n[0] [15:43:54 UTC] INFO:\n[0]     sessionId: \"0178d747-7257-4ef6-8613-d067038d6048\"\n[0]     outputType: \"object\"\n[0] [15:43:54 UTC] INFO:\n[0]     sessionId: \"0178d747-7257-4ef6-8613-d067038d6048\"\n[0]     outputType: \"object\"\n[0] [15:43:54 UTC] INFO: [WebSocket] Received response from agent-cli-sdk\n[0]     sessionId: \"0178d747-7257-4ef6-8613-d067038d6048\"\n[0]     responseType: \"object\"\n[0]     response: \"{\\\"output\\\":\\\"I see you've mentioned \\\\\"JANK\\\\\" - could you provide more details about what specific issue or task you'd like me to help you with? \\n\\nLooking at the current git status, I can see there are\"\n"
+  },
+  {
+    "session_id": "b485e9cb-dac7-44a6-972e-39849e72f1a4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b485e9cb-dac7-44a6-972e-39849e72f1a4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "[0] [WebSocket] ========== CREATING AGENT CLIENT ==========\n[0] [WebSocket] projectPath variable: /Users/jnarowski/Dev/spectora/src/agentic-boilerplate\n[0] [WebSocket] sessionId: b1e37490-6894-4b52-9996-7af0d6239258\n[0] [WebSocket] userId: 682506e4-e768-4f8e-aa73-6a4c9bb9fc3c\n[0] [WebSocket] AgentClient created successfully with workingDir: /Users/jnarowski/Dev/spectora/src/agentic-boilerplate\n[0] [WebSocket] ===============================================\n[0] ssssssending.... ABC\n[0] [agent-cli-sdk:claude] ========== EXECUTING CLAUDE CLI ==========\n[0] [agent-cli-sdk:claude] CLI Path: /Users/jnarowski/.claude/local/claude\n[0] [agent-cli-sdk:claude] Prompt (truncated): ABC\n[0] [agent-cli-sdk:claude] Working Directory: (not set, will use process.cwd())\n[0] [agent-cli-sdk:claude] Arguments: [\n[0]   \"-p\",\n[0]   \"--model\",\n[0]   \"sonnet\",\n[0]   \"--session-id\",\n[0]   \"b1e37490-6894-4b52-9996-7af0d6239258\",\n[0]   \"--permission-mode\",\n[0]   \"acceptEdits\",\n[0]   \"--output-format\",\n[0]   \"stream-json\",\n[0]   \"--verbose\",\n[0]   \"ABC\"\n[0] ]\n[0] [agent-cli-sdk:claude] ==========================================\n[0] [agent-cli-sdk:spawn] ========== SPAWNING PROCESS ==========\n[0] [agent-cli-sdk:spawn] Command: /Users/jnarowski/.claude/local/claude\n[0] [agent-cli-sdk:spawn] Arguments: [\n[0]   \"-p\",\n[0]   \"--model\",\n[0]   \"sonnet\",\n[0]   \"--session-id\",\n[0]   \"b1e37490-6894-4b52-9996-7af0d6239258\",\n[0]   \"--permission-mode\",\n[0]   \"acceptEdits\",\n[0]   \"--output-format\",\n[0]   \"stream-json\",\n[0]   \"--verbose\",\n[0]   \"ABC\"\n[0] ]\n[0] [agent-cli-sdk:spawn] Working Directory (cwd): /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps/web\n[0] [agent-cli-sdk:spawn] Timeout: none\n[0] [agent-cli-sdk:spawn] ==========================================\n[0] [15:45:34 UTC] INFO: [WebSocket] Received message from client\n[0]     sessionId: \"b1e37490-6894-4b52-9996-7af0d6239258\"\n[0]     userId: \"682506e4-e768-4f8e-aa73-6a4c9bb9fc3c\"\n[0]     messageLength: 114\n[0] [15:45:34 UTC] INFO: [WebSocket] Parsed message data\n[0]     type: \"send_message\"\n[0]     sessionId: \"b1e37490-6894-4b52-9996-7af0d6239258\"\n[0]     hasMessage: true\n[0]     imagesCount: 0\n[0] [15:45:34 UTC] INFO: [WebSocket] Processing send_message request\n[0]     sessionId: \"b1e37490-6894-4b52-9996-7af0d6239258\"\n[0]     userId: \"682506e4-e768-4f8e-aa73-6a4c9bb9fc3c\"\n[0]     messagePreview: \"ABC\"\n[0] [15:45:34 UTC] INFO: [WebSocket] Created AgentClient with verbose mode and working directory\n[0]     projectPath: \"/Users/jnarowski/Dev/spectora/src/agentic-boilerplate\"\n[0]     sessionId: \"b1e37490-6894-4b52-9996-7af0d6239258\"\n[0] [15:45:34 UTC] INFO: [WebSocket] Sending message to agent-cli-sdk\n[0]     sessionId: \"b1e37490-6894-4b52-9996-7af0d6239258\"\n[0]     messageLength: 3\n[0]     imagePaths: 0\n[0] [15:45:35 UTC] INFO:\n[0]     sessionId: \"b1e37490-6894-4b52-9996-7af0d6239258\"\n[0]     outputType: \"object\"\n[0] [15:45:41 UTC] INFO:\n[0]     sessionId: \"b1e37490-6894-4b52-9996-7af0d6239258\"\n[0]     outputType: \"object\"\n[0] [15:45:42 UTC] INFO:\n[0]     sessionId: \"b1e37490-6894-4b52-9996-7af0d6239258\"\n[0]     outputType: \"object\"\n[0] [15:45:42 UTC] INFO: [WebSocket] Received response from agent-cli-sdk\n[0]     sessionId: \"b1e37490-6894-4b52-9996-7af0d6239258\"\n[0]     responseType: \"object\"\n[0]     response: \"{\\\"output\\\":\\\"I'm ready to help you with your project! I can see this is a Turborepo monorepo with a full-stack web application that manages AI agent workflows.\\n\\nThe codebase has:\\n- **Frontend**: Reac\"\n\n"
+  },
+  {
+    "session_id": "b485e9cb-dac7-44a6-972e-39849e72f1a4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b485e9cb-dac7-44a6-972e-39849e72f1a4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can you start the frontend too"
+  },
+  {
+    "session_id": "b485e9cb-dac7-44a6-972e-39849e72f1a4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b485e9cb-dac7-44a6-972e-39849e72f1a4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "ok i sent a message"
+  },
+  {
+    "session_id": "b485e9cb-dac7-44a6-972e-39849e72f1a4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b485e9cb-dac7-44a6-972e-39849e72f1a4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "sent the event"
+  },
+  {
+    "session_id": "b485e9cb-dac7-44a6-972e-39849e72f1a4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b485e9cb-dac7-44a6-972e-39849e72f1a4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "let's run pnpm dev in the site root, which runs turbo and all the packages"
+  },
+  {
+    "session_id": "b485e9cb-dac7-44a6-972e-39849e72f1a4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b485e9cb-dac7-44a6-972e-39849e72f1a4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "done"
+  },
+  {
+    "session_id": "b485e9cb-dac7-44a6-972e-39849e72f1a4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b485e9cb-dac7-44a6-972e-39849e72f1a4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "ok kill the dev server and i'll start it on my side"
+  }
+]

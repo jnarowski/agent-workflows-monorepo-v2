@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { ChatInterface } from "@/client/components/chat/ChatInterface";
 import { ChatPromptInput } from "@/client/components/chat/ChatPromptInput";
 import { useClaudeSession } from "@/client/hooks/useClaudeSession";
 import { useActiveProject } from "@/client/hooks/navigation";
-import { useSessionMessages } from "@/client/hooks/useSessionMessages";
 import { useAuthStore, useNavigationStore } from "@/client/stores";
 import type { AgentSessionMetadata } from "@/shared/types";
 import { v4 as uuidv4 } from "uuid";
@@ -28,6 +27,11 @@ export default function ProjectChat() {
     }
   }, [sessionId, setActiveSession]);
 
+  // Reset initialMessageSentRef when navigating to a different session
+  useEffect(() => {
+    initialMessageSentRef.current = false;
+  }, [sessionId]);
+
   // Track session metadata locally (per spec: messages stay in component state initially)
   const [sessionMetadata, setSessionMetadata] = useState<
     AgentSessionMetadata | undefined
@@ -49,34 +53,6 @@ export default function ProjectChat() {
     enableWebSocket: !!sessionId,
     onMetadataUpdate: setSessionMetadata,
   });
-
-  // Load historical messages from JSONL file
-  const { data: historicalMessages = [], isLoading: isLoadingHistory } =
-    useSessionMessages(projectId || "", sessionId || "");
-
-  // Merge and deduplicate messages from both sources
-  const allMessages = useMemo(() => {
-    const messageMap = new Map();
-
-    // Add historical messages first
-    historicalMessages.forEach((msg) => {
-      const key = msg.id || msg.timestamp || JSON.stringify(msg);
-      messageMap.set(key, msg);
-    });
-
-    // Add/overwrite with WebSocket messages (more recent)
-    messages.forEach((msg) => {
-      const key = msg.id || msg.timestamp || JSON.stringify(msg);
-      messageMap.set(key, msg);
-    });
-
-    // Sort by timestamp
-    return Array.from(messageMap.values()).sort((a, b) => {
-      const timeA = new Date(a.timestamp || 0).getTime();
-      const timeB = new Date(b.timestamp || 0).getTime();
-      return timeA - timeB;
-    });
-  }, [historicalMessages, messages]);
 
   // No longer need to set current session in context - navigationStore handles this
 
@@ -203,13 +179,12 @@ export default function ProjectChat() {
       <div className="flex-1 overflow-hidden">
         <ChatInterface
           projectId={projectId!}
-          sessionId={sessionId}
-          messages={allMessages}
+          sessionId={sessionId || undefined}
+          messages={messages}
           toolResults={toolResults}
           isLoading={isLoading}
           error={error}
           isStreaming={isStreaming}
-          isLoadingHistory={isLoadingHistory}
         />
       </div>
 

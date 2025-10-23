@@ -12,7 +12,7 @@ export interface AgentClientOptions {
   adapter: AIAdapter;
 
   // Shared configuration (applied to all executions if not overridden)
-  workingDirectory?: string;
+  workingDir?: string;
   verbose?: boolean;
   logPath?: string; // Base log path for all executions
 }
@@ -21,7 +21,7 @@ export interface AgentClientOptions {
  * Internal client configuration
  */
 export interface AgentClientConfig {
-  workingDirectory?: string;
+  workingDir?: string;
   verbose?: boolean;
   logPath?: string;
 }
@@ -39,7 +39,7 @@ export interface ExecuteOptions {
   onEvent?: (event: import('./interfaces.js').StreamEvent) => void; // Parsed JSONL events
 
   // Execution control
-  workingDirectory?: string; // Override default cwd
+  workingDir?: string; // Override default cwd
   timeout?: number; // Timeout in ms
   streaming?: boolean; // Enable streaming (default: true if onEvent/onOutput provided)
 
@@ -67,7 +67,7 @@ export interface SessionInfo {
 export interface SessionOptions {
   sessionId?: string; // Pre-set session ID (optional)
   logPath?: string; // Base log path (creates message-N subdirs)
-  workingDirectory?: string;
+  workingDir?: string;
 
   // Event callbacks
   onOutput?: (data: import('./interfaces.js').OutputData) => void;
