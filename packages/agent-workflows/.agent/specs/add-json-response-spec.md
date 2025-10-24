@@ -200,8 +200,8 @@ Update type definitions:
 // Make CliResponse generic
 export interface CliResponse<T = unknown> {
   success: boolean;
-  output: string;
-  data?: T; // Optional parsed data
+  data: T; // Response data (parsed or string)
+  events?: unknown[]; // Optional streaming events
 }
 ```
 
@@ -225,7 +225,7 @@ async executeCliStepJson<TResponse>(
   if (!result.ok) return result;
 
   try {
-    const parsed = JSON.parse(result.data.output) as TResponse;
+    const parsed = JSON.parse(result.data.data) as TResponse;
     return { ok: true, data: parsed };
   } catch (error) {
     return { ok: false, error: `Failed to parse JSON: ${error}` };
@@ -261,7 +261,7 @@ const reviewResult = unwrap(
   })
 );
 
-const review = JSON.parse(reviewResult.output) as ReviewSpecImplementationResult;
+const review = JSON.parse(reviewResult.data) as ReviewSpecImplementationResult;
 console.log(`Found ${review.issues_found} issues`);
 console.log(`High: ${review.priority_breakdown.high}, Medium: ${review.priority_breakdown.medium}`);
 

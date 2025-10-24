@@ -256,7 +256,7 @@ The state file includes:
 Agent CLI logs (when using real Claude or Codex adapters) are automatically written to:
 - `.agent/workflows/logs/{workflowId}/{stepName}/input.json` - Input prompt and options
 - `.agent/workflows/logs/{workflowId}/{stepName}/output.json` - Full adapter response
-- `.agent/workflows/logs/{workflowId}/{stepName}/stream.jsonl` - Streaming events (if enabled)
+- `.agent/workflows/logs/{workflowId}/{stepName}/events.jsonl` - Streaming events (if enabled)
 
 The workflow library automatically configures the `logPath` for agent-cli-sdk, so you don't need to specify it manually.
 

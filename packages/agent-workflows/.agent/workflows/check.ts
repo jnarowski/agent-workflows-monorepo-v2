@@ -51,7 +51,7 @@ async function main() {
     })
   );
 
-  console.log(response.output.success, 'response.success');
+  console.log(response.data.success, 'response.success');
 
   await workflow.setState({ status: 'completed' });
 }

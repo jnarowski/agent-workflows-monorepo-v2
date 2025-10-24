@@ -20,8 +20,8 @@ async function exampleClaudeTypedEvents() {
 
   const response = await claude.execute('What is 2+2?');
 
-  // Cast response.data to ClaudeStreamEvent[] for type safety
-  const events = response.data as ClaudeStreamEvent[];
+  // Cast response.events to ClaudeStreamEvent[] for type safety
+  const events = response.events as ClaudeStreamEvent[];
 
   if (events) {
     for (const event of events) {
@@ -80,8 +80,8 @@ async function exampleCodexTypedEvents() {
 
   // For demonstration purposes only
   const mockResponse = {
-    output: 'Hello',
-    data: [
+    data: 'Hello',
+    events: [
       {
         type: 'turn.completed',
         data: {
@@ -101,7 +101,7 @@ async function exampleCodexTypedEvents() {
   };
 
   // Cast to CodexStreamEvent[] for type safety
-  const events = mockResponse.data;
+  const events = mockResponse.events;
 
   for (const event of events) {
     if (event.type === 'turn.completed') {
@@ -119,7 +119,7 @@ async function exampleExtractToolUsage() {
   const claude = new Claude();
 
   const response = await claude.execute('List files in current directory');
-  const events = response.data as ClaudeStreamEvent[];
+  const events = response.events as ClaudeStreamEvent[];
 
   // Extract all tool uses
   const toolUses = events
@@ -139,7 +139,7 @@ async function exampleTokenUsage() {
   const claude = new Claude();
 
   const response = await claude.execute('Explain TypeScript');
-  const events = response.data as ClaudeStreamEvent[];
+  const events = response.events as ClaudeStreamEvent[];
 
   // Find assistant messages with token usage
   const usageEvents = events

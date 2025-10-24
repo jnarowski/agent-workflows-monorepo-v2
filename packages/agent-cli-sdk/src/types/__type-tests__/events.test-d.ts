@@ -349,10 +349,10 @@ function testCodexEventGuard(event: BaseStreamEvent) {
 // ExecutionResponse Integration Tests
 // =============================================================================
 
-// ExecutionResponse.data should accept StreamEvent[]
+// ExecutionResponse.events should accept StreamEvent[]
 const response: ExecutionResponse = {
-  output: 'result',
-  data: [{ type: 'test', timestamp: 123, data: { foo: 'bar' } }],
+  data: 'result',
+  events: [{ type: 'test', timestamp: 123, data: { foo: 'bar' } }],
   sessionId: 'session-123',
   status: 'success',
   exitCode: 0,
@@ -362,7 +362,7 @@ const response: ExecutionResponse = {
 
 // Should be able to cast to ClaudeStreamEvent[]
 function testClaudeResponse(response: ExecutionResponse) {
-  const events = response.data as ClaudeStreamEvent[];
+  const events = response.events as ClaudeStreamEvent[];
 
   if (events) {
     for (const event of events) {
@@ -376,7 +376,7 @@ function testClaudeResponse(response: ExecutionResponse) {
 
 // Should be able to cast to CodexStreamEvent[]
 function testCodexResponse(response: ExecutionResponse) {
-  const events = response.data as CodexStreamEvent[];
+  const events = response.events as CodexStreamEvent[];
 
   if (events) {
     for (const event of events) {
@@ -390,7 +390,7 @@ function testCodexResponse(response: ExecutionResponse) {
 
 // Type casting should provide IntelliSense for Claude events
 function testClaudeIntelliSense(response: ExecutionResponse) {
-  const events = response.data as ClaudeStreamEvent[];
+  const events = response.events as ClaudeStreamEvent[];
 
   if (events) {
     for (const event of events) {
@@ -420,7 +420,7 @@ function testClaudeIntelliSense(response: ExecutionResponse) {
 
 // Type casting should provide IntelliSense for Codex events
 function testCodexIntelliSense(response: ExecutionResponse) {
-  const events = response.data as CodexStreamEvent[];
+  const events = response.events as CodexStreamEvent[];
 
   if (events) {
     for (const event of events) {
@@ -454,9 +454,9 @@ function testCodexIntelliSense(response: ExecutionResponse) {
   }
 }
 
-// Without casting, data is generic StreamEvent[]
+// Without casting, events is generic StreamEvent[]
 function testGenericResponse(response: ExecutionResponse) {
-  const events = response.data; // StreamEvent[] | undefined
+  const events = response.events; // StreamEvent[] | undefined
 
   if (events) {
     for (const event of events) {
@@ -473,7 +473,7 @@ function testGenericResponse(response: ExecutionResponse) {
 // Can't cast to wrong event type without explicit override
 function testWrongCast(response: ExecutionResponse) {
   // This is allowed (user responsibility to cast correctly)
-  const wrongCast = response.data as ClaudeStreamEvent[];
+  const wrongCast = response.events as ClaudeStreamEvent[];
 
   // But TypeScript will catch misuse
   if (wrongCast) {
@@ -487,10 +487,10 @@ function testWrongCast(response: ExecutionResponse) {
   }
 }
 
-// ExecutionResponse with typed output should still support data casting
+// ExecutionResponse with typed output should still support events casting
 function testTypedOutput(response: ExecutionResponse<{ result: string }>) {
-  const events = response.data as ClaudeStreamEvent[];
-  const typedOutput = response.output; // { result: string }
+  const events = response.events as ClaudeStreamEvent[];
+  const typedOutput = response.data; // { result: string }
 
   // Both work together
   const result = typedOutput.result; // ✓ TypeScript knows this is a string

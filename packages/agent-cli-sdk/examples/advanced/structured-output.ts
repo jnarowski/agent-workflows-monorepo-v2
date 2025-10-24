@@ -30,9 +30,9 @@ async function example1_BasicJSONExtraction() {
   );
 
   console.log('✓ Status:', result.status);
-  console.log('✓ Extracted data:', result.output);
-  console.log('  - Name:', result.output.name);
-  console.log('  - Age:', result.output.age);
+  console.log('✓ Extracted data:', result.data);
+  console.log('  - Name:', result.data.name);
+  console.log('  - Age:', result.data.age);
 }
 
 // =============================================================================
@@ -70,10 +70,10 @@ Return ONLY the JSON in a markdown code block.`,
   );
 
   console.log('✓ Status:', result.status);
-  console.log('✓ Validated user:', result.output);
-  console.log(`  - ${result.output.name} (${result.output.role})`);
-  console.log(`  - ${result.output.email}`);
-  console.log(`  - Age: ${result.output.age}`);
+  console.log('✓ Validated user:', result.data);
+  console.log(`  - ${result.data.name} (${result.data.role})`);
+  console.log(`  - ${result.data.email}`);
+  console.log(`  - Age: ${result.data.age}`);
 }
 
 // =============================================================================
@@ -123,12 +123,12 @@ Return ONLY the JSON in a markdown code block.`,
     }
   );
 
-  console.log('✓ Project:', result.output.name);
-  console.log('  Status:', result.output.status);
-  console.log('  Team Lead:', result.output.team.lead);
-  console.log('  Team Size:', result.output.team.size);
+  console.log('✓ Project:', result.data.name);
+  console.log('  Status:', result.data.status);
+  console.log('  Team Lead:', result.data.team.lead);
+  console.log('  Team Size:', result.data.team.size);
   console.log('  Milestones:');
-  result.output.milestones.forEach((m) => {
+  result.data.milestones.forEach((m) => {
     console.log(`    - ${m.title} (${m.dueDate}) ${m.completed ? '✓' : '○'}`);
   });
 }
@@ -166,8 +166,8 @@ Return ONLY the JSON array in a markdown code block.`,
     }
   );
 
-  console.log(`✓ Found ${result.output.length} tasks:`);
-  result.output.forEach((task) => {
+  console.log(`✓ Found ${result.data.length} tasks:`);
+  result.data.forEach((task) => {
     console.log(`  ${task.id}. [${task.priority.toUpperCase()}] ${task.title} (${task.estimatedHours}h)`);
   });
 }
@@ -229,23 +229,23 @@ Return ONLY the JSON in a markdown code block.`,
     }
   );
 
-  console.log('✓ Language:', result.output.language);
-  console.log('✓ Complexity:', result.output.complexity);
+  console.log('✓ Language:', result.data.language);
+  console.log('✓ Complexity:', result.data.complexity);
   console.log('\n  Metrics:');
-  console.log('    Lines of code:', result.output.metrics.linesOfCode);
-  console.log('    Functions:', result.output.metrics.functions);
-  console.log('    Cyclomatic complexity:', result.output.metrics.cyclomaticComplexity);
+  console.log('    Lines of code:', result.data.metrics.linesOfCode);
+  console.log('    Functions:', result.data.metrics.functions);
+  console.log('    Cyclomatic complexity:', result.data.metrics.cyclomaticComplexity);
 
-  if (result.output.issues.length > 0) {
+  if (result.data.issues.length > 0) {
     console.log('\n  Issues:');
-    result.output.issues.forEach((issue) => {
+    result.data.issues.forEach((issue) => {
       console.log(`    [${issue.type.toUpperCase()}] Line ${issue.line}: ${issue.message}`);
     });
   }
 
-  if (result.output.suggestions.length > 0) {
+  if (result.data.suggestions.length > 0) {
     console.log('\n  Suggestions:');
-    result.output.suggestions.forEach((suggestion) => {
+    result.data.suggestions.forEach((suggestion) => {
       console.log(`    • ${suggestion}`);
     });
   }
@@ -287,12 +287,12 @@ Return ONLY the JSON in a markdown code block.`,
     }
   );
 
-  console.log('✓ Config:', result.output);
-  console.log('  Name:', result.output.name);
-  console.log('  Version (default):', result.output.version);
-  console.log('  Enabled (default):', result.output.enabled);
-  console.log('  Tags (default):', result.output.tags);
-  console.log('  Author:', result.output.metadata?.author);
+  console.log('✓ Config:', result.data);
+  console.log('  Name:', result.data.name);
+  console.log('  Version (default):', result.data.version);
+  console.log('  Enabled (default):', result.data.enabled);
+  console.log('  Tags (default):', result.data.tags);
+  console.log('  Author:', result.data.metadata?.author);
 }
 
 // =============================================================================

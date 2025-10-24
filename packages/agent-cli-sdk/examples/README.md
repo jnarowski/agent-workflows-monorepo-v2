@@ -125,7 +125,7 @@ const claude = new Claude();
 const response = await claude.execute('Hello');
 
 // Type-safe event access
-const events = response.data as ClaudeStreamEvent[];
+const events = response.events as ClaudeStreamEvent[];
 
 for (const event of events) {
   if (isAssistantMessageEvent(event)) {

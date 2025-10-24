@@ -13,7 +13,7 @@ import type { CliResponse } from '../src';
 console.log('🔍 Example: Parsing JSON from CLI Responses\n');
 
 // Example 1: Response with data field (already parsed)
-console.log('1️⃣  Response with data field:');
+console.log('1️⃣  Response with data field (already parsed):');
 const response1: CliResponse<{ success: boolean }> = {
   status: 'success',
   data: { success: true },
@@ -27,11 +27,11 @@ console.log('');
 console.log('2️⃣  Response with JSON in markdown code block:');
 const response2: CliResponse = {
   status: 'success',
-  output: 'Here is the analysis:\n```json\n{"success": true, "count": 42}\n```\nComplete!',
+  data: 'Here is the analysis:\n```json\n{"success": true, "count": 42}\n```\nComplete!',
 };
 const parsed2 = parseJsonResponse(response2);
-console.log('   Input: response.output =');
-console.log('   ', response2.output?.split('\n').join('\n    '));
+console.log('   Input: response.data =');
+console.log('   ', response2.data?.split('\n').join('\n    '));
 console.log('   Output:', parsed2);
 console.log('');
 
@@ -39,11 +39,11 @@ console.log('');
 console.log('3️⃣  Response with mixed text and JSON:');
 const response3: CliResponse = {
   status: 'success',
-  output: 'Analysis complete.\n\n{"success": true, "items": [1, 2, 3]}\n\nDone!',
+  data: 'Analysis complete.\n\n{"success": true, "items": [1, 2, 3]}\n\nDone!',
 };
 const parsed3 = parseJsonResponse(response3);
-console.log('   Input: response.output =');
-console.log('   ', response3.output?.split('\n').join('\n    '));
+console.log('   Input: response.data =');
+console.log('   ', response3.data?.split('\n').join('\n    '));
 console.log('   Output:', parsed3);
 console.log('');
 
@@ -51,10 +51,10 @@ console.log('');
 console.log('4️⃣  Response with pure JSON:');
 const response4: CliResponse = {
   status: 'success',
-  output: '{"message": "Hello", "code": 200}',
+  data: '{"message": "Hello", "code": 200}',
 };
 const parsed4 = parseJsonResponse(response4);
-console.log('   Input: response.output =', response4.output);
+console.log('   Input: response.data =', response4.data);
 console.log('   Output:', parsed4);
 console.log('');
 
@@ -62,10 +62,10 @@ console.log('');
 console.log('5️⃣  Response with no valid JSON:');
 const response5: CliResponse = {
   status: 'success',
-  output: 'This is just plain text with no JSON.',
+  data: 'This is just plain text with no JSON.',
 };
 const parsed5 = parseJsonResponse(response5);
-console.log('   Input: response.output =', response5.output);
+console.log('   Input: response.data =', response5.data);
 console.log('   Output:', parsed5);
 console.log('');
 
@@ -73,7 +73,7 @@ console.log('');
 console.log('6️⃣  Using parseJsonResponseStrict (throws on no JSON):');
 const response6: CliResponse = {
   status: 'success',
-  output: 'No JSON here',
+  data: 'No JSON here',
 };
 try {
   parseJsonResponseStrict(response6);
@@ -96,7 +96,7 @@ interface CheckResult {
 
 const response7: CliResponse = {
   status: 'success',
-  output: '```json\n{"success": true, "validation_command": "pnpm check", "issues": {"errors": 0, "warnings": 2, "info": 1}}\n```',
+  data: '```json\n{"success": true, "validation_command": "pnpm check", "issues": {"errors": 0, "warnings": 2, "info": 1}}\n```',
 };
 const parsed7 = parseJsonResponse<CheckResult>(response7);
 console.log('   Input: CLI response with CheckResult JSON');

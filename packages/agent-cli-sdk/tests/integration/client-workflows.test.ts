@@ -17,7 +17,7 @@ class MockAdapter implements AIAdapter {
     this.executionCount++;
 
     const response: ExecutionResponse<T> = {
-      output: `Mock response ${this.executionCount}: ${prompt}` as T,
+      data: `Mock response ${this.executionCount}: ${prompt}` as T,
       sessionId: options?.sessionId || `mock-session-${this.executionCount}`,
       status: "success",
       exitCode: 0,
@@ -31,7 +31,7 @@ class MockAdapter implements AIAdapter {
     if (options?.onStream) {
       options.onStream({
         type: "text",
-        data: { text: response.output as string },
+        data: { text: response.data as string },
         timestamp: Date.now(),
       });
     }
@@ -76,7 +76,7 @@ describe("AgentClient - Workflow Integration", () => {
       const result = await client.execute("Create a function");
 
       expect(result.status).toBe("success");
-      expect(result.output).toContain("Create a function");
+      expect(result.data).toContain("Create a function");
       expect(result.sessionId).toBeDefined();
       expect(mockAdapter.getExecutionCount()).toBe(1);
     });

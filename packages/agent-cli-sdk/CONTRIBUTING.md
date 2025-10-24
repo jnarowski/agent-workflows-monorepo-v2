@@ -201,7 +201,7 @@ Example:
  *
  * @param prompt - The prompt to send to the AI
  * @param options - Execution options including callbacks, timeouts, etc.
- * @returns Promise resolving to execution response with output and metadata
+ * @returns Promise resolving to execution response with data and events
  *
  * @example
  * ```typescript

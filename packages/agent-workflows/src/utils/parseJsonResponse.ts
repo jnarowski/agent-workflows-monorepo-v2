@@ -4,27 +4,27 @@ import type { ExecutionResponse } from '../types/workflow.js';
  * Extracts valid JSON from an ExecutionResponse that may contain mixed text and JSON
  *
  * This function handles several scenarios:
- * 1. If response.output is already an object (parsed via responseSchema), returns it directly
- * 2. If response.output is a string containing JSON in markdown code blocks (```json or ```), extracts it
- * 3. If response.output is a string containing raw JSON objects/arrays, extracts them
+ * 1. If response.data is already an object (parsed via responseSchema), returns it directly
+ * 2. If response.data is a string containing JSON in markdown code blocks (```json or ```), extracts it
+ * 3. If response.data is a string containing raw JSON objects/arrays, extracts them
  * 4. Otherwise returns null
  *
- * Note: When using responseSchema in the SDK, the output field will already be parsed as type T.
- * This function is mainly useful for responses without responseSchema where output is a string.
+ * Note: When using responseSchema in the SDK, the data field will already be parsed as type T.
+ * This function is mainly useful for responses without responseSchema where data is a string.
  *
  * @param response - The CLI response to parse
  * @returns The parsed JSON object, or null if no valid JSON found
  *
  * @example
- * // Response with responseSchema (output already parsed)
- * const response = { status: 'success', output: { success: true } };
+ * // Response with responseSchema (data already parsed)
+ * const response = { status: 'success', data: { success: true } };
  * parseJsonResponse(response); // { success: true }
  *
  * @example
  * // Response with JSON in markdown block
  * const response = {
  *   status: 'success',
- *   output: 'Here is the result:\n```json\n{"success": true}\n```'
+ *   data: 'Here is the result:\n```json\n{"success": true}\n```'
  * };
  * parseJsonResponse(response); // { success: true }
  *
@@ -32,24 +32,24 @@ import type { ExecutionResponse } from '../types/workflow.js';
  * // Response with mixed text and JSON
  * const response = {
  *   status: 'success',
- *   output: 'Analysis complete.\n\n{"success": true, "count": 5}\n\nDone!'
+ *   data: 'Analysis complete.\n\n{"success": true, "count": 5}\n\nDone!'
  * };
  * parseJsonResponse(response); // { success: true, count: 5 }
  */
 export function parseJsonResponse<T = unknown>(
   response: ExecutionResponse<T | string>
 ): T | null {
-  // If output is already an object (parsed via responseSchema), return it
-  if (typeof response.output === 'object' && response.output !== null) {
-    return response.output as T;
+  // If data is already an object (parsed via responseSchema), return it
+  if (typeof response.data === 'object' && response.data !== null) {
+    return response.data as T;
   }
 
-  // If output is not a string, return null
-  if (typeof response.output !== 'string') {
+  // If data is not a string, return null
+  if (typeof response.data !== 'string') {
     return null;
   }
 
-  const output = response.output;
+  const output = response.data;
 
   // Try to extract JSON from markdown code blocks (```json or ```)
   const codeBlockMatch = output.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
@@ -101,11 +101,11 @@ export function parseJsonResponse<T = unknown>(
  * @throws Error if no valid JSON found in response
  *
  * @example
- * const response = { status: 'success', output: { success: true } };
+ * const response = { status: 'success', data: { success: true } };
  * parseJsonResponseStrict(response); // { success: true }
  *
  * @example
- * const response = { status: 'success', output: 'No JSON here' };
+ * const response = { status: 'success', data: 'No JSON here' };
  * parseJsonResponseStrict(response); // throws Error
  */
 export function parseJsonResponseStrict<T = unknown>(
@@ -114,8 +114,8 @@ export function parseJsonResponseStrict<T = unknown>(
   const result = parseJsonResponse<T>(response);
 
   if (result === null) {
-    const outputType = typeof response.output;
-    const outputLength = typeof response.output === 'string' ? response.output.length : 0;
+    const outputType = typeof response.data;
+    const outputLength = typeof response.data === 'string' ? response.data.length : 0;
     throw new Error(
       'No valid JSON found in CLI response. ' +
         `Response status: ${response.status}, ` +

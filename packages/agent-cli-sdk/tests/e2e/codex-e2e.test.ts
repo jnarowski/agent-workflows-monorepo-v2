@@ -39,13 +39,13 @@ describeE2E("Codex E2E Tests", () => {
 
       expect(result.status).toBe("success");
       expect(result.exitCode).toBe(0);
-      expect(result.output).toBeDefined();
+      expect(result.data).toBeDefined();
       expect(result.sessionId).toBeDefined();
       expect(result.duration).toBeGreaterThan(0);
-      expect(typeof result.output).toBe("string");
+      expect(typeof result.data).toBe("string");
 
       // Output should contain "4"
-      expect(result.output.toLowerCase()).toContain("4");
+      expect(result.data.toLowerCase()).toContain("4");
     }, 60000); // 60 second test timeout
 
     it("should handle streaming output", async () => {
@@ -84,7 +84,7 @@ describeE2E("Codex E2E Tests", () => {
       });
 
       expect(result.status).toBe("success");
-      expect(result.output).toBeDefined();
+      expect(result.data).toBeDefined();
     }, 60000);
   });
 
@@ -110,7 +110,7 @@ describeE2E("Codex E2E Tests", () => {
 
       expect(session2.status).toBe("success");
       expect(session2.sessionId).toBe(session1.sessionId);
-      expect(session2.output.toLowerCase()).toContain("42");
+      expect(session2.data.toLowerCase()).toContain("42");
     }, 90000);
   });
 
@@ -124,7 +124,7 @@ describeE2E("Codex E2E Tests", () => {
       });
 
       expect(result.status).toBe("success");
-      expect(result.output).toBeDefined();
+      expect(result.data).toBeDefined();
     }, 60000);
 
     it("should execute with explicit sandbox mode", async () => {
@@ -166,17 +166,17 @@ describeE2E("Codex E2E Tests", () => {
       });
 
       expect(result.status).toBe("success");
-      expect(result.output).toBeDefined();
+      expect(result.data).toBeDefined();
 
       // Should mention "Hello World" or similar from the image
-      const outputLower = result.output.toLowerCase();
+      const outputLower = result.data.toLowerCase();
       const mentionsHello = outputLower.includes("hello") || outputLower.includes("world");
 
       if (mentionsHello) {
         expect(mentionsHello).toBe(true);
       } else {
         // Just verify we got a response - image reading might vary
-        expect(result.output.length).toBeGreaterThan(0);
+        expect(result.data.length).toBeGreaterThan(0);
       }
     }, 90000);
   });
@@ -236,7 +236,7 @@ describeE2E("Codex E2E Tests", () => {
       });
 
       expect(result.status).toBe("success");
-      expect(result.output).toBeDefined();
+      expect(result.data).toBeDefined();
     }, 60000);
   });
 

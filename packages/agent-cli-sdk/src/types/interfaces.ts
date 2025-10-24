@@ -16,7 +16,7 @@
  * import type { ClaudeStreamEvent } from '@repo/agent-cli-sdk';
  *
  * const response = await claude.execute('Hello');
- * const events = response.data as ClaudeStreamEvent[];
+ * const events = response.events as ClaudeStreamEvent[];
  * ```
  */
 export interface StreamEvent {
@@ -90,14 +90,14 @@ export interface AdapterCapabilities {
  * @template T Output type (string or structured data)
  *
  * @remarks
- * The `data` field contains raw event data. For type-safe event handling,
+ * The `events` field contains raw event data. For type-safe event handling,
  * cast to adapter-specific types:
- * - `response.data as ClaudeStreamEvent[]` for Claude Code
- * - `response.data as CodexStreamEvent[]` for Codex
+ * - `response.events as ClaudeStreamEvent[]` for Claude Code
+ * - `response.events as CodexStreamEvent[]` for Codex
  */
 export interface ExecutionResponse<T = string> {
-  output: T;
-  data?: StreamEvent[];
+  data: T;
+  events?: StreamEvent[];
   sessionId: string;
   status: 'success' | 'error' | 'timeout';
   exitCode: number;

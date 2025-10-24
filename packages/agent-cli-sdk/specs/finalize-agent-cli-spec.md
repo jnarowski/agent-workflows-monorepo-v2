@@ -210,7 +210,7 @@ Tests expect certain events in logs that aren't being captured:
 The synthetic event generation in cli-wrapper.ts:128-196 may not be persisting to log files properly.
 
 **Fix:**
-1. Verify events are written to `response.data` array in execution response
+1. Verify events are written to `response.events` array in execution response
 2. Ensure log files include all synthetic events
 3. Fix event ordering if needed
 
@@ -439,7 +439,7 @@ Add comprehensive JSDoc to:
  * @template T - The expected output type (inferred from responseSchema)
  * @param prompt - The prompt to send to the AI
  * @param options - Execution options including callbacks, timeouts, etc.
- * @returns Promise resolving to execution response with output and metadata
+ * @returns Promise resolving to execution response with data and events
  *
  * @example
  * ```typescript
@@ -687,7 +687,7 @@ Should the package be renamed for 1.0?
 1. **Spawn-per-message:** Can't abort in-flight executions
 2. **Adapter pattern:** Clean separation of concerns
 3. **Dependency injection:** Flexible, testable
-4. **Dual output:** Raw + parsed events simultaneously
+4. **Dual data:** Parsed data + raw events simultaneously
 
 ### Known Limitations
 - Session abort only prevents new messages

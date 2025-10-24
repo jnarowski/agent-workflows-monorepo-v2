@@ -26,7 +26,7 @@ async function main() {
   console.log('Session ID:', result.sessionId);
   console.log('Status:', result.status);
   console.log('Duration:', result.duration, 'ms');
-  console.log('Output:', result.output);
+  console.log('Output:', result.data);
 
   // Show error details if execution failed
   if (result.status === 'error' && result.error) {

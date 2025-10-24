@@ -12,11 +12,11 @@ Instead of generic `Record<string, unknown>`, you now get fully-typed event data
 
 ```typescript
 // Before
-const events = response.data; // StreamEvent[]
+const events = response.events; // StreamEvent[]
 const message = event.data?.message; // any
 
 // After
-const events = response.data as ClaudeStreamEvent[];
+const events = response.events as ClaudeStreamEvent[];
 const message = event.data?.message; // ClaudeMessage (fully typed!)
 ```
 
@@ -73,7 +73,7 @@ import {
 } from '@repo/agent-cli-sdk';
 ```
 
-### 2. Cast Response Data
+### 2. Cast Response Events
 
 ```typescript
 import { Claude } from '@repo/agent-cli-sdk';
@@ -83,7 +83,7 @@ const claude = new Claude();
 const response = await claude.execute('Hello');
 
 // Cast to get type-safe access
-const events = response.data as ClaudeStreamEvent[];
+const events = response.events as ClaudeStreamEvent[];
 ```
 
 ### 3. Use Type Guards
@@ -290,10 +290,10 @@ Existing code continues to work without modification. The new types are opt-in v
 import type { ClaudeStreamEvent } from '@repo/agent-cli-sdk';
 ```
 
-### Step 2: Cast Response Data
+### Step 2: Cast Response Events
 
 ```typescript
-const events = response.data as ClaudeStreamEvent[];
+const events = response.events as ClaudeStreamEvent[];
 ```
 
 ### Step 3: Use Type Guards (Optional)

@@ -10,7 +10,7 @@ import type { AIAdapter, ExecutionResponse, AdapterCapabilities } from '../../..
 class MockAdapter implements AIAdapter {
   async execute<T = string>(prompt: string): Promise<ExecutionResponse<T>> {
     return {
-      output: `Mock response to: ${prompt}` as T,
+      data: `Mock response to: ${prompt}` as T,
       sessionId: 'mock-session-123',
       status: 'success',
       exitCode: 0,
@@ -37,7 +37,7 @@ class MockAdapter implements AIAdapter {
     return {
       send: async (message: string) => {
         const result = {
-          output: `Mock session response to: ${message}`,
+          data: `Mock session response to: ${message}`,
           sessionId,
           status: 'success' as const,
           exitCode: 0,
@@ -85,7 +85,7 @@ describe('AgentClient', () => {
 
       expect(result).toBeDefined();
       expect(result.status).toBe('success');
-      expect(result.output).toContain('Test prompt');
+      expect(result.data).toContain('Test prompt');
       expect(result.sessionId).toBe('mock-session-123');
     });
 
@@ -227,7 +227,7 @@ describe('AgentClient', () => {
       const noSessionAdapter: AIAdapter = {
         async execute() {
           return {
-            output: 'test',
+            data: 'test',
             sessionId: 'test',
             status: 'success',
             exitCode: 0,
@@ -306,9 +306,9 @@ describe('AgentClient', () => {
       ]);
 
       expect(results).toHaveLength(3);
-      expect(results[0].output).toContain('Message 1');
-      expect(results[1].output).toContain('Message 2');
-      expect(results[2].output).toContain('Message 3');
+      expect(results[0].data).toContain('Message 1');
+      expect(results[1].data).toContain('Message 2');
+      expect(results[2].data).toContain('Message 3');
     });
 
     it('should maintain separate session IDs for concurrent sessions', async () => {
@@ -332,8 +332,8 @@ describe('AgentClient', () => {
     it('should handle string output', async () => {
       const result = await client.execute('String test');
 
-      expect(typeof result.output).toBe('string');
-      expect(result.output).toContain('String test');
+      expect(typeof result.data).toBe('string');
+      expect(result.data).toContain('String test');
     });
 
     it('should handle generic type parameter', async () => {
@@ -346,7 +346,7 @@ describe('AgentClient', () => {
       const structuredAdapter: AIAdapter = {
         async execute<T>(): Promise<ExecutionResponse<T>> {
           return {
-            output: { data: 'test', count: 42 } as T,
+            data: { data: 'test', count: 42 } as T,
             sessionId: 'test',
             status: 'success',
             exitCode: 0,
@@ -367,8 +367,8 @@ describe('AgentClient', () => {
       const structuredClient = new AgentClient({ adapter: structuredAdapter });
       const result = await structuredClient.execute<CustomResponse>('Test');
 
-      expect(result.output).toHaveProperty('data');
-      expect(result.output).toHaveProperty('count');
+      expect(result.data).toHaveProperty('data');
+      expect(result.data).toHaveProperty('count');
     });
   });
 

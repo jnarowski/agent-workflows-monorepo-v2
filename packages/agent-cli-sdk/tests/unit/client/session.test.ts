@@ -20,7 +20,7 @@ class MockAdapterSession extends EventEmitter {
     }
 
     const response: ExecutionResponse<T> = {
-      output: `Response to: ${message}` as T,
+      data: `Response to: ${message}` as T,
       sessionId: this._sessionId,
       status: 'success',
       exitCode: 0,
@@ -51,7 +51,7 @@ class MockAdapterSession extends EventEmitter {
 const mockAdapter: AIAdapter = {
   async execute() {
     return {
-      output: 'test',
+      data: 'test',
       sessionId: 'test',
       status: 'success',
       exitCode: 0,
@@ -115,7 +115,7 @@ describe('Session', () => {
     it('should send message and return response', async () => {
       const result = await session.send('Hello');
 
-      expect(result.output).toBe('Response to: Hello');
+      expect(result.data).toBe('Response to: Hello');
       expect(result.status).toBe('success');
     });
 
@@ -252,7 +252,7 @@ describe('Session', () => {
     it('should forward complete event', () => {
       return new Promise<void>((resolve) => {
         session.on('complete', (response) => {
-          expect(response.output).toContain('Test');
+          expect(response.data).toContain('Test');
           resolve();
         });
 

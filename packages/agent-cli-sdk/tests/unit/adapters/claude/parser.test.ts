@@ -13,7 +13,7 @@ describe('parseStreamOutput', () => {
       const stdout = JSON.stringify({ type: 'result', result: 'Hello, world!', sessionId: 'test-123' });
       const response = await parseStreamOutput(stdout, 100, 0);
 
-      expect(response.output).toBe('Hello, world!');
+      expect(response.data).toBe('Hello, world!');
       expect(response.sessionId).toBe('test-123');
       expect(response.status).toBe('success');
       expect(response.exitCode).toBe(0);
@@ -31,7 +31,7 @@ describe('parseStreamOutput', () => {
 
       const response = await parseStreamOutput(stdout, 200, 0);
 
-      expect(response.output).toBe('Response text');
+      expect(response.data).toBe('Response text');
       expect(response.sessionId).toBe('sess-456');
     });
 
@@ -46,7 +46,7 @@ describe('parseStreamOutput', () => {
 
       const response = await parseStreamOutput(stdout, 150, 0);
 
-      expect(response.output).toBe('Direct string content');
+      expect(response.data).toBe('Direct string content');
       expect(response.sessionId).toBe('snake-case-id');
     });
 
@@ -60,21 +60,21 @@ describe('parseStreamOutput', () => {
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
       const response = await parseStreamOutput(stdout, 100, 0);
 
-      expect(response.output).toBe('Part 1 Part 2 Part 3');
+      expect(response.data).toBe('Part 1 Part 2 Part 3');
     });
 
     it('should fallback to raw stdout if no events found', async () => {
       const stdout = 'Plain text output without JSONL';
       const response = await parseStreamOutput(stdout, 100, 0);
 
-      expect(response.output).toBe('Plain text output without JSONL');
+      expect(response.data).toBe('Plain text output without JSONL');
     });
 
     it('should return empty string if no output', async () => {
       const stdout = '';
       const response = await parseStreamOutput(stdout, 100, 0);
 
-      expect(response.output).toBe('');
+      expect(response.data).toBe('');
     });
   });
 
@@ -453,7 +453,7 @@ describe('parseStreamOutput', () => {
 
       const response = await parseStreamOutput(stdout, 100, 0, true);
 
-      expect(response.output).toEqual({ name: 'test', value: 42 });
+      expect(response.data).toEqual({ name: 'test', value: 42 });
     });
 
     it('should validate with Zod schema', async () => {
@@ -469,7 +469,7 @@ describe('parseStreamOutput', () => {
 
       const response = await parseStreamOutput(stdout, 100, 0, UserSchema);
 
-      expect(response.output).toEqual({ name: 'Alice', age: 30 });
+      expect(response.data).toEqual({ name: 'Alice', age: 30 });
     });
 
     it('should throw ParseError for invalid JSON', async () => {
@@ -500,7 +500,7 @@ describe('parseStreamOutput', () => {
 
       const response = await parseStreamOutput(stdout, 100, 0, true);
 
-      expect(response.output).toEqual({ status: 'ok', count: 5 });
+      expect(response.data).toEqual({ status: 'ok', count: 5 });
     });
   });
 
@@ -519,9 +519,9 @@ describe('parseStreamOutput', () => {
 
       const response = await parseStreamOutput(stdout, 100, 0);
 
-      expect(response.data).toHaveLength(2);
-      expect(response.data?.[0].type).toBe('start');
-      expect(response.data?.[1].type).toBe('result');
+      expect(response.events).toHaveLength(2);
+      expect(response.events?.[0].type).toBe('start');
+      expect(response.events?.[1].type).toBe('result');
     });
 
     it('should set stderr to empty string', async () => {
@@ -542,7 +542,7 @@ describe('parseStreamOutput', () => {
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
       const response = await parseStreamOutput(stdout, 100, 0);
 
-      expect(response.output).toBe('Chunk 1 Chunk 2');
+      expect(response.data).toBe('Chunk 1 Chunk 2');
     });
 
     it('should handle turn.completed events', async () => {
@@ -553,7 +553,7 @@ describe('parseStreamOutput', () => {
 
       const response = await parseStreamOutput(stdout, 100, 0);
 
-      expect(response.output).toBe('Turn complete message');
+      expect(response.data).toBe('Turn complete message');
     });
 
     it('should prefer result over turn.completed', async () => {
@@ -565,7 +565,7 @@ describe('parseStreamOutput', () => {
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
       const response = await parseStreamOutput(stdout, 100, 0);
 
-      expect(response.output).toBe('Final result');
+      expect(response.data).toBe('Final result');
     });
   });
 
@@ -575,14 +575,14 @@ describe('parseStreamOutput', () => {
       const response = await parseStreamOutput(stdout, 100, 0);
 
       // Falls back to raw stdout if no events
-      expect(response.output).toBe(stdout);
+      expect(response.data).toBe(stdout);
     });
 
     it('should handle malformed JSONL gracefully', async () => {
       const stdout = '{invalid json}\n{"type": "result", "result": "valid"}\n{also invalid}';
       const response = await parseStreamOutput(stdout, 100, 0);
 
-      expect(response.output).toBe('valid');
+      expect(response.data).toBe('valid');
     });
 
     it('should handle mixed valid and invalid JSON lines', async () => {
@@ -596,8 +596,8 @@ describe('parseStreamOutput', () => {
       const stdout = lines.join('\n');
       const response = await parseStreamOutput(stdout, 100, 0);
 
-      expect(response.output).toBe('output');
-      expect(response.data).toHaveLength(2);
+      expect(response.data).toBe('output');
+      expect(response.events).toHaveLength(2);
     });
 
     it('should handle zero duration', async () => {
@@ -612,8 +612,8 @@ describe('parseStreamOutput', () => {
       const stdout = JSON.stringify({ type: 'result', result: largeResult });
       const response = await parseStreamOutput(stdout, 100, 0);
 
-      expect(response.output).toBe(largeResult);
-      expect(response.output.length).toBe(100000);
+      expect(response.data).toBe(largeResult);
+      expect(response.data.length).toBe(100000);
     });
 
     it('should handle special characters in output', async () => {
@@ -621,7 +621,7 @@ describe('parseStreamOutput', () => {
       const stdout = JSON.stringify({ type: 'result', result: specialChars });
       const response = await parseStreamOutput(stdout, 100, 0);
 
-      expect(response.output).toBe(specialChars);
+      expect(response.data).toBe(specialChars);
     });
   });
 

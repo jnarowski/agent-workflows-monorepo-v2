@@ -70,7 +70,7 @@ export class Session extends EventEmitter {
     console.log('[agent-cli-sdk Session] Received result from adapterSession:', {
       sessionId: result.sessionId,
       resultType: typeof result,
-      hasOutput: !!result.output,
+      hasOutput: !!result.data,
     });
 
     // Update metadata

@@ -43,13 +43,13 @@ describeE2E("Structured Output E2E Tests", () => {
       );
 
       expect(result.status).toBe("success");
-      expect(typeof result.output).toBe("object");
-      expect(result.output).toHaveProperty("name");
-      expect(result.output).toHaveProperty("age");
-      expect(result.output).toHaveProperty("active");
-      expect(result.output.name).toBe("Test User");
-      expect(result.output.age).toBe(25);
-      expect(result.output.active).toBe(true);
+      expect(typeof result.data).toBe("object");
+      expect(result.data).toHaveProperty("name");
+      expect(result.data).toHaveProperty("age");
+      expect(result.data).toHaveProperty("active");
+      expect(result.data.name).toBe("Test User");
+      expect(result.data.age).toBe(25);
+      expect(result.data.active).toBe(true);
 
       // Original text preserved in raw output
       expect(result.raw?.stdout).toBeDefined();
@@ -65,9 +65,9 @@ describeE2E("Structured Output E2E Tests", () => {
       );
 
       expect(result.status).toBe("success");
-      expect(typeof result.output).toBe("object");
-      expect(result.output).toHaveProperty("status");
-      expect(result.output).toHaveProperty("count");
+      expect(typeof result.data).toBe("object");
+      expect(result.data).toHaveProperty("status");
+      expect(result.data).toHaveProperty("count");
     }, 60000);
 
     it("should handle response without JSON gracefully", async () => {
@@ -103,11 +103,11 @@ describeE2E("Structured Output E2E Tests", () => {
       expect(result.status).toBe("success");
 
       // TypeScript knows the structure
-      expect(result.output.name).toBe("John Doe");
-      expect(result.output.age).toBe(30);
-      expect(result.output.email).toBe("john@example.com");
-      expect(typeof result.output.name).toBe("string");
-      expect(typeof result.output.age).toBe("number");
+      expect(result.data.name).toBe("John Doe");
+      expect(result.data.age).toBe(30);
+      expect(result.data.email).toBe("john@example.com");
+      expect(typeof result.data.name).toBe("string");
+      expect(typeof result.data.age).toBe("number");
     }, 60000);
 
     it("should handle complex nested schema", async () => {
@@ -131,11 +131,11 @@ describeE2E("Structured Output E2E Tests", () => {
       );
 
       expect(result.status).toBe("success");
-      expect(result.output.location.city).toBe("San Francisco");
-      expect(result.output.location.country).toBe("USA");
-      expect(result.output.temperature).toBe(72);
-      expect(result.output.conditions).toBe("Sunny");
-      expect(result.output.humidity).toBe(60);
+      expect(result.data.location.city).toBe("San Francisco");
+      expect(result.data.location.country).toBe("USA");
+      expect(result.data.temperature).toBe(72);
+      expect(result.data.conditions).toBe("Sunny");
+      expect(result.data.humidity).toBe(60);
     }, 60000);
 
     it("should handle array schema", async () => {
@@ -156,16 +156,16 @@ describeE2E("Structured Output E2E Tests", () => {
       );
 
       expect(result.status).toBe("success");
-      expect(Array.isArray(result.output)).toBe(true);
-      expect(result.output.length).toBeGreaterThanOrEqual(2);
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data.length).toBeGreaterThanOrEqual(2);
 
       // Check first product structure
-      expect(result.output[0]).toHaveProperty("id");
-      expect(result.output[0]).toHaveProperty("name");
-      expect(result.output[0]).toHaveProperty("price");
-      expect(typeof result.output[0].id).toBe("number");
-      expect(typeof result.output[0].name).toBe("string");
-      expect(typeof result.output[0].price).toBe("number");
+      expect(result.data[0]).toHaveProperty("id");
+      expect(result.data[0]).toHaveProperty("name");
+      expect(result.data[0]).toHaveProperty("price");
+      expect(typeof result.data[0].id).toBe("number");
+      expect(typeof result.data[0].name).toBe("string");
+      expect(typeof result.data[0].price).toBe("number");
     }, 60000);
   });
 
@@ -215,8 +215,8 @@ describeE2E("Structured Output E2E Tests", () => {
       });
 
       expect(result.status).toBe("success");
-      expect(typeof result.output).toBe("string");
-      expect(result.output).toContain("Hello");
+      expect(typeof result.data).toBe("string");
+      expect(result.data).toContain("Hello");
     }, 60000);
 
     it("should return string output when responseSchema not provided", async () => {
@@ -230,8 +230,8 @@ describeE2E("Structured Output E2E Tests", () => {
       );
 
       expect(result.status).toBe("success");
-      expect(typeof result.output).toBe("string");
-      expect(result.output).toContain("4");
+      expect(typeof result.data).toBe("string");
+      expect(result.data).toContain("4");
     }, 60000);
   });
 
@@ -254,10 +254,10 @@ describeE2E("Structured Output E2E Tests", () => {
       );
 
       expect(result.status).toBe("success");
-      expect(result.output.name).toBe("Test");
+      expect(result.data.name).toBe("Test");
       // Defaults should be applied by Zod
-      expect(result.output.count).toBe(0);
-      expect(Array.isArray(result.output.tags)).toBe(true);
+      expect(result.data.count).toBe(0);
+      expect(Array.isArray(result.data.tags)).toBe(true);
     }, 60000);
 
     it("should handle optional fields correctly", async () => {
@@ -277,9 +277,9 @@ describeE2E("Structured Output E2E Tests", () => {
       );
 
       expect(result.status).toBe("success");
-      expect(result.output.required).toBe("value");
-      expect(result.output.optional).toBe("present");
-      expect(result.output.nullable).toBe(null);
+      expect(result.data.required).toBe("value");
+      expect(result.data.optional).toBe("present");
+      expect(result.data.nullable).toBe(null);
     }, 60000);
   });
 
@@ -302,10 +302,10 @@ describeE2E("Structured Output E2E Tests", () => {
       );
 
       expect(result.status).toBe("success");
-      expect(result.output.language).toBe("typescript");
-      expect(result.output.linesOfCode).toBe(42);
-      expect(Array.isArray(result.output.functions)).toBe(true);
-      expect(["low", "medium", "high"]).toContain(result.output.complexity);
+      expect(result.data.language).toBe("typescript");
+      expect(result.data.linesOfCode).toBe(42);
+      expect(Array.isArray(result.data.functions)).toBe(true);
+      expect(["low", "medium", "high"]).toContain(result.data.complexity);
     }, 60000);
 
     it("should parse structured task breakdown", async () => {
@@ -331,10 +331,10 @@ describeE2E("Structured Output E2E Tests", () => {
       );
 
       expect(result.status).toBe("success");
-      expect(result.output.title).toBeDefined();
-      expect(Array.isArray(result.output.steps)).toBe(true);
-      expect(result.output.steps.length).toBeGreaterThanOrEqual(2);
-      expect(result.output.totalEstimate).toBeGreaterThan(0);
+      expect(result.data.title).toBeDefined();
+      expect(Array.isArray(result.data.steps)).toBe(true);
+      expect(result.data.steps.length).toBeGreaterThanOrEqual(2);
+      expect(result.data.totalEstimate).toBeGreaterThan(0);
     }, 60000);
   });
 });

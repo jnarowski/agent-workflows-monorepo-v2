@@ -101,7 +101,7 @@ export class ClaudeSession extends EventEmitter {
 
       console.log('[agent-cli-sdk ClaudeSession] adapter.execute() completed:', {
         sessionId: result.sessionId,
-        hasOutput: !!result.output,
+        hasOutput: !!result.data,
       });
 
       // Capture session ID from first message

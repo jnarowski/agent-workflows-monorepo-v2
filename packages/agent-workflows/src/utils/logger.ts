@@ -52,7 +52,7 @@ export function logStepSuccess(
   console.log();
   console.log(`📄 ${config.name} Output:`);
   console.log("-".repeat(80));
-  console.log(response.output);
+  console.log(response.data);
   console.log("-".repeat(80));
   console.log();
 
@@ -85,7 +85,7 @@ export function logStepFailure(
   console.log();
   console.log("Error:");
   console.log("-".repeat(80));
-  console.log(response.output);
+  console.log(response.data);
   console.log("-".repeat(80));
   console.log();
   console.log(`Retry code: ${response.retry_code}`);

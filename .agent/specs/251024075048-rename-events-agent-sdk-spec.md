@@ -98,203 +98,242 @@ Update all tests and examples:
 ### 1: Update Core Type Definitions
 
 <!-- prettier-ignore -->
-- [ ] 1.1 Update ExecutionResponse interface in types/interfaces.ts
+- [x] 1.1 Update ExecutionResponse interface in types/interfaces.ts
         - Change `output: T` to `data: T`
         - Change `data?: StreamEvent[]` to `events?: StreamEvent[]`
         - Update JSDoc comments to reflect new field names
         - File: `packages/agent-cli-sdk/src/types/interfaces.ts`
-- [ ] 1.2 Update ExecutionLog interface in types/logging.ts
+- [x] 1.2 Update ExecutionLog interface in types/logging.ts
         - Update the `output` field reference to use ExecutionResponse correctly
         - File: `packages/agent-cli-sdk/src/types/logging.ts`
-- [ ] 1.3 Update type tests to use new field names
+- [x] 1.3 Update type tests to use new field names
         - Replace all `response.output` with `response.data` in test scenarios
         - Replace all `response.data as ClaudeStreamEvent[]` with `response.events as ClaudeStreamEvent[]`
         - Update test function names and comments to reflect new terminology
         - File: `packages/agent-cli-sdk/src/types/__type-tests__/events.test-d.ts`
-- [ ] 1.4 Run type check to verify no type errors
+- [x] 1.4 Run type check to verify no type errors
         - Command: `pnpm check-types`
         - Expected: No type errors (note: some runtime tests may fail until parsers are updated)
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Updated ExecutionResponse interface: `output: T` → `data: T`, `data?: StreamEvent[]` → `events?: StreamEvent[]`
+- Updated JSDoc comments in interfaces.ts and StreamEvent interface example
+- ExecutionLog interface already correctly references ExecutionResponse, no changes needed
+- Updated all type tests in events.test-d.ts (~8 test functions with multiple references each)
+- All type tests now correctly reference `response.data` for the result and `response.events` for stream events
 
 ### 2: Update Parser Implementations
 
 <!-- prettier-ignore -->
-- [ ] 2.1 Update Claude parser return statement
+- [x] 2.1 Update Claude parser return statement
         - In parseStreamOutput(), change the return object:
           - `output` → `data`
           - `data: events` → `events`
         - Update any internal variable names for clarity (optional but recommended)
         - File: `packages/agent-cli-sdk/src/adapters/claude/parser.ts` (around line 207-227)
-- [ ] 2.2 Update Codex parser return statement
+- [x] 2.2 Update Codex parser return statement
         - In parseCodexOutput(), change the return object:
           - `output` → `data`
           - `data: events` → `events`
         - Update any internal variable names for clarity (optional but recommended)
         - File: `packages/agent-cli-sdk/src/adapters/codex/parser.ts` (around line 62-77)
-- [ ] 2.3 Run type check again
+- [x] 2.3 Run type check again
         - Command: `pnpm check-types`
         - Expected: No type errors
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Updated Claude parser return object: `output` → `data`, `data: events` → `events`
+- Updated Codex parser return object: `output` → `data`, `data: events` → `events`
+- Internal variable names kept as-is for clarity (kept `output` variable name, just renamed in return statement)
+- Both parsers now return the new field structure matching the updated ExecutionResponse interface
 
 ### 3: Update Session Classes
 
 <!-- prettier-ignore -->
-- [ ] 3.1 Search and update references in unified session class
+- [x] 3.1 Search and update references in unified session class
         - Search for any `.output` or `.data` field accesses
         - Update to use `.data` and `.events` respectively
         - File: `packages/agent-cli-sdk/src/client/session.ts`
-- [ ] 3.2 Search and update references in Claude session class
+- [x] 3.2 Search and update references in Claude session class
         - Search for any `.output` or `.data` field accesses
         - Update to use `.data` and `.events` respectively
         - File: `packages/agent-cli-sdk/src/adapters/claude/session.ts`
-- [ ] 3.3 Run type check
+- [x] 3.3 Run type check
         - Command: `pnpm check-types`
         - Expected: No type errors
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Found and updated 1 reference to `result.output` in unified session class (logging statement)
+- Found and updated 1 reference to `result.output` in Claude session class (logging statement)
+- Both logging statements now check `result.data` for hasOutput boolean
+- No references to `.events` were found (sessions don't directly access event arrays)
 
 ### 4: Update Unit Tests
 
 <!-- prettier-ignore -->
-- [ ] 4.1 Update Claude parser tests
+- [x] 4.1 Update Claude parser tests
         - Replace all `response.output` with `response.data`
         - Replace all `response.data` (when referring to events) with `response.events`
         - File: `packages/agent-cli-sdk/tests/unit/adapters/claude/parser.test.ts`
-- [ ] 4.2 Update agent client tests
+- [x] 4.2 Update agent client tests
         - Replace all `result.output` with `result.data`
         - Replace all `result.data` (when referring to events) with `result.events`
         - File: `packages/agent-cli-sdk/tests/unit/client/agent-client.test.ts`
-- [ ] 4.3 Update session tests
+- [x] 4.3 Update session tests
         - Replace all `result.output` with `result.data`
         - Replace all `result.data` (when referring to events) with `result.events`
         - File: `packages/agent-cli-sdk/tests/unit/client/session.test.ts`
-- [ ] 4.4 Run unit tests
+- [x] 4.4 Update agent-workflows package (discovered during implementation)
+        - Updated 8 TypeScript files with ~44 replacements total
+        - Updated 2 documentation files with code examples
+        - Files: Workflow.test.ts, parseJsonResponse.ts/test, logger.ts, examples, specs
+- [x] 4.5 Run unit tests
         - Command: `pnpm test`
         - Expected: All unit tests pass
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Updated 31 references across 3 unit test files in agent-cli-sdk
+- Updated ~44 references across 8 files in agent-workflows package
+- All `.output` references changed to `.data` (the actual response data)
+- All `.data` references referring to events changed to `.events` where applicable
+- agent-workflows package uses ExecutionResponse from agent-cli-sdk, so needed updates too
 
 ### 5: Update Integration Tests
 
 <!-- prettier-ignore -->
-- [ ] 5.1 Update session flow tests
+- [x] 5.1 Update session flow tests
         - Replace all `result.output` with `result.data`
         - Replace all `result.data` (when referring to events) with `result.events`
         - File: `packages/agent-cli-sdk/tests/integration/session-flows.test.ts`
-- [ ] 5.2 Update client workflow tests
+- [x] 5.2 Update client workflow tests
         - Replace all `result.output` with `result.data`
         - Replace all `result.data` (when referring to events) with `result.events`
         - File: `packages/agent-cli-sdk/tests/integration/client-workflows.test.ts`
-- [ ] 5.3 Run all tests
+- [x] 5.3 Run all tests
         - Command: `pnpm test`
         - Expected: All tests pass
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Updated 4 references in session-flows.test.ts (mock responses and assertions)
+- Updated 3 references in client-workflows.test.ts (mock responses and assertions)
+- All integration tests passing (31 tests in 97ms)
 
 ### 6: Update E2E Tests
 
 <!-- prettier-ignore -->
-- [ ] 6.1 Update structured output E2E tests
+- [x] 6.1 Update structured output E2E tests
         - Replace all `result.output` with `result.data` (18+ occurrences expected)
         - Update any comments referring to "output" field
         - File: `packages/agent-cli-sdk/tests/e2e/structured-output.e2e.test.ts`
-- [ ] 6.2 Update Claude E2E tests
+- [x] 6.2 Update Claude E2E tests
         - Replace all `result.output` with `result.data`
         - Replace all `result.data` (when referring to events) with `result.events`
         - File: `packages/agent-cli-sdk/tests/e2e/claude-e2e.test.ts`
-- [ ] 6.3 Update Codex E2E tests
+- [x] 6.3 Update Codex E2E tests
         - Replace all `result.output` with `result.data`
         - Replace all `result.data` (when referring to events) with `result.events`
         - File: `packages/agent-cli-sdk/tests/e2e/codex-e2e.test.ts`
-- [ ] 6.4 Run E2E tests (optional - requires CLI setup)
+- [x] 6.4 Run E2E tests (optional - requires CLI setup)
         - Command: `RUN_E2E_TESTS=true pnpm test:e2e`
         - Expected: All E2E tests pass (if you have Claude CLI configured)
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Updated 46 references in structured-output.e2e.test.ts (JSON extraction, schema validation, real-world tests)
+- Updated 13 references in claude-e2e.test.ts (basic execution, sessions, advanced use cases)
+- Updated 10 references in codex-e2e.test.ts (basic execution, sessions, image support, full auto mode)
+- Total 76 replacements across all E2E tests
+- Intentionally preserved `output_tokens` and `outputTokens` (usage metrics, not response data)
 
 ### 7: Update Example Files
 
 <!-- prettier-ignore -->
-- [ ] 7.1 Update structured output examples
+- [x] 7.1 Update structured output examples
         - Replace all `result.output` with `result.data` (18+ occurrences)
         - Update comments explaining the response structure
         - File: `packages/agent-cli-sdk/examples/advanced/structured-output.ts`
-- [ ] 7.2 Update typed events examples
+- [x] 7.2 Update typed events examples
         - Replace `response.data as ClaudeStreamEvent[]` with `response.events as ClaudeStreamEvent[]`
         - Replace `response.data as CodexStreamEvent[]` with `response.events as CodexStreamEvent[]`
         - Update all comments about event handling
         - File: `packages/agent-cli-sdk/examples/typed-events.ts`
-- [ ] 7.3 Update basic Claude example
+- [x] 7.3 Update basic Claude example
         - Replace all `result.output` references with `result.data`
         - File: `packages/agent-cli-sdk/examples/basic/claude.ts`
-- [ ] 7.4 Update dynamic scoping session example
+- [x] 7.4 Update dynamic scoping session example
         - Replace all result field references
         - File: `packages/agent-cli-sdk/examples/advanced/dynamic-scoping-session.ts`
-- [ ] 7.5 Update interactive relay example
+- [x] 7.5 Update interactive relay example
         - Replace all result field references
         - File: `packages/agent-cli-sdk/examples/advanced/interactive-relay.ts`
-- [ ] 7.6 Test running an example manually
+- [x] 7.6 Test running an example manually
         - Command: `npx tsx examples/basic/claude.ts` (requires Claude CLI)
         - Expected: Example runs without errors
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Updated 24 references in structured-output.ts
+- Updated 5 references in typed-events.ts (including mock response structure)
+- Updated 1 reference in basic claude.ts
+- dynamic-scoping-session.ts and interactive-relay.ts had no direct result field references (no changes needed)
+- Total 30 replacements across example files
+- Updated comments and mock structures to match new API
 
 ### 8: Update Documentation
 
 <!-- prettier-ignore -->
-- [ ] 8.1 Update TYPED_EVENTS.md if it exists
+- [x] 8.1 Update TYPED_EVENTS.md if it exists
         - Search for `.output` and `.data` references
         - Update examples to use new field names
         - File: `packages/agent-cli-sdk/TYPED_EVENTS.md`
-- [ ] 8.2 Update examples README if it exists
+- [x] 8.2 Update examples README if it exists
         - Update any code snippets showing response usage
         - File: `packages/agent-cli-sdk/examples/README.md`
-- [ ] 8.3 Search for any other documentation files
+- [x] 8.3 Search for any other documentation files
         - Command: `find packages/agent-cli-sdk -name "*.md" -type f`
         - Manually review and update any that reference the old field names
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Updated TYPED_EVENTS.md with 6 changes (code examples and section headers)
+- Updated examples/README.md with 1 change (typed events example)
+- Updated CONTRIBUTING.md with 1 change (JSDoc example)
+- Updated specs/finalize-agent-cli-spec.md with 3 changes (event logging, JSDoc, architecture notes)
+- Checked but didn't need to update: README.md, CHANGELOG.md, src/types/__type-tests__/README.md
+- Total 11 documentation updates across 4 files
 
 ### 9: Final Verification
 
 <!-- prettier-ignore -->
-- [ ] 9.1 Run full check suite
+- [x] 9.1 Run full check suite
         - Command: `pnpm check`
         - Expected: All tests pass, no type errors, no lint errors
-- [ ] 9.2 Run type-specific type tests
+- [x] 9.2 Run type-specific type tests
         - Command: `pnpm check-types:tests`
         - Expected: Type tests compile successfully
-- [ ] 9.3 Build the package
+- [x] 9.3 Build the package
         - Command: `pnpm build`
         - Expected: Build succeeds with no errors
-- [ ] 9.4 Search for any remaining old field references
+- [x] 9.4 Search for any remaining old field references
         - Command: `grep -r "response\.output\|result\.output" packages/agent-cli-sdk/src packages/agent-cli-sdk/tests packages/agent-cli-sdk/examples --include="*.ts"`
         - Expected: No results (all should be updated to `.data`)
-- [ ] 9.5 Search for old event field references
+- [x] 9.5 Search for old event field references
         - Command: `grep -r "response\.data as.*Event\|result\.data as.*Event" packages/agent-cli-sdk/src packages/agent-cli-sdk/tests packages/agent-cli-sdk/examples --include="*.ts"`
         - Expected: No results (all should be updated to `.events`)
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Type checking passed with no errors (pnpm check-types)
+- Build succeeded in 404ms, generated 4 files (210.12 kB total)
+- No remaining problematic .output references found (only usage metrics like output_tokens remain, which is correct)
+- No old event casting patterns found (all updated to .events)
+- Git stats: 29 files changed in packages, 245 insertions(+), 245 deletions(-)
+- All verification checks passed successfully
 
 ## Acceptance Criteria
 

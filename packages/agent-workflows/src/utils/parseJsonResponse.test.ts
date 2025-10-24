@@ -3,11 +3,11 @@ import { parseJsonResponse, parseJsonResponseStrict } from './parseJsonResponse.
 import type { ExecutionResponse } from '../types/workflow.js';
 
 describe('parseJsonResponse', () => {
-  describe('when response.output is already an object (responseSchema used)', () => {
-    it('returns the output directly', () => {
+  describe('when response.data is already an object (responseSchema used)', () => {
+    it('returns the data directly', () => {
       const response: ExecutionResponse<{ success: boolean }> = {
         status: 'success',
-        output: { success: true },
+        data: { success: true },
         sessionId: 'test-session',
         exitCode: 0,
         duration: 1000,
@@ -21,7 +21,7 @@ describe('parseJsonResponse', () => {
     it('handles complex objects', () => {
       const response: ExecutionResponse<{ data: { nested: boolean } }> = {
         status: 'success',
-        output: { data: { nested: true } },
+        data: { data: { nested: true } },
         sessionId: 'test-session',
         exitCode: 0,
         duration: 1000,
@@ -37,7 +37,7 @@ describe('parseJsonResponse', () => {
     it('extracts JSON from ```json block', () => {
       const response: ExecutionResponse<string> = {
         status: 'success',
-        output: 'Here is the result:\n```json\n{"success": true, "count": 5}\n```\nDone!',
+        data: 'Here is the result:\n```json\n{"success": true, "count": 5}\n```\nDone!',
         sessionId: 'test-session',
         exitCode: 0,
         duration: 1000,
@@ -160,11 +160,11 @@ describe('parseJsonResponse', () => {
   });
 });
 
-// Helper function to create ExecutionResponse with string output
-function createStringResponse(output: string): ExecutionResponse<string> {
+// Helper function to create ExecutionResponse with string data
+function createStringResponse(data: string): ExecutionResponse<string> {
   return {
     status: 'success',
-    output,
+    data,
     sessionId: 'test-session',
     exitCode: 0,
     duration: 1000,
@@ -173,10 +173,10 @@ function createStringResponse(output: string): ExecutionResponse<string> {
 }
 
 describe('parseJsonResponseStrict', () => {
-  it('returns parsed JSON when output is already an object', () => {
+  it('returns parsed JSON when data is already an object', () => {
     const response: ExecutionResponse<{ success: boolean }> = {
       status: 'success',
-      output: { success: true },
+      data: { success: true },
       sessionId: 'test-session',
       exitCode: 0,
       duration: 1000,
@@ -197,7 +197,7 @@ describe('parseJsonResponseStrict', () => {
   it('includes response details in error message', () => {
     const response: ExecutionResponse<string> = {
       status: 'error',
-      output: 'Some text without JSON',
+      data: 'Some text without JSON',
       sessionId: 'test-session',
       exitCode: 1,
       duration: 1000,

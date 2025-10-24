@@ -10,7 +10,7 @@ const TEST_STATE_DIR = ".agent/workflows/logs-test-workflow";
 const createMockCli = (response: Partial<ExecutionResponse> = {}): Cli => ({
   async execute<T>(): Promise<ExecutionResponse<T>> {
     return {
-      output: "" as T,
+      data: "" as T,
       sessionId: "test-session",
       status: "success",
       exitCode: 0,
@@ -375,7 +375,7 @@ describe("Workflow", () => {
       };
       const workflow = new Workflow(config);
 
-      const mockCli = createMockCli({ status: "success", output: "test output" });
+      const mockCli = createMockCli({ status: "success", data: "test output" });
 
       const stepConfig: ExecuteCliStepConfig = {
         cli: mockCli,
@@ -387,13 +387,13 @@ describe("Workflow", () => {
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.data.status).toBe("success");
-        expect(result.data.output).toBe("test output");
+        expect(result.data.data).toBe("test output");
       }
 
       // The entire ExecutionResponse is stored in the step state
       const stepState = workflow.getState().steps?.["test-cli-step"] as ExecutionResponse;
       expect(stepState.status).toBe("success");
-      expect(stepState.output).toBe("test output");
+      expect(stepState.data).toBe("test output");
     });
 
     it("should mark step as running then completed", async () => {
@@ -531,7 +531,7 @@ describe("Workflow", () => {
         execute: async <T>(_prompt: string, options?: Record<string, unknown>): Promise<ExecutionResponse<T>> => {
           receivedOptions = options;
           return {
-            output: "" as T,
+            data: "" as T,
             sessionId: "test-session",
             status: "success",
             exitCode: 0,
@@ -641,7 +641,7 @@ describe("Workflow", () => {
       });
 
       // Step 2
-      const mockCli = createMockCli({ status: "success", output: "step2-output" });
+      const mockCli = createMockCli({ status: "success", data: "step2-output" });
       await workflow.executeCliStep("step2", {
         cli: mockCli,
         prompt: "Execute step 2",

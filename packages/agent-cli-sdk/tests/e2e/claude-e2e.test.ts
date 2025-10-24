@@ -36,13 +36,13 @@ describeE2E('Claude E2E Tests', () => {
 
       expect(result.status).toBe('success');
       expect(result.exitCode).toBe(0);
-      expect(result.output).toBeDefined();
+      expect(result.data).toBeDefined();
       expect(result.sessionId).toBeDefined();
       expect(result.duration).toBeGreaterThan(0);
-      expect(typeof result.output).toBe('string');
+      expect(typeof result.data).toBe('string');
 
       // Output should contain "4"
-      expect(result.output.toLowerCase()).toContain('4');
+      expect(result.data.toLowerCase()).toContain('4');
     }, 60000); // 60 second test timeout
 
     it('should handle streaming output', async () => {
@@ -82,7 +82,7 @@ describeE2E('Claude E2E Tests', () => {
       });
 
       expect(result.status).toBe('success');
-      expect(result.output).toBeDefined();
+      expect(result.data).toBeDefined();
     }, 60000);
   });
 
@@ -113,7 +113,7 @@ describeE2E('Claude E2E Tests', () => {
       expect(result2.sessionId).toBe(result1.sessionId);
 
       // Output should reference 42
-      expect(result2.output.toLowerCase()).toContain('42');
+      expect(result2.data.toLowerCase()).toContain('42');
     }, 90000);
 
     it('should track active sessions', async () => {
@@ -195,7 +195,7 @@ describeE2E('Claude E2E Tests', () => {
       });
 
       expect(result.status).toBe('success');
-      expect(result.output).toBeDefined();
+      expect(result.data).toBeDefined();
     }, 60000);
 
     it('should handle permission modes', async () => {
@@ -267,7 +267,7 @@ describeE2E('Claude E2E Tests', () => {
 
       expect(result2.status).toBe('success');
       expect(result2.sessionId).toBe(capturedSessionId);
-      expect(result2.output.toLowerCase()).toContain('blue');
+      expect(result2.data.toLowerCase()).toContain('blue');
     }, 90000);
 
     it('should maintain context through multiple resume operations', async () => {
@@ -305,7 +305,7 @@ describeE2E('Claude E2E Tests', () => {
 
       expect(r4.sessionId).toBe(sessionId);
 
-      const output = r4.output.toLowerCase();
+      const output = r4.data.toLowerCase();
       expect(output).toContain('alex');
       expect(output).toContain('25');
       expect(output).toContain('portland');
@@ -336,7 +336,7 @@ describeE2E('Claude E2E Tests', () => {
       });
 
       expect(r2.sessionId).toBe(sessionId);
-      expect(r2.output.toLowerCase()).toContain('factorial');
+      expect(r2.data.toLowerCase()).toContain('factorial');
 
       // Step 3: Ask for edge cases
       const r3 = await client.execute('What edge cases should we handle?', {
@@ -345,7 +345,7 @@ describeE2E('Claude E2E Tests', () => {
       });
 
       expect(r3.sessionId).toBe(sessionId);
-      expect(r3.output.length).toBeGreaterThan(0);
+      expect(r3.data.length).toBeGreaterThan(0);
     }, 60000);
 
     it('should handle concurrent sessions independently', async () => {
@@ -375,8 +375,8 @@ describeE2E('Claude E2E Tests', () => {
         session2.send('What is my favorite animal?', { timeout: 30000 }),
       ]);
 
-      expect(check1.output.toLowerCase()).toContain('cat');
-      expect(check2.output.toLowerCase()).toContain('dog');
+      expect(check1.data.toLowerCase()).toContain('cat');
+      expect(check2.data.toLowerCase()).toContain('dog');
     }, 60000);
 
     it('should handle streaming with event aggregation', async () => {
@@ -446,7 +446,7 @@ describeE2E('Claude E2E Tests', () => {
       });
 
       expect(result.status).toBe('success');
-      expect(result.output).toBeDefined();
+      expect(result.data).toBeDefined();
 
       // Verify model info in metadata (if available)
       if (result.metadata?.model) {
@@ -565,7 +565,7 @@ describeE2E('Claude E2E Tests', () => {
       expect(outputData.sessionId).toBeDefined();
       expect(outputData.duration).toBeGreaterThan(0);
       expect(outputData.exitCode).toBe(0);
-      expect(outputData.output).toContain('Logging test');
+      expect(outputData.data).toContain('Logging test');
       expect(outputData.metadata).toBeDefined();
     }, 60000);
 

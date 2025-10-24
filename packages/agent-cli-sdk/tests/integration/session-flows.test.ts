@@ -22,7 +22,7 @@ class MockAdapterSession extends EventEmitter {
     }
 
     const response: ExecutionResponse<T> = {
-      output: `Response to: ${message}` as T,
+      data: `Response to: ${message}` as T,
       sessionId: this.sessionId,
       status: 'success',
       exitCode: 0,
@@ -57,7 +57,7 @@ class MockAdapterWithSessions implements AIAdapter {
 
   async execute<T = string>(prompt: string, options?: ExecutionOptions): Promise<ExecutionResponse<T>> {
     return {
-      output: `Response: ${prompt}` as T,
+      data: `Response: ${prompt}` as T,
       sessionId: `exec-${Date.now()}`,
       status: 'success',
       exitCode: 0,
@@ -128,7 +128,7 @@ describe('Session Flows - Integration', () => {
       const result = await session.send('Hello');
 
       expect(result.status).toBe('success');
-      expect(result.output).toContain('Hello');
+      expect(result.data).toContain('Hello');
       expect(session.messageCount).toBe(1);
       expect(session.sessionId).toBeDefined();
     });
@@ -360,7 +360,7 @@ describe('Session Flows - Integration', () => {
           _options?: ExecutionOptions
         ): Promise<ExecutionResponse<T>> {
           return {
-            output: 'test' as T,
+            data: 'test' as T,
             sessionId: 'test',
             status: 'success',
             exitCode: 0,
