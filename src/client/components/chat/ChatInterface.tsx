@@ -22,12 +22,13 @@ interface ChatInterfaceProps {
  * To enable real-time streaming:
  * 1. Replace useClaudeSession with useAgentWebSocket hook
  * 2. Connect to WebSocket endpoint: `/ws/session/${sessionId}`
- * 3. Listen for StreamEvent messages from agent-cli-sdk
- * 4. Update messages array as events arrive (message_start, content_block_*, message_stop)
+ * 3. Listen for streaming events from Claude CLI via agent-cli-sdk
+ * 4. Update messages as complete message objects arrive
  * 5. Enable bi-directional communication (send user messages via WebSocket)
  *
- * The message types and ContentBlock structure are already aligned with
- * agent-cli-sdk's event format, so no type mapping is needed.
+ * Note: Streaming events (message_start, content_block_delta, etc.) occur only
+ * during real-time WebSocket streaming and are never written to JSONL files.
+ * JSONL files contain only complete, finalized messages.
  */
 export function ChatInterface({ projectId, sessionFile }: ChatInterfaceProps) {
   const { messages, toolResults, isLoading, error } = useClaudeSession(sessionFile);

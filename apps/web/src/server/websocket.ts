@@ -270,18 +270,19 @@ async function handleSessionEvent(
         // }
         // ============= END SESSION NAME GENERATION =============
 
-        // Extract usage data from the last assistant message in response.data
+        // Extract usage data from the last assistant message in response.events
         let usage = null;
-        if (response.data && Array.isArray(response.data)) {
-          fastify.log.info({ dataLength: response.data.length, sessionId }, "Extracting usage from response.data");
+        if (response.events && Array.isArray(response.events)) {
+          const events = response.events;
+          fastify.log.info({ dataLength: events.length, sessionId }, "Extracting usage from response.events");
 
           // Log the last few events to understand the structure
-          const lastEvents = response.data.slice(-3);
-          fastify.log.info({ lastEvents: JSON.stringify(lastEvents, null, 2), sessionId }, "Last 3 events in response.data");
+          const lastEvents = events.slice(-3);
+          fastify.log.info({ lastEvents: JSON.stringify(lastEvents, null, 2), sessionId }, "Last 3 events in response.events");
 
           // Find the last assistant message with usage data
-          for (let i = response.data.length - 1; i >= 0; i--) {
-            const event = response.data[i];
+          for (let i = events.length - 1; i >= 0; i--) {
+            const event = events[i];
 
             // Log each event type we're checking
             fastify.log.debug({
@@ -313,10 +314,10 @@ async function handleSessionEvent(
           }
 
           if (!usage) {
-            fastify.log.warn({ sessionId, lastEvent: response.data[response.data.length - 1] }, "No usage data found in response.data");
+            fastify.log.warn({ sessionId, lastEvent: events[events.length - 1] }, "No usage data found in response.events");
           }
         } else {
-          fastify.log.warn({ sessionId, responseKeys: response ? Object.keys(response) : null }, "response.data is not an array or doesn't exist");
+          fastify.log.warn({ sessionId, responseKeys: response ? Object.keys(response) : null }, "response.events is not an array or doesn't exist");
         }
 
         // Clean up temporary images
@@ -336,7 +337,7 @@ async function handleSessionEvent(
             usage,
           },
           response,
-          events: response.data, // Parsed JSONL events for rich UI
+          events: response.events, // Parsed events from CLI for rich UI
         });
       } catch (err: unknown) {
         fastify.log.error({ err, sessionId }, "Agent CLI SDK error");

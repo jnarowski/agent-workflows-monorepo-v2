@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useCallback, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import { getAgent } from "../../../../lib/agents";
@@ -9,6 +10,7 @@ import type {
   SessionMessageCompleteData,
   SessionErrorData,
 } from "@/shared/types/websocket";
+import { sessionKeys } from "./useAgentSessions";
 
 interface UseSessionWebSocketOptions {
   sessionId: string;
@@ -30,6 +32,8 @@ export function useSessionWebSocket({
     isConnected,
     eventBus,
   } = useWebSocket();
+
+  const queryClient = useQueryClient();
 
   // Refs to avoid recreating callbacks
   const sessionIdRef = useRef(sessionId);
@@ -77,8 +81,11 @@ export function useSessionWebSocket({
       if (data.metadata) {
         useSessionStore.getState().updateMetadata(data.metadata);
       }
+
+      // Invalidate sessions query to update sidebar with new metadata
+      queryClient.invalidateQueries({ queryKey: sessionKeys.byProject(projectIdRef.current) });
     },
-    []
+    [queryClient]
   );
 
   /**

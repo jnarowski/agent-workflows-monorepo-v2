@@ -51,6 +51,8 @@ export function DebugProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Export hook separately to satisfy fast refresh requirements
+// eslint-disable-next-line react-refresh/only-export-components
 export function useDebug() {
   const context = useContext(DebugContext);
   if (context === undefined) {

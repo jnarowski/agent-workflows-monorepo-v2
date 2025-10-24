@@ -88,15 +88,9 @@ export function AppInnerSidebar({
     enabled: !!activeProjectId,
   });
 
-  // Sort sessions by lastMessageAt (most recent first)
-  const sortedSessions = useMemo(() => {
-    if (!sessionsData) return [];
-    return [...sessionsData].sort((a, b) => {
-      const aTime = new Date(a.metadata.lastMessageAt).getTime();
-      const bTime = new Date(b.metadata.lastMessageAt).getTime();
-      return bTime - aTime; // Descending order (most recent first)
-    });
-  }, [sessionsData]);
+  // Backend already sorts sessions by created_at (most recent first)
+  // Just use the data directly
+  const sortedSessions = sessionsData || [];
 
   const toggleHiddenMutation = useToggleProjectHidden();
 
@@ -414,12 +408,12 @@ export function AppInnerSidebar({
                           <CollapsibleContent>
                             <div className="ml-0 space-y-0.5 border-l pl-1 py-1">
                               {isActive &&
-                              sessionsData &&
-                              sessionsData.length > 0 ? (
+                              sortedSessions &&
+                              sortedSessions.length > 0 ? (
                                 <>
                                   {(showAllSessions[project.id]
-                                    ? sessionsData
-                                    : sessionsData.slice(0, 5)
+                                    ? sortedSessions
+                                    : sortedSessions.slice(0, 5)
                                   ).map((session) => (
                                     <SessionListItem
                                       key={session.id}
@@ -428,7 +422,7 @@ export function AppInnerSidebar({
                                       isActive={false}
                                     />
                                   ))}
-                                  {sessionsData.length > 5 &&
+                                  {sortedSessions.length > 5 &&
                                     !showAllSessions[project.id] && (
                                       <button
                                         onClick={() =>
@@ -439,7 +433,7 @@ export function AppInnerSidebar({
                                         }
                                         className="w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors text-left"
                                       >
-                                        Show {sessionsData.length - 5} more...
+                                        Show {sortedSessions.length - 5} more...
                                       </button>
                                     )}
                                 </>

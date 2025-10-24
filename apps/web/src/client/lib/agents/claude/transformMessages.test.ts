@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { transformMessages } from './transformMessages';
-import type { SessionMessage } from '@/shared/types/message.types';
 
 describe('transformMessages', () => {
   describe('basic transformation', () => {

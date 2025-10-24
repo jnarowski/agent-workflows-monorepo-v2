@@ -1,5 +1,6 @@
 import { useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { ChatInterface } from "./components/ChatInterface";
 import { ChatPromptInput } from "./components/ChatPromptInput";
 import { useSessionWebSocket } from "./hooks/useSessionWebSocket";
@@ -10,6 +11,7 @@ import { useNavigationStore } from "@/client/stores/index";
 import { api } from "@/client/lib/api-client";
 import type { ToolResultBlock } from "@/shared/types/message.types";
 import { DebugProvider } from "@/client/contexts/DebugContext";
+import { sessionKeys } from "./hooks/useAgentSessions";
 
 export default function ProjectSession() {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ export default function ProjectSession() {
   const { projectId } = useActiveProject();
   const setActiveSession = useNavigationStore((s) => s.setActiveSession);
   const initialMessageSentRef = useRef(false);
+  const queryClient = useQueryClient();
 
   // Get sessionId from URL params (will be undefined for /session/new route)
   const sessionId = params.sessionId || null;
@@ -173,6 +176,9 @@ export default function ProjectSession() {
         );
 
         console.log("[ProjectSession] Session created:", newSession.id);
+
+        // Invalidate sessions query to update sidebar immediately
+        queryClient.invalidateQueries({ queryKey: sessionKeys.byProject(projectId) });
 
         // Convert images to base64 if present
         const imagePaths = images ? await handleImageUpload(images) : undefined;

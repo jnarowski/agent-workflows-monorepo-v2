@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, Wrench, Loader2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Wrench } from 'lucide-react';
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/client/components/ui/collapsible";
@@ -24,7 +24,6 @@ interface ToolUseBlockProps {
 
 export function ToolUseBlock({ id, name, input, result, className = '' }: ToolUseBlockProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const isPending = result === undefined;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className={className}>
@@ -48,12 +47,6 @@ export function ToolUseBlock({ id, name, input, result, className = '' }: ToolUs
               <span className="text-xs text-muted-foreground font-mono truncate">
                 {id.slice(0, 8)}...
               </span>
-              {isPending && (
-                <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Running...
-                </div>
-              )}
             </div>
           </Button>
         </CollapsibleTrigger>
@@ -72,12 +65,6 @@ export function ToolUseBlock({ id, name, input, result, className = '' }: ToolUs
               <div className="space-y-1.5">
                 <div className="text-xs font-medium text-muted-foreground">Output:</div>
                 <ToolResultRenderer result={result.content} isError={result.is_error} />
-              </div>
-            )}
-
-            {isPending && (
-              <div className="text-sm text-muted-foreground italic">
-                Waiting for result...
               </div>
             )}
           </div>

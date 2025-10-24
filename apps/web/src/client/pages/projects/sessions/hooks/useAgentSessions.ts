@@ -7,6 +7,11 @@ interface UseAgentSessionsOptions {
   enabled?: boolean;
 }
 
+export const sessionKeys = {
+  all: ["agentSessions"] as const,
+  byProject: (projectId: string) => ["agentSessions", projectId] as const,
+};
+
 async function fetchAgentSessions(
   projectId: string
 ): Promise<SessionResponse[]> {
@@ -21,7 +26,7 @@ export function useAgentSessions({
   enabled = true,
 }: UseAgentSessionsOptions) {
   return useQuery({
-    queryKey: ["agentSessions", projectId],
+    queryKey: sessionKeys.byProject(projectId),
     queryFn: () => fetchAgentSessions(projectId),
     enabled: enabled && !!projectId,
     refetchOnWindowFocus: false,

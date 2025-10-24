@@ -27,33 +27,28 @@ useClaudeSession(file) → adapter detects format → transforms → UI
 
 ## Supported Formats
 
-### 1. Claude CLI Format (New)
-**File**: `955542ae-9772-459d-a33f-d12f5586d961.jsonl`
+### Claude Code JSONL Format
+**Example File**: `955542ae-9772-459d-a33f-d12f5586d961.jsonl`
 
 **Structure**:
 ```jsonl
 {"type":"user","message":{"role":"user","content":[...]},"uuid":"...","timestamp":"..."}
 {"type":"assistant","message":{"role":"assistant","content":[...]},"uuid":"...","timestamp":"..."}
+{"type":"file-history-snapshot","messageId":"...","snapshot":{...}}
 ```
+
+**Content Types** (inside `message.content[]`):
+- `{"type":"text","text":"..."}` - Text content
+- `{"type":"tool_use","id":"...","name":"...","input":{...}}` - Tool invocation
+- `{"type":"tool_result","tool_use_id":"...","content":"..."}` - Tool result
+- `{"type":"thinking","thinking":"..."}` - Extended thinking content
 
 **Detection**: Looks for `"type":"user"` or `"type":"assistant"`
 
 **Adapter**: `transformClaudeCliEvent()` in `sessionAdapters.ts`
 
-### 2. Claude Streaming Format (Old)
-**File**: `8f079ffe-995f-42ba-b089-84de56817b6f.jsonl`
-
-**Structure**:
-```jsonl
-{"type":"message_start","message":{"id":"...","role":"assistant"}}
-{"type":"content_block_start","content_block":{"type":"text","text":"..."}}
-{"type":"content_block_delta","delta":{"type":"text_delta","text":"..."}}
-{"type":"message_stop"}
-```
-
-**Detection**: Looks for `"type":"message_start"` or `"type":"content_block_start"`
-
-**Adapter**: Falls back to original parsing logic in `parseClaudeSession.ts`
+**Important Note on Streaming Events:**
+Streaming events like `message_start`, `content_block_start`, `content_block_delta`, and `message_stop` only occur during **real-time WebSocket streaming** and are **never written to JSONL files**. JSONL files contain only complete, finalized messages. These streaming events exist in memory during live conversations but are not persisted.
 
 ## How It Works
 
@@ -62,9 +57,9 @@ useClaudeSession(file) → adapter detects format → transforms → UI
 // In sessionAdapters.ts
 function detectFormat(jsonlContent: string): TransformFn {
   if (jsonlContent.includes('"type":"user"')) {
-    return transformClaudeCliEvent; // New CLI format
+    return transformClaudeCliEvent; // Claude Code format
   }
-  return (event) => event; // Streaming format (passthrough)
+  return (event) => event; // Unknown format (passthrough)
 }
 ```
 
@@ -90,14 +85,8 @@ function transformClaudeCliEvent(event: any): any | null {
 ```typescript
 // In parseClaudeSession.ts
 export function parseJSONLSession(jsonlContent: string): ChatMessage[] {
-  // Try adapter-based parsing (handles CLI format)
-  const adapterResult = parseJSONLWithAdapter(jsonlContent);
-  if (adapterResult.length > 0) {
-    return adapterResult;
-  }
-
-  // Fall back to streaming format parsing
-  // ... existing streaming logic
+  // Use adapter-based parsing (handles Claude Code JSONL format)
+  return parseJSONLWithAdapter(jsonlContent);
 }
 ```
 
@@ -132,12 +121,12 @@ function detectFormat(jsonlContent: string): TransformFn {
     return transformCodexEvent;
   }
 
-  // Check for Claude CLI format
+  // Check for Claude Code format
   if (jsonlContent.includes('"type":"user"')) {
     return transformClaudeCliEvent;
   }
 
-  // Default to streaming
+  // Default to passthrough
   return (event) => event;
 }
 ```
@@ -168,16 +157,13 @@ That's it! The adapter will auto-detect and transform the format.
 - `useClaudeSession.ts` - Hook for loading JSONL files
 - `types/chat.ts` - Unified `ChatMessage` interface
 
-## Testing Both Formats
+## Testing
 
 ```typescript
-// Test new format (default)
-const { messages: newFormat } = useClaudeSession();
+// Test Claude Code format
+const { messages } = useClaudeSession('955542ae-9772-459d-a33f-d12f5586d961.jsonl');
 
-// Test old format
-const { messages: oldFormat } = useClaudeSession('8f079ffe-995f-42ba-b089-84de56817b6f.jsonl');
-
-// Both should render identically in the UI
+// Messages are automatically parsed and rendered
 ```
 
 ## Future: WebSocket Hook

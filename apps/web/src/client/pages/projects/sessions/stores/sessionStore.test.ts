@@ -163,16 +163,17 @@ describe("SessionStore", () => {
 
     it("should update streaming message by replacing content blocks", () => {
       const { updateStreamingMessage } = useSessionStore.getState();
+      const messageId = "msg-1";
 
       // First chunk
-      updateStreamingMessage([{ type: "text", text: "Hello" }]);
+      updateStreamingMessage(messageId, [{ type: "text", text: "Hello" }]);
       let state = useSessionStore.getState();
       expect(state.currentSession?.messages).toHaveLength(1);
       expect(state.currentSession?.messages[0].role).toBe("assistant");
       expect(state.currentSession?.messages[0].content).toHaveLength(1);
 
-      // Second chunk - replaces content (merging happens in WebSocket hook)
-      updateStreamingMessage([{ type: "text", text: " world" }]);
+      // Second chunk - replaces content with same message ID (merging happens in WebSocket hook)
+      updateStreamingMessage(messageId, [{ type: "text", text: " world" }]);
       state = useSessionStore.getState();
       expect(state.currentSession?.messages).toHaveLength(1);
       expect(state.currentSession?.messages[0].content).toHaveLength(1);
@@ -181,8 +182,9 @@ describe("SessionStore", () => {
 
     it("should handle multiple text blocks during streaming", () => {
       const { updateStreamingMessage } = useSessionStore.getState();
+      const messageId = "msg-1";
 
-      updateStreamingMessage([
+      updateStreamingMessage(messageId, [
         { type: "text", text: "First block" },
         { type: "text", text: "Second block" },
       ]);
@@ -194,9 +196,10 @@ describe("SessionStore", () => {
 
     it("should handle tool_use blocks in streaming content", () => {
       const { updateStreamingMessage } = useSessionStore.getState();
+      const messageId = "msg-1";
 
       // Add initial content with tool_use
-      updateStreamingMessage([
+      updateStreamingMessage(messageId, [
         { type: "text", text: "Using tool" },
         { type: "tool_use", id: "tool-1", name: "bash", input: { command: "ls" } },
       ]);
@@ -209,9 +212,9 @@ describe("SessionStore", () => {
 
     it("should finalize message and clear streaming state", () => {
       const { updateStreamingMessage, finalizeMessage } = useSessionStore.getState();
+      const messageId = "msg-1";
 
-      updateStreamingMessage([{ type: "text", text: "Hello" }]);
-      const messageId = useSessionStore.getState().currentSession?.messages[0].id || "";
+      updateStreamingMessage(messageId, [{ type: "text", text: "Hello" }]);
       finalizeMessage(messageId);
 
       const state = useSessionStore.getState();
@@ -223,19 +226,20 @@ describe("SessionStore", () => {
 
     it("should handle empty content array in streaming update", () => {
       const { updateStreamingMessage } = useSessionStore.getState();
+      const messageId = "msg-1";
 
-      updateStreamingMessage([]);
+      updateStreamingMessage(messageId, []);
 
       const state = useSessionStore.getState();
-      // Should either have no messages or one empty message
+      // Should create a message with empty content
       expect(state.currentSession?.messages.length).toBeGreaterThanOrEqual(0);
     });
 
     it("REGRESSION: should append multiple assistant messages during streaming, not replace them", () => {
       const { updateStreamingMessage } = useSessionStore.getState();
 
-      // First assistant message with Read tool (simulates first stream event)
-      updateStreamingMessage([
+      // First assistant message with Read tool (simulates first stream event with msg_01)
+      updateStreamingMessage("msg_01", [
         { type: "text", text: "Let me read that file" },
         { type: "tool_use", id: "tool-1", name: "Read", input: { file_path: "/test.txt" } },
       ]);
@@ -243,27 +247,26 @@ describe("SessionStore", () => {
       let state = useSessionStore.getState();
       expect(state.currentSession?.messages).toHaveLength(1);
       expect(state.currentSession?.messages[0].content).toHaveLength(2);
-      expect((state.currentSession?.messages[0].content[1] as any).name).toBe("Read");
+      const firstContentBlock = state.currentSession?.messages[0].content[1];
+      if (firstContentBlock && 'name' in firstContentBlock) {
+        expect(firstContentBlock.name).toBe("Read");
+      }
 
-      // Second assistant message with Glob tool (simulates second stream event)
-      // BUG: This replaces the first message instead of appending a new one
-      updateStreamingMessage([
+      // Second assistant message with Glob tool (simulates second stream event with msg_02)
+      // FIXED: Different message ID means this should append as a NEW message
+      updateStreamingMessage("msg_02", [
         { type: "text", text: "Now let me search for files" },
         { type: "tool_use", id: "tool-2", name: "Glob", input: { pattern: "*.ts" } },
       ]);
 
       state = useSessionStore.getState();
 
-      // CURRENT BEHAVIOR (BUG): Only 1 message exists, content replaced
-      expect(state.currentSession?.messages).toHaveLength(1);
-      expect((state.currentSession?.messages[0].content[1] as any).name).toBe("Glob"); // Read is gone!
-
-      // EXPECTED BEHAVIOR (what should happen after reload):
-      // This test should FAIL until we fix the updateStreamingMessage logic
-      // After fix:
-      // expect(state.currentSession?.messages).toHaveLength(2);
-      // expect((state.currentSession?.messages[0].content[1] as any).name).toBe("Read");
-      // expect((state.currentSession?.messages[1].content[1] as any).name).toBe("Glob");
+      // EXPECTED BEHAVIOR (FIXED): 2 messages exist, both visible
+      expect(state.currentSession?.messages).toHaveLength(2);
+      const firstMsg = state.currentSession?.messages[0].content[1];
+      if (firstMsg && 'name' in firstMsg) expect(firstMsg.name).toBe("Read");
+      const secondMsg = state.currentSession?.messages[1].content[1];
+      if (secondMsg && 'name' in secondMsg) expect(secondMsg.name).toBe("Glob");
     });
 
     it("should handle message finalization with no streaming message gracefully", () => {

@@ -117,7 +117,7 @@ export function useClaudeSession(
  *     ws.onmessage = (event) => {
  *       const streamEvent = JSON.parse(event.data);
  *       // Update messages based on streamEvent.type
- *       // Handle: message_start, content_block_start, content_block_delta, etc.
+ *       // Handle streaming events from Claude CLI
  *     };
  *
  *     return () => ws.close();
