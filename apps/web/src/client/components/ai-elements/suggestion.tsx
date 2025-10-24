@@ -1,6 +1,6 @@
 'use client';
 
-import React, { type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Button } from "@/client/components/ui/button";
 import { cn } from "@/client/lib/utils";
 

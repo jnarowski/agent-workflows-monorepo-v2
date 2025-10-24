@@ -13,8 +13,8 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/client/components/ui/command";
-import { useProjects } from "@/client/hooks/useProjects";
-import { useAgentSessions } from "@/client/hooks/useAgentSessions";
+import { useProjects } from "@/client/pages/projects/hooks/useProjects";
+import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgentSessions";
 import { Button } from "@/client/components/ui/button";
 
 export function CommandMenu() {

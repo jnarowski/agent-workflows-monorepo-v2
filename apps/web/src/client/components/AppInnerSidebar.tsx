@@ -41,12 +41,12 @@ import {
 import {
   useProjects,
   useToggleProjectHidden,
-} from "@/client/hooks/useProjects";
-import { useAgentSessions } from "@/client/hooks/useAgentSessions";
-import { SessionListItem } from "./chat/SessionListItem";
-import { NewSessionButton } from "./chat/NewSessionButton";
+} from "@/client/pages/projects/hooks/useProjects";
+import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgentSessions";
+import { SessionListItem } from "../pages/projects/sessions/components/SessionListItem";
+import { NewSessionButton } from "../pages/projects/sessions/components/NewSessionButton";
 import { CommandMenu } from "./CommandMenu";
-import { ProjectDialog } from "./projects/ProjectDialog";
+import { ProjectDialog } from "../pages/projects/components/ProjectDialog";
 import type { Project } from "@/shared/types/project.types";
 
 interface AppInnerSidebarProps {
@@ -109,6 +109,8 @@ export function AppInnerSidebar({
       name: project.name,
       path: project.path,
       is_hidden: project.is_hidden,
+      created_at: project.created_at,
+      updated_at: project.updated_at,
       sessionCount:
         project.id === activeProjectId ? sessionsData?.length || 0 : 0,
     }));

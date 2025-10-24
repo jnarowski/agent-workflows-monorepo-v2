@@ -226,8 +226,8 @@ async function handleSessionEvent(
 
           // Send error message to client
           sendMessage(socket, `session.${sessionId}.error`, {
-            error: response.output || response.raw?.stderr || "An error occurred",
-            message: response.output || response.raw?.stderr || "An error occurred while processing your request",
+            error: response.data || "An error occurred",
+            message: response.data || "An error occurred while processing your request",
             details: {
               exitCode: response.exitCode,
               stderr: response.raw?.stderr,

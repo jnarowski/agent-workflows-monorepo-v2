@@ -14,9 +14,9 @@
 // Store exports
 export { useAuthStore } from "./authStore";
 export { useNavigationStore } from "./navigationStore";
-export { useFilesStore } from "./filesStore";
+export { useFilesStore } from "@/client/pages/projects/files/stores/filesStore";
 
 // Type exports
 export type { AuthStore, User } from "./authStore";
 export type { NavigationStore } from "./navigationStore";
-export type { FilesStore } from "./filesStore";
+export type { FilesStore } from "@/client/pages/projects/files/stores/filesStore";

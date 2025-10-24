@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Command } from "lucide-react";
-import { NavUser } from "@/client/components/nav-user";
+import { NavUser } from "@/client/components/NavUser";
 import {
   Sidebar,
   SidebarContent,

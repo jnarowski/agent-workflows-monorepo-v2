@@ -2,14 +2,14 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useActiveProjectFiles } from "./useActiveProjectFiles";
 import { useNavigationStore } from "@/client/stores";
-import { useProjectFiles } from "@/client/hooks/useFiles";
+import { useProjectFiles } from "@/client/pages/projects/files/hooks/useFiles";
 
 // Mock the stores and hooks
 vi.mock("@/client/stores", () => ({
   useNavigationStore: vi.fn(),
 }));
 
-vi.mock("@/client/hooks/useFiles", () => ({
+vi.mock("@/client/pages/projects/files/hooks/useFiles", () => ({
   useProjectFiles: vi.fn(),
 }));
 

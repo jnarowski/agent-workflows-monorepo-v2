@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { ShellProvider } from "@/client/contexts/ShellContext";
+import { ShellProvider } from "@/client/pages/projects/shell/contexts/ShellContext";
 import { WebSocketProvider } from "@/client/providers/WebSocketProvider";
 import ProtectedLayout from "@/client/layouts/ProtectedLayout";
 import AuthLayout from "@/client/layouts/AuthLayout";
@@ -7,12 +7,12 @@ import ProjectDetailLayout from "@/client/layouts/ProjectDetailLayout";
 import Dashboard from "@/client/pages/Dashboard";
 import Projects from "@/client/pages/Projects";
 import ProjectHome from "@/client/pages/ProjectHome";
-import ProjectSession from "@/client/pages/ProjectSession";
-import ProjectShell from "@/client/pages/ProjectShell";
-import ProjectFiles from "@/client/pages/ProjectFiles";
+import ProjectSession from "@/client/pages/projects/sessions/ProjectSession";
+import ProjectShell from "@/client/pages/projects/shell/ProjectShell";
+import ProjectFiles from "@/client/pages/projects/files/ProjectFiles";
 import AboutUs from "@/client/pages/AboutUs";
-import Login from "@/client/pages/Login";
-import Signup from "@/client/pages/Signup";
+import Login from "@/client/pages/auth/Login";
+import Signup from "@/client/pages/auth/Signup";
 import LayoutExperiment from "@/client/pages/LayoutExperiment";
 
 function App() {

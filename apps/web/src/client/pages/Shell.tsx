@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useProjects } from "@/client/hooks/useProjects";
-import { Terminal } from "@/client/components/terminal/Terminal";
-import { ShellControls } from "@/client/components/terminal/ShellControls";
-import { useShell } from "@/client/contexts/ShellContext";
+import { useProjects } from "@/client/pages/projects/hooks/useProjects";
+import { Terminal } from "@/client/pages/projects/shell/components/Terminal";
+import { ShellControls } from "@/client/pages/projects/shell/components/ShellControls";
+import { useShell } from "@/client/pages/projects/shell/contexts/ShellContext";
 import {
   Select,
   SelectContent,

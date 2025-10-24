@@ -4,6 +4,7 @@ import type { SessionMessage } from '@/shared/types/message.types';
  * Load a Gemini session (not yet implemented)
  * @throws Error indicating Gemini support is not implemented
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function loadSession(
   _sessionId: string,
   _projectPath: string

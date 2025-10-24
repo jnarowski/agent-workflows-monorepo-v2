@@ -1,5 +1,5 @@
 import { useNavigationStore } from "@/client/stores";
-import { useProjectFiles } from "@/client/hooks/useFiles";
+import { useProjectFiles } from "@/client/pages/projects/files/hooks/useFiles";
 import type { FileTreeItem } from "@/shared/types/file.types";
 
 /**

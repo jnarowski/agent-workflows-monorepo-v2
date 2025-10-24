@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProjects, useSyncProjects } from "@/client/hooks/useProjects";
+import { useProjects, useSyncProjects } from "@/client/pages/projects/hooks/useProjects";
 import { Button } from "@/client/components/ui/button";
 import {
   Table,
@@ -14,8 +14,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/cli
 import { Skeleton } from "@/client/components/ui/skeleton";
 import { AlertCircle, FolderOpen, Plus, Pencil, Trash2, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
-import { ProjectDialog } from "@/client/components/projects/ProjectDialog";
-import { DeleteProjectDialog } from "@/client/components/projects/DeleteProjectDialog";
+import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
+import { DeleteProjectDialog } from "@/client/pages/projects/components/DeleteProjectDialog";
 import type { Project } from "@/shared/types/project.types";
 import { useAuthStore } from "@/client/stores";
 import { markProjectsSynced } from "@/client/lib/projectSync";

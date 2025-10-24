@@ -34,7 +34,7 @@ export const Branch = ({ children, defaultBranch = 0 }: BranchProps) => {
     (child) => React.isValidElement(child) && child.type === BranchMessages
   );
 
-  const totalBranches = branchMessages && React.isValidElement(branchMessages)
+  const totalBranches = branchMessages && React.isValidElement<BranchMessagesProps>(branchMessages)
     ? React.Children.count(branchMessages.props.children)
     : 0;
 

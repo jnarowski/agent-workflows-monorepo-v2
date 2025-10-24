@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useProject } from "@/client/hooks/useProjects";
+import { useProject } from "@/client/pages/projects/hooks/useProjects";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/client/components/ui/card";
 import { FolderOpen, Calendar, GitBranch } from "lucide-react";

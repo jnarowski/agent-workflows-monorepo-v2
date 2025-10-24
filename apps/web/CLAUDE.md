@@ -213,14 +213,20 @@ packages/
 ```
 src/
   client/           # React frontend (Vite root)
-    components/     # React components
+    components/     # Shared React components
       ui/           # shadcn/ui components (Radix UI + Tailwind)
       ai-elements/  # AI chat interface components (Conversation, Message, etc.)
-      projects/     # Project-specific components
-    pages/          # Route pages (Dashboard, Projects, Login, Shell, etc.)
+    pages/          # Route pages organized by feature
+      auth/         # Authentication pages and components
+      projects/     # Projects feature with nested features
+        components/ # Project-level components (dialogs)
+        hooks/      # Project-level hooks (useProjects)
+        sessions/   # Session feature (chat, agents)
+        files/      # Files feature (file tree, editor)
+        shell/      # Shell feature (terminal)
     layouts/        # Layout components (ProtectedLayout, AuthLayout)
     contexts/       # React contexts (AuthContext)
-    hooks/          # Custom React hooks
+    hooks/          # Shared custom React hooks
     lib/            # Client utilities
   server/           # Fastify backend
     routes/         # API route handlers (auth, projects, shell)
@@ -233,6 +239,111 @@ src/
     types/          # Shared TypeScript types
     prisma.ts       # Prisma client singleton
 ```
+
+### Frontend File Organization
+
+The frontend follows a **feature-based architecture** where code is organized by feature proximity rather than file type. This improves maintainability and makes it easier to locate related files.
+
+**Naming Conventions:**
+- **PascalCase** for all non-UI components and React components (`LoginForm.tsx`, `AppSidebar.tsx`)
+- **kebab-case** only for shadcn/ui components in `components/ui/` (e.g., `dropdown-menu.tsx`)
+- **PascalCase** for hooks, stores, utilities, and lib files when they are feature-specific
+
+**Organization Principles:**
+
+1. **Top-Level Shared Code** (`client/components/`, `client/hooks/`, `client/lib/`)
+   - Only truly shared, reusable components
+   - Examples: `AppSidebar.tsx`, `NavUser.tsx`, `ThemeToggle.tsx`
+   - Shared hooks used across multiple features
+   - General utilities used application-wide
+
+2. **Feature-Based Organization** (`client/pages/{feature}/`)
+   - Each major feature gets its own directory under `pages/`
+   - Features contain all related code: pages, components, hooks, stores, lib, utils
+   - Subdirectories within features:
+     - `components/` - Feature-specific UI components
+     - `hooks/` - Feature-specific React hooks
+     - `stores/` - Feature-specific Zustand stores
+     - `lib/` - Feature-specific business logic
+     - `utils/` - Feature-specific utility functions
+     - `contexts/` - Feature-specific React contexts
+   - Page components live at the feature root (e.g., `pages/projects/sessions/ProjectSession.tsx`)
+
+3. **Current Feature Structure:**
+   ```
+   pages/
+   ├── auth/                    # Authentication feature
+   │   ├── components/          # LoginForm, SignupForm
+   │   ├── Login.tsx            # Login page
+   │   └── Signup.tsx           # Signup page
+   │
+   └── projects/                # Projects feature
+       ├── components/          # ProjectDialog, DeleteProjectDialog
+       ├── hooks/               # useProjects hook
+       │
+       ├── sessions/            # Session sub-feature (chat/agents)
+       │   ├── stores/          # sessionStore
+       │   ├── lib/             # slashCommandUtils
+       │   ├── components/      # Chat components, session renderers
+       │   ├── hooks/           # useAgentSessions, useSessionWebSocket, useSlashCommands
+       │   ├── utils/           # parseClaudeSession, sessionAdapters
+       │   └── ProjectSession.tsx
+       │
+       ├── files/               # Files sub-feature
+       │   ├── stores/          # filesStore
+       │   ├── lib/             # fileUtils
+       │   ├── components/      # FileTree, FileEditor, ImageViewer
+       │   ├── hooks/           # useFiles
+       │   └── ProjectFiles.tsx
+       │
+       └── shell/               # Shell sub-feature (terminal)
+           ├── contexts/        # ShellContext
+           ├── components/      # Terminal, ShellControls
+           ├── hooks/           # useShellWebSocket, useTerminalSession
+           └── ProjectShell.tsx
+   ```
+
+**When to Use Each Location:**
+
+- **`components/`** (top-level): Shared across 3+ features or used in layouts
+- **`pages/{feature}/components/`**: Only used within that feature
+- **`hooks/`** (top-level): Shared hooks like `useAuth`, `useNavigation`
+- **`pages/{feature}/hooks/`**: Feature-specific hooks
+- **`stores/`** (top-level): Only global stores like `authStore`, `navigationStore`
+- **`pages/{feature}/stores/`**: Feature-specific state management
+
+**Import Patterns:**
+
+Always use the `@/client/` alias for imports:
+
+```typescript
+// ✅ Top-level shared components
+import { AppSidebar } from "@/client/components/AppSidebar";
+
+// ✅ Feature-specific components
+import { LoginForm } from "@/client/pages/auth/components/LoginForm";
+import { FileTree } from "@/client/pages/projects/files/components/FileTree";
+
+// ✅ Feature-specific hooks
+import { useProjects } from "@/client/pages/projects/hooks/useProjects";
+import { useFiles } from "@/client/pages/projects/files/hooks/useFiles";
+
+// ✅ Feature-specific stores
+import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
+
+// ✅ Relative imports within the same feature subdirectory
+// In pages/projects/sessions/components/ChatInterface.tsx:
+import { useSessionStore } from "../stores/sessionStore";
+import { ChatPromptInput } from "./ChatPromptInput";
+```
+
+**Benefits of This Organization:**
+
+1. **Feature Isolation**: Easy to find all code related to a feature
+2. **Clear Dependencies**: See what's shared vs feature-specific
+3. **Easier Refactoring**: Move or delete features without breaking unrelated code
+4. **Better Onboarding**: New developers can navigate by feature, not file type
+5. **Scalability**: Add new features without cluttering top-level directories
 
 ### Technology Stack
 

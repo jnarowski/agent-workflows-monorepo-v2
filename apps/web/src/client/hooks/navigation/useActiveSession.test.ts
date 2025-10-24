@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useActiveSession } from "./useActiveSession";
 import { useNavigationStore } from "@/client/stores";
-import { useAgentSessions } from "@/client/hooks/useAgentSessions";
+import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgentSessions";
 
 // Mock the stores and hooks
 vi.mock("@/client/stores", () => ({

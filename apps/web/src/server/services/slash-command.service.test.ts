@@ -23,9 +23,9 @@ describe('slash-command.service', () => {
       id: testProjectId,
       path: testProjectPath,
       name: 'Test Project',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      userId: 'test-user',
+      is_hidden: false,
+      created_at: new Date(),
+      updated_at: new Date(),
     });
 
     // Create test directory structure

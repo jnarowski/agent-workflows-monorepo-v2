@@ -268,6 +268,7 @@ describe('ProjectSyncService', () => {
         id: 'project-123',
         name: 'project',
         path: '/Users/test/project',
+        is_hidden: false,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -325,6 +326,7 @@ describe('ProjectSyncService', () => {
         id: 'project-existing',
         name: 'existing',
         path: '/Users/test/existing',
+        is_hidden: false,
         created_at: createdAt,
         updated_at: updatedAt,
       };
@@ -407,6 +409,7 @@ describe('ProjectSyncService', () => {
         id: 'project-1',
         name: 'project1',
         path: '/Users/test/project1',
+        is_hidden: false,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -414,6 +417,7 @@ describe('ProjectSyncService', () => {
         id: 'project-2',
         name: 'project2',
         path: '/Users/test/project2',
+        is_hidden: false,
         created_at: new Date('2024-01-01'),
         updated_at: new Date('2024-01-02'),
       };
@@ -462,6 +466,7 @@ describe('ProjectSyncService', () => {
         id: 'project-cwd',
         name: 'path',
         path: '/Users/actual/project/path',
+        is_hidden: false,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -510,6 +515,7 @@ describe('ProjectSyncService', () => {
         id: 'project-fail',
         name: 'failproject',
         path: '/Users/test/failproject',
+        is_hidden: false,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -569,6 +575,7 @@ describe('ProjectSyncService', () => {
         id: 'project-c',
         name: 'projectC',
         path: '/Users/test/projectC',
+        is_hidden: false,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -613,6 +620,7 @@ describe('ProjectSyncService', () => {
         id: 'edge-case',
         name: 'edge-case',
         path: '/Users/test/edge-case',
+        is_hidden: false,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -673,6 +681,7 @@ describe('ProjectSyncService', () => {
         id: 'many-sessions',
         name: 'many-sessions',
         path: '/Users/test/many-sessions',
+        is_hidden: false,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -725,6 +734,7 @@ describe('ProjectSyncService', () => {
           id: `project-${callCount}`,
           name,
           path,
+          is_hidden: false,
           created_at: new Date(),
           updated_at: new Date(),
         };

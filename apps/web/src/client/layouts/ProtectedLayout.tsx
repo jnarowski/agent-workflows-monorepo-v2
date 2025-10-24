@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/client/stores";
-import { useSyncProjects } from "@/client/hooks/useProjects";
-import { AppSidebar } from "@/client/components/app-sidebar";
+import { useSyncProjects } from "@/client/pages/projects/hooks/useProjects";
+import { AppSidebar } from "@/client/components/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/client/components/ui/sidebar";
 import {
   shouldSyncProjects,

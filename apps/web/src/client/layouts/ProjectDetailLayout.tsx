@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useProject } from "@/client/hooks/useProjects";
+import { useProject } from "@/client/pages/projects/hooks/useProjects";
 import { Button } from "@/client/components/ui/button";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import { api } from '@/client/lib/api-client';
