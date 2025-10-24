@@ -46,7 +46,7 @@ export function AppSidebarMain({
   return (
     <Sidebar
       collapsible="none"
-      className="w-[calc(var(--sidebar-width-icon)+1px)]! border-r"
+      className="hidden md:flex w-[calc(var(--sidebar-width-icon)+1px)]! border-r"
     >
       <SidebarHeader>
         <SidebarMenu>

@@ -1,8 +1,6 @@
 /**
- * System Message Detection Utility
- *
- * Detects Claude Code system messages that should be filtered out from the UI display.
- * These messages are internal plumbing and not meant for user viewing.
+ * Message Utilities
+ * Shared utilities for message processing used by both client and server
  */
 
 /**

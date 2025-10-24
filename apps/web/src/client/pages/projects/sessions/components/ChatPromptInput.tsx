@@ -21,7 +21,7 @@ import {
 } from "@/client/components/ai-elements/PromptInput";
 import { ChatPromptInputFiles } from "./ChatPromptInputFiles";
 import { ChatPromptInputSlashCommands } from "./ChatPromptInputSlashCommands";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import { useNavigationStore } from "@/client/stores/navigationStore";
 import {
   useSessionStore,
@@ -52,14 +52,18 @@ interface ChatPromptInputProps {
   currentMessageTokens?: number; // Tokens for currently streaming message
 }
 
+export interface ChatPromptInputHandle {
+  focus: () => void;
+}
+
 // Inner component that uses the controller
-const ChatPromptInputInner = ({
+const ChatPromptInputInner = forwardRef<ChatPromptInputHandle, ChatPromptInputProps>(({
   onSubmit,
   disabled = false,
   isStreaming: externalIsStreaming = false,
   totalTokens,
   currentMessageTokens,
-}: ChatPromptInputProps) => {
+}, ref) => {
   const controller = usePromptInputController();
   const [status, setStatus] = useState<
     "submitted" | "streaming" | "ready" | "error"
@@ -119,6 +123,13 @@ const ChatPromptInputInner = ({
 
   // Access text from controller instead of local state
   const text = controller.textInput.value;
+
+  // Expose focus method to parent components
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      textareaRef.current?.focus();
+    },
+  }));
 
   // Update status based on external streaming state
   useEffect(() => {
@@ -371,13 +382,17 @@ const ChatPromptInputInner = ({
       </PromptInput>
     </div>
   );
-};
+});
+
+ChatPromptInputInner.displayName = "ChatPromptInputInner";
 
 // Wrapper component that provides the controller
-export const ChatPromptInput = (props: ChatPromptInputProps) => {
+export const ChatPromptInput = forwardRef<ChatPromptInputHandle, ChatPromptInputProps>((props, ref) => {
   return (
     <PromptInputProvider>
-      <ChatPromptInputInner {...props} />
+      <ChatPromptInputInner {...props} ref={ref} />
     </PromptInputProvider>
   );
-};
+});
+
+ChatPromptInput.displayName = "ChatPromptInput";

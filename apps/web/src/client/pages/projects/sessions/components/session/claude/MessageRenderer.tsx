@@ -4,10 +4,10 @@
  */
 
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { SessionMessage } from "@/shared/types/message.types";
 import { UserMessage } from './UserMessage';
 import { AssistantMessage } from './AssistantMessage';
-import { useDebug } from "@/client/contexts/DebugContext";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 interface MessageRendererProps {
@@ -16,7 +16,8 @@ interface MessageRendererProps {
 }
 
 export function MessageRenderer({ message, toolResults }: MessageRendererProps) {
-  const { debugMode } = useDebug();
+  const [searchParams] = useSearchParams();
+  const debugMode = searchParams.get('debug') === 'true';
   const [isJsonExpanded, setIsJsonExpanded] = useState(false);
 
   const messageContent = (() => {

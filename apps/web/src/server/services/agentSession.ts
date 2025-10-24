@@ -14,6 +14,7 @@ import {
   getClaudeProjectsDir,
 } from '@/server/utils/path';
 import path from 'path';
+import { isSystemMessage } from '@/shared/utils/message.utils';
 
 /**
  * Parse a JSONL file to extract session metadata
@@ -37,12 +38,31 @@ export async function parseJSONLFile(
         const entry = JSON.parse(line);
 
         // Count messages (check both 'type' for Claude CLI format and 'role' for API format)
+        // Filter out system messages to match frontend display
         const isMessage = entry.type === 'user' || entry.type === 'assistant' || entry.role === 'user' || entry.role === 'assistant';
         if (isMessage) {
-          messageCount++;
+          // Check if this message contains only system content
+          const content = entry.message?.content ?? entry.content;
+          const hasOnlySystemContent = (() => {
+            if (typeof content === 'string') {
+              return isSystemMessage(content);
+            }
+            if (Array.isArray(content)) {
+              // Check if all text blocks are system messages
+              const textBlocks = content.filter((c: any) => c.type === 'text');
+              if (textBlocks.length === 0) return false;
+              return textBlocks.every((c: any) => isSystemMessage(c.text));
+            }
+            return false;
+          })();
+
+          // Only count messages that are not system messages
+          if (!hasOnlySystemContent) {
+            messageCount++;
+          }
         }
 
-        // Extract first user message for preview
+        // Extract first user message for preview (skip "Warmup" messages)
         const isUserMessage = entry.type === 'user' || entry.role === 'user';
         if (isUserMessage && !firstMessagePreview) {
           // Handle both Claude CLI format (message.content) and API format (content)
@@ -56,7 +76,12 @@ export async function parseJSONLFile(
                     .map((c: any) => c.text)
                     .join(' ')
                 : '';
-          firstMessagePreview = text.substring(0, 100);
+
+          // Skip "Warmup" messages (case-insensitive)
+          const trimmedText = text.trim();
+          if (trimmedText.toLowerCase() !== 'warmup') {
+            firstMessagePreview = text.substring(0, 100);
+          }
         }
 
         // Sum token usage from assistant messages
@@ -258,6 +283,7 @@ export async function getSessionsByProject(
     id: session.id,
     projectId: session.projectId,
     userId: session.userId,
+    name: session.name ?? undefined,
     agent: session.agent,
     metadata: session.metadata as AgentSessionMetadata,
     created_at: session.created_at,
@@ -342,6 +368,7 @@ export async function createSession(
     id: session.id,
     projectId: session.projectId,
     userId: session.userId,
+    name: session.name ?? undefined,
     agent: session.agent,
     metadata: metadata,
     created_at: session.created_at,
@@ -384,6 +411,7 @@ export async function updateSessionMetadata(
       id: updatedSession.id,
       projectId: updatedSession.projectId,
       userId: updatedSession.userId,
+      name: updatedSession.name ?? undefined,
       agent: updatedSession.agent,
       metadata: updatedMetadata,
       created_at: updatedSession.created_at,

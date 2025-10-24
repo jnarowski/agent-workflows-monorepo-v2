@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NavLink, Outlet, useNavigate, useParams } from "react-router-dom";
+import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useProject } from "@/client/pages/projects/hooks/useProjects";
 import { Button } from "@/client/components/ui/button";
@@ -8,13 +8,10 @@ import { api } from '@/client/lib/api-client';
 import {
   AlertCircle,
   ArrowLeft,
-  Home,
-  MessageSquare,
-  Terminal as TerminalIcon,
-  FileText,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { useNavigationStore } from "@/client/stores/index";
+import { ProjectHeader } from "@/client/components/ProjectHeader";
 
 export default function ProjectDetailLayout() {
   const { id } = useParams<{ id: string }>();
@@ -99,67 +96,7 @@ export default function ProjectDetailLayout() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header with project name and tab navigation */}
-      <div className="flex items-center justify-between border-b px-6 py-4">
-        <div className="flex flex-col gap-1">
-          <div className="text-base font-medium">{project.name}</div>
-        </div>
-        <nav className="flex gap-2">
-          <NavLink
-            to={`/projects/${id}`}
-            end
-            className={({ isActive }) =>
-              `flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:bg-secondary/50"
-              }`
-            }
-          >
-            <Home className="h-4 w-4" />
-            Home
-          </NavLink>
-          <NavLink
-            to={`/projects/${id}/chat`}
-            className={({ isActive }) =>
-              `flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:bg-secondary/50"
-              }`
-            }
-          >
-            <MessageSquare className="h-4 w-4" />
-            Chat
-          </NavLink>
-          <NavLink
-            to={`/projects/${id}/shell`}
-            className={({ isActive }) =>
-              `flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:bg-secondary/50"
-              }`
-            }
-          >
-            <TerminalIcon className="h-4 w-4" />
-            Shell
-          </NavLink>
-          <NavLink
-            to={`/projects/${id}/files`}
-            className={({ isActive }) =>
-              `flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-secondary text-secondary-foreground"
-                  : "text-muted-foreground hover:bg-secondary/50"
-              }`
-            }
-          >
-            <FileText className="h-4 w-4" />
-            Files
-          </NavLink>
-        </nav>
-      </div>
+      <ProjectHeader projectId={id!} projectName={project.name} />
 
       {/* Nested route content */}
       <div className="flex-1 relative">

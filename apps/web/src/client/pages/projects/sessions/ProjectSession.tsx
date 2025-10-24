@@ -2,7 +2,7 @@ import { useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChatInterface } from "./components/ChatInterface";
-import { ChatPromptInput } from "./components/ChatPromptInput";
+import { ChatPromptInput, type ChatPromptInputHandle } from "./components/ChatPromptInput";
 import { useSessionWebSocket } from "./hooks/useSessionWebSocket";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
@@ -10,7 +10,6 @@ import { useActiveProject } from "@/client/hooks/navigation";
 import { useNavigationStore } from "@/client/stores/index";
 import { api } from "@/client/lib/api-client";
 import type { ToolResultBlock } from "@/shared/types/message.types";
-import { DebugProvider } from "@/client/contexts/DebugContext";
 import { sessionKeys } from "./hooks/useAgentSessions";
 
 export default function ProjectSession() {
@@ -21,6 +20,7 @@ export default function ProjectSession() {
   const setActiveSession = useNavigationStore((s) => s.setActiveSession);
   const initialMessageSentRef = useRef(false);
   const queryClient = useQueryClient();
+  const chatInputRef = useRef<ChatPromptInputHandle>(null);
 
   // Get sessionId from URL params (will be undefined for /session/new route)
   const sessionId = params.sessionId || null;
@@ -111,6 +111,17 @@ export default function ProjectSession() {
   // Reset initialMessageSentRef when navigating to a different session
   useEffect(() => {
     initialMessageSentRef.current = false;
+  }, [sessionId]);
+
+  // Focus chat input when navigating to /session/new
+  useEffect(() => {
+    if (!sessionId) {
+      // Small delay to ensure DOM is ready
+      const timeoutId = setTimeout(() => {
+        chatInputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
   }, [sessionId]);
 
   // Handle initial message from query parameter
@@ -282,48 +293,47 @@ export default function ProjectSession() {
     waitingForFirstResponse; // Block until first assistant response
 
   return (
-    <DebugProvider>
-      <div className="absolute inset-0 flex flex-col overflow-hidden">
-        {/* Connection status banner */}
-        {sessionId && !isConnected && (
-          <div className="bg-yellow-100 border-b border-yellow-200 px-4 py-2 text-sm text-yellow-800 flex items-center justify-between">
-            <span>Disconnected from session</span>
-            <button
-              onClick={reconnect}
-              className="text-yellow-900 underline hover:no-underline"
-            >
-              Reconnect
-            </button>
-          </div>
-        )}
+    <div className="absolute inset-0 flex flex-col overflow-hidden">
+      {/* Connection status banner */}
+      {sessionId && !isConnected && (
+        <div className="bg-yellow-100 border-b border-yellow-200 px-4 py-2 text-sm text-yellow-800 flex items-center justify-between">
+          <span>Disconnected from session</span>
+          <button
+            onClick={reconnect}
+            className="text-yellow-900 underline hover:no-underline"
+          >
+            Reconnect
+          </button>
+        </div>
+      )}
 
-        {/* Chat Messages Container - takes up remaining space */}
-        <div className="flex-1 overflow-hidden">
-          <ChatInterface
-            projectId={projectId!}
-            sessionId={sessionId || undefined}
-            agent={session?.agent || 'claude'}
-            messages={session?.messages || []}
-            toolResults={toolResults}
-            isLoading={session?.loadingState === "loading"}
-            error={session?.error || null}
+      {/* Chat Messages Container - takes up remaining space */}
+      <div className="flex-1 overflow-hidden">
+        <ChatInterface
+          projectId={projectId!}
+          sessionId={sessionId || undefined}
+          agent={session?.agent || 'claude'}
+          messages={session?.messages || []}
+          toolResults={toolResults}
+          isLoading={session?.loadingState === "loading"}
+          error={session?.error || null}
+          isStreaming={session?.isStreaming || false}
+        />
+      </div>
+
+      {/* Fixed Input Container at Bottom */}
+      <div className="md:pb-4 pb-2">
+        <div className="mx-auto max-w-4xl">
+          <ChatPromptInput
+            ref={chatInputRef}
+            onSubmit={handleSubmit}
+            disabled={inputDisabled}
             isStreaming={session?.isStreaming || false}
+            totalTokens={session?.metadata?.totalTokens}
+            currentMessageTokens={session?.currentMessageTokens}
           />
         </div>
-
-        {/* Fixed Input Container at Bottom */}
-        <div className="md:pb-4 pb-2">
-          <div className="mx-auto max-w-4xl">
-            <ChatPromptInput
-              onSubmit={handleSubmit}
-              disabled={inputDisabled}
-              isStreaming={session?.isStreaming || false}
-              totalTokens={session?.metadata?.totalTokens}
-              currentMessageTokens={session?.currentMessageTokens}
-            />
-          </div>
-        </div>
       </div>
-    </DebugProvider>
+    </div>
   );
 }

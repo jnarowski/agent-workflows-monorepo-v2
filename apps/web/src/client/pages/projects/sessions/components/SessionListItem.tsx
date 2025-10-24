@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import { Code } from "lucide-react";
 import type { SessionResponse } from "@/shared/types";
 import { cn } from "@/client/lib/utils";
 
@@ -41,17 +42,31 @@ export function SessionListItem({
     <Link
       to={`/projects/${projectId}/session/${id}`}
       className={cn(
-        "block px-3 py-2 rounded-md transition-colors hover:bg-accent overflow-hidden",
+        "block px-2 py-2 rounded-md transition-colors hover:bg-accent overflow-hidden relative",
         isActive && "bg-accent"
       )}
     >
-      <div className="space-y-1 min-w-0">
-        <p className="text-sm font-medium leading-none truncate" title={firstMessagePreview || "New session"}>
-          {truncatedName}
-        </p>
-        <div className="flex items-center justify-between text-xs text-muted-foreground gap-2">
-          <span className="truncate">{timeAgo}</span>
-          <span className="shrink-0">{messageCount} messages</span>
+      {isActive && (
+        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary rounded-r" />
+      )}
+      <div className="flex items-start gap-2 min-w-0">
+        <Code
+          className={cn(
+            "h-4 w-4 mt-0.5 shrink-0",
+            isActive ? "text-primary" : "text-muted-foreground"
+          )}
+        />
+        <div className="space-y-1 min-w-0 flex-1">
+          <p
+            className="text-sm font-medium leading-none truncate"
+            title={firstMessagePreview || "New session"}
+          >
+            {truncatedName}
+          </p>
+          <div className="flex items-center justify-between text-xs text-muted-foreground gap-2">
+            <span className="truncate">{timeAgo}</span>
+            <span className="shrink-0">{messageCount} messages</span>
+          </div>
         </div>
       </div>
     </Link>

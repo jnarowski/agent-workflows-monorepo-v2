@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, type MouseEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useActiveProject } from "@/client/hooks/navigation";
 import {
   ChevronRight,
@@ -50,7 +50,6 @@ import { ProjectDialog } from "../pages/projects/components/ProjectDialog";
 import type { Project } from "@/shared/types/project.types";
 
 interface AppInnerSidebarProps {
-  title?: string;
   activeProjectId?: string;
   onProjectClick?: (projectId: string) => void;
   onSessionClick?: (projectId: string, sessionId: string) => void;
@@ -58,14 +57,18 @@ interface AppInnerSidebarProps {
 }
 
 export function AppInnerSidebar({
-  title,
   activeProjectId: activeProjectIdProp,
   onProjectClick,
 }: AppInnerSidebarProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { projectId: activeProjectIdFromHook } = useActiveProject();
   const { data: projectsData, isLoading, error } = useProjects();
   const { isMobile } = useSidebar();
+
+  // Get the current session ID from the URL
+  const sessionMatch = location.pathname.match(/\/session\/([^/]+)/);
+  const activeSessionId = sessionMatch ? sessionMatch[1] : null;
 
   // Use navigation hook if available, otherwise use prop
   const activeProjectId = activeProjectIdFromHook || activeProjectIdProp;
@@ -120,11 +123,6 @@ export function AppInnerSidebar({
     return { visibleProjects: visible, hiddenProjects: hidden };
   }, [projectsData, activeProjectId, sessionsData]);
 
-  // Get active project name for title
-  const activeProject = [...visibleProjects, ...hiddenProjects].find(
-    (p) => p.id === activeProjectId
-  );
-  const displayTitle = title || activeProject?.name || "Projects";
 
   const toggleProject = (projectId: string) => {
     // Always ensure the project is open when navigating to it
@@ -160,13 +158,8 @@ export function AppInnerSidebar({
   }, [activeProjectId, openProjects]);
 
   return (
-    <Sidebar collapsible="none" className="hidden flex-1 md:flex">
+    <Sidebar collapsible="none" className="flex-1">
       <SidebarHeader className="gap-3.5 border-b p-4">
-        <div className="flex w-full items-center justify-between">
-          <div className="text-foreground text-base font-medium">
-            {displayTitle}
-          </div>
-        </div>
         <CommandMenu />
       </SidebarHeader>
       <SidebarContent>
@@ -199,8 +192,10 @@ export function AppInnerSidebar({
                         <CollapsibleTrigger className="w-full overflow-hidden">
                           <Folder className="shrink-0" />
                           <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0 overflow-hidden">
-                            <span className="font-medium text-sm truncate block">
-                              {project.name}
+                            <span className="text-sm truncate block">
+                              {project.name.length > 20
+                                ? `${project.name.slice(0, 20)}...`
+                                : project.name}
                             </span>
                           </div>
                           <ChevronRight
@@ -256,7 +251,7 @@ export function AppInnerSidebar({
                         </DropdownMenuContent>
                       </DropdownMenu>
                       <CollapsibleContent>
-                        <div className="ml-0 space-y-0.5 border-l pl-1 py-1">
+                        <div className="ml-0 space-y-0.5 py-1">
                           {isActive &&
                           sortedSessions &&
                           sortedSessions.length > 0 ? (
@@ -269,7 +264,7 @@ export function AppInnerSidebar({
                                   key={session.id}
                                   session={session}
                                   projectId={project.id}
-                                  isActive={false}
+                                  isActive={session.id === activeSessionId}
                                 />
                               ))}
                               {sortedSessions.length > 5 &&
@@ -293,7 +288,7 @@ export function AppInnerSidebar({
                             </div>
                           ) : null}
                           {isActive && (
-                            <div className="px-2 pt-1">
+                            <div className="px-2 pt-1 pb-5">
                               <NewSessionButton
                                 projectId={project.id}
                                 variant="default"
@@ -341,7 +336,9 @@ export function AppInnerSidebar({
                               <Folder className="shrink-0" />
                               <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0 overflow-hidden">
                                 <span className="font-medium text-sm truncate block">
-                                  {project.name}
+                                  {project.name.length > 50
+                                    ? `${project.name.slice(0, 50)}...`
+                                    : project.name}
                                 </span>
                               </div>
                               <ChevronRight
@@ -406,7 +403,7 @@ export function AppInnerSidebar({
                             </DropdownMenuContent>
                           </DropdownMenu>
                           <CollapsibleContent>
-                            <div className="ml-0 space-y-0.5 border-l pl-1 py-1">
+                            <div className="ml-0 space-y-0.5">
                               {isActive &&
                               sortedSessions &&
                               sortedSessions.length > 0 ? (
@@ -419,7 +416,7 @@ export function AppInnerSidebar({
                                       key={session.id}
                                       session={session}
                                       projectId={project.id}
-                                      isActive={false}
+                                      isActive={session.id === activeSessionId}
                                     />
                                   ))}
                                   {sortedSessions.length > 5 &&

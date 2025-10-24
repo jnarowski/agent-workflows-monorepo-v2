@@ -4,13 +4,12 @@
  */
 
 import { useEffect, useRef } from "react";
-import { MessageCircle, AlertCircle, Loader2, Bug } from "lucide-react";
+import { MessageCircle, AlertCircle, Loader2 } from "lucide-react";
 import { ChatSkeleton } from "./ChatSkeleton";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import type { SessionMessage } from "@/shared/types/message.types";
 import type { AgentType } from "@/shared/types/agent.types";
 import { getAgent } from "../../../../lib/agents";
-import { useDebug } from "@/client/contexts/DebugContext";
 
 interface ChatInterfaceProps {
   projectId: string;
@@ -43,7 +42,6 @@ export function ChatInterface({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const previousScrollHeight = useRef(0);
-  const { debugMode, toggleDebugMode } = useDebug();
 
   // Get agent renderer
   const agentImpl = getAgent(agent);
@@ -118,19 +116,6 @@ export function ChatInterface({
       data-project-id={projectId}
       data-session-id={sessionId}
     >
-      {/* Debug toggle button - fixed position */}
-      <button
-        onClick={toggleDebugMode}
-        className={`fixed top-4 right-4 z-50 p-2 rounded-lg shadow-lg transition-colors ${
-          debugMode
-            ? "bg-orange-500 text-white hover:bg-orange-600"
-            : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-        }`}
-        title={debugMode ? "Disable debug mode" : "Enable debug mode"}
-      >
-        <Bug className="h-5 w-5" />
-      </button>
-
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-4">
         <AgentMessageRenderer messages={messages} />
         {isStreaming && (

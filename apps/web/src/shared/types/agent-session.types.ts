@@ -29,6 +29,7 @@ export interface SessionResponse {
   id: string;
   projectId: string;
   userId: string;
+  name?: string; // AI-generated session name (optional for legacy sessions)
   agent: AgentType;
   metadata: AgentSessionMetadata;
   created_at: Date;

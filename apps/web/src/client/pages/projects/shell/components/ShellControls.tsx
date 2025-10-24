@@ -3,7 +3,6 @@ import type { ConnectionStatus } from "@/client/pages/projects/shell/contexts/Sh
 
 interface ShellControlsProps {
   status: ConnectionStatus;
-  projectName?: string;
   onConnect?: () => void;
   onDisconnect?: () => void;
   onRestart?: () => void;
@@ -11,7 +10,6 @@ interface ShellControlsProps {
 
 export function ShellControls({
   status,
-  projectName,
   onConnect,
   onDisconnect,
   onRestart,
@@ -54,16 +52,6 @@ export function ShellControls({
           <div className={`w-3 h-3 rounded-full ${getStatusColor()}`} />
           <span className="text-sm font-medium">{getStatusText()}</span>
         </div>
-
-        {/* Project name */}
-        {projectName && (
-          <>
-            <div className="h-4 w-px bg-border" />
-            <span className="text-sm text-muted-foreground">
-              Project: <span className="font-medium text-foreground">{projectName}</span>
-            </span>
-          </>
-        )}
       </div>
 
       {/* Action buttons */}

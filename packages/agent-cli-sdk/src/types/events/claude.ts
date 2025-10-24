@@ -116,7 +116,7 @@ export interface ClaudeMessage {
  * Tool use result metadata
  */
 export interface ToolUseResult {
-  type?: 'text' | 'glob' | 'grep' | 'bash' | string;
+  type?: string;
   filenames?: string[];
   durationMs?: number;
   numFiles?: number;

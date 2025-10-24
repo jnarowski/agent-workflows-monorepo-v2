@@ -1,14 +1,14 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { ThemeProvider } from 'next-themes'
-import { queryClient } from '@/client/lib/query-client'
-import { Toaster } from '@/client/components/ui/sonner'
-import './index.css'
-import App from '@/client/App.tsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ThemeProvider } from "next-themes";
+import { queryClient } from "@/client/lib/query-client";
+import { Toaster } from "@/client/components/ui/sonner";
+import "./index.css";
+import App from "@/client/App.tsx";
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <QueryClientProvider client={queryClient}>
@@ -17,5 +17,5 @@ createRoot(document.getElementById('root')!).render(
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </ThemeProvider>
-  </StrictMode>,
-)
+  </StrictMode>
+);
