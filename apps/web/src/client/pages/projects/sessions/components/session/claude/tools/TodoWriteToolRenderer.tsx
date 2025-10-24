@@ -3,7 +3,7 @@
  * Shows full task list with status indicators
  */
 
-import { Check, Circle, Loader2 } from "lucide-react";
+import { Check, Circle } from "lucide-react";
 import type { TodoWriteToolInput } from "@/shared/types/tool.types";
 
 interface TodoWriteToolRendererProps {

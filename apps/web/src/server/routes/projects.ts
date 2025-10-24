@@ -83,7 +83,9 @@ export async function projectRoutes(fastify: FastifyInstance) {
         return reply.send({ data: syncResults });
       } catch (error) {
         fastify.log.error({ error }, "Error syncing projects");
-        return reply.code(500).send(buildErrorResponse(500, "Failed to sync projects"));
+        return reply
+          .code(500)
+          .send(buildErrorResponse(500, "Failed to sync projects"));
       }
     }
   );
@@ -110,7 +112,9 @@ export async function projectRoutes(fastify: FastifyInstance) {
       const project = await getProjectById(request.params.id);
 
       if (!project) {
-        return reply.code(404).send(buildErrorResponse(404, "Project not found"));
+        return reply
+          .code(404)
+          .send(buildErrorResponse(404, "Project not found"));
       }
 
       return reply.send({ data: project });
@@ -139,7 +143,15 @@ export async function projectRoutes(fastify: FastifyInstance) {
       // Check if project with same path already exists
       const exists = await projectExistsByPath(request.body.path);
       if (exists) {
-        return reply.code(409).send(buildErrorResponse(409, "A project with this path already exists", "PROJECT_EXISTS"));
+        return reply
+          .code(409)
+          .send(
+            buildErrorResponse(
+              409,
+              "A project with this path already exists",
+              "PROJECT_EXISTS"
+            )
+          );
       }
 
       const project = await createProject(request.body);
@@ -170,16 +182,23 @@ export async function projectRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       // Check if body is empty
       if (Object.keys(request.body).length === 0) {
-        return reply.code(400).send(buildErrorResponse(400, "At least one field must be provided for update", "VALIDATION_ERROR"));
+        return reply
+          .code(400)
+          .send(
+            buildErrorResponse(
+              400,
+              "At least one field must be provided for update",
+              "VALIDATION_ERROR"
+            )
+          );
       }
 
-      const project = await updateProject(
-        request.params.id,
-        request.body
-      );
+      const project = await updateProject(request.params.id, request.body);
 
       if (!project) {
-        return reply.code(404).send(buildErrorResponse(404, "Project not found"));
+        return reply
+          .code(404)
+          .send(buildErrorResponse(404, "Project not found"));
       }
 
       return reply.send({ data: project });
@@ -208,7 +227,9 @@ export async function projectRoutes(fastify: FastifyInstance) {
       const project = await deleteProject(request.params.id);
 
       if (!project) {
-        return reply.code(404).send(buildErrorResponse(404, "Project not found"));
+        return reply
+          .code(404)
+          .send(buildErrorResponse(404, "Project not found"));
       }
 
       return reply.send({ data: project });
@@ -242,7 +263,9 @@ export async function projectRoutes(fastify: FastifyInstance) {
       );
 
       if (!project) {
-        return reply.code(404).send(buildErrorResponse(404, "Project not found"));
+        return reply
+          .code(404)
+          .send(buildErrorResponse(404, "Project not found"));
       }
 
       return reply.send({ data: project });
@@ -275,11 +298,15 @@ export async function projectRoutes(fastify: FastifyInstance) {
       } catch (error) {
         // Handle specific error messages
         const errorMessage = (error as Error).message;
-        if (errorMessage === 'Project not found') {
-          return reply.code(404).send(buildErrorResponse(404, "Project not found"));
+        if (errorMessage === "Project not found") {
+          return reply
+            .code(404)
+            .send(buildErrorResponse(404, "Project not found"));
         }
-        if (errorMessage === 'Project path is not accessible') {
-          return reply.code(403).send(buildErrorResponse(403, "Project path is not accessible"));
+        if (errorMessage === "Project path is not accessible") {
+          return reply
+            .code(403)
+            .send(buildErrorResponse(403, "Project path is not accessible"));
         }
 
         throw error;
@@ -319,7 +346,9 @@ export async function projectRoutes(fastify: FastifyInstance) {
       } catch (error) {
         const errorMessage = (error as Error).message;
         if (errorMessage === "Project not found") {
-          return reply.code(404).send(buildErrorResponse(404, "Project not found"));
+          return reply
+            .code(404)
+            .send(buildErrorResponse(404, "Project not found"));
         }
         if (
           errorMessage === "File not found or not accessible" ||
@@ -366,9 +395,13 @@ export async function projectRoutes(fastify: FastifyInstance) {
       } catch (error) {
         const errorMessage = (error as Error).message;
         if (errorMessage === "Project not found") {
-          return reply.code(404).send(buildErrorResponse(404, "Project not found"));
+          return reply
+            .code(404)
+            .send(buildErrorResponse(404, "Project not found"));
         }
-        if (errorMessage === "Access denied: File is outside project directory") {
+        if (
+          errorMessage === "Access denied: File is outside project directory"
+        ) {
           return reply.code(403).send(buildErrorResponse(403, errorMessage));
         }
 
@@ -403,33 +436,29 @@ export async function projectRoutes(fastify: FastifyInstance) {
         let readmePath: string;
 
         try {
-          content = await readFile(
-            request.params.id,
-            'README.md',
-            fastify.log
-          );
-          readmePath = 'README.md';
+          content = await readFile(request.params.id, "README.md", fastify.log);
+          readmePath = "README.md";
         } catch {
           // Try lowercase version
-          content = await readFile(
-            request.params.id,
-            'readme.md',
-            fastify.log
-          );
-          readmePath = 'readme.md';
+          content = await readFile(request.params.id, "readme.md", fastify.log);
+          readmePath = "readme.md";
         }
 
         return reply.send({ content, path: readmePath });
       } catch (error) {
         const errorMessage = (error as Error).message;
         if (errorMessage === "Project not found") {
-          return reply.code(404).send(buildErrorResponse(404, "Project not found"));
+          return reply
+            .code(404)
+            .send(buildErrorResponse(404, "Project not found"));
         }
         if (
           errorMessage === "File not found or not accessible" ||
           errorMessage === "Access denied: File is outside project directory"
         ) {
-          return reply.code(404).send(buildErrorResponse(404, "README.md not found"));
+          return reply
+            .code(404)
+            .send(buildErrorResponse(404, "README.md not found"));
         }
 
         throw error;

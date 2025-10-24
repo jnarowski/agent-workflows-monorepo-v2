@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { z } from 'zod';
+import { z } from "zod";
 
 // Standard success response wrapper
 export const successResponse = <T extends z.ZodType>(dataSchema: T) =>
@@ -25,6 +25,7 @@ export const projectSchema = z.object({
   is_hidden: z.boolean(),
   created_at: z.date(),
   updated_at: z.date(),
+  currentBranch: z.string().optional(),
 });
 
 export const projectResponseSchema = successResponse(projectSchema);
@@ -56,7 +57,7 @@ export const fileTreeItemSchema: z.ZodType<any> = z.lazy(() =>
   z.object({
     name: z.string(),
     path: z.string(),
-    type: z.enum(['file', 'directory']),
+    type: z.enum(["file", "directory"]),
     size: z.number().optional(),
     modified: z.date(),
     permissions: z.string(),
@@ -64,7 +65,9 @@ export const fileTreeItemSchema: z.ZodType<any> = z.lazy(() =>
   })
 );
 
-export const fileTreeResponseSchema = successResponse(z.array(fileTreeItemSchema));
+export const fileTreeResponseSchema = successResponse(
+  z.array(fileTreeItemSchema)
+);
 
 // File content schemas
 export const fileContentResponseSchema = z.object({
@@ -82,4 +85,6 @@ export const projectSyncResultSchema = z.object({
   totalSessionsSynced: z.number(),
 });
 
-export const projectSyncResponseSchema = successResponse(projectSyncResultSchema);
+export const projectSyncResponseSchema = successResponse(
+  projectSyncResultSchema
+);

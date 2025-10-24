@@ -161,7 +161,7 @@ export default function Projects() {
         ))}
       </div>
 
-      <CreateProjectDialog
+      <ProjectDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
       />

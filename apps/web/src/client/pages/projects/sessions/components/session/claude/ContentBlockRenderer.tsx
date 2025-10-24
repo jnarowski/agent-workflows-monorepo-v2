@@ -6,7 +6,7 @@
 import type { ContentBlock } from "@/shared/types/message.types";
 import { TextBlock } from "./TextBlock";
 import { ThinkingBlock } from "./ThinkingBlock";
-import { ToolUseBlock } from "./ToolUseBlock";
+import { ToolBlockRenderer } from "./ToolBlockRenderer";
 
 interface ContentBlockRendererProps {
   block: ContentBlock;
@@ -30,12 +30,10 @@ export function ContentBlockRenderer({
       // Look up the result for this tool use
       const result = toolResults?.get(block.id);
       return (
-        <ToolUseBlock
-          id={block.id}
-          name={block.name}
+        <ToolBlockRenderer
+          toolName={block.name}
           input={block.input}
           result={result}
-          className={className}
         />
       );
     }

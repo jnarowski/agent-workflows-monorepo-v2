@@ -96,13 +96,6 @@ export default function ProjectDetailLayout() {
     );
   }
 
-  // Debug: log project data to console
-  console.log('[ProjectDetailLayout] Project data:', {
-    id: project.id,
-    name: project.name,
-    currentBranch: project.currentBranch,
-  });
-
   return (
     <div className="flex flex-col h-full">
       <ProjectHeader

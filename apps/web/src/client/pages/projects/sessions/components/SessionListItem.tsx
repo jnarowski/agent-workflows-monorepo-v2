@@ -11,14 +11,14 @@ interface SessionListItemProps {
 }
 
 /**
- * Truncates text to a specified number of words
+ * Truncates text to a specified number of characters
  */
-function truncateToWords(text: string, maxWords: number = 5): string {
-  const words = text.trim().split(/\s+/);
-  if (words.length <= maxWords) {
-    return text;
+function truncateToChars(text: string, maxChars: number = 30): string {
+  const trimmed = text.trim();
+  if (trimmed.length <= maxChars) {
+    return trimmed;
   }
-  return words.slice(0, maxWords).join(" ") + "...";
+  return trimmed.slice(0, maxChars) + "...";
 }
 
 export function SessionListItem({
@@ -33,9 +33,9 @@ export function SessionListItem({
     addSuffix: true,
   });
 
-  // Truncate session name to 5 words max
+  // Truncate session name to 20 characters max
   const truncatedName = firstMessagePreview
-    ? truncateToWords(firstMessagePreview, 5)
+    ? truncateToChars(firstMessagePreview)
     : "New session";
 
   return (

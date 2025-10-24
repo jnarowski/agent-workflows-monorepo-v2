@@ -13,7 +13,10 @@ import { getCurrentBranch } from "@/server/services/git.service";
  * @param prismaProject - Raw project from Prisma
  * @param currentBranch - Optional git branch name
  */
-function transformProject(prismaProject: any, currentBranch?: string | null): Project {
+function transformProject(
+  prismaProject: any,
+  currentBranch?: string | null
+): Project {
   return {
     id: prismaProject.id,
     name: prismaProject.name,
@@ -21,7 +24,7 @@ function transformProject(prismaProject: any, currentBranch?: string | null): Pr
     is_hidden: prismaProject.is_hidden,
     created_at: prismaProject.created_at,
     updated_at: prismaProject.updated_at,
-    ...(currentBranch && { currentBranch }),
+    ...(currentBranch !== null && { currentBranch }),
   };
 }
 
@@ -53,17 +56,26 @@ export async function getAllProjects(): Promise<Project[]> {
  * @returns Project or null if not found
  */
 export async function getProjectById(id: string): Promise<Project | null> {
+  console.log("🔍 [getProjectById] Called for ID:", id);
   const project = await prisma.project.findUnique({
     where: { id },
   });
 
   if (!project) {
+    console.log("❌ [getProjectById] Project not found");
     return null;
   }
 
+  console.log("📁 [getProjectById] Fetching branch for:", project.path);
   // Fetch git branch
   const branch = await getCurrentBranch(project.path);
-  return transformProject(project, branch);
+  console.log("✅ [getProjectById] Branch result:", branch);
+  const result = transformProject(project, branch);
+  console.log(
+    "📦 [getProjectById] Returning project with branch:",
+    result.currentBranch
+  );
+  return result;
 }
 
 /**
@@ -71,7 +83,9 @@ export async function getProjectById(id: string): Promise<Project | null> {
  * @param data - Project creation data
  * @returns Created project
  */
-export async function createProject(data: CreateProjectInput): Promise<Project> {
+export async function createProject(
+  data: CreateProjectInput
+): Promise<Project> {
   const project = await prisma.project.create({
     data: {
       name: data.name,
@@ -174,7 +188,10 @@ export async function getProjectByPath(path: string): Promise<Project | null> {
  * @param path - Project filesystem path
  * @returns Created or updated project
  */
-export async function createOrUpdateProject(name: string, path: string): Promise<Project> {
+export async function createOrUpdateProject(
+  name: string,
+  path: string
+): Promise<Project> {
   const project = await prisma.project.upsert({
     where: { path },
     update: {

@@ -7,10 +7,8 @@ import {
   ChevronRight,
   Folder,
   MoreHorizontal,
-  Trash2,
   Star,
   Edit,
-  Forward,
   EyeOff,
   Eye,
 } from "lucide-react";
@@ -30,7 +28,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/client/components/ui/dropdown-menu";
 import {
@@ -131,7 +128,6 @@ export function AppInnerSidebar({
     return { visibleProjects: visible, hiddenProjects: hidden };
   }, [projectsData, activeProjectId, sessionsData, searchQuery]);
 
-
   const toggleProject = (projectId: string) => {
     // Always ensure the project is open when navigating to it
     setOpenProjects((prev) =>
@@ -197,7 +193,7 @@ export function AppInnerSidebar({
                   >
                     <SidebarMenuItem>
                       <SidebarMenuButton asChild isActive={isActive}>
-                        <CollapsibleTrigger className="w-full overflow-hidden">
+                        <CollapsibleTrigger className="w-full overflow-hidden flex items-center gap-2">
                           <Folder className="shrink-0" />
                           <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0 overflow-hidden">
                             <span className="text-sm truncate block">
@@ -216,7 +212,7 @@ export function AppInnerSidebar({
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <SidebarMenuAction showOnHover>
-                            <MoreHorizontal />
+                            <MoreHorizontal className="h-4 w-4" />
                             <span className="sr-only">More</span>
                           </SidebarMenuAction>
                         </DropdownMenuTrigger>
@@ -340,7 +336,7 @@ export function AppInnerSidebar({
                       >
                         <SidebarMenuItem>
                           <SidebarMenuButton asChild isActive={isActive}>
-                            <CollapsibleTrigger className="w-full overflow-hidden">
+                            <CollapsibleTrigger className="w-full overflow-hidden flex items-center gap-2">
                               <Folder className="shrink-0" />
                               <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0 overflow-hidden">
                                 <span className="font-medium text-sm truncate block">
@@ -359,7 +355,7 @@ export function AppInnerSidebar({
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <SidebarMenuAction showOnHover>
-                                <MoreHorizontal />
+                                <MoreHorizontal className="h-4 w-4" />
                                 <span className="sr-only">More</span>
                               </SidebarMenuAction>
                             </DropdownMenuTrigger>
@@ -398,15 +394,6 @@ export function AppInnerSidebar({
                                     <span>Hide Project</span>
                                   </>
                                 )}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Forward className="text-muted-foreground" />
-                                <span>Share Project</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem>
-                                <Trash2 className="text-muted-foreground" />
-                                <span>Delete Project</span>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

@@ -30,6 +30,11 @@ export function CommandMenu({ onSearchChange }: CommandMenuProps) {
   const navigate = useNavigate();
   const { data: projects = [], isLoading: projectsLoading } = useProjects();
 
+  const handleProjectCreated = (projectId: string) => {
+    setProjectDialogOpen(false);
+    navigate(`/projects/${projectId}`);
+  };
+
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "j" && (e.metaKey || e.ctrlKey)) {
@@ -59,31 +64,32 @@ export function CommandMenu({ onSearchChange }: CommandMenuProps) {
 
   return (
     <>
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={searchQuery}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          placeholder="Search projects..."
-          className="pl-9 pr-24"
-        />
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0"
-            onClick={() => setProjectDialogOpen(true)}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Search projects..."
+            className="pl-9 pr-16"
+          />
           <button
             onClick={() => setOpen(true)}
+            className="absolute right-2 top-1/2 -translate-y-1/2"
           >
             <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
               <span className="text-xs">⌘</span>J
             </kbd>
           </button>
         </div>
+        <Button
+          variant="default"
+          size="sm"
+          className="h-9 w-9 p-0 shrink-0"
+          onClick={() => setProjectDialogOpen(true)}
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
       </div>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Search projects and sessions..." />
@@ -110,6 +116,7 @@ export function CommandMenu({ onSearchChange }: CommandMenuProps) {
       <ProjectDialog
         open={projectDialogOpen}
         onOpenChange={setProjectDialogOpen}
+        onProjectCreated={handleProjectCreated}
       />
     </>
   );

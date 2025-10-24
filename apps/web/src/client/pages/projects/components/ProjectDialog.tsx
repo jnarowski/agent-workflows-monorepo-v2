@@ -29,12 +29,14 @@ interface ProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   project?: Project;
+  onProjectCreated?: (projectId: string) => void;
 }
 
 export function ProjectDialog({
   open,
   onOpenChange,
   project,
+  onProjectCreated,
 }: ProjectDialogProps) {
   const isEditMode = !!project;
   const createMutation = useCreateProject();
@@ -112,8 +114,12 @@ export function ProjectDialog({
       );
     } else {
       createMutation.mutate(data, {
-        onSuccess: () => {
-          onOpenChange(false);
+        onSuccess: (newProject) => {
+          if (onProjectCreated) {
+            onProjectCreated(newProject.id);
+          } else {
+            onOpenChange(false);
+          }
         },
       });
     }

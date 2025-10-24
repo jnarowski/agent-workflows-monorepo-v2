@@ -15,7 +15,7 @@ export const updateProjectSchema = z.object({
 
 // Schema for project ID parameter
 export const projectIdSchema = z.object({
-  id: z.string().cuid("Invalid project ID format"),
+  id: z.cuid("Invalid project ID format"),
 });
 
 // Schema for file content query parameters
