@@ -154,14 +154,22 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
 
   // Update the streaming message content
   updateStreamingMessage: (contentBlocks: ContentBlock[]) => {
+    console.log("[sessionStore] updateStreamingMessage called with:", contentBlocks);
     set((state) => {
-      if (!state.currentSession) return state;
+      if (!state.currentSession) {
+        console.log("[sessionStore] No currentSession, skipping update");
+        return state;
+      }
+
+      console.log("[sessionStore] Current session ID:", state.currentSession.id);
+      console.log("[sessionStore] Current messages count:", state.currentSession.messages.length);
 
       const messages = [...state.currentSession.messages];
       const lastMessage = messages[messages.length - 1];
 
       if (!lastMessage || lastMessage.role !== "assistant") {
         // No assistant message to update, create one
+        console.log("[sessionStore] Creating new assistant message");
         const newMessage: SessionMessage = {
           id: crypto.randomUUID(),
           role: "assistant",
@@ -179,6 +187,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       }
 
       // Update the last assistant message
+      console.log("[sessionStore] Updating existing assistant message");
       lastMessage.content = contentBlocks;
       lastMessage.isStreaming = true;
 

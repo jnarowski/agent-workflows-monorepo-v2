@@ -45,6 +45,11 @@ export function ContentBlockRenderer({
       // We don't render them separately
       return null;
 
+    case "result":
+      // Result blocks from streaming - don't render separately
+      // These are intermediate streaming events
+      return null;
+
     default: {
       // Unknown block type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -3,6 +3,7 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { ChatInterface } from "@/client/components/chat/ChatInterface";
 import { ChatPromptInput } from "@/client/components/chat/ChatPromptInput";
 import { useSessionWebSocket } from "@/client/hooks/useSessionWebSocket";
+import { useWebSocket } from "@/client/hooks/useWebSocket";
 import { useSessionStore } from "@/client/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation";
 import { useNavigationStore } from "@/client/stores";
@@ -26,9 +27,13 @@ export default function ProjectSession() {
   const loadSession = useSessionStore((s) => s.loadSession);
   const clearCurrentSession = useSessionStore((s) => s.clearCurrentSession);
   const addMessage = useSessionStore((s) => s.addMessage);
+  const defaultPermissionMode = useSessionStore((s) => s.defaultPermissionMode);
 
-  // WebSocket hook (only connects when session status is 'created')
-  const { isConnected, isReady, sendMessage: wsSendMessage, reconnect } = useSessionWebSocket({
+  // App-wide WebSocket hook for sending messages during session creation
+  const { sendMessage: globalSendMessage, isConnected: globalIsConnected, reconnect } = useWebSocket();
+
+  // WebSocket hook (subscribes to session events)
+  const { isConnected, sendMessage: wsSendMessage } = useSessionWebSocket({
     sessionId: sessionId || "",
     projectId: projectId || "",
   });
@@ -44,9 +49,33 @@ export default function ProjectSession() {
   useEffect(() => {
     // Skip loading if no sessionId (we're on /session/new route)
     if (!sessionId || !projectId) {
-      // Clear any existing session when navigating to /new
-      if (currentSessionId) {
+      // Always clear session when navigating to /new
+      clearCurrentSession();
+      return;
+    }
+
+    // Check if we have a query parameter (indicates message already sent, skip loadSession)
+    const searchParams = new URLSearchParams(location.search);
+    const queryParam = searchParams.get('query');
+
+    if (queryParam) {
+      console.log("[ProjectSession] Query param detected - skipping loadSession");
+      // Initialize session in store without fetching from server (only if not already initialized)
+      if (currentSessionId !== sessionId) {
         clearCurrentSession();
+        // Manually initialize the session store for this new session
+        useSessionStore.setState({
+          currentSessionId: sessionId,
+          currentSession: {
+            id: sessionId,
+            messages: [],
+            isStreaming: false,
+            metadata: null,
+            loadingState: "loaded",
+            error: null,
+            permissionMode: defaultPermissionMode,
+          },
+        });
       }
       return;
     }
@@ -70,40 +99,48 @@ export default function ProjectSession() {
         console.log("[ProjectSession] Session already in store, skipping load");
       }
     }
-  }, [sessionId, projectId, currentSessionId, session, clearCurrentSession, loadSession]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId, projectId, currentSessionId, location.search]);
 
   // Reset initialMessageSentRef when navigating to a different session
   useEffect(() => {
     initialMessageSentRef.current = false;
   }, [sessionId]);
 
-  // Handle initial message from navigation state
+  // Handle initial message from query parameter
   useEffect(() => {
-    const state = location.state as {
-      initialMessage?: string;
-      initialImages?: File[];
-    } | null;
+    if (!sessionId || initialMessageSentRef.current) {
+      return;
+    }
 
-    if (
-      state?.initialMessage &&
-      sessionId &&
-      !initialMessageSentRef.current
-    ) {
-      console.log("[ProjectSession] Processing initial message from navigation state");
+    const searchParams = new URLSearchParams(location.search);
+    const queryParam = searchParams.get('query');
+
+    if (queryParam) {
+      console.log("[ProjectSession] Processing initial message from query parameter");
       initialMessageSentRef.current = true;
 
-      // Send the initial message (handleSubmit will add it to the store)
-      const sendInitialMessage = async () => {
-        await handleSubmit(state.initialMessage!, state.initialImages);
-      };
+      try {
+        // Decode the query parameter
+        const decodedMessage = decodeURIComponent(queryParam);
 
-      sendInitialMessage();
+        // Add the user message to the store for UI display
+        // (Message was already sent via WebSocket during session creation)
+        addMessage({
+          id: crypto.randomUUID(),
+          role: "user",
+          content: [{ type: "text", text: decodedMessage }],
+          timestamp: Date.now(),
+        });
 
-      // Clear the state to prevent re-sending on component updates
-      navigate(location.pathname, { replace: true, state: {} });
+        // Remove query parameter from URL
+        navigate(location.pathname, { replace: true });
+      } catch (error) {
+        console.error("[ProjectSession] Error decoding query parameter:", error);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId, location.pathname, navigate]);
+  }, [sessionId, location.search]);
 
   const handleSubmit = async (message: string, images?: File[]) => {
     console.log("[ProjectSession] handleSubmit called:", {
@@ -131,10 +168,23 @@ export default function ProjectSession() {
 
         console.log("[ProjectSession] Session created:", newSession.id);
 
-        // Redirect immediately to the new session with the message in state
-        navigate(`/projects/${projectId}/session/${newSession.id}`, {
+        // Convert images to base64 if present
+        const imagePaths = images ? await handleImageUpload(images) : undefined;
+
+        // Immediately send message via app-wide WebSocket (before navigation)
+        // This starts the assistant processing right away
+        globalSendMessage(`session.${newSession.id}.send_message`, {
+          message,
+          images: imagePaths,
+          config: {}, // First message, no resume
+        });
+
+        console.log("[ProjectSession] Message sent via WebSocket, now navigating");
+
+        // Navigate to the new session with query parameter
+        // Query param signals: message already sent, just display it
+        navigate(`/projects/${projectId}/session/${newSession.id}?query=${encodeURIComponent(message)}`, {
           replace: true,
-          state: { initialMessage: message, initialImages: images },
         });
       } catch (error) {
         console.error("[ProjectSession] Error creating session:", error);
@@ -213,7 +263,7 @@ export default function ProjectSession() {
   const waitingForFirstResponse = sessionId && assistantMessageCount === 0 && (session?.messages.length || 0) > 0;
 
   const inputDisabled =
-    (sessionId && !isReady) || // Disable if we have a sessionId but WebSocket not ready
+    !globalIsConnected || // Disable if global WebSocket not connected
     waitingForFirstResponse; // Block until first assistant response
 
   return (

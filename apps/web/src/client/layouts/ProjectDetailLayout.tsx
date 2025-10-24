@@ -8,6 +8,7 @@ import { getAuthToken } from '@/client/lib/auth';
 import {
   AlertCircle,
   ArrowLeft,
+  Home,
   MessageSquare,
   Terminal as TerminalIcon,
   FileText,
@@ -125,6 +126,20 @@ export default function ProjectDetailLayout() {
           <div className="text-base font-medium">{project.name}</div>
         </div>
         <nav className="flex gap-2">
+          <NavLink
+            to={`/projects/${id}`}
+            end
+            className={({ isActive }) =>
+              `flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-secondary text-secondary-foreground"
+                  : "text-muted-foreground hover:bg-secondary/50"
+              }`
+            }
+          >
+            <Home className="h-4 w-4" />
+            Home
+          </NavLink>
           <NavLink
             to={`/projects/${id}/chat`}
             className={({ isActive }) =>

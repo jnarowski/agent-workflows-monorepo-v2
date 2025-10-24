@@ -136,7 +136,7 @@ export function AppInnerSidebar({
       prev.includes(projectId) ? prev : [...prev, projectId]
     );
     onProjectClick?.(projectId);
-    navigate(`/projects/${projectId}/chat`);
+    navigate(`/projects/${projectId}`);
   };
 
   const handleToggleHidden = (
