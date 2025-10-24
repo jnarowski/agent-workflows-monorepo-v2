@@ -3,6 +3,7 @@ import { authRoutes } from "@/server/routes/auth";
 import { projectRoutes } from "@/server/routes/projects";
 import { sessionRoutes } from "@/server/routes/sessions";
 import { slashCommandsRoutes } from "@/server/routes/slash-commands";
+import { gitRoutes } from "@/server/routes/git";
 
 export async function registerRoutes(fastify: FastifyInstance) {
   // Register auth routes
@@ -16,6 +17,9 @@ export async function registerRoutes(fastify: FastifyInstance) {
 
   // Register slash commands routes
   await fastify.register(slashCommandsRoutes);
+
+  // Register git routes
+  await fastify.register(gitRoutes);
 
   // Health check endpoint
   fastify.get("/api/health", async () => {
