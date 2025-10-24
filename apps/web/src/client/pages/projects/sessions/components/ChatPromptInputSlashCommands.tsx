@@ -38,7 +38,7 @@ export const ChatPromptInputSlashCommands = ({
 
   // Fetch slash commands (built-in + custom)
   const { data, isLoading, error } = useSlashCommands(projectId);
-  const commands = data || [];
+  const commands = useMemo(() => data || [], [data]);
 
   // Setup Fuse.js search
   const fuse = useMemo(() => {

@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import matter from 'gray-matter';
 import type { SlashCommand } from '@/shared/types/slash-command.types';
-import { projectService } from '@/server/services/project.service';
+import { getProjectById } from '@/server/services/project.service';
 
 /**
  * Slash Command Service
@@ -129,7 +129,7 @@ export async function getProjectSlashCommands(
 ): Promise<SlashCommand[]> {
   try {
     // Look up project from database
-    const project = await projectService.getProjectById(projectId);
+    const project = await getProjectById(projectId);
 
     if (!project) {
       throw new Error('Project not found');

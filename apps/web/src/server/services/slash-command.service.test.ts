@@ -2,14 +2,12 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
 import { getProjectSlashCommands } from './slash-command.service';
-import { projectService } from './project.service';
+import * as projectService from './project.service';
 import { vi } from 'vitest';
 
 // Mock the project service
 vi.mock('./project.service', () => ({
-  projectService: {
-    getProjectById: vi.fn(),
-  },
+  getProjectById: vi.fn(),
 }));
 
 describe('slash-command.service', () => {
@@ -19,7 +17,7 @@ describe('slash-command.service', () => {
 
   beforeEach(async () => {
     // Mock project service to return test project
-    vi.mocked(projectService.getProjectById).mockResolvedValue({
+    vi.mocked(projectService).getProjectById.mockResolvedValue({
       id: testProjectId,
       path: testProjectPath,
       name: 'Test Project',

@@ -63,7 +63,21 @@ describe("SessionStore", () => {
         },
       ];
 
-      // Mock successful API response with JSON containing messages array
+      // Mock first API call to get sessions list
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          data: [{
+            id: sessionId,
+            agent: "claude",
+            projectId,
+            name: "Test Session"
+          }]
+        }),
+      });
+
+      // Mock second API call to get messages
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -82,7 +96,21 @@ describe("SessionStore", () => {
       const sessionId = "test-session-id";
       const projectId = "test-project-id";
 
-      // Mock 404 response
+      // Mock first API call to get sessions list (succeeds)
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          data: [{
+            id: sessionId,
+            agent: "claude",
+            projectId,
+            name: "Test Session"
+          }]
+        }),
+      });
+
+      // Mock second API call to get messages (404 response)
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         status: 404,
@@ -145,7 +173,7 @@ describe("SessionStore", () => {
       state = useSessionStore.getState();
       expect(state.currentSession?.messages).toHaveLength(1);
       expect(state.currentSession?.messages[0].content).toHaveLength(1);
-      expect((state.currentSession?.messages[0].content[0] as any).text).toBe(" world");
+      expect((state.currentSession?.messages[0].content[0] as { type: string; text: string }).text).toBe(" world");
     });
 
     it("should handle multiple text blocks during streaming", () => {
@@ -360,9 +388,9 @@ describe("SessionStore", () => {
 
       const messages = useSessionStore.getState().currentSession?.messages;
       expect(messages).toHaveLength(3);
-      expect((messages?.[0].content[0] as any).text).toBe("Message 1");
-      expect((messages?.[1].content[0] as any).text).toBe("Response 1");
-      expect((messages?.[2].content[0] as any).text).toBe("Message 2");
+      expect((messages?.[0].content[0] as { type: string; text: string }).text).toBe("Message 1");
+      expect((messages?.[1].content[0] as { type: string; text: string }).text).toBe("Response 1");
+      expect((messages?.[2].content[0] as { type: string; text: string }).text).toBe("Message 2");
     });
   });
 });

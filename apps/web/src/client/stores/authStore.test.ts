@@ -37,7 +37,7 @@ describe("authStore", () => {
     const mockUser = { id: "1", username: "testuser" };
     const mockToken = "test-token";
 
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
         user: mockUser,
@@ -54,7 +54,7 @@ describe("authStore", () => {
   });
 
   it("should handle login failure", async () => {
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: false,
       json: async () => ({ error: "Invalid credentials" }),
     });
@@ -72,7 +72,7 @@ describe("authStore", () => {
     const mockUser = { id: "1", username: "newuser" };
     const mockToken = "new-token";
 
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
         user: mockUser,
@@ -124,7 +124,7 @@ describe("authStore", () => {
     const mockUser = { id: "1", username: "testuser" };
     const mockToken = "test-token";
 
-    (global.fetch as any).mockResolvedValueOnce({
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
         user: mockUser,

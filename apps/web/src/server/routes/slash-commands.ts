@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { getProjectSlashCommands } from '@/server/services/slash-command.service';
 import { slashCommandParamsSchema } from '@/server/schemas/slash-command.schema';
+import { buildErrorResponse } from '@/server/utils/error.utils';
 
 /**
  * Slash Commands Routes
@@ -29,21 +30,11 @@ export async function slashCommandsRoutes(fastify: FastifyInstance) {
         const errorMessage = (error as Error).message;
 
         if (errorMessage === 'Project not found') {
-          return reply.code(404).send({
-            error: {
-              message: 'Project not found',
-              statusCode: 404,
-            },
-          });
+          return reply.code(404).send(buildErrorResponse(404, 'Project not found'));
         }
 
         fastify.log.error({ error }, 'Error fetching slash commands');
-        return reply.code(500).send({
-          error: {
-            message: 'Failed to fetch slash commands',
-            statusCode: 500,
-          },
-        });
+        return reply.code(500).send(buildErrorResponse(500, 'Failed to fetch slash commands'));
       }
     }
   );

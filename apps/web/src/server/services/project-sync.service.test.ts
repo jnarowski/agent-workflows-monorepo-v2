@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { projectSyncService } from '@/server/services/project-sync.service';
-import { projectService } from '@/server/services/project.service';
-import { agentSessionService } from '@/server/services/agent-session.service';
+import { syncFromClaudeProjects, hasEnoughSessions } from '@/server/services/project-sync.service';
+import * as projectService from '@/server/services/project.service';
+import * as agentSessionService from '@/server/services/agent-session.service';
 
 // Mock the services
 vi.mock('@/server/services/project.service');
@@ -61,7 +61,7 @@ describe('ProjectSyncService', () => {
       );
       await fs.mkdir(projectDir, { recursive: true });
 
-      const hasEnough = await (projectSyncService as any).hasEnoughSessions(
+      const hasEnough = await hasEnoughSessions(
         projectName
       );
 
@@ -82,7 +82,7 @@ describe('ProjectSyncService', () => {
       const sessionFile = path.join(projectDir, 'session-1.jsonl');
       await fs.writeFile(sessionFile, JSON.stringify({ type: 'user', message: {} }));
 
-      const hasEnough = await (projectSyncService as any).hasEnoughSessions(
+      const hasEnough = await hasEnoughSessions(
         projectName
       );
 
@@ -105,7 +105,7 @@ describe('ProjectSyncService', () => {
         await fs.writeFile(sessionFile, JSON.stringify({ type: 'user', message: {} }));
       }
 
-      const hasEnough = await (projectSyncService as any).hasEnoughSessions(
+      const hasEnough = await hasEnoughSessions(
         projectName
       );
 
@@ -128,7 +128,7 @@ describe('ProjectSyncService', () => {
         await fs.writeFile(sessionFile, JSON.stringify({ type: 'user', message: {} }));
       }
 
-      const hasEnough = await (projectSyncService as any).hasEnoughSessions(
+      const hasEnough = await hasEnoughSessions(
         projectName
       );
 
@@ -151,7 +151,7 @@ describe('ProjectSyncService', () => {
         await fs.writeFile(sessionFile, JSON.stringify({ type: 'user', message: {} }));
       }
 
-      const hasEnough = await (projectSyncService as any).hasEnoughSessions(
+      const hasEnough = await hasEnoughSessions(
         projectName
       );
 
@@ -177,7 +177,7 @@ describe('ProjectSyncService', () => {
       await fs.writeFile(path.join(projectDir, 'data.json'), '{}');
       await fs.writeFile(path.join(projectDir, 'notes.txt'), 'notes');
 
-      const hasEnough = await (projectSyncService as any).hasEnoughSessions(
+      const hasEnough = await hasEnoughSessions(
         projectName
       );
 
@@ -188,7 +188,7 @@ describe('ProjectSyncService', () => {
     it('should handle directory access errors gracefully', async () => {
       const projectName = '-Users-nonexistent-project';
 
-      const hasEnough = await (projectSyncService as any).hasEnoughSessions(
+      const hasEnough = await hasEnoughSessions(
         projectName
       );
 
@@ -204,7 +204,7 @@ describe('ProjectSyncService', () => {
         force: true,
       });
 
-      const result = await projectSyncService.syncFromClaudeProjects(testUserId);
+      const result = await syncFromClaudeProjects(testUserId);
 
       expect(result).toEqual({
         projectsImported: 0,
@@ -230,7 +230,7 @@ describe('ProjectSyncService', () => {
         await fs.writeFile(sessionFile, JSON.stringify({ type: 'user', message: {} }));
       }
 
-      const result = await projectSyncService.syncFromClaudeProjects(testUserId);
+      const result = await syncFromClaudeProjects(testUserId);
 
       expect(result).toEqual({
         projectsImported: 0,
@@ -281,7 +281,7 @@ describe('ProjectSyncService', () => {
         updated: 0,
       });
 
-      const result = await projectSyncService.syncFromClaudeProjects(testUserId);
+      const result = await syncFromClaudeProjects(testUserId);
 
       expect(result.projectsImported).toBe(1);
       expect(result.projectsUpdated).toBe(0);
@@ -339,7 +339,7 @@ describe('ProjectSyncService', () => {
         updated: 4,
       });
 
-      const result = await projectSyncService.syncFromClaudeProjects(testUserId);
+      const result = await syncFromClaudeProjects(testUserId);
 
       expect(result.projectsImported).toBe(0);
       expect(result.projectsUpdated).toBe(1);
@@ -430,7 +430,7 @@ describe('ProjectSyncService', () => {
         .mockResolvedValueOnce({ synced: 5, created: 5, updated: 0 })
         .mockResolvedValueOnce({ synced: 6, created: 0, updated: 6 });
 
-      const result = await projectSyncService.syncFromClaudeProjects(testUserId);
+      const result = await syncFromClaudeProjects(testUserId);
 
       expect(result.projectsImported).toBe(1); // project1
       expect(result.projectsUpdated).toBe(1); // project2
@@ -479,7 +479,7 @@ describe('ProjectSyncService', () => {
         updated: 0,
       });
 
-      await projectSyncService.syncFromClaudeProjects(testUserId);
+      await syncFromClaudeProjects(testUserId);
 
       // Should use the path from cwd, not the encoded directory name
       expect(vi.mocked(projectService.createOrUpdateProject)).toHaveBeenCalledWith(
@@ -529,7 +529,7 @@ describe('ProjectSyncService', () => {
 
       // Should not throw, but continue processing
       await expect(
-        projectSyncService.syncFromClaudeProjects(testUserId)
+        syncFromClaudeProjects(testUserId)
       ).rejects.toThrow('Session sync failed');
     });
   });
@@ -587,7 +587,7 @@ describe('ProjectSyncService', () => {
         updated: 0,
       });
 
-      const result = await projectSyncService.syncFromClaudeProjects(testUserId);
+      const result = await syncFromClaudeProjects(testUserId);
 
       // Only project C should be imported
       expect(result.projectsImported).toBe(1);
@@ -632,7 +632,7 @@ describe('ProjectSyncService', () => {
         updated: 0,
       });
 
-      const result = await projectSyncService.syncFromClaudeProjects(testUserId);
+      const result = await syncFromClaudeProjects(testUserId);
 
       expect(result.projectsImported).toBe(1);
       expect(result.totalSessionsSynced).toBe(4);
@@ -653,7 +653,7 @@ describe('ProjectSyncService', () => {
       await fs.writeFile(path.join(projectDir, 'log.txt'), 'logs');
       await fs.writeFile(path.join(projectDir, 'session.backup'), 'backup');
 
-      const result = await projectSyncService.syncFromClaudeProjects(testUserId);
+      const result = await syncFromClaudeProjects(testUserId);
 
       // Should skip because only 2 .jsonl files
       expect(result.projectsImported).toBe(0);
@@ -693,7 +693,7 @@ describe('ProjectSyncService', () => {
         updated: 0,
       });
 
-      const result = await projectSyncService.syncFromClaudeProjects(testUserId);
+      const result = await syncFromClaudeProjects(testUserId);
 
       expect(result.projectsImported).toBe(1);
       expect(result.totalSessionsSynced).toBe(100);
@@ -745,7 +745,7 @@ describe('ProjectSyncService', () => {
         .mockResolvedValueOnce({ synced: 5, created: 5, updated: 0 })
         .mockResolvedValueOnce({ synced: 10, created: 10, updated: 0 });
 
-      const result = await projectSyncService.syncFromClaudeProjects(testUserId);
+      const result = await syncFromClaudeProjects(testUserId);
 
       // Only p4, p5, p6 should be imported (3 projects)
       expect(result.projectsImported).toBe(3);

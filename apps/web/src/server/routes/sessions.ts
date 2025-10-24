@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
 import type { FastifyInstance } from "fastify";
-import { agentSessionService } from "@/server/services/agent-session.service";
+import {
+  getSessionsByProject,
+  getSessionMessages,
+  createSession,
+  syncProjectSessions,
+} from "@/server/services/agent-session.service";
 import {
   createSessionSchema,
   sessionIdSchema,
@@ -8,6 +13,7 @@ import {
 } from "@/server/schemas/session.schema";
 import { errorResponse } from "@/server/schemas/response.schema";
 import type { CreateSessionRequest } from "@/shared/types/agent-session.types";
+import { buildErrorResponse } from "@/server/utils/error.utils";
 
 export async function sessionRoutes(fastify: FastifyInstance) {
   /**
@@ -27,18 +33,12 @@ export async function sessionRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       // Get userId from JWT token
       const userId = request.user?.id;
-      console.log(request.user, "aaaaaaaa");
 
       if (!userId) {
-        return reply.code(401).send({
-          error: {
-            message: "Unauthorized",
-            statusCode: 401,
-          },
-        });
+        return reply.code(401).send(buildErrorResponse(401, "Unauthorized"));
       }
 
-      const sessions = await agentSessionService.getSessionsByProject(
+      const sessions = await getSessionsByProject(
         request.params.id,
         userId
       );
@@ -61,16 +61,11 @@ export async function sessionRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const userId = request.user?.id;
       if (!userId) {
-        return reply.code(401).send({
-          error: {
-            message: "Unauthorized",
-            statusCode: 401,
-          },
-        });
+        return reply.code(401).send(buildErrorResponse(401, "Unauthorized"));
       }
 
       try {
-        const messages = await agentSessionService.getSessionMessages(
+        const messages = await getSessionMessages(
           request.params.sessionId,
           userId
         );
@@ -92,30 +87,15 @@ export async function sessionRoutes(fastify: FastifyInstance) {
           error.message === "Session not found" ||
           error.message === "Session file not found"
         ) {
-          return reply.code(404).send({
-            error: {
-              message: error.message,
-              statusCode: 404,
-            },
-          });
+          return reply.code(404).send(buildErrorResponse(404, error.message));
         }
 
         if (error.message === "Unauthorized access to session") {
-          return reply.code(401).send({
-            error: {
-              message: "Unauthorized access to session",
-              statusCode: 401,
-            },
-          });
+          return reply.code(401).send(buildErrorResponse(401, "Unauthorized access to session"));
         }
 
         // Catch all other errors
-        return reply.code(500).send({
-          error: {
-            message: error.message || 'Internal server error',
-            statusCode: 500,
-          },
-        });
+        return reply.code(500).send(buildErrorResponse(500, error.message || 'Internal server error'));
       }
     }
   );
@@ -139,27 +119,22 @@ export async function sessionRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const userId = request.user?.id;
       if (!userId) {
-        return reply.code(401).send({
-          error: {
-            message: "Unauthorized",
-            statusCode: 401,
-          },
-        });
+        return reply.code(401).send(buildErrorResponse(401, "Unauthorized"));
       }
 
-      console.log('[POST /sessions] Creating session:', {
+      fastify.log.info({
         projectId: request.params.id,
         userId,
         sessionId: request.body.sessionId,
-      });
+      }, 'Creating session');
 
-      const session = await agentSessionService.createSession(
+      const session = await createSession(
         request.params.id,
         userId,
         request.body.sessionId
       );
 
-      console.log('[POST /sessions] Session created successfully:', session.id);
+      fastify.log.info({ sessionId: session.id }, 'Session created successfully');
 
       return reply.code(201).send({ data: session });
     }
@@ -182,16 +157,11 @@ export async function sessionRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const userId = request.user?.id;
       if (!userId) {
-        return reply.code(401).send({
-          error: {
-            message: "Unauthorized",
-            statusCode: 401,
-          },
-        });
+        return reply.code(401).send(buildErrorResponse(401, "Unauthorized"));
       }
 
       try {
-        const result = await agentSessionService.syncProjectSessions(
+        const result = await syncProjectSessions(
           request.params.id,
           userId
         );
@@ -199,12 +169,7 @@ export async function sessionRoutes(fastify: FastifyInstance) {
         return reply.send({ data: result });
       } catch (error: any) {
         if (error.message.includes("Project not found")) {
-          return reply.code(404).send({
-            error: {
-              message: "Project not found",
-              statusCode: 404,
-            },
-          });
+          return reply.code(404).send(buildErrorResponse(404, "Project not found"));
         }
 
         throw error;

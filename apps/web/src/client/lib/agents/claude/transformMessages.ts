@@ -8,11 +8,14 @@ import type { SessionMessage, ContentBlock } from '@/shared/types/message.types'
  * @returns Typed SessionMessage array
  */
 export function transformMessages(raw: unknown[]): SessionMessage[] {
-  return raw.map((msg: any) => ({
-    id: msg.id,
-    role: msg.role,
-    content: msg.content as ContentBlock[],
-    timestamp: msg.timestamp,
-    metadata: msg.metadata,
-  }));
+  return raw.map((msg: unknown) => {
+    const message = msg as Record<string, unknown>;
+    return {
+      id: message.id as string,
+      role: message.role as 'user' | 'assistant',
+      content: message.content as ContentBlock[],
+      timestamp: message.timestamp as number,
+      metadata: message.metadata as Record<string, unknown> | undefined,
+    };
+  });
 }

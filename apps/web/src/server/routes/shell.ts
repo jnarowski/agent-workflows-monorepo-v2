@@ -1,22 +1,19 @@
 import type { FastifyInstance } from 'fastify';
-import { ShellService } from '@/server/services/shell.service';
+import {
+  createSession,
+  getSession,
+  destroySession,
+} from '@/server/services/shell.service';
 import {
   shellMessageSchema,
   type InitMessage,
   type InputMessage,
   type ResizeMessage,
 } from '@/server/schemas/shell.schema';
-
-// JWT payload interface (matching auth plugin)
-interface JWTPayload {
-  userId: number;
-  username: string;
-}
+import type { JWTPayload } from '@/server/utils/auth.utils';
 
 export async function registerShellRoute(fastify: FastifyInstance) {
   fastify.register(async (fastify) => {
-    // Create shell service with logger
-    const shellService = new ShellService(fastify.log);
     fastify.get(
       '/shell',
       { websocket: true },
@@ -106,7 +103,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             fastify.log.info({ projectId, cols, rows, userId }, 'Initializing shell session');
 
             // Create shell session
-            const session = await shellService.createSession(
+            const session = await createSession(
               projectId,
               userId.toString(),
               cols,
@@ -180,7 +177,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             return;
           }
 
-          const session = shellService.getSession(sessionId);
+          const session = getSession(sessionId);
           if (!session) {
             socket.send(
               JSON.stringify({
@@ -212,7 +209,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             return;
           }
 
-          const session = shellService.getSession(sessionId);
+          const session = getSession(sessionId);
           if (!session) {
             socket.send(
               JSON.stringify({
@@ -234,7 +231,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
         // Handle disconnection
         socket.on('close', () => {
           if (sessionId) {
-            shellService.destroySession(sessionId);
+            destroySession(sessionId, fastify.log);
             fastify.log.info({ sessionId }, 'Shell session destroyed');
           }
           fastify.log.info({ userId }, 'Shell WebSocket client disconnected');
@@ -244,7 +241,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
         socket.on('error', (error: Error) => {
           fastify.log.error({ error, sessionId }, 'Shell WebSocket error');
           if (sessionId) {
-            shellService.destroySession(sessionId);
+            destroySession(sessionId, fastify.log);
           }
         });
         } catch (error) {

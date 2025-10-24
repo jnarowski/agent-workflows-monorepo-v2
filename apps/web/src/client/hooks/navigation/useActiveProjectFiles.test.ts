@@ -24,8 +24,8 @@ describe("useActiveProjectFiles", () => {
   });
 
   it("should return empty array when no files", () => {
-    (useNavigationStore as any).mockReturnValue("project-1");
-    (useProjectFiles as any).mockReturnValue({
+    vi.mocked(useNavigationStore).mockReturnValue("project-1");
+    vi.mocked(useProjectFiles).mockReturnValue({
       data: undefined,
       isLoading: false,
       error: null,
@@ -38,8 +38,8 @@ describe("useActiveProjectFiles", () => {
   });
 
   it("should return files when projectId is set", () => {
-    (useNavigationStore as any).mockReturnValue("project-1");
-    (useProjectFiles as any).mockReturnValue({
+    vi.mocked(useNavigationStore).mockReturnValue("project-1");
+    vi.mocked(useProjectFiles).mockReturnValue({
       data: mockFiles,
       isLoading: false,
       error: null,
@@ -53,8 +53,8 @@ describe("useActiveProjectFiles", () => {
   });
 
   it("should handle loading state", () => {
-    (useNavigationStore as any).mockReturnValue("project-1");
-    (useProjectFiles as any).mockReturnValue({
+    vi.mocked(useNavigationStore).mockReturnValue("project-1");
+    vi.mocked(useProjectFiles).mockReturnValue({
       data: undefined,
       isLoading: true,
       error: null,
@@ -68,8 +68,8 @@ describe("useActiveProjectFiles", () => {
 
   it("should handle error state", () => {
     const mockError = new Error("Failed to fetch files");
-    (useNavigationStore as any).mockReturnValue("project-1");
-    (useProjectFiles as any).mockReturnValue({
+    vi.mocked(useNavigationStore).mockReturnValue("project-1");
+    vi.mocked(useProjectFiles).mockReturnValue({
       data: undefined,
       isLoading: false,
       error: mockError,
@@ -82,8 +82,8 @@ describe("useActiveProjectFiles", () => {
   });
 
   it("should handle null project ID", () => {
-    (useNavigationStore as any).mockReturnValue(null);
-    (useProjectFiles as any).mockReturnValue({
+    vi.mocked(useNavigationStore).mockReturnValue(null);
+    vi.mocked(useProjectFiles).mockReturnValue({
       data: [],
       isLoading: false,
       error: null,

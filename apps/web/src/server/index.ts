@@ -12,10 +12,19 @@ import {
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { existsSync } from 'fs';
+import { Prisma } from '@prisma/client';
 import { registerRoutes } from '@/server/routes';
-import { registerWebSocket } from '@/server/websocket';
+import { registerWebSocket, activeSessions } from '@/server/websocket';
 import { registerShellRoute } from '@/server/routes/shell';
 import { authPlugin } from '@/server/plugins/auth';
+import { setupGracefulShutdown } from '@/server/utils/shutdown.utils';
+import {
+  NotFoundError,
+  UnauthorizedError,
+  ForbiddenError,
+  ValidationError as CustomValidationError,
+  buildErrorResponse
+} from '@/server/utils/error.utils';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -78,8 +87,9 @@ export async function createServer() {
   fastify.setValidatorCompiler(validatorCompiler);
   fastify.setSerializerCompiler(serializerCompiler);
 
-  // Custom error handler for Zod validation
+  // Custom error handler for Zod validation and custom errors
   fastify.setErrorHandler((error, request, reply) => {
+    // Handle Zod validation errors
     if (error.validation) {
       return reply.status(400).send({
         error: {
@@ -91,6 +101,33 @@ export async function createServer() {
       });
     }
 
+    // Handle custom error classes
+    if (error instanceof NotFoundError) {
+      return reply.status(404).send(buildErrorResponse(404, error.message));
+    }
+    if (error instanceof UnauthorizedError) {
+      return reply.status(401).send(buildErrorResponse(401, error.message));
+    }
+    if (error instanceof ForbiddenError) {
+      return reply.status(403).send(buildErrorResponse(403, error.message));
+    }
+    if (error instanceof CustomValidationError) {
+      return reply.status(400).send(buildErrorResponse(400, error.message, 'VALIDATION_ERROR'));
+    }
+
+    // Handle Prisma errors
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2025') {
+        // Record not found
+        return reply.status(404).send(buildErrorResponse(404, 'Resource not found'));
+      }
+      if (error.code === 'P2002') {
+        // Unique constraint violation
+        return reply.status(409).send(buildErrorResponse(409, 'Resource already exists', 'DUPLICATE_ERROR'));
+      }
+    }
+
+    // Default error handling
     const statusCode = error.statusCode || 500;
     fastify.log.error({
       err: error,
@@ -100,7 +137,7 @@ export async function createServer() {
 
     return reply.status(statusCode).send({
       error: {
-        message: error.message,
+        message: error.message || 'Internal server error',
         statusCode,
       },
     });
@@ -197,8 +234,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     host: HOST,
   });
 
+  // Setup graceful shutdown handlers
+  setupGracefulShutdown(server, activeSessions);
+
   console.log('');
   console.log('🚀 Fastify server running at:');
   console.log(`   http://${HOST}:${PORT}`);
+  console.log('   Press Ctrl+C to stop gracefully');
   console.log('');
 }

@@ -22,8 +22,8 @@ describe("useNavigation", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useNavigate as any).mockReturnValue(mockNavigate);
-    (useNavigationStore as any).mockReturnValue({
+    vi.mocked(useNavigate).mockReturnValue(mockNavigate);
+    vi.mocked(useNavigationStore).mockReturnValue({
       activeProjectId: null,
       activeSessionId: null,
       setActiveProject: mockSetActiveProject,
@@ -33,7 +33,7 @@ describe("useNavigation", () => {
   });
 
   it("should return current navigation state", () => {
-    (useNavigationStore as any).mockReturnValue({
+    vi.mocked(useNavigationStore).mockReturnValue({
       activeProjectId: "project-1",
       activeSessionId: "session-1",
       setActiveProject: mockSetActiveProject,

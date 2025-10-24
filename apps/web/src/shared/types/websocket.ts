@@ -18,7 +18,7 @@ export enum ReadyState {
 /**
  * Base WebSocket message structure
  */
-export interface WebSocketMessage<T = any> {
+export interface WebSocketMessage<T = unknown> {
   type: string;
   data: T;
 }
@@ -64,7 +64,7 @@ export type WebSocketEventName =
  */
 export interface SessionStreamOutputData {
   content: {
-    events: any[]; // Array of content blocks from Claude API
+    events: unknown[]; // Array of content blocks from Claude API
   };
 }
 
@@ -86,7 +86,7 @@ export interface SessionErrorData {
 
 export interface SessionSendMessageData {
   message: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**

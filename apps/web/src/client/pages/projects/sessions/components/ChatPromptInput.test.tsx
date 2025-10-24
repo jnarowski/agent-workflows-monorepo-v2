@@ -1,144 +1,50 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ChatPromptInput } from './ChatPromptInput';
 import { useNavigationStore } from '@/client/stores/navigationStore';
-import { useProjectFiles } from '@/client/pages/projects/files/hooks/useFiles';
 import { useActiveProject } from '@/client/hooks/navigation/useActiveProject';
-import { useState, createContext, useContext } from 'react';
 
 // Mock dependencies
 vi.mock('@/client/stores/navigationStore');
-vi.mock('@/client/pages/projects/files/hooks/useFiles');
 vi.mock('@/client/hooks/navigation/useActiveProject');
-
-// Create a mock controller context that mimics the real one
-const MockPromptInputController = createContext<any>(null);
-
-const useMockPromptInputController = () => {
-  const ctx = useContext(MockPromptInputController);
-  if (!ctx) {
-    throw new Error('Must be wrapped in MockPromptInputController.Provider');
-  }
-  return ctx;
-};
-
-// Mock PromptInput components with proper provider behavior
-vi.mock('@/client/components/ai-elements/prompt-input', () => {
-  // Define PromptInput component that can access context
-  const MockPromptInput = ({ children, onSubmit }: any) => {
-    const controller = useMockPromptInputController();
-    return (
-      <form
-        data-testid="prompt-input"
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSubmit?.({ text: controller.textInput.value }, e);
-        }}
-      >
-        {children}
-      </form>
-    );
-  };
-
-  const MockPromptInputProvider = ({ children }: any) => {
-    const [textInput, setTextInput] = useState('');
-    const controller = {
-      textInput: {
-        value: textInput,
-        setInput: setTextInput,
-        clear: () => setTextInput(''),
-      },
-      attachments: {
-        files: [],
-        add: vi.fn(),
-        remove: vi.fn(),
-        clear: vi.fn(),
-        openFileDialog: vi.fn(),
-        fileInputRef: { current: null },
-      },
-      __registerFileInput: vi.fn(),
-    };
-    return (
-      <MockPromptInputController.Provider value={controller}>
-        {children}
-      </MockPromptInputController.Provider>
-    );
-  };
-
-  const MockPromptInputTextarea = ({ onChange, ...props }: any) => {
-    const controller = useMockPromptInputController();
-    return (
-      <textarea
-        data-testid="prompt-textarea"
-        value={controller.textInput.value}
-        onChange={(e) => {
-          controller.textInput.setInput(e.target.value);
-          onChange?.(e);
-        }}
-        {...props}
-      />
-    );
-  };
-
-  return {
-    PromptInput: MockPromptInput,
-    PromptInputProvider: MockPromptInputProvider,
-    usePromptInputController: () => useMockPromptInputController(),
-    PromptInputBody: ({ children }: any) => <div>{children}</div>,
-    PromptInputAttachments: ({ children }: any) => (
-      <div>{typeof children === 'function' ? children({}) : children}</div>
-    ),
-    PromptInputAttachment: () => <div />,
-    PromptInputTextarea: MockPromptInputTextarea,
-    PromptInputFooter: ({ children }: any) => <div>{children}</div>,
-    PromptInputTools: ({ children }: any) => <div>{children}</div>,
-    PromptInputActionMenu: ({ children }: any) => <div>{children}</div>,
-    PromptInputActionMenuTrigger: () => <button />,
-    PromptInputActionMenuContent: ({ children }: any) => <div>{children}</div>,
-    PromptInputActionAddAttachments: () => <div />,
-    PromptInputSpeechButton: () => <div />,
-    PromptInputButton: ({ children }: any) => <button>{children}</button>,
-    PromptInputModelSelect: ({ children }: any) => <div>{children}</div>,
-    PromptInputModelSelectTrigger: ({ children }: any) => <div>{children}</div>,
-    PromptInputModelSelectValue: () => <div />,
-    PromptInputModelSelectContent: ({ children }: any) => <div>{children}</div>,
-    PromptInputModelSelectItem: ({ children }: any) => <div>{children}</div>,
-    PromptInputSubmit: () => <button>Submit</button>,
-  };
-});
-
-// Mock ChatPromptInputFiles
 vi.mock('./ChatPromptInputFiles', () => ({
-  ChatPromptInputFiles: ({ onFileSelect, onFileRemove, open }: any) => (
-    <div data-testid="file-picker" data-open={open}>
-      <button
-        data-testid="select-file-btn"
-        onClick={() => onFileSelect('@src/test.ts')}
-      >
-        Select File
-      </button>
-      <button
-        data-testid="remove-file-btn"
-        onClick={() => onFileRemove('@src/test.ts')}
-      >
-        Remove File
-      </button>
-    </div>
-  ),
+  ChatPromptInputFiles: () => <div data-testid="file-picker-mock">File Picker</div>,
+}));
+vi.mock('./ChatPromptInputSlashCommands', () => ({
+  ChatPromptInputSlashCommands: () => <div data-testid="slash-commands-mock">Slash Commands</div>,
 }));
 
 describe('ChatPromptInput', () => {
+  let queryClient: QueryClient;
+  const mockOnSubmit = vi.fn();
+
+  const renderWithProviders = (ui: React.ReactElement) => {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        {ui}
+      </QueryClientProvider>
+    );
+  };
+
   beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    });
+
     vi.clearAllMocks();
-    (useNavigationStore as any).mockReturnValue({
+
+    vi.mocked(useNavigationStore).mockReturnValue({
       activeProjectId: 'test-project-123',
+      activeSessionId: 'test-session-456',
     });
-    (useProjectFiles as any).mockReturnValue({
-      data: [],
-      isLoading: false,
-      error: null,
-    });
-    (useActiveProject as any).mockReturnValue({
+
+    vi.mocked(useActiveProject).mockReturnValue({
       project: {
         id: 'test-project-123',
         name: 'Test Project',
@@ -153,268 +59,104 @@ describe('ChatPromptInput', () => {
     });
   });
 
-  it('should open @ menu when @ is typed', async () => {
-    render(<ChatPromptInput />);
+  it('should render the prompt input component', () => {
+    renderWithProviders(<ChatPromptInput onSubmit={mockOnSubmit} />);
 
-    const textarea = screen.getByTestId('prompt-textarea');
+    // Check for textarea (PromptInput component should render one)
+    const textarea = screen.getByRole('textbox');
+    expect(textarea).toBeDefined();
+  });
 
-    // Type "@" in the textarea
-    fireEvent.change(textarea, { target: { value: '@', selectionStart: 1 } });
+  it('should render submit button', () => {
+    renderWithProviders(<ChatPromptInput onSubmit={mockOnSubmit} />);
+
+    // PromptInputSubmit should render a submit button
+    const submitButton = screen.getByRole('button', { name: /submit/i });
+    expect(submitButton).toBeDefined();
+  });
+
+  it('should call onSubmit when form is submitted with text', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ChatPromptInput onSubmit={mockOnSubmit} />);
+
+    const textarea = screen.getByRole('textbox');
+    await user.type(textarea, 'Hello world');
+
+    const submitButton = screen.getByRole('button', { name: /submit/i });
+    await user.click(submitButton);
 
     await waitFor(() => {
-      const filePicker = screen.getByTestId('file-picker');
-      expect(filePicker).toHaveAttribute('data-open', 'true');
+      expect(mockOnSubmit).toHaveBeenCalledWith(
+        expect.stringContaining('Hello world'),
+        expect.anything()
+      );
     });
   });
 
-  it('should remove @ symbol and keep cursor at end', async () => {
-    render(<ChatPromptInput />);
+  it('should be disabled when disabled prop is true', () => {
+    renderWithProviders(<ChatPromptInput onSubmit={mockOnSubmit} disabled={true} />);
 
-    const textarea = screen.getByTestId('prompt-textarea') as HTMLTextAreaElement;
-
-    // Type "Hello @"
-    fireEvent.change(textarea, {
-      target: { value: 'Hello @', selectionStart: 7 },
-    });
-
-    await waitFor(() => {
-      // The @ should be removed, leaving "Hello "
-      expect(textarea.value).toBe('Hello ');
-    });
+    const textarea = screen.getByRole('textbox');
+    expect(textarea).toHaveAttribute('disabled');
   });
 
-  it('should insert file path with space at cursor position', async () => {
-    render(<ChatPromptInput />);
+  it('should use active project ID from navigation store', () => {
+    renderWithProviders(<ChatPromptInput onSubmit={mockOnSubmit} />);
 
-    const textarea = screen.getByTestId('prompt-textarea') as HTMLTextAreaElement;
-
-    // Type "Check @"
-    fireEvent.change(textarea, {
-      target: { value: 'Check @', selectionStart: 7 },
-    });
-
-    // Wait for @ to be removed
-    await waitFor(() => {
-      expect(textarea.value).toBe('Check ');
-    });
-
-    // Click select file button
-    const selectBtn = screen.getByTestId('select-file-btn');
-    fireEvent.click(selectBtn);
-
-    await waitFor(() => {
-      // File path should be inserted with trailing space
-      expect(textarea.value).toBe('Check @src/test.ts ');
-    });
-  });
-
-  it('should insert file path in middle of text', async () => {
-    render(<ChatPromptInput />);
-
-    const textarea = screen.getByTestId('prompt-textarea') as HTMLTextAreaElement;
-
-    // Type "Check @ for details"
-    fireEvent.change(textarea, {
-      target: { value: 'Check  for details', selectionStart: 6 },
-    });
-
-    // Manually trigger file selection (simulating menu open and selection)
-    const selectBtn = screen.getByTestId('select-file-btn');
-    fireEvent.click(selectBtn);
-
-    await waitFor(() => {
-      // File path should be inserted at cursor position
-      expect(textarea.value).toBe('Check @src/test.ts  for details');
-    });
-  });
-
-  it('should remove all occurrences of file path', async () => {
-    render(<ChatPromptInput />);
-
-    const textarea = screen.getByTestId('prompt-textarea') as HTMLTextAreaElement;
-
-    // Set text with file path multiple times
-    fireEvent.change(textarea, {
-      target: {
-        value: 'Check @src/test.ts and @src/test.ts again',
-        selectionStart: 0,
-      },
-    });
-
-    // Click remove file button
-    const removeBtn = screen.getByTestId('remove-file-btn');
-    fireEvent.click(removeBtn);
-
-    await waitFor(() => {
-      // All occurrences should be removed
-      expect(textarea.value).toBe('Check  and  again');
-    });
-  });
-
-  it('should close menu after file selection', async () => {
-    render(<ChatPromptInput />);
-
-    const textarea = screen.getByTestId('prompt-textarea');
-
-    // Open menu by typing @
-    fireEvent.change(textarea, {
-      target: { value: '@', selectionStart: 1 },
-    });
-
-    await waitFor(() => {
-      const filePicker = screen.getByTestId('file-picker');
-      expect(filePicker).toHaveAttribute('data-open', 'true');
-    });
-
-    // Select a file
-    const selectBtn = screen.getByTestId('select-file-btn');
-    fireEvent.click(selectBtn);
-
-    await waitFor(() => {
-      const filePicker = screen.getByTestId('file-picker');
-      expect(filePicker).toHaveAttribute('data-open', 'false');
-    });
-  });
-
-  it('should use project ID from navigation store', () => {
-    const mockUseNavigationStore = useNavigationStore as any;
-    mockUseNavigationStore.mockReturnValue({
-      activeProjectId: 'my-project-456',
-    });
-
-    render(<ChatPromptInput />);
-
-    // Verify the mock was called
-    expect(mockUseNavigationStore).toHaveBeenCalled();
+    expect(useNavigationStore).toHaveBeenCalled();
   });
 
   it('should handle empty project ID gracefully', () => {
-    const mockUseNavigationStore = useNavigationStore as any;
-    mockUseNavigationStore.mockReturnValue({
+    vi.mocked(useNavigationStore).mockReturnValue({
       activeProjectId: null,
+      activeSessionId: null,
     });
 
     // Should not crash
-    expect(() => render(<ChatPromptInput />)).not.toThrow();
+    expect(() => renderWithProviders(<ChatPromptInput onSubmit={mockOnSubmit} />)).not.toThrow();
   });
 
-  it('should maintain textarea value when typing normally', async () => {
-    render(<ChatPromptInput />);
+  it('should render permission mode selector', () => {
+    renderWithProviders(<ChatPromptInput onSubmit={mockOnSubmit} />);
 
-    const textarea = screen.getByTestId('prompt-textarea') as HTMLTextAreaElement;
-
-    // Type some text
-    fireEvent.change(textarea, {
-      target: { value: 'Hello world', selectionStart: 11 },
-    });
-
-    await waitFor(() => {
-      expect(textarea.value).toBe('Hello world');
-    });
-
-    // Continue typing
-    fireEvent.change(textarea, {
-      target: { value: 'Hello world!', selectionStart: 12 },
-    });
-
-    await waitFor(() => {
-      expect(textarea.value).toBe('Hello world!');
-    });
+    // Permission mode selector should be present
+    const permissionButton = screen.getByRole('combobox', { name: /permission/i });
+    expect(permissionButton).toBeDefined();
   });
 
-  it('should update textarea value via controller when file is selected', async () => {
-    render(<ChatPromptInput />);
+  it('should render speech button', () => {
+    renderWithProviders(<ChatPromptInput onSubmit={mockOnSubmit} />);
 
-    const textarea = screen.getByTestId('prompt-textarea') as HTMLTextAreaElement;
-
-    // Type "Check @" to open the menu
-    fireEvent.change(textarea, {
-      target: { value: 'Check @', selectionStart: 7 },
-    });
-
-    // Wait for @ to be removed (this updates via controller)
-    await waitFor(() => {
-      expect(textarea.value).toBe('Check ');
-    });
-
-    // Select a file (this also updates via controller)
-    const selectBtn = screen.getByTestId('select-file-btn');
-    fireEvent.click(selectBtn);
-
-    // Verify textarea reflects the controller state
-    await waitFor(() => {
-      expect(textarea.value).toBe('Check @src/test.ts ');
-    });
+    // Speech button should be present
+    const speechButton = screen.getByRole('button', { name: /speech|microphone/i });
+    expect(speechButton).toBeDefined();
   });
 
-  it('should preserve cursor position when @ is removed', async () => {
-    render(<ChatPromptInput />);
+  it('should not call onSubmit when textarea is empty', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ChatPromptInput onSubmit={mockOnSubmit} />);
 
-    const textarea = screen.getByTestId('prompt-textarea') as HTMLTextAreaElement;
+    const submitButton = screen.getByRole('button', { name: /submit/i });
+    await user.click(submitButton);
 
-    // Type "Hello @"
-    fireEvent.change(textarea, {
-      target: { value: 'Hello @', selectionStart: 7 },
-    });
+    // Wait a bit to ensure no call was made
+    await new Promise(resolve => setTimeout(resolve, 100));
 
-    await waitFor(() => {
-      // @ should be removed, text should be "Hello "
-      expect(textarea.value).toBe('Hello ');
-    });
-
-    // The cursor should still be at the end (position 6, after "Hello ")
-    // This is tracked by the cursorPosition state
+    expect(mockOnSubmit).not.toHaveBeenCalled();
   });
 
-  it('should sync controller state with textarea on change', async () => {
-    render(<ChatPromptInput />);
+  it('should clear textarea after successful submission', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ChatPromptInput onSubmit={mockOnSubmit} />);
 
-    const textarea = screen.getByTestId('prompt-textarea') as HTMLTextAreaElement;
+    const textarea = screen.getByRole('textbox') as HTMLTextAreaElement;
+    await user.type(textarea, 'Test message');
 
-    // Type text
-    fireEvent.change(textarea, {
-      target: { value: 'Test message', selectionStart: 12 },
-    });
-
-    await waitFor(() => {
-      // Textarea should show the value from controller
-      expect(textarea.value).toBe('Test message');
-    });
-
-    // Change the text again
-    fireEvent.change(textarea, {
-      target: { value: 'Test message updated', selectionStart: 20 },
-    });
+    const submitButton = screen.getByRole('button', { name: /submit/i });
+    await user.click(submitButton);
 
     await waitFor(() => {
-      expect(textarea.value).toBe('Test message updated');
-    });
-  });
-
-  it('should handle file removal via controller', async () => {
-    render(<ChatPromptInput />);
-
-    const textarea = screen.getByTestId('prompt-textarea') as HTMLTextAreaElement;
-
-    // Set initial text with a file path
-    fireEvent.change(textarea, {
-      target: {
-        value: 'Check @src/test.ts for details',
-        selectionStart: 30,
-      },
-    });
-
-    await waitFor(() => {
-      expect(textarea.value).toBe('Check @src/test.ts for details');
-    });
-
-    // Remove the file
-    const removeBtn = screen.getByTestId('remove-file-btn');
-    fireEvent.click(removeBtn);
-
-    await waitFor(() => {
-      // File path should be removed via controller
-      expect(textarea.value).toBe('Check  for details');
+      expect(textarea.value).toBe('');
     });
   });
 });

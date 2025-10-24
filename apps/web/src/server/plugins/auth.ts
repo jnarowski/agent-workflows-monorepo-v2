@@ -2,17 +2,13 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import fastifyJwt from "@fastify/jwt";
 import fastifyPlugin from "fastify-plugin";
 import { prisma } from "@/shared/prisma";
+import { JWTPayload } from "@/server/utils/auth.utils";
+import { buildErrorResponse } from "@/server/utils/error.utils";
 
 // JWT secret from environment - required for security
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is required');
-}
-
-// JWT payload interface
-interface JWTPayload {
-  userId: string;
-  username: string;
 }
 
 async function authPluginFunction(fastify: FastifyInstance) {
@@ -38,24 +34,14 @@ async function authPluginFunction(fastify: FastifyInstance) {
         if (!user || !user.is_active) {
           return reply
             .code(401)
-            .send({
-              error: {
-                message: "Invalid token. User not found or inactive.",
-                statusCode: 401,
-              },
-            });
+            .send(buildErrorResponse(401, "Invalid token. User not found or inactive."));
         }
 
         // Attach user to request
         request.user = user;
       } catch (err) {
         fastify.log.debug({ err }, "Authentication failed");
-        return reply.code(401).send({
-          error: {
-            message: "Invalid or missing token",
-            statusCode: 401,
-          },
-        });
+        return reply.code(401).send(buildErrorResponse(401, "Invalid or missing token"));
       }
     }
   );

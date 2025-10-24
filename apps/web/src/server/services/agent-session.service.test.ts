@@ -3,12 +3,20 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { agentSessionService } from '@/server/services/agent-session.service';
+import {
+  parseJSONLFile,
+  syncProjectSessions,
+  getSessionsByProject,
+  getSessionMessages,
+  createSession,
+  updateSessionMetadata
+} from '@/server/services/agent-session.service';
+import { getSessionFilePath } from '@/server/utils/path.utils';
 import { prisma } from '@/shared/prisma';
 
-// Mock Prisma
-vi.mock('@/shared/prisma', () => ({
-  prisma: {
+// Mock Prisma - factory function to avoid hoisting issues
+vi.mock('@/shared/prisma', () => {
+  const mockPrisma = {
     project: {
       findUnique: vi.fn(),
     },
@@ -16,12 +24,25 @@ vi.mock('@/shared/prisma', () => ({
       findUnique: vi.fn(),
       findMany: vi.fn(),
       create: vi.fn(),
+      createMany: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      deleteMany: vi.fn(),
     },
     $disconnect: vi.fn(),
-  },
-}));
+    $transaction: vi.fn(),
+  };
+
+  // Make $transaction call the callback with mockPrisma
+  mockPrisma.$transaction.mockImplementation(async (callback) => {
+    if (typeof callback === 'function') {
+      return await callback(mockPrisma);
+    }
+    return Promise.resolve();
+  });
+
+  return { prisma: mockPrisma };
+});
 
 describe('AgentSessionService', () => {
   const testDir = path.join(os.tmpdir(), 'claude-test-sessions');
@@ -89,7 +110,7 @@ describe('AgentSessionService', () => {
       ];
       await fs.writeFile(sessionFile, messages.join('\n'));
 
-      const metadata = await agentSessionService.parseJSONLFile(sessionFile);
+      const metadata = await parseJSONLFile(sessionFile);
 
       expect(metadata.messageCount).toBe(3);
       expect(metadata.totalTokens).toBe(33); // 10 + 15 + 5 + 3
@@ -113,7 +134,7 @@ describe('AgentSessionService', () => {
       ];
       await fs.writeFile(sessionFile, messages.join('\n'));
 
-      const metadata = await agentSessionService.parseJSONLFile(sessionFile);
+      const metadata = await parseJSONLFile(sessionFile);
 
       expect(metadata.messageCount).toBe(1);
       expect(metadata.firstMessagePreview).toBe('First part Second part');
@@ -130,7 +151,7 @@ describe('AgentSessionService', () => {
       ];
       await fs.writeFile(sessionFile, entries.join('\n'));
 
-      const metadata = await agentSessionService.parseJSONLFile(sessionFile);
+      const metadata = await parseJSONLFile(sessionFile);
 
       expect(metadata.messageCount).toBe(2); // Only user and assistant messages
     });
@@ -145,7 +166,7 @@ describe('AgentSessionService', () => {
       ];
       await fs.writeFile(sessionFile, lines.join('\n'));
 
-      const metadata = await agentSessionService.parseJSONLFile(sessionFile);
+      const metadata = await parseJSONLFile(sessionFile);
 
       expect(metadata.messageCount).toBe(2); // Should count only valid messages
     });
@@ -154,7 +175,7 @@ describe('AgentSessionService', () => {
       const sessionFile = path.join(testDir, 'empty.jsonl');
       await fs.writeFile(sessionFile, '');
 
-      const metadata = await agentSessionService.parseJSONLFile(sessionFile);
+      const metadata = await parseJSONLFile(sessionFile);
 
       expect(metadata.messageCount).toBe(0);
       expect(metadata.totalTokens).toBe(0);
@@ -165,7 +186,7 @@ describe('AgentSessionService', () => {
       const nonexistentFile = path.join(testDir, 'nonexistent.jsonl');
 
       await expect(
-        agentSessionService.parseJSONLFile(nonexistentFile)
+        parseJSONLFile(nonexistentFile)
       ).rejects.toThrow('Failed to parse JSONL file');
     });
 
@@ -180,7 +201,7 @@ describe('AgentSessionService', () => {
       ];
       await fs.writeFile(sessionFile, messages.join('\n'));
 
-      const metadata = await agentSessionService.parseJSONLFile(sessionFile);
+      const metadata = await parseJSONLFile(sessionFile);
 
       expect(metadata.firstMessagePreview).toHaveLength(100);
       expect(metadata.firstMessagePreview).toBe('a'.repeat(100));
@@ -236,7 +257,7 @@ describe('AgentSessionService', () => {
       // Mock finding existing sessions
       vi.mocked(prisma.agentSession.findMany).mockResolvedValue([]);
 
-      const result = await agentSessionService.syncProjectSessions(
+      const result = await syncProjectSessions(
         testProjectId,
         testUserId
       );
@@ -244,7 +265,7 @@ describe('AgentSessionService', () => {
       expect(result.synced).toBe(2);
       expect(result.created).toBe(2);
       expect(result.updated).toBe(0);
-      expect(vi.mocked(prisma.agentSession.create)).toHaveBeenCalledTimes(2);
+      expect(vi.mocked(prisma.agentSession.createMany)).toHaveBeenCalledTimes(1);
     });
 
     it('should update existing sessions', async () => {
@@ -305,7 +326,7 @@ describe('AgentSessionService', () => {
         },
       ]);
 
-      const result = await agentSessionService.syncProjectSessions(
+      const result = await syncProjectSessions(
         testProjectId,
         testUserId
       );
@@ -386,7 +407,7 @@ describe('AgentSessionService', () => {
         updated_at: new Date(),
       });
 
-      await agentSessionService.syncProjectSessions(testProjectId, testUserId);
+      await syncProjectSessions(testProjectId, testUserId);
 
       // Should delete the orphaned session
       expect(vi.mocked(prisma.agentSession.delete)).toHaveBeenCalledWith({
@@ -404,7 +425,7 @@ describe('AgentSessionService', () => {
         updated_at: new Date(),
       });
 
-      const result = await agentSessionService.syncProjectSessions(
+      const result = await syncProjectSessions(
         testProjectId,
         testUserId
       );
@@ -418,7 +439,7 @@ describe('AgentSessionService', () => {
       vi.mocked(prisma.project.findUnique).mockResolvedValue(null);
 
       await expect(
-        agentSessionService.syncProjectSessions('nonexistent-id', testUserId)
+        syncProjectSessions('nonexistent-id', testUserId)
       ).rejects.toThrow('Project not found: nonexistent-id');
     });
 
@@ -463,7 +484,7 @@ describe('AgentSessionService', () => {
       });
       vi.mocked(prisma.agentSession.findMany).mockResolvedValue([]);
 
-      const result = await agentSessionService.syncProjectSessions(
+      const result = await syncProjectSessions(
         testProjectId,
         testUserId
       );
@@ -479,7 +500,7 @@ describe('AgentSessionService', () => {
       const projectPath = '/Users/john/myproject';
       const sessionId = 'abc-123-def';
 
-      const filePath = agentSessionService.getSessionFilePath(
+      const filePath = getSessionFilePath(
         projectPath,
         sessionId
       );
@@ -499,7 +520,7 @@ describe('AgentSessionService', () => {
       const projectPath = '/Users/john/dev/projects/myproject';
       const sessionId = 'session-id';
 
-      const filePath = agentSessionService.getSessionFilePath(
+      const filePath = getSessionFilePath(
         projectPath,
         sessionId
       );

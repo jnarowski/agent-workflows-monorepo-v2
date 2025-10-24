@@ -9,7 +9,7 @@ vi.mock("@/client/stores", () => ({
   useNavigationStore: vi.fn(),
 }));
 
-vi.mock("@/client/hooks/useProjects", () => ({
+vi.mock("@/client/pages/projects/hooks/useProjects", () => ({
   useProjects: vi.fn(),
 }));
 
@@ -24,8 +24,8 @@ describe("useActiveProject", () => {
   });
 
   it("should return null when no active project", () => {
-    (useNavigationStore as any).mockReturnValue(null);
-    (useProjects as any).mockReturnValue({
+    vi.mocked(useNavigationStore).mockReturnValue(null);
+    vi.mocked(useProjects).mockReturnValue({
       data: mockProjects,
       isLoading: false,
       error: null,
@@ -39,8 +39,8 @@ describe("useActiveProject", () => {
   });
 
   it("should return project when ID matches", () => {
-    (useNavigationStore as any).mockReturnValue("project-1");
-    (useProjects as any).mockReturnValue({
+    vi.mocked(useNavigationStore).mockReturnValue("project-1");
+    vi.mocked(useProjects).mockReturnValue({
       data: mockProjects,
       isLoading: false,
       error: null,
@@ -54,8 +54,8 @@ describe("useActiveProject", () => {
   });
 
   it("should return null when project ID not found", () => {
-    (useNavigationStore as any).mockReturnValue("nonexistent-id");
-    (useProjects as any).mockReturnValue({
+    vi.mocked(useNavigationStore).mockReturnValue("nonexistent-id");
+    vi.mocked(useProjects).mockReturnValue({
       data: mockProjects,
       isLoading: false,
       error: null,
@@ -68,8 +68,8 @@ describe("useActiveProject", () => {
   });
 
   it("should handle loading state", () => {
-    (useNavigationStore as any).mockReturnValue("project-1");
-    (useProjects as any).mockReturnValue({
+    vi.mocked(useNavigationStore).mockReturnValue("project-1");
+    vi.mocked(useProjects).mockReturnValue({
       data: undefined,
       isLoading: true,
       error: null,
@@ -83,8 +83,8 @@ describe("useActiveProject", () => {
 
   it("should handle error state", () => {
     const mockError = new Error("Failed to fetch projects");
-    (useNavigationStore as any).mockReturnValue("project-1");
-    (useProjects as any).mockReturnValue({
+    vi.mocked(useNavigationStore).mockReturnValue("project-1");
+    vi.mocked(useProjects).mockReturnValue({
       data: undefined,
       isLoading: false,
       error: mockError,

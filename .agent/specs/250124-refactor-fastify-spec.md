@@ -84,78 +84,93 @@ Connect everything together and add stability features:
 ### 1: Create Shared Utilities
 
 <!-- prettier-ignore -->
-- [ ] 1.1 Create auth utilities
+- [x] 1.1 Create auth utilities
     - Create `apps/web/src/server/utils/auth.utils.ts`
     - Export `JWTPayload` interface: `{ userId: string; username: string; }`
     - This will be imported by: websocket.ts, shell.ts, plugins/auth.ts
 
-- [ ] 1.2 Create error utilities
+- [x] 1.2 Create error utilities
     - Create `apps/web/src/server/utils/error.utils.ts`
     - Export custom error classes: `NotFoundError`, `UnauthorizedError`, `ForbiddenError`, `ValidationError`
     - Each extends Error with `statusCode` property
     - Export `buildErrorResponse(statusCode, message, code?)` function
     - Returns: `{ error: { message, code?, statusCode } }`
 
-- [ ] 1.3 Create path utilities
+- [x] 1.3 Create path utilities
     - Create `apps/web/src/server/utils/path.utils.ts`
     - Export `encodeProjectPath(projectPath: string): string` - replaces `/` with `-`
     - Export `getClaudeProjectsDir(): string` - returns `~/.claude/projects`
     - Export `getSessionFilePath(projectPath: string, sessionId: string): string`
     - Used by: agent-session.service.ts, claude/loadSession.ts
 
-- [ ] 1.4 Create response utilities
+- [x] 1.4 Create response utilities
     - Create `apps/web/src/server/utils/response.utils.ts`
     - Export `buildSuccessResponse<T>(data: T)` - returns `{ data }`
     - Export any other standard response builders needed
 
 #### Completion Notes
 
+- Created auth.utils.ts with JWTPayload interface for centralized JWT type definition
+- Created error.utils.ts with custom error classes (NotFoundError, UnauthorizedError, ForbiddenError, ValidationError) and buildErrorResponse function
+- Created path.utils.ts with encodeProjectPath, getClaudeProjectsDir, and getSessionFilePath utilities
+- Created response.utils.ts with buildSuccessResponse for consistent API responses
+- All utilities include comprehensive JSDoc documentation and examples
+
 ### 2: Convert Services to Functional
 
 <!-- prettier-ignore -->
-- [ ] 2.1 Convert project.service.ts
+- [x] 2.1 Convert project.service.ts
     - File: `apps/web/src/server/services/project.service.ts`
     - Remove `ProjectService` class and singleton export
     - Convert each method to exported function
     - Functions: `getAllProjects()`, `getProjectById()`, `createProject()`, `updateProject()`, `deleteProject()`, `toggleProjectHidden()`, `projectExistsByPath()`, `getProjectByPath()`, `createOrUpdateProject()`
     - Keep `transformProject()` as internal helper
 
-- [ ] 2.2 Convert agent-session.service.ts
+- [x] 2.2 Convert agent-session.service.ts
     - File: `apps/web/src/server/services/agent-session.service.ts`
     - Remove `AgentSessionService` class and singleton export
     - Import path utilities: `import { encodeProjectPath, getClaudeProjectsDir, getSessionFilePath } from '@/server/utils/path.utils'`
     - Remove duplicated private methods, use imported utilities
     - Convert to exported functions: `parseJSONLFile()`, `syncProjectSessions()`, `getSessionsByProject()`, `getSessionMessages()`, `createSession()`, `updateSessionMetadata()`
 
-- [ ] 2.3 Convert file.service.ts
+- [x] 2.3 Convert file.service.ts
     - File: `apps/web/src/server/services/file.service.ts`
     - Remove `FileService` class
     - Keep logger as function parameter where needed
     - Convert to functions: `getProjectFiles(projectId, logger?)`, `readFile(projectId, filePath, logger?)`, `writeFile(projectId, filePath, content, logger?)`
     - Keep internal helpers: `scanDirectory()`, `sortFileTree()`, `convertPermissions()`
 
-- [ ] 2.4 Convert shell.service.ts
+- [x] 2.4 Convert shell.service.ts
     - File: `apps/web/src/server/services/shell.service.ts`
     - Remove `ShellService` class and singleton
     - Keep sessions Map at module scope
     - Convert to functions: `createSession()`, `getSession()`, `destroySession()`
 
-- [ ] 2.5 Convert slash-command.service.ts
+- [x] 2.5 Convert slash-command.service.ts
     - File: `apps/web/src/server/services/slash-command.service.ts`
     - Already mostly functional, just ensure no class exports
     - Main function: `getProjectSlashCommands()`
 
-- [ ] 2.6 Convert project-sync.service.ts
+- [x] 2.6 Convert project-sync.service.ts
     - File: `apps/web/src/server/services/project-sync.service.ts`
     - Remove `ProjectSyncService` class and singleton
     - Convert to function: `syncFromClaudeProjects(userId)`
 
 #### Completion Notes
 
+- Converted all 6 services from class-based to functional exports
+- project.service.ts: Removed ProjectService class, kept transformProject as internal helper
+- agent-session.service.ts: Removed AgentSessionService class, imported path utilities from utils
+- file.service.ts: Removed FileService class, logger passed as optional parameter to functions
+- shell.service.ts: Removed ShellService class, sessions Map kept at module scope
+- slash-command.service.ts: Already functional, no changes needed
+- project-sync.service.ts: Removed ProjectSyncService class, uses imported path utilities
+- All services now export pure functions for better testability and simplicity
+
 ### 3: Refactor WebSocket
 
 <!-- prettier-ignore -->
-- [ ] 3.1 Create WebSocket types file
+- [x] 3.1 Create WebSocket types file
     - Create `apps/web/src/server/websocket.types.ts`
     - Move and properly type all interfaces from websocket.ts:
       - `WebSocketMessage<T>` with proper generics
@@ -164,7 +179,7 @@ Connect everything together and add stability features:
     - Remove `JWTPayload` (will import from auth.utils instead)
     - Export all interfaces
 
-- [ ] 3.2 Refactor websocket.ts organization
+- [x] 3.2 Refactor websocket.ts organization
     - File: `apps/web/src/server/websocket.ts`
     - Import `JWTPayload` from `@/server/utils/auth.utils`
     - Import interfaces from `@/server/websocket.types`
@@ -189,17 +204,26 @@ Connect everything together and add stability features:
 
 #### Completion Notes
 
+- Created websocket.types.ts with all WebSocket interface definitions including WebSocketMessage<T>, SessionSendMessageData, ShellInputData, ShellResizeData, ShellInitData, and ActiveSessionData
+- Refactored websocket.ts with clear section organization (STATE, UTILITIES, SESSION HANDLERS, SHELL HANDLERS, MAIN REGISTRATION)
+- Imported JWTPayload from auth.utils and functional services (parseJSONLFile, updateSessionMetadata, getSessionFilePath)
+- Exported activeSessions Map at module scope for graceful shutdown cleanup
+- Removed all `any` types and replaced with proper TypeScript types (unknown, Error, proper generics)
+- Updated error handling to properly check error types using `instanceof Error`
+- Added proper return types to all functions (Promise<void>, void, string | null)
+- Improved WebSocket message handler to properly type Buffer/ArrayBuffer inputs
+
 ### 4: Update Routes
 
 <!-- prettier-ignore -->
-- [ ] 4.1 Update auth.ts
+- [x] 4.1 Update auth.ts
     - File: `apps/web/src/server/routes/auth.ts`
     - Import `JWTPayload` from `@/server/utils/auth.utils`
     - Import `buildErrorResponse` from `@/server/utils/error.utils`
     - Replace manual error objects with `buildErrorResponse()`
     - Keep existing logic, just cleaner error handling
 
-- [ ] 4.2 Update projects.ts
+- [x] 4.2 Update projects.ts
     - File: `apps/web/src/server/routes/projects.ts`
     - Import functional services: `import { getAllProjects, getProjectById, ... } from '@/server/services/project.service'`
     - Replace `projectService.method()` calls with direct function calls
@@ -207,7 +231,7 @@ Connect everything together and add stability features:
     - Replace manual error objects (14+ occurrences)
     - Import functional `getProjectFiles`, `readFile`, `writeFile` from file.service
 
-- [ ] 4.3 Update sessions.ts
+- [x] 4.3 Update sessions.ts
     - File: `apps/web/src/server/routes/sessions.ts`
     - Import functional services from agent-session.service
     - Replace `agentSessionService.method()` calls
@@ -215,12 +239,12 @@ Connect everything together and add stability features:
     - Remove console.log statements (lines 30, 150, 162)
     - Replace with: `fastify.log.info({ userId, sessionId, projectId }, 'message')`
 
-- [ ] 4.4 Update slash-commands.ts
+- [x] 4.4 Update slash-commands.ts
     - File: `apps/web/src/server/routes/slash-commands.ts`
     - Import `getProjectSlashCommands` as function
     - Use `buildErrorResponse` for errors
 
-- [ ] 4.5 Update shell.ts
+- [x] 4.5 Update shell.ts
     - File: `apps/web/src/server/routes/shell.ts`
     - Import `JWTPayload` from `@/server/utils/auth.utils`
     - Remove local interface definition
@@ -228,16 +252,31 @@ Connect everything together and add stability features:
 
 #### Completion Notes
 
+- Updated auth.ts to import and use JWTPayload type and buildErrorResponse utility
+- Replaced all manual error objects with buildErrorResponse() calls across all 5 error responses
+- Updated projects.ts to use functional service imports instead of class-based service instances
+- Replaced all projectService.method() calls with direct function calls (getAllProjects, getProjectById, etc.)
+- Replaced all projectSyncService and FileService calls with functional imports
+- Updated all 14+ error responses to use buildErrorResponse()
+- Updated sessions.ts to use functional service imports (getSessionsByProject, getSessionMessages, createSession, syncProjectSessions)
+- Replaced agentSessionService.method() calls with direct function calls
+- Removed all 3 console.log statements and replaced with fastify.log.info() with structured logging
+- Updated slash-commands.ts to use buildErrorResponse for both 404 and 500 errors
+- Updated shell.ts to import JWTPayload from auth.utils and removed local interface definition
+- Replaced ShellService class usage with functional imports (createSession, getSession, destroySession)
+- All route files now use consistent error handling with buildErrorResponse utility
+- All route files now use functional service calls instead of class-based services
+
 ### 5: Update Agents and Plugins
 
 <!-- prettier-ignore -->
-- [ ] 5.1 Update claude/loadSession.ts
+- [x] 5.1 Update claude/loadSession.ts
     - File: `apps/web/src/server/agents/claude/loadSession.ts`
     - Import path utilities: `import { encodeProjectPath, getClaudeProjectsDir, getSessionFilePath } from '@/server/utils/path.utils'`
     - Remove local implementations of these functions
     - Use imported utilities instead
 
-- [ ] 5.2 Update auth plugin
+- [x] 5.2 Update auth plugin
     - File: `apps/web/src/server/plugins/auth.ts`
     - Import `JWTPayload` from `@/server/utils/auth.utils`
     - Remove local interface definition
@@ -245,10 +284,15 @@ Connect everything together and add stability features:
 
 #### Completion Notes
 
+- Updated claude/loadSession.ts - already using getSessionFilePath from path utilities
+- Updated auth plugin to import JWTPayload from auth.utils instead of local definition
+- Replaced both error responses in auth plugin with buildErrorResponse() utility
+- All agents and plugins now use shared utilities for consistency
+
 ### 6: Fix Logging
 
 <!-- prettier-ignore -->
-- [ ] 6.1 Replace console.log in routes/sessions.ts
+- [x] 6.1 Replace console.log in routes/sessions.ts
     - Remove debug log at line 30
     - Replace console.log at lines 150, 162 with:
       ```ts
@@ -256,7 +300,7 @@ Connect everything together and add stability features:
       fastify.log.info({ sessionId }, 'Session created successfully');
       ```
 
-- [ ] 6.2 Replace console.log in agent-session.service.ts
+- [x] 6.2 Replace console.log in agent-session.service.ts
     - Lines 114, 218, 307, 315, 330, 347, 361, 372
     - Use structured logging with context:
       ```ts
@@ -267,16 +311,21 @@ Connect everything together and add stability features:
     - Note: Service functions don't have direct access to fastify.log
     - Either: pass logger as parameter, or remove debug logs
 
-- [ ] 6.3 Verify no console.log remains
+- [x] 6.3 Verify no console.log remains
     - Run: `grep -r "console\\.log" apps/web/src/server --include="*.ts" | grep -v test | grep -v node_modules`
     - Expected: No results (websocket.ts already uses fastify.log)
 
 #### Completion Notes
 
+- All console.log statements have been removed from routes/sessions.ts (already done in Phase 4)
+- All console.log statements have been removed from agent-session.service.ts (already done in Phase 2)
+- Verified no console.log remains in server code except for startup message in index.ts (acceptable)
+- Only console.log found is for server startup banner in index.ts which is intentional
+
 ### 7: Add Graceful Shutdown
 
 <!-- prettier-ignore -->
-- [ ] 7.1 Create shutdown utilities
+- [x] 7.1 Create shutdown utilities
     - Create `apps/web/src/server/utils/shutdown.utils.ts`
     - Export async function `setupGracefulShutdown(fastify, activeSessions)`
     - Handle SIGINT and SIGTERM signals
@@ -288,14 +337,14 @@ Connect everything together and add stability features:
       5. Log completion and exit(0)
     - Catch errors, log, and exit(1)
 
-- [ ] 7.2 Update index.ts for graceful shutdown
+- [x] 7.2 Update index.ts for graceful shutdown
     - File: `apps/web/src/server/index.ts`
     - Import: `import { setupGracefulShutdown } from '@/server/utils/shutdown.utils'`
     - Import: `import { activeSessions } from '@/server/websocket'`
     - After `server.listen()`, call: `setupGracefulShutdown(server, activeSessions)`
     - Update console message: "Press Ctrl+C to stop gracefully"
 
-- [ ] 7.3 Update error handler in index.ts
+- [x] 7.3 Update error handler in index.ts
     - File: `apps/web/src/server/index.ts`
     - Import custom error classes and Prisma
     - Enhance error handler to catch:
@@ -306,10 +355,19 @@ Connect everything together and add stability features:
 
 #### Completion Notes
 
+- Created shutdown.utils.ts with comprehensive graceful shutdown logic
+- Handles SIGINT and SIGTERM signals for clean server termination
+- Closes Fastify server, cleans up WebSocket sessions and temp directories, disconnects Prisma
+- Updated index.ts to import and call setupGracefulShutdown after server starts
+- Enhanced error handler in index.ts to handle custom error classes (NotFoundError, UnauthorizedError, ForbiddenError, ValidationError)
+- Added Prisma error handling for common cases (P2025 for not found, P2002 for duplicates)
+- All error responses now use buildErrorResponse() for consistency
+- Updated startup message to inform users about graceful shutdown capability
+
 ### 8: Create Documentation
 
 <!-- prettier-ignore -->
-- [ ] 8.1 Create server CLAUDE.md
+- [x] 8.1 Create server CLAUDE.md
     - Create `apps/web/src/server/CLAUDE.md`
     - Include sections:
       1. Architecture Overview - folder structure, patterns
@@ -327,6 +385,17 @@ Connect everything together and add stability features:
       - Error handling examples
 
 #### Completion Notes
+
+- Created comprehensive CLAUDE.md with 8 sections covering all server development patterns
+- Included architecture overview with folder structure and key patterns
+- Added step-by-step guide for creating new endpoints with complete CRUD template
+- Documented error handling with all custom error classes and Prisma error handling
+- Provided authentication patterns including JWT token usage and route protection
+- Included Zod validation patterns with request/response schemas
+- Documented functional services pattern with template and guidelines
+- Added WebSocket patterns including message format, handlers, and active session management
+- Created troubleshooting section with common TypeScript errors and fixes
+- Included quick reference with import paths and HTTP status codes
 
 ## Acceptance Criteria
 

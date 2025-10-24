@@ -1,60 +1,32 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { FastifyInstance } from "fastify";
+import type { WebSocket } from '@fastify/websocket';
 import { AgentClient, createClaudeAdapter } from "@repo/agent-cli-sdk";
-import { agentSessionService } from "@/server/services/agent-session.service";
 import { prisma } from "@/shared/prisma";
 import fs from "fs/promises";
 import path from "path";
-import type { WebSocket } from '@fastify/websocket';
+import { JWTPayload } from "@/server/utils/auth.utils";
+import { getSessionFilePath } from "@/server/utils/path.utils";
+import { parseJSONLFile, updateSessionMetadata } from "@/server/services/agent-session.service";
+import type {
+  WebSocketMessage,
+  SessionSendMessageData,
+  ActiveSessionData,
+} from "@/server/websocket.types";
 
-// JWT payload interface (matching auth plugin)
-interface JWTPayload {
-  userId: string;
-  username: string;
-}
+// ============= STATE =============
 
-// WebSocket message structure
-interface WebSocketMessage<T = any> {
-  type: string;
-  data: T;
-}
-
-// Session message payloads
-interface SessionSendMessageData {
-  message: string;
-  images?: string[]; // Array of base64-encoded images or file paths
-  config?: Record<string, unknown>;
-}
-
-// Shell message payloads (not used yet but defined for future)
-// interface ShellInputData {
-//   input: string;
-// }
-
-// interface ShellResizeData {
-//   rows: number;
-//   cols: number;
-// }
-
-// interface ShellInitData {
-//   cwd?: string;
-//   env?: Record<string, string>;
-// }
-
-// Active sessions map: sessionId -> { agentClient, projectPath, userId }
-const activeSessions = new Map<
-  string,
-  {
-    agentClient: AgentClient;
-    projectPath: string;
-    userId: string;
-    tempImageDir?: string;
-  }
->();
+/**
+ * Active sessions map: sessionId -> session data
+ * Exported for graceful shutdown cleanup
+ */
+export const activeSessions = new Map<string, ActiveSessionData>();
 
 // Active shells map: shellId -> shell process instance
 // TODO: Implement shell process management when shell feature is ready
-// const activeShells = new Map<string, any>();
+// const activeShells = new Map<string, unknown>();
+
+// ============= UTILITIES =============
 
 /**
  * Extract ID from event type (e.g., "session.123.send_message" -> "123")
@@ -70,9 +42,11 @@ function extractId(type: string, prefix: 'session' | 'shell'): string | null {
 /**
  * Send a WebSocket message with flat event naming
  */
-function sendMessage(socket: WebSocket, type: string, data: any) {
+function sendMessage(socket: WebSocket, type: string, data: unknown): void {
   socket.send(JSON.stringify({ type, data }));
 }
+
+// ============= SESSION HANDLERS =============
 
 /**
  * Handle session events (session.{id}.action)
@@ -80,10 +54,10 @@ function sendMessage(socket: WebSocket, type: string, data: any) {
 async function handleSessionEvent(
   socket: WebSocket,
   type: string,
-  data: any,
+  data: unknown,
   userId: string,
   fastify: FastifyInstance
-) {
+): Promise<void> {
   const sessionId = extractId(type, 'session');
   if (!sessionId) {
     sendMessage(socket, 'global.error', {
@@ -198,7 +172,7 @@ async function handleSessionEvent(
           {
             sessionId,
             images: imagePaths.length > 0 ? imagePaths : undefined,
-            onOutput: (outputData: any) => {
+            onOutput: (outputData: unknown) => {
               // Stream output back to client with flat event name
               sendMessage(socket, `session.${sessionId}.stream_output`, {
                 content: outputData,
@@ -241,14 +215,14 @@ async function handleSessionEvent(
         // After message completes, update session metadata
         let metadata = null;
         try {
-          const jsonlPath = agentSessionService.getSessionFilePath(
+          const jsonlPath = getSessionFilePath(
             sessionData.projectPath,
             sessionId
           );
-          metadata = await agentSessionService.parseJSONLFile(jsonlPath);
+          metadata = await parseJSONLFile(jsonlPath);
 
-          await agentSessionService.updateSessionMetadata(sessionId, metadata);
-        } catch (metadataErr: any) {
+          await updateSessionMetadata(sessionId, metadata);
+        } catch (metadataErr: unknown) {
           // JSONL file might not exist yet for new sessions or parsing failed
           // Log but don't throw - we don't want to fail message completion
           fastify.log.debug(
@@ -273,7 +247,7 @@ async function handleSessionEvent(
           response,
           events: response.data, // Parsed JSONL events for rich UI
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         fastify.log.error({ err, sessionId }, "Agent CLI SDK error");
 
         // Clean up temp images on error
@@ -287,12 +261,19 @@ async function handleSessionEvent(
         }
 
         // Send detailed error information to frontend
+        const errorMessage = err instanceof Error ? err.message : "Failed to send message";
+        const errorStack = err instanceof Error ? err.stack : undefined;
+        const errorName = err instanceof Error ? err.name : undefined;
+        const errorDetails = typeof err === 'object' && err !== null
+          ? (err as Record<string, unknown>).response || (err as Record<string, unknown>).data
+          : undefined;
+
         sendMessage(socket, `session.${sessionId}.error`, {
-          error: err.message || "Failed to send message",
-          message: err.message || "Failed to send message",
-          stack: err.stack,
-          name: err.name,
-          details: err.response || err.data || undefined,
+          error: errorMessage,
+          message: errorMessage,
+          stack: errorStack,
+          name: errorName,
+          details: errorDetails,
         });
       }
     } else {
@@ -302,16 +283,22 @@ async function handleSessionEvent(
         message: `Unknown action in event type: ${type}`,
       });
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     fastify.log.error({ err, type, sessionId }, "Error handling session event");
+    const errorMessage = err instanceof Error ? err.message : "Internal server error";
+    const errorStack = err instanceof Error ? err.stack : undefined;
+    const errorName = err instanceof Error ? err.name : undefined;
+
     sendMessage(socket, `session.${sessionId}.error`, {
-      error: err.message || "Internal server error",
-      message: err.message || "Internal server error",
-      stack: err.stack,
-      name: err.name,
+      error: errorMessage,
+      message: errorMessage,
+      stack: errorStack,
+      name: errorName,
     });
   }
 }
+
+// ============= SHELL HANDLERS =============
 
 /**
  * Handle shell events (shell.{id}.action)
@@ -319,10 +306,10 @@ async function handleSessionEvent(
 async function handleShellEvent(
   socket: WebSocket,
   type: string,
-  _data: any,
+  _data: unknown,
   _userId: string,
   fastify: FastifyInstance
-) {
+): Promise<void> {
   const shellId = extractId(type, 'shell');
   if (!shellId) {
     sendMessage(socket, 'global.error', {
@@ -341,10 +328,12 @@ async function handleShellEvent(
   });
 }
 
+// ============= MAIN REGISTRATION =============
+
 /**
  * Register unified WebSocket endpoint
  */
-export async function registerWebSocket(fastify: FastifyInstance) {
+export async function registerWebSocket(fastify: FastifyInstance): Promise<void> {
   fastify.register(async (fastify) => {
     // Unified WebSocket endpoint with JWT authentication
     fastify.get("/ws", { websocket: true }, async (socket, request) => {
@@ -379,20 +368,27 @@ export async function registerWebSocket(fastify: FastifyInstance) {
             timestamp: Date.now(),
             userId,
           });
-        } catch (err: any) {
+        } catch (err: unknown) {
           fastify.log.error({ err }, "[WebSocket] Authentication failed");
+          const errorMessage = err instanceof Error ? err.message : 'Invalid or expired token';
           sendMessage(socket, 'global.error', {
             error: 'Authentication failed',
-            message: err.message || 'Invalid or expired token',
+            message: errorMessage,
           });
           socket.close(1008, 'Authentication failed'); // 1008 = Policy Violation
           return;
         }
 
         // Handle incoming messages
-        socket.on("message", async (message: any) => {
+        socket.on("message", async (message: Buffer | ArrayBuffer | Buffer[]) => {
           try {
-            const parsed: WebSocketMessage = JSON.parse(message.toString());
+            const messageStr = Buffer.isBuffer(message)
+              ? message.toString()
+              : Array.isArray(message)
+              ? Buffer.concat(message).toString()
+              : new TextDecoder().decode(message);
+
+            const parsed: WebSocketMessage = JSON.parse(messageStr);
             const { type, data } = parsed;
 
             fastify.log.info({ type, userId }, "[WebSocket] Received message");
@@ -412,11 +408,12 @@ export async function registerWebSocket(fastify: FastifyInstance) {
                 message: `Event type must start with 'session.', 'shell.', or 'global.': ${type}`,
               });
             }
-          } catch (err: any) {
+          } catch (err: unknown) {
             fastify.log.error({ err }, "[WebSocket] Error processing message");
+            const errorMessage = err instanceof Error ? err.message : 'Malformed message';
             sendMessage(socket, 'global.error', {
               error: 'Failed to process message',
-              message: err.message || 'Malformed message',
+              message: errorMessage,
             });
           }
         });
@@ -444,7 +441,7 @@ export async function registerWebSocket(fastify: FastifyInstance) {
         });
 
         // Handle errors
-        socket.on("error", (err: any) => {
+        socket.on("error", (err: Error) => {
           fastify.log.error({ err, userId }, "[WebSocket] Socket error");
 
           // Clean up on error

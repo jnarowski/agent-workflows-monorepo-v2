@@ -32,7 +32,8 @@ export function ChatInterface({
   sessionId,
   agent = 'claude',
   messages = [],
-  toolResults = new Map(),
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  toolResults: _toolResults = new Map(),
   isLoading = false,
   error = null,
   isStreaming = false,

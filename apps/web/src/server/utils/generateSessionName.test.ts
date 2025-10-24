@@ -10,9 +10,12 @@ vi.mock('ai', () => ({
 
 // Mock the anthropic SDK
 vi.mock('@ai-sdk/anthropic', () => ({
-  anthropic: vi.fn((model: string, options: any) => ({
-    model,
-    apiKey: options.apiKey,
+  anthropic: vi.fn((modelName: string) => ({
+    modelId: modelName,
+    provider: 'anthropic',
+    // Mock model interface properties that ai SDK expects
+    doGenerate: vi.fn(),
+    doStream: vi.fn(),
   })),
 }));
 
@@ -94,12 +97,12 @@ describe('generateSessionName', () => {
       expect(vi.mocked(generateText)).toHaveBeenCalledWith(
         expect.objectContaining({
           model: expect.objectContaining({
-            model: 'claude-3-5-sonnet-20241022',
-            apiKey: 'test-api-key',
+            modelId: 'claude-3-5-sonnet-20241022',
+            provider: 'anthropic',
           }),
+          system: expect.stringContaining('You create concise 3-5 word names'),
           prompt: expect.stringContaining('Help me fix a bug in the authentication flow'),
           temperature: 0.7,
-          maxTokens: 30,
         })
       );
     });

@@ -1,7 +1,15 @@
 import type { FastifyInstance } from "fastify";
-import { projectService } from "@/server/services/project.service";
-import { projectSyncService } from "@/server/services/project-sync.service";
-import { FileService } from "@/server/services/file.service";
+import {
+  getAllProjects,
+  getProjectById,
+  createProject,
+  updateProject,
+  deleteProject,
+  toggleProjectHidden,
+  projectExistsByPath,
+} from "@/server/services/project.service";
+import { syncFromClaudeProjects } from "@/server/services/project-sync.service";
+import { getProjectFiles, readFile, writeFile } from "@/server/services/file.service";
 import {
   createProjectSchema,
   updateProjectSchema,
@@ -23,11 +31,9 @@ import type {
   CreateProjectRequest,
   UpdateProjectRequest,
 } from "@/shared/types/project.types";
+import { buildErrorResponse } from "@/server/utils/error.utils";
 
 export async function projectRoutes(fastify: FastifyInstance) {
-  // Create file service with logger
-  const fileService = new FileService(fastify.log);
-
   /**
    * GET /api/projects
    * Get all projects
@@ -43,7 +49,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const projects = await projectService.getAllProjects();
+      const projects = await getAllProjects();
       return reply.send({ data: projects });
     }
   );
@@ -69,27 +75,15 @@ export async function projectRoutes(fastify: FastifyInstance) {
         const userId = request.user?.id;
 
         if (!userId) {
-          return reply.code(401).send({
-            error: {
-              message: "Unauthorized",
-              statusCode: 401,
-            },
-          });
+          return reply.code(401).send(buildErrorResponse(401, "Unauthorized"));
         }
 
-        const syncResults = await projectSyncService.syncFromClaudeProjects(
-          userId
-        );
+        const syncResults = await syncFromClaudeProjects(userId);
 
         return reply.send({ data: syncResults });
       } catch (error) {
         fastify.log.error({ error }, "Error syncing projects");
-        return reply.code(500).send({
-          error: {
-            message: "Failed to sync projects",
-            statusCode: 500,
-          },
-        });
+        return reply.code(500).send(buildErrorResponse(500, "Failed to sync projects"));
       }
     }
   );
@@ -113,15 +107,10 @@ export async function projectRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const project = await projectService.getProjectById(request.params.id);
+      const project = await getProjectById(request.params.id);
 
       if (!project) {
-        return reply.code(404).send({
-          error: {
-            message: "Project not found",
-            statusCode: 404,
-          },
-        });
+        return reply.code(404).send(buildErrorResponse(404, "Project not found"));
       }
 
       return reply.send({ data: project });
@@ -148,18 +137,12 @@ export async function projectRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       // Check if project with same path already exists
-      const exists = await projectService.projectExistsByPath(request.body.path);
+      const exists = await projectExistsByPath(request.body.path);
       if (exists) {
-        return reply.code(409).send({
-          error: {
-            message: "A project with this path already exists",
-            code: "PROJECT_EXISTS",
-            statusCode: 409,
-          },
-        });
+        return reply.code(409).send(buildErrorResponse(409, "A project with this path already exists", "PROJECT_EXISTS"));
       }
 
-      const project = await projectService.createProject(request.body);
+      const project = await createProject(request.body);
       return reply.code(201).send({ data: project });
     }
   );
@@ -187,27 +170,16 @@ export async function projectRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       // Check if body is empty
       if (Object.keys(request.body).length === 0) {
-        return reply.code(400).send({
-          error: {
-            message: "At least one field must be provided for update",
-            code: "VALIDATION_ERROR",
-            statusCode: 400,
-          },
-        });
+        return reply.code(400).send(buildErrorResponse(400, "At least one field must be provided for update", "VALIDATION_ERROR"));
       }
 
-      const project = await projectService.updateProject(
+      const project = await updateProject(
         request.params.id,
         request.body
       );
 
       if (!project) {
-        return reply.code(404).send({
-          error: {
-            message: "Project not found",
-            statusCode: 404,
-          },
-        });
+        return reply.code(404).send(buildErrorResponse(404, "Project not found"));
       }
 
       return reply.send({ data: project });
@@ -233,15 +205,10 @@ export async function projectRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const project = await projectService.deleteProject(request.params.id);
+      const project = await deleteProject(request.params.id);
 
       if (!project) {
-        return reply.code(404).send({
-          error: {
-            message: "Project not found",
-            statusCode: 404,
-          },
-        });
+        return reply.code(404).send(buildErrorResponse(404, "Project not found"));
       }
 
       return reply.send({ data: project });
@@ -269,18 +236,13 @@ export async function projectRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const project = await projectService.toggleProjectHidden(
+      const project = await toggleProjectHidden(
         request.params.id,
         request.body.is_hidden
       );
 
       if (!project) {
-        return reply.code(404).send({
-          error: {
-            message: "Project not found",
-            statusCode: 404,
-          },
-        });
+        return reply.code(404).send(buildErrorResponse(404, "Project not found"));
       }
 
       return reply.send({ data: project });
@@ -308,26 +270,16 @@ export async function projectRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const files = await fileService.getProjectFiles(request.params.id);
+        const files = await getProjectFiles(request.params.id, fastify.log);
         return reply.send({ data: files });
       } catch (error) {
         // Handle specific error messages
         const errorMessage = (error as Error).message;
         if (errorMessage === 'Project not found') {
-          return reply.code(404).send({
-            error: {
-              message: "Project not found",
-              statusCode: 404,
-            },
-          });
+          return reply.code(404).send(buildErrorResponse(404, "Project not found"));
         }
         if (errorMessage === 'Project path is not accessible') {
-          return reply.code(403).send({
-            error: {
-              message: "Project path is not accessible",
-              statusCode: 403,
-            },
-          });
+          return reply.code(403).send(buildErrorResponse(403, "Project path is not accessible"));
         }
 
         throw error;
@@ -358,31 +310,22 @@ export async function projectRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const content = await fileService.readFile(
+        const content = await readFile(
           request.params.id,
-          request.query.path
+          request.query.path,
+          fastify.log
         );
         return reply.send({ content });
       } catch (error) {
         const errorMessage = (error as Error).message;
         if (errorMessage === "Project not found") {
-          return reply.code(404).send({
-            error: {
-              message: "Project not found",
-              statusCode: 404,
-            },
-          });
+          return reply.code(404).send(buildErrorResponse(404, "Project not found"));
         }
         if (
           errorMessage === "File not found or not accessible" ||
           errorMessage === "Access denied: File is outside project directory"
         ) {
-          return reply.code(403).send({
-            error: {
-              message: errorMessage,
-              statusCode: 403,
-            },
-          });
+          return reply.code(403).send(buildErrorResponse(403, errorMessage));
         }
 
         throw error;
@@ -413,29 +356,20 @@ export async function projectRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        await fileService.writeFile(
+        await writeFile(
           request.params.id,
           request.body.path,
-          request.body.content
+          request.body.content,
+          fastify.log
         );
         return reply.send({ success: true });
       } catch (error) {
         const errorMessage = (error as Error).message;
         if (errorMessage === "Project not found") {
-          return reply.code(404).send({
-            error: {
-              message: "Project not found",
-              statusCode: 404,
-            },
-          });
+          return reply.code(404).send(buildErrorResponse(404, "Project not found"));
         }
         if (errorMessage === "Access denied: File is outside project directory") {
-          return reply.code(403).send({
-            error: {
-              message: errorMessage,
-              statusCode: 403,
-            },
-          });
+          return reply.code(403).send(buildErrorResponse(403, errorMessage));
         }
 
         throw error;

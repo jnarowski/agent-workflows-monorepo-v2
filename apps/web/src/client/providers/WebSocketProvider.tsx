@@ -28,7 +28,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
   const eventBusRef = useRef(new WebSocketEventBus());
 
   // Message queue for messages sent before connection is ready
-  const messageQueueRef = useRef<Array<{ type: string; data: any }>>([]);
+  const messageQueueRef = useRef<Array<{ type: string; data: unknown }>>([]);
 
   // Connection state
   const [readyState, setReadyState] = useState<ReadyState>(ReadyState.CLOSED);
@@ -178,7 +178,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
   /**
    * Send a message through the WebSocket
    */
-  const sendMessage = (type: string, data: any) => {
+  const sendMessage = (type: string, data: unknown) => {
     if (!socketRef.current) {
       console.warn('[WebSocket] Cannot send message: no connection');
       return;
@@ -221,6 +221,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
    * Connect on mount, disconnect on unmount
    */
   useEffect(() => {
+    // Capture the current eventBus reference for use in cleanup
+    const eventBus = eventBusRef.current;
+
     connect();
 
     return () => {
@@ -263,7 +266,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       }
 
       // Clear all event listeners
-      eventBusRef.current.clear();
+      eventBus.clear();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]); // Reconnect when token changes

@@ -4,6 +4,8 @@ import bcrypt from 'bcrypt';
 import { prisma } from '@/shared/prisma';
 import { registerSchema, loginSchema } from '@/server/schemas/auth.schema';
 import { authResponseSchema, authStatusResponseSchema, userResponseSchema, errorResponse } from '@/server/schemas/response.schema';
+import type { JWTPayload } from '@/server/utils/auth.utils';
+import { buildErrorResponse } from '@/server/utils/error.utils';
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Check auth status and setup requirements
@@ -24,12 +26,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       });
     } catch (error) {
       fastify.log.error({ err: error }, 'Auth status error');
-      return reply.code(500).send({
-        error: {
-          message: 'Internal server error',
-          statusCode: 500,
-        },
-      });
+      return reply.code(500).send(buildErrorResponse(500, 'Internal server error'));
     }
   });
 
@@ -57,12 +54,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     // Check if users already exist (only allow one user)
     const existingUserCount = await prisma.user.count();
     if (existingUserCount > 0) {
-      return reply.code(403).send({
-        error: {
-          message: 'User already exists. This is a single-user system.',
-          statusCode: 403,
-        },
-      });
+      return reply.code(403).send(buildErrorResponse(403, 'User already exists. This is a single-user system.'));
     }
 
     try {
@@ -88,7 +80,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         {
           userId: user.id,
           username: user.username,
-        },
+        } as JWTPayload,
         // No expiration - token lasts forever
       );
 
@@ -101,13 +93,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       // Check for unique constraint violation (Prisma error)
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          return reply.code(409).send({
-            error: {
-              message: 'Username already exists',
-              code: 'DUPLICATE_USERNAME',
-              statusCode: 409,
-            },
-          });
+          return reply.code(409).send(buildErrorResponse(409, 'Username already exists', 'DUPLICATE_USERNAME'));
         }
       }
 
@@ -142,33 +128,18 @@ export async function authRoutes(fastify: FastifyInstance) {
     });
 
     if (!user) {
-      return reply.code(401).send({
-        error: {
-          message: 'Invalid username or password',
-          statusCode: 401,
-        },
-      });
+      return reply.code(401).send(buildErrorResponse(401, 'Invalid username or password'));
     }
 
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
-      return reply.code(401).send({
-        error: {
-          message: 'Invalid username or password',
-          statusCode: 401,
-        },
-      });
+      return reply.code(401).send(buildErrorResponse(401, 'Invalid username or password'));
     }
 
     // Check if user is active
     if (!user.is_active) {
-      return reply.code(403).send({
-        error: {
-          message: 'Account is inactive',
-          statusCode: 403,
-        },
-      });
+      return reply.code(403).send(buildErrorResponse(403, 'Account is inactive'));
     }
 
     // Generate token (no expiration)
@@ -176,7 +147,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       {
         userId: user.id,
         username: user.username,
-      },
+      } as JWTPayload,
       // No expiration - token lasts forever
     );
 

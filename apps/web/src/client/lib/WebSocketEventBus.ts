@@ -5,10 +5,10 @@
  * Allows components to subscribe to specific WebSocket events without managing connections.
  */
 
-type EventHandler<T = any> = (data: T) => void;
+type EventHandler<T = unknown> = (data: T) => void;
 
 export class WebSocketEventBus {
-  private listeners: Map<string, Set<EventHandler>>;
+  private listeners: Map<string, Set<EventHandler<unknown>>>;
 
   constructor() {
     this.listeners = new Map();
@@ -19,11 +19,11 @@ export class WebSocketEventBus {
    * @param event The event name to listen for
    * @param handler The function to call when the event is emitted
    */
-  on<T = any>(event: string, handler: EventHandler<T>): void {
+  on<T = unknown>(event: string, handler: EventHandler<T>): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
-    this.listeners.get(event)!.add(handler as EventHandler);
+    this.listeners.get(event)!.add(handler as EventHandler<unknown>);
   }
 
   /**
@@ -31,10 +31,10 @@ export class WebSocketEventBus {
    * @param event The event name to stop listening for
    * @param handler The function to remove
    */
-  off<T = any>(event: string, handler: EventHandler<T>): void {
+  off<T = unknown>(event: string, handler: EventHandler<T>): void {
     const handlers = this.listeners.get(event);
     if (handlers) {
-      handlers.delete(handler as EventHandler);
+      handlers.delete(handler as EventHandler<unknown>);
       // Clean up empty sets
       if (handlers.size === 0) {
         this.listeners.delete(event);
@@ -47,7 +47,7 @@ export class WebSocketEventBus {
    * @param event The event name to emit
    * @param data The data to pass to handlers
    */
-  emit<T = any>(event: string, data: T): void {
+  emit<T = unknown>(event: string, data: T): void {
     const handlers = this.listeners.get(event);
     if (handlers) {
       handlers.forEach((handler) => {
@@ -65,12 +65,12 @@ export class WebSocketEventBus {
    * @param event The event name to listen for
    * @param handler The function to call once when the event is emitted
    */
-  once<T = any>(event: string, handler: EventHandler<T>): void {
+  once<T = unknown>(event: string, handler: EventHandler<T>): void {
     const onceHandler = (data: T) => {
       handler(data);
-      this.off(event, onceHandler as EventHandler);
+      this.off(event, onceHandler);
     };
-    this.on(event, onceHandler as EventHandler);
+    this.on(event, onceHandler);
   }
 
   /**
