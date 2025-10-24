@@ -8,6 +8,7 @@ import path from "path";
 import { JWTPayload } from "@/server/utils/auth";
 import { getSessionFilePath } from "@/server/utils/path";
 import { parseJSONLFile, updateSessionMetadata } from "@/server/services/agentSession";
+// import { generateSessionName } from "@/server/utils/generateSessionName";
 import type {
   WebSocketMessage,
   SessionSendMessageData,
@@ -231,6 +232,93 @@ async function handleSessionEvent(
           );
         }
 
+        // ============= SESSION NAME GENERATION (COMMENTED OUT) =============
+        // TODO: Uncomment this block to enable AI-generated session names
+        //
+        // Generate session name from first user message
+        // This runs only once per session, after the first message completes successfully.
+        // The session name is generated using Claude AI based on the user's initial prompt.
+        //
+        // if (!session.name && metadata && metadata.messageCount === 1) {
+        //   try {
+        //     fastify.log.info(
+        //       { sessionId, userPrompt: messageData.message.substring(0, 100) },
+        //       '[WebSocket] Generating session name from first user message'
+        //     );
+        //
+        //     const sessionName = await generateSessionName({
+        //       userPrompt: messageData.message,
+        //     });
+        //
+        //     // Update session with generated name
+        //     await prisma.agentSession.update({
+        //       where: { id: sessionId },
+        //       data: { name: sessionName },
+        //     });
+        //
+        //     fastify.log.info(
+        //       { sessionId, sessionName },
+        //       '[WebSocket] Session name generated successfully'
+        //     );
+        //   } catch (nameErr: unknown) {
+        //     // Don't fail message completion if name generation fails
+        //     fastify.log.warn(
+        //       { err: nameErr, sessionId },
+        //       '[WebSocket] Failed to generate session name (non-critical)'
+        //     );
+        //   }
+        // }
+        // ============= END SESSION NAME GENERATION =============
+
+        // Extract usage data from the last assistant message in response.data
+        let usage = null;
+        if (response.data && Array.isArray(response.data)) {
+          fastify.log.info({ dataLength: response.data.length, sessionId }, "Extracting usage from response.data");
+
+          // Log the last few events to understand the structure
+          const lastEvents = response.data.slice(-3);
+          fastify.log.info({ lastEvents: JSON.stringify(lastEvents, null, 2), sessionId }, "Last 3 events in response.data");
+
+          // Find the last assistant message with usage data
+          for (let i = response.data.length - 1; i >= 0; i--) {
+            const event = response.data[i];
+
+            // Log each event type we're checking
+            fastify.log.debug({
+              eventType: event.type,
+              eventRole: event.role,
+              hasUsage: !!event.usage,
+              hasMessageUsage: !!event.message?.usage,
+              eventKeys: Object.keys(event),
+              sessionId
+            }, "Checking event for usage");
+
+            if ((event.type === 'assistant' || event.role === 'assistant') && event.usage) {
+              usage = {
+                input_tokens: event.usage.input_tokens || 0,
+                output_tokens: event.usage.output_tokens || 0,
+              };
+              fastify.log.info({ usage, sessionId }, "Found usage in event.usage");
+              break;
+            }
+            // Also check event.message.usage for Claude CLI format
+            if ((event.type === 'assistant' || event.role === 'assistant') && event.message?.usage) {
+              usage = {
+                input_tokens: event.message.usage.input_tokens || 0,
+                output_tokens: event.message.usage.output_tokens || 0,
+              };
+              fastify.log.info({ usage, sessionId }, "Found usage in event.message.usage");
+              break;
+            }
+          }
+
+          if (!usage) {
+            fastify.log.warn({ sessionId, lastEvent: response.data[response.data.length - 1] }, "No usage data found in response.data");
+          }
+        } else {
+          fastify.log.warn({ sessionId, responseKeys: response ? Object.keys(response) : null }, "response.data is not an array or doesn't exist");
+        }
+
         // Clean up temporary images
         if (sessionData.tempImageDir) {
           try {
@@ -241,9 +329,12 @@ async function handleSessionEvent(
           }
         }
 
-        // Send completion event with parsed events
+        // Send completion event with parsed events and usage data
         sendMessage(socket, `session.${sessionId}.message_complete`, {
-          metadata,
+          metadata: {
+            ...metadata,
+            usage,
+          },
           response,
           events: response.data, // Parsed JSONL events for rich UI
         });

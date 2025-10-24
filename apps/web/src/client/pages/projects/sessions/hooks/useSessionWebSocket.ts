@@ -53,13 +53,13 @@ export function useSessionWebSocket({
 
     // Get agent implementation and use its transform
     const agent = getAgent(currentSession.agent);
-    const contentBlocks = agent.transformStreaming(data);
+    const streamingMessage = agent.transformStreaming(data);
 
-    // Only update if we have content blocks - skip system/result events
-    if (contentBlocks.length > 0) {
+    // Only update if we have a valid streaming message - skip system/result events
+    if (streamingMessage) {
       useSessionStore
         .getState()
-        .updateStreamingMessage(contentBlocks as ContentBlock[]);
+        .updateStreamingMessage(streamingMessage.id, streamingMessage.content as ContentBlock[]);
     }
   }, []);
 

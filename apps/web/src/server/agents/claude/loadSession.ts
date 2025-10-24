@@ -21,7 +21,8 @@ export async function loadSession(
 
     const messages = lines
       .map((line) => parseFormat(line))
-      .filter((msg): msg is SessionMessage => msg !== null);
+      .filter((msg): msg is SessionMessage => msg !== null)
+      .sort((a, b) => a.timestamp - b.timestamp); // Sort by timestamp, oldest first
 
     return messages;
   } catch (error: unknown) {

@@ -130,6 +130,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
           code: event.code,
           reason: event.reason,
           wasClean: event.wasClean,
+          intentionalClose: intentionalCloseRef.current,
+          reconnectAttempts: reconnectAttemptsRef.current,
         });
 
         setReadyState(ReadyState.CLOSED);
@@ -156,14 +158,17 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
 
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectAttemptsRef.current++;
+            console.log('[WebSocket] Executing reconnect attempt', reconnectAttemptsRef.current);
             connect();
           }, delay);
-        } else if (reconnectAttemptsRef.current >= 5) {
+        } else if (!intentionalCloseRef.current && reconnectAttemptsRef.current >= 5) {
           console.error('[WebSocket] Max reconnection attempts reached');
           eventBusRef.current.emit('global.error', {
             error: 'Connection lost',
             message: 'Maximum reconnection attempts reached',
           });
+        } else if (intentionalCloseRef.current) {
+          console.log('[WebSocket] Intentional close, not reconnecting');
         }
 
         // Reset intentional close flag

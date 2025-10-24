@@ -9,6 +9,7 @@ import { useActiveProject } from "@/client/hooks/navigation";
 import { useNavigationStore } from "@/client/stores/index";
 import { api } from "@/client/lib/api-client";
 import type { ToolResultBlock } from "@/shared/types/message.types";
+import { DebugProvider } from "@/client/contexts/DebugContext";
 
 export default function ProjectSession() {
   const navigate = useNavigate();
@@ -275,46 +276,48 @@ export default function ProjectSession() {
     waitingForFirstResponse; // Block until first assistant response
 
   return (
-    <div className="absolute inset-0 flex flex-col overflow-hidden">
-      {/* Connection status banner */}
-      {sessionId && !isConnected && (
-        <div className="bg-yellow-100 border-b border-yellow-200 px-4 py-2 text-sm text-yellow-800 flex items-center justify-between">
-          <span>Disconnected from session</span>
-          <button
-            onClick={reconnect}
-            className="text-yellow-900 underline hover:no-underline"
-          >
-            Reconnect
-          </button>
-        </div>
-      )}
+    <DebugProvider>
+      <div className="absolute inset-0 flex flex-col overflow-hidden">
+        {/* Connection status banner */}
+        {sessionId && !isConnected && (
+          <div className="bg-yellow-100 border-b border-yellow-200 px-4 py-2 text-sm text-yellow-800 flex items-center justify-between">
+            <span>Disconnected from session</span>
+            <button
+              onClick={reconnect}
+              className="text-yellow-900 underline hover:no-underline"
+            >
+              Reconnect
+            </button>
+          </div>
+        )}
 
-      {/* Chat Messages Container - takes up remaining space */}
-      <div className="flex-1 overflow-hidden">
-        <ChatInterface
-          projectId={projectId!}
-          sessionId={sessionId || undefined}
-          agent={session?.agent || 'claude'}
-          messages={session?.messages || []}
-          toolResults={toolResults}
-          isLoading={session?.loadingState === "loading"}
-          error={session?.error || null}
-          isStreaming={session?.isStreaming || false}
-        />
-      </div>
-
-      {/* Fixed Input Container at Bottom */}
-      <div className="md:pb-4 pb-2">
-        <div className="mx-auto max-w-4xl">
-          <ChatPromptInput
-            onSubmit={handleSubmit}
-            disabled={inputDisabled}
+        {/* Chat Messages Container - takes up remaining space */}
+        <div className="flex-1 overflow-hidden">
+          <ChatInterface
+            projectId={projectId!}
+            sessionId={sessionId || undefined}
+            agent={session?.agent || 'claude'}
+            messages={session?.messages || []}
+            toolResults={toolResults}
+            isLoading={session?.loadingState === "loading"}
+            error={session?.error || null}
             isStreaming={session?.isStreaming || false}
-            totalTokens={session?.metadata?.totalTokens}
-            currentMessageTokens={session?.currentMessageTokens}
           />
         </div>
+
+        {/* Fixed Input Container at Bottom */}
+        <div className="md:pb-4 pb-2">
+          <div className="mx-auto max-w-4xl">
+            <ChatPromptInput
+              onSubmit={handleSubmit}
+              disabled={inputDisabled}
+              isStreaming={session?.isStreaming || false}
+              totalTokens={session?.metadata?.totalTokens}
+              currentMessageTokens={session?.currentMessageTokens}
+            />
+          </div>
+        </div>
       </div>
-    </div>
+    </DebugProvider>
   );
 }

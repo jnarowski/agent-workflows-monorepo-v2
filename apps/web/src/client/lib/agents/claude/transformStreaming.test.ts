@@ -3,7 +3,7 @@ import { transformStreaming } from "./transformStreaming";
 import type { SessionStreamOutputData } from "@/shared/types/websocket";
 
 describe("transformStreaming", () => {
-  it("should return empty array when no events are present", () => {
+  it("should return null when no events are present", () => {
     const data: SessionStreamOutputData = {
       content: {
         events: [],
@@ -11,13 +11,13 @@ describe("transformStreaming", () => {
     };
 
     const result = transformStreaming(data);
-    expect(result).toEqual([]);
+    expect(result).toBeNull();
   });
 
-  it("should return empty array when content is undefined", () => {
+  it("should return null when content is undefined", () => {
     const data = {} as SessionStreamOutputData;
     const result = transformStreaming(data);
-    expect(result).toEqual([]);
+    expect(result).toBeNull();
   });
 
   it("should extract content from assistant message event", () => {
@@ -50,8 +50,10 @@ describe("transformStreaming", () => {
     };
 
     const result = transformStreaming(data);
-    expect(result).toHaveLength(1);
-    expect(result[0]).toEqual({
+    expect(result).not.toBeNull();
+    expect(result?.id).toBe("msg_01ABC123");
+    expect(result?.content).toHaveLength(1);
+    expect(result?.content[0]).toEqual({
       type: "text",
       text: "Hello! How can I help you?",
     });
@@ -95,12 +97,14 @@ describe("transformStreaming", () => {
     };
 
     const result = transformStreaming(data);
-    expect(result).toHaveLength(2);
-    expect(result[0]).toEqual({
+    expect(result).not.toBeNull();
+    expect(result?.id).toBe("msg_01ABC123");
+    expect(result?.content).toHaveLength(2);
+    expect(result?.content[0]).toEqual({
       type: "text",
       text: "I'll help you with that.",
     });
-    expect(result[1]).toEqual({
+    expect(result?.content[1]).toEqual({
       type: "tool_use",
       id: "toolu_123",
       name: "Read",
@@ -110,7 +114,7 @@ describe("transformStreaming", () => {
     });
   });
 
-  it("should skip system events and return empty array", () => {
+  it("should skip system events and return null", () => {
     const data: SessionStreamOutputData = {
       content: {
         events: [
@@ -125,10 +129,10 @@ describe("transformStreaming", () => {
     };
 
     const result = transformStreaming(data);
-    expect(result).toEqual([]);
+    expect(result).toBeNull();
   });
 
-  it("should skip result events and return empty array", () => {
+  it("should skip result events and return null", () => {
     const data: SessionStreamOutputData = {
       content: {
         events: [
@@ -145,7 +149,7 @@ describe("transformStreaming", () => {
     };
 
     const result = transformStreaming(data);
-    expect(result).toEqual([]);
+    expect(result).toBeNull();
   });
 
   it("should handle thinking blocks in assistant message", () => {
@@ -182,12 +186,14 @@ describe("transformStreaming", () => {
     };
 
     const result = transformStreaming(data);
-    expect(result).toHaveLength(2);
-    expect(result[0]).toEqual({
+    expect(result).not.toBeNull();
+    expect(result?.id).toBe("msg_01ABC123");
+    expect(result?.content).toHaveLength(2);
+    expect(result?.content[0]).toEqual({
       type: "thinking",
       thinking: "Let me analyze this...",
     });
-    expect(result[1]).toEqual({
+    expect(result?.content[1]).toEqual({
       type: "text",
       text: "Here's my response.",
     });
@@ -241,7 +247,7 @@ describe("transformStreaming", () => {
         events: [systemEvent],
       },
     };
-    expect(transformStreaming(systemData)).toEqual([]);
+    expect(transformStreaming(systemData)).toBeNull();
 
     // Test assistant event alone
     const assistantData: SessionStreamOutputData = {
@@ -250,8 +256,10 @@ describe("transformStreaming", () => {
       },
     };
     const assistantResult = transformStreaming(assistantData);
-    expect(assistantResult).toHaveLength(1);
-    expect(assistantResult[0]).toEqual({
+    expect(assistantResult).not.toBeNull();
+    expect(assistantResult?.id).toBe("msg_01ABC123");
+    expect(assistantResult?.content).toHaveLength(1);
+    expect(assistantResult?.content[0]).toEqual({
       type: "text",
       text: "Hello! How can I help you?",
     });
@@ -262,7 +270,7 @@ describe("transformStreaming", () => {
         events: [resultEvent],
       },
     };
-    expect(transformStreaming(resultData)).toEqual([]);
+    expect(transformStreaming(resultData)).toBeNull();
 
     // CRITICAL: Test the actual sequence that caused the bug
     // system -> assistant -> result
@@ -273,8 +281,10 @@ describe("transformStreaming", () => {
       },
     };
     const sequenceResult = transformStreaming(sequenceData);
-    expect(sequenceResult).toHaveLength(1);
-    expect(sequenceResult[0]).toEqual({
+    expect(sequenceResult).not.toBeNull();
+    expect(sequenceResult?.id).toBe("msg_01ABC123");
+    expect(sequenceResult?.content).toHaveLength(1);
+    expect(sequenceResult?.content[0]).toEqual({
       type: "text",
       text: "Hello! How can I help you?",
     });
@@ -338,8 +348,10 @@ describe("transformStreaming", () => {
     };
 
     const result = transformStreaming(data);
-    expect(result).toHaveLength(1);
-    expect(result[0]).toEqual({
+    expect(result).not.toBeNull();
+    expect(result?.id).toBe("msg_01ABC123");
+    expect(result?.content).toHaveLength(1);
+    expect(result?.content[0]).toEqual({
       type: "text",
       text: "First response",
     });

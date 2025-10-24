@@ -164,14 +164,14 @@ const ChatPromptInputInner = ({
       setCursorPosition(textWithoutAt.length);
     }
 
-    // Check if user just typed "/" at the end
-    if (newValue.endsWith("/")) {
-      setIsSlashMenuOpen(true);
-      // Remove the / from the text and update cursor position
-      const textWithoutSlash = newValue.slice(0, -1);
-      controller.textInput.setInput(textWithoutSlash);
-      setCursorPosition(textWithoutSlash.length);
-    }
+    // Slash command menu disabled - "/" will not trigger the menu
+    // if (newValue.endsWith("/")) {
+    //   setIsSlashMenuOpen(true);
+    //   // Remove the / from the text and update cursor position
+    //   const textWithoutSlash = newValue.slice(0, -1);
+    //   controller.textInput.setInput(textWithoutSlash);
+    //   setCursorPosition(textWithoutSlash.length);
+    // }
   };
 
   // Handle file selection from file picker

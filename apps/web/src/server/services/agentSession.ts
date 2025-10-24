@@ -61,12 +61,17 @@ export async function parseJSONLFile(
 
         // Sum token usage from assistant messages
         const isAssistantMessage = entry.type === 'assistant' || entry.role === 'assistant';
-        if (isAssistantMessage && entry.usage) {
-          totalTokens +=
-            (entry.usage.input_tokens || 0) +
-            (entry.usage.cache_creation_input_tokens || 0) +
-            (entry.usage.cache_read_input_tokens || 0) +
-            (entry.usage.output_tokens || 0);
+        if (isAssistantMessage) {
+          // Usage can be at entry.usage (API format) or entry.message.usage (Claude CLI format)
+          const usage = entry.usage || entry.message?.usage;
+          if (usage) {
+            const messageTokens =
+              (usage.input_tokens || 0) +
+              (usage.cache_creation_input_tokens || 0) +
+              (usage.cache_read_input_tokens || 0) +
+              (usage.output_tokens || 0);
+            totalTokens += messageTokens;
+          }
         }
 
         // Track the timestamp from the latest message

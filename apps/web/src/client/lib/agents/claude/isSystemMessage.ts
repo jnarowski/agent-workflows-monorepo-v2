@@ -1,0 +1,45 @@
+/**
+ * System Message Detection Utility
+ *
+ * Detects Claude Code system messages that should be filtered out from the UI display.
+ * These messages are internal plumbing and not meant for user viewing.
+ */
+
+/**
+ * Checks if a text content string is a system message that should be filtered
+ *
+ * System messages include:
+ * - Command tags: <command-name>, <command-message>, <command-args>, <local-command-stdout>
+ * - System reminders: <system-reminder>
+ * - Session continuity messages: "This session is being continued from a previous"
+ * - Caveats: "Caveat:"
+ * - API errors: "Invalid API key"
+ * - Task Master prompts: JSON with "subtasks" or "CRITICAL: You MUST respond with ONLY a JSON"
+ * - Warmup messages: exactly "Warmup"
+ * - Ready messages: "I'm ready to help! I'm Claude Code..."
+ *
+ * @param textContent - The text content to check
+ * @returns true if the content is a system message that should be filtered
+ */
+export function isSystemMessage(textContent: string): boolean {
+  if (typeof textContent !== 'string') {
+    return false;
+  }
+
+  // Check for various system message patterns
+  const isSystemPattern =
+    textContent.startsWith('<command-name>') ||
+    textContent.startsWith('<command-message>') ||
+    textContent.startsWith('<command-args>') ||
+    textContent.startsWith('<local-command-stdout>') ||
+    textContent.startsWith('<system-reminder>') ||
+    textContent.startsWith('Caveat:') ||
+    textContent.startsWith('This session is being continued from a previous') ||
+    textContent.includes('Invalid API key') ||
+    textContent.includes('{"subtasks":') ||
+    textContent.includes('CRITICAL: You MUST respond with ONLY a JSON') ||
+    textContent === 'Warmup' ||
+    textContent.startsWith("I'm ready to help! I'm Claude Code, Anthropic's official CLI for Claude");
+
+  return isSystemPattern;
+}

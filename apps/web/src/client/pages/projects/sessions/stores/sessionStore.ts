@@ -193,7 +193,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
 
   // Update the streaming message content
   // Receives already-transformed ContentBlock[] from agent.transformStreaming()
-  updateStreamingMessage: (contentBlocks: ContentBlock[]) => {
+  updateStreamingMessage: (messageId: string, contentBlocks: ContentBlock[]) => {
     set((state) => {
       if (!state.currentSession) {
         return state;
@@ -202,14 +202,15 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       const messages = state.currentSession.messages;
       const lastMessage = messages[messages.length - 1];
 
-      // Check if last message is a streaming assistant message we can update
-      const canUpdateLastMessage =
+      // Check if last message has the same ID (update existing message)
+      const shouldUpdateLastMessage =
         lastMessage &&
         lastMessage.role === "assistant" &&
-        lastMessage.isStreaming === true;
+        lastMessage.isStreaming === true &&
+        lastMessage.id === messageId;
 
-      if (canUpdateLastMessage) {
-        // Update existing streaming message immutably
+      if (shouldUpdateLastMessage) {
+        // Update existing streaming message with same ID immutably
         return {
           currentSession: {
             ...state.currentSession,
@@ -224,14 +225,14 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
           },
         };
       } else {
-        // Create new streaming assistant message
+        // Create new streaming assistant message with the provided ID
         return {
           currentSession: {
             ...state.currentSession,
             messages: [
               ...messages,
               {
-                id: crypto.randomUUID(),
+                id: messageId,
                 role: "assistant" as const,
                 content: contentBlocks,
                 timestamp: Date.now(),
