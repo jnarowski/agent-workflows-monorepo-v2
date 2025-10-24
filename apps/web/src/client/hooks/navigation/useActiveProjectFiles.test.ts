@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useActiveProjectFiles } from "./useActiveProjectFiles";
-import { useNavigationStore } from "@/client/stores";
+import { useNavigationStore } from "@/client/stores/index";
 import { useProjectFiles } from "@/client/pages/projects/files/hooks/useFiles";
 
 // Mock the stores and hooks

@@ -3,13 +3,13 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { syncFromClaudeProjects, hasEnoughSessions } from '@/server/services/project-sync.service';
-import * as projectService from '@/server/services/project.service';
-import * as agentSessionService from '@/server/services/agent-session.service';
+import { syncFromClaudeProjects, hasEnoughSessions } from './projectSync';
+import * as projectService from './project';
+import * as agentSessionService from './agentSession';
 
 // Mock the services
-vi.mock('@/server/services/project.service');
-vi.mock('@/server/services/agent-session.service');
+vi.mock('@/server/services/project');
+vi.mock('@/server/services/agentSession');
 
 describe('ProjectSyncService', () => {
   const originalHome = process.env.HOME;

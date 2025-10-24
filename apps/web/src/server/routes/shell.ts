@@ -3,14 +3,14 @@ import {
   createSession,
   getSession,
   destroySession,
-} from '@/server/services/shell.service';
+} from '@/server/services/shell';
 import {
   shellMessageSchema,
   type InitMessage,
   type InputMessage,
   type ResizeMessage,
-} from '@/server/schemas/shell.schema';
-import type { JWTPayload } from '@/server/utils/auth.utils';
+} from '@/server/schemas/shell';
+import type { JWTPayload } from '@/server/utils/auth';
 
 export async function registerShellRoute(fastify: FastifyInstance) {
   fastify.register(async (fastify) => {

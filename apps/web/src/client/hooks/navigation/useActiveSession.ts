@@ -1,4 +1,4 @@
-import { useNavigationStore } from "@/client/stores";
+import { useNavigationStore } from "@/client/stores/index";
 import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgentSessions";
 import type { SessionResponse } from "@/shared/types";
 

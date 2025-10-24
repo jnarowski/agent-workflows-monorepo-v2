@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import type { FastifyBaseLogger } from 'fastify';
 import type { FileTreeItem } from '@/shared/types/file.types';
-import { getProjectById } from '@/server/services/project.service';
+import { getProjectById } from '@/server/services/project';
 
 const MAX_DEPTH = 10;
 const EXCLUDED_DIRS = new Set([

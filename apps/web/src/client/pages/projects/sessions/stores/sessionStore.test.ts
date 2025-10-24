@@ -289,15 +289,17 @@ describe("SessionStore", () => {
     it("should update metadata", () => {
       const { updateMetadata } = useSessionStore.getState();
 
+      // updateMetadata has special logic for totalTokens - it calculates from usage
+      // Test with usage data to properly update tokens
       updateMetadata({
-        totalTokens: 100,
         messageCount: 2,
         lastMessageAt: Date.now(),
         firstMessagePreview: "Hello",
+        usage: { input_tokens: 50, output_tokens: 50 },
       });
 
       const metadata = useSessionStore.getState().currentSession?.metadata;
-      expect(metadata?.totalTokens).toBe(100);
+      expect(metadata?.totalTokens).toBe(100); // 50 + 50 from usage
       expect(metadata?.messageCount).toBe(2);
       expect(metadata?.firstMessagePreview).toBe("Hello");
     });

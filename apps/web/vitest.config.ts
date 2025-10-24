@@ -1,17 +1,22 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import tsconfigPaths from 'vite-tsconfig-paths';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [tsconfigPaths(), react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+    extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
+  },
+  ssr: {
+    noExternal: true,
+  },
   test: {
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
-    // Use 'happy-dom' for client tests, 'node' for server tests
-    environment: 'happy-dom',
-    include: [
-      'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -23,15 +28,29 @@ export default defineConfig({
         '**/types/**',
       ],
     },
-    // Use different environment for server tests
-    environmentMatchGlobs: [
-      ['src/server/**/*.test.ts', 'node'],
-      ['src/client/**/*.test.ts', 'happy-dom'],
+    // Use different test projects for client and server tests
+    projects: [
+      {
+        test: {
+          name: 'client',
+          environment: 'happy-dom',
+          include: ['src/client/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+        },
+      },
+      {
+        test: {
+          name: 'server',
+          environment: 'node',
+          include: ['src/server/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+        },
+      },
+      {
+        test: {
+          name: 'shared',
+          environment: 'node',
+          include: ['src/shared/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+        },
+      },
     ],
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
   },
 });

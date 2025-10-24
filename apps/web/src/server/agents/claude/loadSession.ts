@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import type { SessionMessage } from '@/shared/types/message.types';
 import { parseFormat } from './parseFormat';
-import { getSessionFilePath } from '@/server/utils/path.utils';
+import { getSessionFilePath } from '@/server/utils/path';
 
 /**
  * Load a Claude session from JSONL file

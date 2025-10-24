@@ -17,14 +17,14 @@ import { registerRoutes } from '@/server/routes';
 import { registerWebSocket, activeSessions } from '@/server/websocket';
 import { registerShellRoute } from '@/server/routes/shell';
 import { authPlugin } from '@/server/plugins/auth';
-import { setupGracefulShutdown } from '@/server/utils/shutdown.utils';
+import { setupGracefulShutdown } from '@/server/utils/shutdown';
 import {
   NotFoundError,
   UnauthorizedError,
   ForbiddenError,
   ValidationError as CustomValidationError,
   buildErrorResponse
-} from '@/server/utils/error.utils';
+} from '@/server/utils/error';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

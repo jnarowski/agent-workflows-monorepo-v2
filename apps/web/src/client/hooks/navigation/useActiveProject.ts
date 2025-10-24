@@ -1,4 +1,4 @@
-import { useNavigationStore } from "@/client/stores";
+import { useNavigationStore } from "@/client/stores/index";
 import { useProjects } from "@/client/pages/projects/hooks/useProjects";
 import type { Project } from "@/shared/types/project.types";
 

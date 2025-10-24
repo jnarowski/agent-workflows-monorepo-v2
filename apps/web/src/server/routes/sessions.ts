@@ -5,15 +5,15 @@ import {
   getSessionMessages,
   createSession,
   syncProjectSessions,
-} from "@/server/services/agent-session.service";
+} from "@/server/services/agentSession";
 import {
   createSessionSchema,
   sessionIdSchema,
   projectIdSchema,
-} from "@/server/schemas/session.schema";
-import { errorResponse } from "@/server/schemas/response.schema";
+} from "@/server/schemas/session";
+import { errorResponse } from "@/server/schemas/response";
 import type { CreateSessionRequest } from "@/shared/types/agent-session.types";
-import { buildErrorResponse } from "@/server/utils/error.utils";
+import { buildErrorResponse } from "@/server/utils/error";
 
 export async function sessionRoutes(fastify: FastifyInstance) {
   /**

@@ -78,9 +78,9 @@ src/server/
 ```typescript
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { NotFoundError, buildErrorResponse } from '@/server/utils/error.utils';
-import { buildSuccessResponse } from '@/server/utils/response.utils';
-import { getItemById, createItem, updateItem, deleteItem } from '@/server/services/item.service';
+import { NotFoundError, buildErrorResponse } from '@/server/utils/error';
+import { buildSuccessResponse } from '@/server/utils/response';
+import { getItemById, createItem, updateItem, deleteItem } from '@/server/services/item';
 
 // Request/Response Schemas
 const CreateItemSchema = z.object({
@@ -230,7 +230,7 @@ Located in `src/server/utils/error.utils.ts`:
 ### Usage Examples
 
 ```typescript
-import { NotFoundError, UnauthorizedError, ForbiddenError } from '@/server/utils/error.utils';
+import { NotFoundError, UnauthorizedError, ForbiddenError } from '@/server/utils/error';
 
 // Throw custom errors - they're automatically caught by error handler
 if (!project) {
@@ -263,7 +263,7 @@ All errors return a consistent format:
 ### Building Error Responses
 
 ```typescript
-import { buildErrorResponse } from '@/server/utils/error.utils';
+import { buildErrorResponse } from '@/server/utils/error';
 
 // Manual error response (use custom errors instead when possible)
 return reply.code(404).send(buildErrorResponse(404, 'Resource not found'));
@@ -326,7 +326,7 @@ interface FastifyRequest {
 Import the shared type:
 
 ```typescript
-import { JWTPayload } from '@/server/utils/auth.utils';
+import { JWTPayload } from '@/server/utils/auth';
 
 // JWTPayload interface:
 // {
@@ -744,10 +744,10 @@ const validated = MessageSchema.parse(parsedData);
 
 ```typescript
 // Utilities
-import { JWTPayload } from '@/server/utils/auth.utils';
-import { NotFoundError, buildErrorResponse } from '@/server/utils/error.utils';
-import { buildSuccessResponse } from '@/server/utils/response.utils';
-import { getSessionFilePath } from '@/server/utils/path.utils';
+import { JWTPayload } from '@/server/utils/auth';
+import { NotFoundError, buildErrorResponse } from '@/server/utils/error';
+import { buildSuccessResponse } from '@/server/utils/response';
+import { getSessionFilePath } from '@/server/utils/path';
 
 // Services
 import { getProjectById, createProject } from '@/server/services/project.service';

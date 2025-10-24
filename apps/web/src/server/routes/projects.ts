@@ -7,9 +7,9 @@ import {
   deleteProject,
   toggleProjectHidden,
   projectExistsByPath,
-} from "@/server/services/project.service";
-import { syncFromClaudeProjects } from "@/server/services/project-sync.service";
-import { getProjectFiles, readFile, writeFile } from "@/server/services/file.service";
+} from "@/server/services/project";
+import { syncFromClaudeProjects } from "@/server/services/projectSync";
+import { getProjectFiles, readFile, writeFile } from "@/server/services/file";
 import {
   createProjectSchema,
   updateProjectSchema,
@@ -17,7 +17,7 @@ import {
   fileContentQuerySchema,
   fileContentBodySchema,
   hideProjectSchema,
-} from "@/server/schemas/project.schema";
+} from "@/server/schemas/project";
 import {
   projectsResponseSchema,
   projectResponseSchema,
@@ -26,12 +26,12 @@ import {
   fileContentResponseSchema,
   fileContentSaveResponseSchema,
   projectSyncResponseSchema,
-} from "@/server/schemas/response.schema";
+} from "@/server/schemas/response";
 import type {
   CreateProjectRequest,
   UpdateProjectRequest,
 } from "@/shared/types/project.types";
-import { buildErrorResponse } from "@/server/utils/error.utils";
+import { buildErrorResponse } from "@/server/utils/error";
 
 export async function projectRoutes(fastify: FastifyInstance) {
   /**

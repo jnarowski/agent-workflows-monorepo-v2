@@ -14,7 +14,7 @@ import {
   FileText,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
-import { useNavigationStore } from "@/client/stores";
+import { useNavigationStore } from "@/client/stores/index";
 
 export default function ProjectDetailLayout() {
   const { id } = useParams<{ id: string }>();

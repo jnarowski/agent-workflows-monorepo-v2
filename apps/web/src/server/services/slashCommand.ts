@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import matter from 'gray-matter';
 import type { SlashCommand } from '@/shared/types/slash-command.types';
-import { getProjectById } from '@/server/services/project.service';
+import { getProjectById } from '@/server/services/project';
 
 /**
  * Slash Command Service

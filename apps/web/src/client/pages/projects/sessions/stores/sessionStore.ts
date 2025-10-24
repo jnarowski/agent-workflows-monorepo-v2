@@ -1,12 +1,22 @@
 import { create } from "zustand";
-import type { SessionMessage, ContentBlock } from "@/shared/types/message.types";
-import type { AgentSessionMetadata, SessionResponse } from "@/shared/types/agent-session.types";
+import type {
+  SessionMessage,
+  ContentBlock,
+} from "@/shared/types/message.types";
+import type {
+  AgentSessionMetadata,
+  SessionResponse,
+} from "@/shared/types/agent-session.types";
 import type { AgentType } from "@/shared/types/agent.types";
 import { getAgent } from "@/client/lib/agents";
 import { api } from "@/client/lib/api-client";
 
 // Permission mode types from agent-cli-sdk
-export type ClaudePermissionMode = "default" | "plan" | "acceptEdits" | "reject";
+export type ClaudePermissionMode =
+  | "default"
+  | "plan"
+  | "acceptEdits"
+  | "reject";
 
 /**
  * Loading states for async operations
@@ -26,6 +36,7 @@ export interface SessionData {
   loadingState: LoadingState;
   error: string | null;
   permissionMode: ClaudePermissionMode;
+  currentMessageTokens: number; // Tokens for the currently streaming message
 }
 
 /**
@@ -76,7 +87,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         `/api/projects/${projectId}/sessions`
       );
       const sessions: SessionResponse[] = sessionData.data || [];
-      const session = sessions.find(s => s.id === sessionId);
+      const session = sessions.find((s) => s.id === sessionId);
 
       if (!session) {
         throw new Error(`Session not found: ${sessionId}`);
@@ -85,7 +96,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       // Get agent implementation for this session
       const agent = getAgent(session.agent);
 
-      // Set loading state with agent type
+      // Set loading state with agent type and metadata
       set({
         currentSessionId: sessionId,
         currentSession: {
@@ -93,10 +104,11 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
           agent: session.agent,
           messages: [],
           isStreaming: false,
-          metadata: null,
+          metadata: session.metadata || null,
           loadingState: "loading",
           error: null,
           permissionMode: get().defaultPermissionMode,
+          currentMessageTokens: 0,
         },
       });
 
@@ -109,8 +121,10 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         rawMessages = data.data || [];
       } catch (error) {
         // JSONL file doesn't exist yet - this is expected for new sessions
-        if (error instanceof Error && error.message.includes('404')) {
-          console.log(`[sessionStore] JSONL file not found for session ${sessionId} - this is normal for new sessions`);
+        if (error instanceof Error && error.message.includes("404")) {
+          console.log(
+            `[sessionStore] JSONL file not found for session ${sessionId} - this is normal for new sessions`
+          );
           set((state) => ({
             currentSession: state.currentSession
               ? { ...state.currentSession, loadingState: "loaded" }
@@ -134,11 +148,16 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
           : null,
       }));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load session";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to load session";
       console.error(`[sessionStore] Error loading session:`, errorMessage);
       set((state) => ({
         currentSession: state.currentSession
-          ? { ...state.currentSession, loadingState: "error", error: errorMessage }
+          ? {
+              ...state.currentSession,
+              loadingState: "error",
+              error: errorMessage,
+            }
           : null,
       }));
       throw error;
@@ -162,6 +181,11 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         currentSession: {
           ...state.currentSession,
           messages: [...state.currentSession.messages, message],
+          // Reset current message tokens when user sends a new message
+          currentMessageTokens:
+            message.role === "user"
+              ? 0
+              : state.currentSession.currentMessageTokens,
         },
       };
     });
@@ -252,15 +276,44 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   },
 
   // Update metadata
-  updateMetadata: (metadata: Partial<AgentSessionMetadata>) => {
-    set((state) => ({
-      currentSession: state.currentSession
-        ? {
-            ...state.currentSession,
-            metadata: { ...state.currentSession.metadata, ...metadata } as AgentSessionMetadata,
-          }
-        : null,
-    }));
+  updateMetadata: (
+    metadata: Partial<AgentSessionMetadata> & {
+      usage?: { input_tokens?: number; output_tokens?: number };
+    }
+  ) => {
+    set((state) => {
+      if (!state.currentSession) return state;
+
+      // Calculate current message tokens from usage data if provided
+      let currentMessageTokens = state.currentSession.currentMessageTokens;
+      let updatedTotalTokens = state.currentSession.metadata?.totalTokens || 0;
+
+      if (metadata.usage) {
+        const inputTokens = metadata.usage.input_tokens || 0;
+        const outputTokens = metadata.usage.output_tokens || 0;
+        currentMessageTokens = inputTokens + outputTokens;
+
+        // Add current message tokens to total
+        updatedTotalTokens += currentMessageTokens;
+      }
+
+      return {
+        currentSession: {
+          ...state.currentSession,
+          metadata: {
+            ...(state.currentSession.metadata || {
+              totalTokens: 0,
+              messageCount: 0,
+              lastMessageAt: "",
+              firstMessagePreview: "",
+            }),
+            ...metadata,
+            totalTokens: updatedTotalTokens,
+          } as AgentSessionMetadata,
+          currentMessageTokens,
+        },
+      };
+    });
   },
 
   // Set error state

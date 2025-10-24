@@ -5,9 +5,9 @@ import { AgentClient, createClaudeAdapter } from "@repo/agent-cli-sdk";
 import { prisma } from "@/shared/prisma";
 import fs from "fs/promises";
 import path from "path";
-import { JWTPayload } from "@/server/utils/auth.utils";
-import { getSessionFilePath } from "@/server/utils/path.utils";
-import { parseJSONLFile, updateSessionMetadata } from "@/server/services/agent-session.service";
+import { JWTPayload } from "@/server/utils/auth";
+import { getSessionFilePath } from "@/server/utils/path";
+import { parseJSONLFile, updateSessionMetadata } from "@/server/services/agentSession";
 import type {
   WebSocketMessage,
   SessionSendMessageData,

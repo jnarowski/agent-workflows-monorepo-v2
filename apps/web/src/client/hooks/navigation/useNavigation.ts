@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useNavigationStore } from "@/client/stores";
+import { useNavigationStore } from "@/client/stores/index";
 
 /**
  * Return type for useNavigation hook

@@ -7,12 +7,12 @@ import type {
   SessionResponse,
   SyncSessionsResponse,
 } from '@/shared/types/agent-session.types';
-import { getAgent } from '@/server/agents';
+import { getAgent } from '../agents';
 import type { SessionMessage } from '@/shared/types/message.types';
 import {
   encodeProjectPath,
   getClaudeProjectsDir,
-} from '@/server/utils/path.utils';
+} from '@/server/utils/path';
 import path from 'path';
 
 /**

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuthStore } from "@/client/stores";
+import { useAuthStore } from "@/client/stores/index";
 import { useSyncProjects } from "@/client/pages/projects/hooks/useProjects";
 import { AppSidebar } from "@/client/components/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/client/components/ui/sidebar";

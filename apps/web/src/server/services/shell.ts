@@ -1,6 +1,6 @@
 import * as pty from 'node-pty';
 import * as os from 'os';
-import { getProjectById } from '@/server/services/project.service';
+import { getProjectById } from '@/server/services/project';
 
 /**
  * Represents an active shell session

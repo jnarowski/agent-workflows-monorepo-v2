@@ -4,7 +4,7 @@ import { prisma } from "@/shared/prisma";
 import type {
   CreateProjectInput,
   UpdateProjectInput,
-} from "@/server/schemas/project.schema";
+} from "@/server/schemas/project";
 import type { Project } from "@/shared/types/project.types";
 
 /**

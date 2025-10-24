@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useProjectFiles } from "@/client/pages/projects/files/hooks/useFiles";
 import { useActiveProject } from "@/client/hooks/navigation";
-import { useFilesStore } from "@/client/stores";
+import { useFilesStore } from "@/client/stores/index";
 import type { FileTreeItem } from "@/shared/types/file.types";
 import { Input } from "@/client/components/ui/input";
 import { Button } from "@/client/components/ui/button";

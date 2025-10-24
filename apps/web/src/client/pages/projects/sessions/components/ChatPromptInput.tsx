@@ -48,6 +48,8 @@ interface ChatPromptInputProps {
   onSubmit?: (message: string, images?: File[]) => void | Promise<void>;
   disabled?: boolean;
   isStreaming?: boolean;
+  totalTokens?: number; // Total session tokens
+  currentMessageTokens?: number; // Tokens for currently streaming message
 }
 
 // Inner component that uses the controller
@@ -55,6 +57,8 @@ const ChatPromptInputInner = ({
   onSubmit,
   disabled = false,
   isStreaming: externalIsStreaming = false,
+  totalTokens,
+  currentMessageTokens,
 }: ChatPromptInputProps) => {
   const controller = usePromptInputController();
   const [status, setStatus] = useState<
@@ -127,11 +131,20 @@ const ChatPromptInputInner = ({
 
   // Handle keyboard shortcuts
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Handle Enter key for submission (before Tab handling)
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      e.currentTarget.form?.requestSubmit();
+      return;
+    }
+
     // Shift+Tab to cycle permission modes
     if (e.key === "Tab" && e.shiftKey) {
       e.preventDefault();
       cyclePermissionMode();
+      return;
     }
+    // Shift+Enter creates new line (default textarea behavior)
   };
 
   // Handle text change and detect @ and / commands
@@ -339,7 +352,21 @@ const ChatPromptInputInner = ({
               </PromptInputPermissionModeSelectContent>
             </PromptInputPermissionModeSelect>
           </PromptInputTools>
-          <PromptInputSubmit className="!h-8" status={status} />
+          <div className="flex items-center gap-2">
+            {/* Token count display */}
+            {totalTokens !== undefined && (
+              <div className="text-xs text-muted-foreground">
+                <span>
+                  {totalTokens.toLocaleString()}
+                  {currentMessageTokens && currentMessageTokens > 0 ? (
+                    <span className="text-primary"> (+{currentMessageTokens.toLocaleString()})</span>
+                  ) : null}
+                  {' '}tokens
+                </span>
+              </div>
+            )}
+            <PromptInputSubmit className="!h-8" status={status} />
+          </div>
         </PromptInputFooter>
       </PromptInput>
     </div>

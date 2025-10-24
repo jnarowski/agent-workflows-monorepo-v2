@@ -2,7 +2,7 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
-import { getAgent } from "@/client/lib/agents";
+import { getAgent } from "../../../../lib/agents";
 import type { ContentBlock } from "@/shared/types/message.types";
 import type {
   SessionStreamOutputData,

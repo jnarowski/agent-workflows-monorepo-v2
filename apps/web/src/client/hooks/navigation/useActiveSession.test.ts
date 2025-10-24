@@ -3,7 +3,7 @@ import { renderHook } from "@testing-library/react";
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useActiveSession } from "./useActiveSession";
-import { useNavigationStore } from "@/client/stores";
+import { useNavigationStore } from "@/client/stores/index";
 import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgentSessions";
 
 // Mock the stores and hooks

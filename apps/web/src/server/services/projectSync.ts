@@ -3,9 +3,9 @@ import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
 import readline from "readline";
-import { createOrUpdateProject } from "@/server/services/project.service";
-import { syncProjectSessions } from "@/server/services/agent-session.service";
-import { getClaudeProjectsDir } from "@/server/utils/path.utils";
+import { createOrUpdateProject } from "@/server/services/project";
+import { syncProjectSessions } from "@/server/services/agentSession";
+import { getClaudeProjectsDir } from "@/server/utils/path";
 import type { SyncProjectsResponse } from "@/shared/types/project-sync.types";
 
 /**

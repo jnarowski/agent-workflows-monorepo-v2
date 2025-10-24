@@ -1,6 +1,6 @@
 import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "@/client/stores";
+import { useAuthStore } from "@/client/stores/index";
 import { SignupForm } from "@/client/pages/auth/components/SignupForm";
 
 function Signup() {

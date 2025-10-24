@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
-import { getProjectSlashCommands } from '@/server/services/slash-command.service';
-import { slashCommandParamsSchema } from '@/server/schemas/slash-command.schema';
-import { buildErrorResponse } from '@/server/utils/error.utils';
+import { getProjectSlashCommands } from '@/server/services/slashCommand';
+import { slashCommandParamsSchema } from '@/server/schemas/slashCommand';
+import { buildErrorResponse } from '@/server/utils/error';
 
 /**
  * Slash Commands Routes

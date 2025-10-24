@@ -6,7 +6,7 @@ import { useSessionWebSocket } from "./hooks/useSessionWebSocket";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation";
-import { useNavigationStore } from "@/client/stores";
+import { useNavigationStore } from "@/client/stores/index";
 import { api } from "@/client/lib/api-client";
 import type { ToolResultBlock } from "@/shared/types/message.types";
 
@@ -306,18 +306,12 @@ export default function ProjectSession() {
       {/* Fixed Input Container at Bottom */}
       <div className="md:pb-4 pb-2">
         <div className="mx-auto max-w-4xl">
-          {/* Token usage display */}
-          {sessionId && session?.metadata && (
-            <div className="px-4 pb-2 text-xs text-muted-foreground text-center">
-              <span>
-                {session.metadata.totalTokens.toLocaleString()} tokens used
-              </span>
-            </div>
-          )}
           <ChatPromptInput
             onSubmit={handleSubmit}
             disabled={inputDisabled}
             isStreaming={session?.isStreaming || false}
+            totalTokens={session?.metadata?.totalTokens}
+            currentMessageTokens={session?.currentMessageTokens}
           />
         </div>
       </div>

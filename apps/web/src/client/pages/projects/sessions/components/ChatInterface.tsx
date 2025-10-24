@@ -9,7 +9,7 @@ import { ChatSkeleton } from "./ChatSkeleton";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import type { SessionMessage } from "@/shared/types/message.types";
 import type { AgentType } from "@/shared/types/agent.types";
-import { getAgent } from "@/client/lib/agents";
+import { getAgent } from "../../../../lib/agents";
 
 interface ChatInterfaceProps {
   projectId: string;

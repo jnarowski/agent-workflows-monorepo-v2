@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
-import { getProjectSlashCommands } from './slash-command.service';
-import * as projectService from './project.service';
+import { getProjectSlashCommands } from './slashCommand';
+import * as projectService from './project';
 import { vi } from 'vitest';
 
 // Mock the project service
-vi.mock('./project.service', () => ({
+vi.mock('./project', () => ({
   getProjectById: vi.fn(),
 }));
 

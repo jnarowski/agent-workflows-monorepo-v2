@@ -17,7 +17,7 @@ import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
 import { DeleteProjectDialog } from "@/client/pages/projects/components/DeleteProjectDialog";
 import type { Project } from "@/shared/types/project.types";
-import { useAuthStore } from "@/client/stores";
+import { useAuthStore } from "@/client/stores/index";
 import { markProjectsSynced } from "@/client/lib/projectSync";
 
 export default function Projects() {

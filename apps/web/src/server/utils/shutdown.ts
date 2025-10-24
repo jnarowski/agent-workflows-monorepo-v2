@@ -12,7 +12,7 @@ import fs from 'fs/promises';
  *
  * @example
  * ```ts
- * import { setupGracefulShutdown } from '@/server/utils/shutdown.utils';
+ * import { setupGracefulShutdown } from '@/server/utils/shutdown';
  * import { activeSessions } from '@/server/websocket';
  *
  * await server.listen({ port: 3456 });

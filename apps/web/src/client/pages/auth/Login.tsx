@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "@/client/stores";
+import { useAuthStore } from "@/client/stores/index";
 import { LoginForm } from "@/client/pages/auth/components/LoginForm";
 import type { FormEvent } from "react";
 
