@@ -44,8 +44,6 @@ export function useSessionWebSocket({
    * Handle stream_output events
    */
   const handleStreamOutput = useCallback((data: SessionStreamOutputData) => {
-    console.log("[useSessionWebSocket] Received stream_output", data);
-
     // Get current session to access agent type
     const currentSession = useSessionStore.getState().currentSession;
     if (!currentSession) {
@@ -57,18 +55,12 @@ export function useSessionWebSocket({
     const agent = getAgent(currentSession.agent);
     const contentBlocks = agent.transformStreaming(data);
 
-    console.log("[useSessionWebSocket] Transformed content blocks:", contentBlocks);
-
-    useSessionStore
-      .getState()
-      .updateStreamingMessage(contentBlocks as ContentBlock[]);
-
-    // Log the store state after update
-    console.log("[useSessionWebSocket] Store after update:", {
-      sessionId: currentSession?.id,
-      messageCount: currentSession?.messages.length,
-      isStreaming: currentSession?.isStreaming,
-    });
+    // Only update if we have content blocks - skip system/result events
+    if (contentBlocks.length > 0) {
+      useSessionStore
+        .getState()
+        .updateStreamingMessage(contentBlocks as ContentBlock[]);
+    }
   }, []);
 
   /**

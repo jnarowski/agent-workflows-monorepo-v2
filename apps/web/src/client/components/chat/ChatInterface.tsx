@@ -116,27 +116,6 @@ export function ChatInterface({
       data-session-id={sessionId}
     >
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-4">
-        {/* Debug output */}
-        <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded text-xs">
-          <pre className="overflow-auto">
-            {JSON.stringify(
-              {
-                agent,
-                messageCount: messages.length,
-                isStreaming,
-                messages: messages.map((m) => ({
-                  id: m.id,
-                  role: m.role,
-                  contentTypes: m.content.map((c: any) => c.type),
-                  isStreaming: m.isStreaming,
-                })),
-              },
-              null,
-              2
-            )}
-          </pre>
-        </div>
-
         <AgentMessageRenderer messages={messages} />
         {isStreaming && (
           <div className="flex items-center gap-2 text-muted-foreground text-sm">

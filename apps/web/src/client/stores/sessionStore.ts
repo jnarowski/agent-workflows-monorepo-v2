@@ -185,11 +185,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   // Update the streaming message content
   // Receives already-transformed ContentBlock[] from agent.transformStreaming()
   updateStreamingMessage: (contentBlocks: ContentBlock[]) => {
-    console.log("[sessionStore] updateStreamingMessage called with content blocks:", contentBlocks.length);
-
     set((state) => {
       if (!state.currentSession) {
-        console.log("[sessionStore] No currentSession, skipping update");
         return state;
       }
 
@@ -204,7 +201,6 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
 
       if (canUpdateLastMessage) {
         // Update existing streaming message immutably
-        console.log("[sessionStore] Updating existing streaming message");
         return {
           currentSession: {
             ...state.currentSession,
@@ -220,7 +216,6 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         };
       } else {
         // Create new streaming assistant message
-        console.log("[sessionStore] Creating new streaming message");
         return {
           currentSession: {
             ...state.currentSession,
@@ -228,7 +223,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
               ...messages,
               {
                 id: crypto.randomUUID(),
-                role: "assistant",
+                role: "assistant" as const,
                 content: contentBlocks,
                 timestamp: Date.now(),
                 isStreaming: true,
