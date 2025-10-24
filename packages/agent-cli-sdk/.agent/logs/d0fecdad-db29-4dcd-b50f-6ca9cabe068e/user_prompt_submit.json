@@ -1,0 +1,34 @@
+[
+  {
+    "session_id": "d0fecdad-db29-4dcd-b50f-6ca9cabe068e",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/d0fecdad-db29-4dcd-b50f-6ca9cabe068e.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can we create a type-check file in agent-cli-sdk that checks different types like a test but doesn't actually execute - use ts-expect-error etc."
+  },
+  {
+    "session_id": "d0fecdad-db29-4dcd-b50f-6ca9cabe068e",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/d0fecdad-db29-4dcd-b50f-6ca9cabe068e.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "the // @ts-expect-error is in the wrong spot for '/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/types/__type-tests__/events.test-d.ts'"
+  },
+  {
+    "session_id": "d0fecdad-db29-4dcd-b50f-6ca9cabe068e",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/d0fecdad-db29-4dcd-b50f-6ca9cabe068e.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "I am still seeing type errors in '/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/types/__type-tests__/events.test-d.ts'"
+  },
+  {
+    "session_id": "d0fecdad-db29-4dcd-b50f-6ca9cabe068e",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/d0fecdad-db29-4dcd-b50f-6ca9cabe068e.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "does this file also test the new response.data support you added (for types)"
+  }
+]

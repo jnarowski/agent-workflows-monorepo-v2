@@ -1,0 +1,16 @@
+[
+  {
+    "session_id": "d0fecdad-db29-4dcd-b50f-6ca9cabe068e",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/d0fecdad-db29-4dcd-b50f-6ca9cabe068e.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "d0fecdad-db29-4dcd-b50f-6ca9cabe068e",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/d0fecdad-db29-4dcd-b50f-6ca9cabe068e.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  }
+]

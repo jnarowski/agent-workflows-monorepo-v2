@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Disable unused checks for type tests
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "include": ["src/types/__type-tests__/**/*"],
+  "exclude": []
+}

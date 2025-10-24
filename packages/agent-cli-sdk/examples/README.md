@@ -102,6 +102,75 @@ bun examples/advanced/interactive-relay.ts
 - `sessions/` - Multi-turn conversation patterns
 - `advanced/` - Complex patterns (streaming, WebSocket, interactive I/O)
 
+## Typed Events (`typed-events.ts`)
+
+**NEW:** Type-safe event handling with full TypeScript support.
+
+The SDK now provides complete TypeScript types for all CLI response events from different adapters (Claude Code, Codex, etc.).
+
+### Features
+
+- **Type-safe event access** - IntelliSense and autocomplete for event properties
+- **Runtime type guards** - Helper functions to safely check event types
+- **Adapter-specific types** - Dedicated types for each CLI tool
+
+### Quick Example
+
+```typescript
+import { Claude } from '@repo/agent-cli-sdk';
+import type { ClaudeStreamEvent } from '@repo/agent-cli-sdk';
+import { isAssistantMessageEvent } from '@repo/agent-cli-sdk';
+
+const claude = new Claude();
+const response = await claude.execute('Hello');
+
+// Type-safe event access
+const events = response.data as ClaudeStreamEvent[];
+
+for (const event of events) {
+  if (isAssistantMessageEvent(event)) {
+    // TypeScript knows event.data is AssistantMessageData
+    console.log(event.data?.message.content);
+  }
+}
+```
+
+### Available Types
+
+**Claude Events:**
+- `ClaudeStreamEvent` - Union of all Claude event types
+- `FileHistorySnapshotEvent` - File backup snapshots
+- `UserMessageEvent` - User messages and commands
+- `AssistantMessageEvent` - Assistant responses (text, thinking, tool use)
+
+**Codex Events:**
+- `CodexStreamEvent` - Union of all Codex event types
+- `ThreadStartedEvent` - Session initialization
+- `TurnCompletedEvent` - Turn completion with usage stats
+- `ItemCompletedEvent` - Individual items (messages, tool calls)
+- `ToolStartedEvent` - Tool execution started
+
+### Type Guards
+
+**Claude:**
+- `isClaudeEvent()`, `isFileHistorySnapshotEvent()`, `isUserMessageEvent()`, `isAssistantMessageEvent()`
+
+**Codex:**
+- `isCodexEvent()`, `isThreadStartedEvent()`, `isTurnCompletedEvent()`, `isItemCompletedEvent()`, `isToolStartedEvent()`
+
+### Running the Example
+
+```bash
+tsx examples/typed-events.ts
+```
+
+See the example file for complete demonstrations of:
+- Basic typed event handling
+- Using type guards
+- Extracting tool usage
+- Analyzing token usage
+- Streaming with types
+
 ## Requirements
 
 - Node.js >= 22

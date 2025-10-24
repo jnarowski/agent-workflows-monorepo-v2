@@ -4,6 +4,20 @@
 
 /**
  * Stream event emitted during CLI execution
+ *
+ * @remarks
+ * This is a generic event type for backward compatibility.
+ * For type-safe event handling, use adapter-specific types:
+ * - `ClaudeStreamEvent` for Claude Code events
+ * - `CodexStreamEvent` for Codex events
+ *
+ * @example
+ * ```typescript
+ * import type { ClaudeStreamEvent } from '@repo/agent-cli-sdk';
+ *
+ * const response = await claude.execute('Hello');
+ * const events = response.data as ClaudeStreamEvent[];
+ * ```
  */
 export interface StreamEvent {
   type: string;
@@ -72,7 +86,14 @@ export interface AdapterCapabilities {
 
 /**
  * Standard execution response
+ *
  * @template T Output type (string or structured data)
+ *
+ * @remarks
+ * The `data` field contains raw event data. For type-safe event handling,
+ * cast to adapter-specific types:
+ * - `response.data as ClaudeStreamEvent[]` for Claude Code
+ * - `response.data as CodexStreamEvent[]` for Codex
  */
 export interface ExecutionResponse<T = string> {
   output: T;

@@ -44,17 +44,17 @@ function ClaudeMessageListRenderer({ messages }: { messages: SessionMessage[] })
   // Build tool results map for Claude renderer
   const toolResults = new Map<string, { content: string; is_error?: boolean }>();
 
+  // Build tool results map from both assistant and user messages
+  // tool_result blocks can appear in user messages (following assistant tool_use blocks)
   messages.forEach((msg) => {
-    if (msg.role === 'assistant') {
-      msg.content.forEach((block) => {
-        if (block.type === 'tool_result') {
-          toolResults.set(block.tool_use_id, {
-            content: block.content || '',
-            is_error: block.is_error,
-          });
-        }
-      });
-    }
+    msg.content.forEach((block) => {
+      if (block.type === 'tool_result') {
+        toolResults.set(block.tool_use_id, {
+          content: block.content || '',
+          is_error: block.is_error,
+        });
+      }
+    });
   });
 
   return (

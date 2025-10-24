@@ -15,6 +15,7 @@
     "build": "tsdown",
     "check": "vitest run && pnpm check-types && pnpm lint",
     "check-types": "tsc --noEmit",
+    "check-types:tests": "tsc --noEmit --project tsconfig.type-tests.json",
     "dev": "tsx watch src/index.ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint src --ext .ts",
