@@ -27,6 +27,7 @@ export default function ProjectSession() {
   const loadSession = useSessionStore((s) => s.loadSession);
   const clearCurrentSession = useSessionStore((s) => s.clearCurrentSession);
   const addMessage = useSessionStore((s) => s.addMessage);
+  const setStreaming = useSessionStore((s) => s.setStreaming);
   const defaultPermissionMode = useSessionStore((s) => s.defaultPermissionMode);
 
   // App-wide WebSocket hook for sending messages during session creation
@@ -134,6 +135,9 @@ export default function ProjectSession() {
           timestamp: Date.now(),
         });
 
+        // Set streaming state to show loading indicator
+        setStreaming(true);
+
         // Remove query parameter from URL
         navigate(location.pathname, { replace: true });
       } catch (error) {
@@ -204,6 +208,9 @@ export default function ProjectSession() {
       images: imagePaths,
       timestamp: Date.now(),
     });
+
+    // Set streaming state immediately to show loading indicator
+    setStreaming(true);
 
     // Count assistant messages to determine if we should resume
     const assistantMessageCount = session?.messages.filter(m => m.role === 'assistant').length || 0;

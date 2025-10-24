@@ -6,7 +6,7 @@ import { Skeleton } from "@/client/components/ui/skeleton";
 
 export function ChatSkeleton() {
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-6 p-4 max-w-4xl mx-auto">
       {/* Skeleton for user message (right-aligned) */}
       <div className="flex justify-end">
         <div className="space-y-2 w-3/4">
