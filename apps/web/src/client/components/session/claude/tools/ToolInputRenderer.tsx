@@ -8,7 +8,7 @@ import type {
   WriteToolInput,
   ReadToolInput,
   BashToolInput,
-} from "@/shared/types/chat";
+} from "@/shared/types/tool.types";
 import { EditToolRenderer } from "./EditToolRenderer";
 import { WriteToolRenderer } from "./WriteToolRenderer";
 import { ReadToolRenderer } from "./ReadToolRenderer";
@@ -26,7 +26,7 @@ interface ToolInputRendererProps {
  * 1. Create a new tool renderer component (e.g., MyToolRenderer.tsx)
  * 2. Import it here
  * 3. Add a case in the switch statement below
- * 4. Add the tool input type to chat.ts if needed
+ * 4. Add the tool input type to tool.types.ts if needed
  *
  * @example
  * ```tsx

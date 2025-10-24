@@ -7,7 +7,7 @@ import type {
   SessionMessage,
   TextBlock,
   ToolResultBlock,
-} from "@/shared/types/chat";
+} from "@/shared/types/message.types";
 
 interface UserMessageProps {
   message: SessionMessage;

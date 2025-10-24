@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { SessionMessage, ContentBlock } from "@/shared/types/chat";
+import type { SessionMessage, ContentBlock } from "@/shared/types/message.types";
 import type { AgentSessionMetadata, SessionResponse } from "@/shared/types/agent-session.types";
 import type { AgentType } from "@/shared/types/agent.types";
 import { useAuthStore } from "@/client/stores/authStore";
@@ -183,51 +183,61 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   },
 
   // Update the streaming message content
+  // Receives already-transformed ContentBlock[] from agent.transformStreaming()
   updateStreamingMessage: (contentBlocks: ContentBlock[]) => {
-    console.log("[sessionStore] updateStreamingMessage called with:", contentBlocks);
+    console.log("[sessionStore] updateStreamingMessage called with content blocks:", contentBlocks.length);
+
     set((state) => {
       if (!state.currentSession) {
         console.log("[sessionStore] No currentSession, skipping update");
         return state;
       }
 
-      console.log("[sessionStore] Current session ID:", state.currentSession.id);
-      console.log("[sessionStore] Current messages count:", state.currentSession.messages.length);
-
-      const messages = [...state.currentSession.messages];
+      const messages = state.currentSession.messages;
       const lastMessage = messages[messages.length - 1];
 
-      if (!lastMessage || lastMessage.role !== "assistant") {
-        // No assistant message to update, create one
-        console.log("[sessionStore] Creating new assistant message");
-        const newMessage: SessionMessage = {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: contentBlocks,
-          timestamp: Date.now(),
-          isStreaming: true,
-        };
+      // Check if last message is a streaming assistant message we can update
+      const canUpdateLastMessage =
+        lastMessage &&
+        lastMessage.role === "assistant" &&
+        lastMessage.isStreaming === true;
+
+      if (canUpdateLastMessage) {
+        // Update existing streaming message immutably
+        console.log("[sessionStore] Updating existing streaming message");
         return {
           currentSession: {
             ...state.currentSession,
-            messages: [...messages, newMessage],
+            messages: [
+              ...messages.slice(0, -1),
+              {
+                ...lastMessage,
+                content: contentBlocks,
+              },
+            ],
+            isStreaming: true,
+          },
+        };
+      } else {
+        // Create new streaming assistant message
+        console.log("[sessionStore] Creating new streaming message");
+        return {
+          currentSession: {
+            ...state.currentSession,
+            messages: [
+              ...messages,
+              {
+                id: crypto.randomUUID(),
+                role: "assistant",
+                content: contentBlocks,
+                timestamp: Date.now(),
+                isStreaming: true,
+              },
+            ],
             isStreaming: true,
           },
         };
       }
-
-      // Update the last assistant message
-      console.log("[sessionStore] Updating existing assistant message");
-      lastMessage.content = contentBlocks;
-      lastMessage.isStreaming = true;
-
-      return {
-        currentSession: {
-          ...state.currentSession,
-          messages,
-          isStreaming: true,
-        },
-      };
     });
   },
 

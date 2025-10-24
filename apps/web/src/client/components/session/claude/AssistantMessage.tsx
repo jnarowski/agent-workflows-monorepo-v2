@@ -4,7 +4,7 @@
  */
 
 import { AlertCircle } from "lucide-react";
-import type { SessionMessage } from "@/shared/types/chat";
+import type { SessionMessage } from "@/shared/types/message.types";
 import { ContentBlockRenderer } from "./ContentBlockRenderer";
 
 interface AssistantMessageProps {

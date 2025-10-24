@@ -5,10 +5,9 @@
 
 import { useEffect, useRef } from "react";
 import { MessageCircle, AlertCircle, Loader2 } from "lucide-react";
-import { MessageRenderer } from "./MessageRenderer";
 import { ChatSkeleton } from "./ChatSkeleton";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
-import type { SessionMessage } from "@/shared/types/chat";
+import type { SessionMessage } from "@/shared/types/message.types";
 import type { AgentType } from "@/shared/types/agent.types";
 import { getAgent } from "@/client/lib/agents";
 

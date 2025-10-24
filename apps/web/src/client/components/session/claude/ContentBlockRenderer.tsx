@@ -3,7 +3,7 @@
  * Dispatches to appropriate renderer based on block type
  */
 
-import type { ContentBlock } from "@/shared/types/chat";
+import type { ContentBlock } from "@/shared/types/message.types";
 import { TextBlock } from "./TextBlock";
 import { ThinkingBlock } from "./ThinkingBlock";
 import { ToolUseBlock } from "./ToolUseBlock";

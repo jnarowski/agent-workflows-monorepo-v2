@@ -51,6 +51,91 @@ This is a **Turborepo monorepo** for agent workflow tools. The `web` app is a fu
 
 5. **When in doubt**: Use only primitive values (strings, numbers, booleans) in the dependency array
 
+### Zustand State Management Rules
+
+**Critical**: This project uses Zustand for global state management. Following these principles is essential for proper state updates and re-renders.
+
+**Golden Rules:**
+
+1. **Always Update State Immutably**
+   - ❌ **BAD - Mutation**:
+     ```typescript
+     set((state) => {
+       const messages = [...state.messages];
+       messages[0].content = "new";  // Mutates object!
+       return { messages };
+     });
+     ```
+   - ✅ **GOOD - Immutable**:
+     ```typescript
+     set((state) => ({
+       messages: state.messages.map((msg, i) =>
+         i === 0 ? { ...msg, content: "new" } : msg
+       ),
+     }));
+     ```
+
+2. **Return New State from set()**
+   - The `set()` function takes a callback that **returns** the new state
+   - Zustand merges the returned object with current state
+   - Example:
+     ```typescript
+     set((state) => ({
+       count: state.count + 1,  // Returns new state
+     }));
+     ```
+
+3. **Create New Arrays/Objects for Updates**
+   - Spreading arrays: `[...array, newItem]` or `[...array.slice(0, -1), updatedItem]`
+   - Spreading objects: `{ ...obj, field: newValue }`
+   - Never modify arrays/objects in place
+
+4. **Zustand Store Functions are Stable**
+   - Store functions don't change between renders
+   - Safe to omit from useEffect dependencies
+   - Example:
+     ```typescript
+     const addMessage = useSessionStore((s) => s.addMessage);
+
+     useEffect(() => {
+       // addMessage is stable, don't include in deps
+       // eslint-disable-next-line react-hooks/exhaustive-deps
+     }, [id]);  // Only include primitives
+     ```
+
+5. **Common Patterns:**
+   ```typescript
+   // ❌ BAD - Mutating nested object
+   set((state) => {
+     const session = { ...state.currentSession };
+     session.messages.push(newMsg);  // Mutation!
+     return { currentSession: session };
+   });
+
+   // ✅ GOOD - Fully immutable update
+   set((state) => ({
+     currentSession: state.currentSession
+       ? {
+           ...state.currentSession,
+           messages: [...state.currentSession.messages, newMsg],
+         }
+       : null,
+   }));
+   ```
+
+6. **Selector Performance**
+   - Use selectors to subscribe to specific state slices
+   - Prevents unnecessary re-renders when unrelated state changes
+   - Example:
+     ```typescript
+     // ✅ Only re-renders when messages change
+     const messages = useSessionStore((s) => s.currentSession?.messages);
+
+     // ❌ Re-renders on ANY store change
+     const store = useSessionStore();
+     const messages = store.currentSession?.messages;
+     ```
+
 ## Development Commands
 
 ### Starting the Application

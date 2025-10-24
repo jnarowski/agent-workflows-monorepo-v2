@@ -3,7 +3,7 @@
  * Shows file path and diff view
  */
 
-import type { EditToolInput } from "@/shared/types/chat";
+import type { EditToolInput } from "@/shared/types/tool.types";
 import { FileReference } from "@/client/components/chat/FileReference";
 import { DiffViewer } from "@/client/components/chat/DiffViewer";
 

@@ -8,7 +8,7 @@ import { useSessionStore } from "@/client/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation";
 import { useNavigationStore } from "@/client/stores";
 import { fetchWithAuth } from "@/client/lib/auth";
-import type { ToolResultBlock } from "@/shared/types/chat";
+import type { ToolResultBlock } from "@/shared/types/message.types";
 
 export default function ProjectSession() {
   const navigate = useNavigate();

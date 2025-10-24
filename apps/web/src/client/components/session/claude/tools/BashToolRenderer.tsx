@@ -4,7 +4,7 @@
  */
 
 import { Terminal } from "lucide-react";
-import type { BashToolInput } from "@/shared/types/chat";
+import type { BashToolInput } from "@/shared/types/tool.types";
 
 interface BashToolRendererProps {
   input: BashToolInput;

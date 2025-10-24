@@ -3,7 +3,7 @@ import { useEffect, useCallback, useRef } from "react";
 import { useSessionStore } from "@/client/stores/sessionStore";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import { getAgent } from "@/client/lib/agents";
-import type { ContentBlock } from "@/shared/types/chat";
+import type { ContentBlock } from "@/shared/types/message.types";
 import type {
   SessionStreamOutputData,
   SessionMessageCompleteData,

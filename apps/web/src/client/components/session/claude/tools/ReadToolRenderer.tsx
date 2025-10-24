@@ -4,7 +4,7 @@
  */
 
 import { FileText } from "lucide-react";
-import type { ReadToolInput } from "@/shared/types/chat";
+import type { ReadToolInput } from "@/shared/types/tool.types";
 import { FileReference } from "@/client/components/chat/FileReference";
 
 interface ReadToolRendererProps {

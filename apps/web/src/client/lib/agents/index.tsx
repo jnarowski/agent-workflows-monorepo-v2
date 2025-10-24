@@ -24,7 +24,7 @@ import { transformMessages as transformGeminiMessages } from './gemini/transform
 import { transformStreaming as transformGeminiStreaming } from './gemini/transformStreaming';
 
 // Import components
-import { MessageRenderer as ClaudeMessageRenderer } from '@/client/components/chat/MessageRenderer';
+import { MessageRenderer as ClaudeMessageRenderer } from '@/client/components/session/claude/MessageRenderer';
 import { UnimplementedAgentRenderer } from '@/client/components/session/UnimplementedAgentRenderer';
 
 /**

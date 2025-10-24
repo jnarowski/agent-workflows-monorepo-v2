@@ -3,7 +3,7 @@
  * Shows file path and new file content
  */
 
-import type { WriteToolInput } from "@/shared/types/chat";
+import type { WriteToolInput } from "@/shared/types/tool.types";
 import { FileReference } from "@/client/components/chat/FileReference";
 import { CodeBlock } from "@/client/components/chat/CodeBlock";
 import { getLanguageFromPath } from "@/client/utils/getLanguageFromPath";
