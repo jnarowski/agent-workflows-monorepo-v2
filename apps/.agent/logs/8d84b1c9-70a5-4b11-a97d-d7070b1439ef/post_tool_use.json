@@ -1,0 +1,20 @@
+[
+  {
+    "session_id": "8d84b1c9-70a5-4b11-a97d-d7070b1439ef",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/8d84b1c9-70a5-4b11-a97d-d7070b1439ef.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd .. && find . -name \"*.log\" -type f -mmin -5 2>/dev/null | grep -E \"server|app\" | head -5",
+      "description": "Find recent server log files"
+    },
+    "tool_response": {
+      "stdout": "./web/logs/app.log",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  }
+]

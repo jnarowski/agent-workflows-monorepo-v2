@@ -1,0 +1,14 @@
+[
+  {
+    "session_id": "8d84b1c9-70a5-4b11-a97d-d7070b1439ef",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/8d84b1c9-70a5-4b11-a97d-d7070b1439ef.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/apps",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "tail -50 logs/app.log | grep -E \"git\\.|Branch|repo\" || tail -20 logs/app.log",
+      "description": "Check recent server logs for git activity"
+    }
+  }
+]

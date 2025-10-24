@@ -8,11 +8,15 @@ import type {
   WriteToolInput,
   ReadToolInput,
   BashToolInput,
+  TodoWriteToolInput,
+  WebSearchToolInput,
 } from "@/shared/types/tool.types";
 import { EditToolRenderer } from "./EditToolRenderer";
 import { WriteToolRenderer } from "./WriteToolRenderer";
 import { ReadToolRenderer } from "./ReadToolRenderer";
 import { BashToolRenderer } from "./BashToolRenderer";
+import { TodoWriteToolRenderer } from "./TodoWriteToolRenderer";
+import { WebSearchToolRenderer } from "./WebSearchToolRenderer";
 
 interface ToolInputRendererProps {
   toolName: string;
@@ -47,6 +51,12 @@ export function ToolInputRenderer({ toolName, input }: ToolInputRendererProps) {
 
     case "Bash":
       return <BashToolRenderer input={input as BashToolInput} />;
+
+    case "TodoWrite":
+      return <TodoWriteToolRenderer input={input as TodoWriteToolInput} />;
+
+    case "WebSearch":
+      return <WebSearchToolRenderer input={input as WebSearchToolInput} />;
 
     case "Glob":
     case "Grep": {

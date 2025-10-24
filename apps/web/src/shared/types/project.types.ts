@@ -7,6 +7,7 @@ export interface Project {
   is_hidden: boolean;
   created_at: Date;
   updated_at: Date;
+  currentBranch?: string;
 }
 
 // Request/Response types for API endpoints

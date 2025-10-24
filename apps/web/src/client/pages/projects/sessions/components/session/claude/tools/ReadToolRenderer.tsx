@@ -3,7 +3,7 @@
  * Shows file reference with optional line range
  */
 
-import { FileText } from "lucide-react";
+import { Eye } from "lucide-react";
 import type { ReadToolInput } from "@/shared/types/tool.types";
 import { FileReference } from "@/client/pages/projects/sessions/components/FileReference";
 
@@ -17,18 +17,19 @@ export function ReadToolRenderer({ input }: ReadToolRendererProps) {
   const endLine = input.limit ? startLine + input.limit : undefined;
 
   return (
-    <div className="flex items-center gap-2">
-      <FileText className="h-4 w-4 text-muted-foreground" />
-      <span className="text-sm text-muted-foreground">Read:</span>
-      <FileReference
-        filePath={input.file_path}
-        lineNumber={startLine > 0 ? startLine : undefined}
-      />
-      {hasRange && endLine && (
-        <span className="text-xs text-muted-foreground">
-          (lines {startLine}-{endLine})
-        </span>
-      )}
+    <div className="flex items-start gap-2 rounded-md bg-muted/50 px-3 py-2 border">
+      <Eye className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+      <div className="flex-1 min-w-0">
+        <FileReference
+          filePath={input.file_path}
+          lineNumber={startLine > 0 ? startLine : undefined}
+        />
+        {hasRange && endLine && (
+          <div className="text-xs text-muted-foreground mt-1">
+            Lines {startLine}-{endLine}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

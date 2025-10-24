@@ -7,6 +7,7 @@ import {
   Terminal as TerminalIcon,
   FileText,
   ChevronDown,
+  GitBranch,
 } from "lucide-react";
 import { Separator } from "@/client/components/ui/separator";
 import { SidebarTrigger } from "@/client/components/ui/sidebar";
@@ -20,9 +21,10 @@ import {
 interface ProjectHeaderProps {
   projectId: string;
   projectName: string;
+  currentBranch?: string;
 }
 
-export function ProjectHeader({ projectId, projectName }: ProjectHeaderProps) {
+export function ProjectHeader({ projectId, projectName, currentBranch }: ProjectHeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -64,6 +66,12 @@ export function ProjectHeader({ projectId, projectName }: ProjectHeaderProps) {
         <Separator orientation="vertical" className="md:hidden h-4 shrink-0" />
         <div className="flex flex-col gap-1 min-w-0">
           <div className="text-base font-medium truncate">{projectName}</div>
+          {currentBranch && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <GitBranch className="h-3 w-3" />
+              <span className="truncate">{currentBranch}</span>
+            </div>
+          )}
         </div>
       </div>
 

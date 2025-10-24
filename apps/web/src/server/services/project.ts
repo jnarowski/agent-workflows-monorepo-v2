@@ -6,11 +6,14 @@ import type {
   UpdateProjectInput,
 } from "@/server/schemas/project";
 import type { Project } from "@/shared/types/project.types";
+import { getCurrentBranch } from "@/server/services/git.service";
 
 /**
  * Transform Prisma project to API project format
+ * @param prismaProject - Raw project from Prisma
+ * @param currentBranch - Optional git branch name
  */
-function transformProject(prismaProject: any): Project {
+function transformProject(prismaProject: any, currentBranch?: string | null): Project {
   return {
     id: prismaProject.id,
     name: prismaProject.name,
@@ -18,6 +21,7 @@ function transformProject(prismaProject: any): Project {
     is_hidden: prismaProject.is_hidden,
     created_at: prismaProject.created_at,
     updated_at: prismaProject.updated_at,
+    ...(currentBranch && { currentBranch }),
   };
 }
 
@@ -31,7 +35,16 @@ export async function getAllProjects(): Promise<Project[]> {
       created_at: "desc",
     },
   });
-  return projects.map(p => transformProject(p));
+
+  // Fetch git branch for each project
+  const projectsWithBranch = await Promise.all(
+    projects.map(async (p) => {
+      const branch = await getCurrentBranch(p.path);
+      return transformProject(p, branch);
+    })
+  );
+
+  return projectsWithBranch;
 }
 
 /**
@@ -43,7 +56,14 @@ export async function getProjectById(id: string): Promise<Project | null> {
   const project = await prisma.project.findUnique({
     where: { id },
   });
-  return project ? transformProject(project) : null;
+
+  if (!project) {
+    return null;
+  }
+
+  // Fetch git branch
+  const branch = await getCurrentBranch(project.path);
+  return transformProject(project, branch);
 }
 
 /**

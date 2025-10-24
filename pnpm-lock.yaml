@@ -432,6 +432,9 @@ importers:
       shiki:
         specifier: ^3.13.0
         version: 3.13.0
+      simple-git:
+        specifier: ^3.28.0
+        version: 3.28.0
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -15507,7 +15510,7 @@ snapshots:
     dependencies:
       '@kwsites/file-exists': 1.1.1
       '@kwsites/promise-deferred': 1.1.1
-      debug: 4.4.1
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 

@@ -4,6 +4,7 @@ import { WebSocketProvider } from "@/client/providers/WebSocketProvider";
 import ProtectedLayout from "@/client/layouts/ProtectedLayout";
 import AuthLayout from "@/client/layouts/AuthLayout";
 import ProjectDetailLayout from "@/client/layouts/ProjectDetailLayout";
+import Projects from "@/client/pages/Projects";
 import ProjectHome from "@/client/pages/ProjectHome";
 import ProjectSession from "@/client/pages/projects/sessions/ProjectSession";
 import ProjectShell from "@/client/pages/projects/shell/ProjectShell";
@@ -25,6 +26,12 @@ function App() {
 
             {/* Protected routes */}
             <Route element={<ProtectedLayout />}>
+              {/* Root redirect to projects */}
+              <Route index element={<Navigate to="/projects" replace />} />
+
+              {/* Projects list */}
+              <Route path="/projects" element={<Projects />} />
+
               {/* Project detail with nested routes */}
               <Route path="/projects/:id" element={<ProjectDetailLayout />}>
                 <Route index element={<ProjectHome />} />
