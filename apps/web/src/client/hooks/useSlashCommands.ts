@@ -1,8 +1,7 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import type { SlashCommand } from '@/shared/types/slash-command.types';
 import { DEFAULT_SLASH_COMMANDS } from '@/client/lib/slashCommandUtils';
-import { useAuthStore } from '@/client/stores';
-import { fetchWithAuth } from '@/client/lib/auth';
+import { api } from '@/client/lib/api-client';
 
 // Query keys factory
 export const slashCommandKeys = {
@@ -16,13 +15,10 @@ export const slashCommandKeys = {
  * Fetch custom slash commands for a project
  */
 async function fetchProjectSlashCommands(
-  projectId: string,
-  onUnauthorized?: () => void
+  projectId: string
 ): Promise<SlashCommand[]> {
-  const response = await fetchWithAuth(
-    `/api/projects/${projectId}/slash-commands`,
-    {},
-    onUnauthorized
+  const response = await api.get<{ data: SlashCommand[] }>(
+    `/api/projects/${projectId}/slash-commands`
   );
   return response.data;
 }
@@ -35,8 +31,6 @@ async function fetchProjectSlashCommands(
 export function useSlashCommands(
   projectId: string | undefined
 ): UseQueryResult<SlashCommand[], Error> {
-  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
-
   return useQuery({
     queryKey: slashCommandKeys.project(projectId || ''),
     queryFn: async () => {
@@ -47,10 +41,7 @@ export function useSlashCommands(
 
       try {
         // Fetch custom commands from API
-        const customCommands = await fetchProjectSlashCommands(
-          projectId,
-          handleInvalidToken
-        );
+        const customCommands = await fetchProjectSlashCommands(projectId);
 
         // Merge default + custom commands
         return [...DEFAULT_SLASH_COMMANDS, ...customCommands];

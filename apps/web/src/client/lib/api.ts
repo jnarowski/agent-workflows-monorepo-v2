@@ -3,7 +3,12 @@
  */
 
 import type { SessionMessage } from "@/shared/types/chat";
-import { fetchWithAuth } from "@/client/lib/auth";
+import { api } from "@/client/lib/api-client";
+
+/**
+ * Re-export API client for convenience
+ */
+export { api } from "@/client/lib/api-client";
 
 /**
  * Fetch historical messages for a session from JSONL file
@@ -16,7 +21,7 @@ export async function getSessionMessages(
   sessionId: string
 ): Promise<SessionMessage[]> {
   try {
-    const response = await fetchWithAuth<{ data: SessionMessage[] }>(
+    const response = await api.get<{ data: SessionMessage[] }>(
       `/api/projects/${projectId}/sessions/${sessionId}/messages`
     );
     return response.data || [];

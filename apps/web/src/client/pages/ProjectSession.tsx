@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { ChatInterface } from "@/client/components/chat/ChatInterface";
 import { ChatPromptInput } from "@/client/components/chat/ChatPromptInput";
@@ -7,7 +7,7 @@ import { useWebSocket } from "@/client/hooks/useWebSocket";
 import { useSessionStore } from "@/client/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation";
 import { useNavigationStore } from "@/client/stores";
-import { fetchWithAuth } from "@/client/lib/auth";
+import { api } from "@/client/lib/api-client";
 import type { ToolResultBlock } from "@/shared/types/message.types";
 
 export default function ProjectSession() {
@@ -166,10 +166,10 @@ export default function ProjectSession() {
 
       try {
         // Create session via API
-        const { data: newSession } = await fetchWithAuth(`/api/projects/${projectId}/sessions`, {
-          method: "POST",
-          body: JSON.stringify({ sessionId: crypto.randomUUID() }),
-        });
+        const { data: newSession } = await api.post<{ data: { id: string } }>(
+          `/api/projects/${projectId}/sessions`,
+          { sessionId: crypto.randomUUID() }
+        );
 
         console.log("[ProjectSession] Session created:", newSession.id);
 

@@ -14,8 +14,7 @@ import type {
   ProjectResponse,
 } from "@/shared/types/project.types";
 import type { SyncProjectsResponse } from "@/shared/types/project-sync.types";
-import { useAuthStore } from "@/client/stores";
-import { fetchWithAuth } from "@/client/lib/auth";
+import { api } from "@/client/lib/api-client";
 
 // Query keys factory - centralized key management
 export const projectKeys = {
@@ -29,45 +28,24 @@ export const projectKeys = {
 /**
  * Fetch all projects
  */
-async function fetchProjects(onUnauthorized?: () => void): Promise<Project[]> {
-  const data: ProjectsResponse = await fetchWithAuth(
-    "/api/projects",
-    {},
-    onUnauthorized
-  );
+async function fetchProjects(): Promise<Project[]> {
+  const data = await api.get<ProjectsResponse>("/api/projects");
   return data.data;
 }
 
 /**
  * Fetch a single project by ID
  */
-async function fetchProject(
-  id: string,
-  onUnauthorized?: () => void
-): Promise<Project> {
-  const data: ProjectResponse = await fetchWithAuth(
-    `/api/projects/${id}`,
-    {},
-    onUnauthorized
-  );
+async function fetchProject(id: string): Promise<Project> {
+  const data = await api.get<ProjectResponse>(`/api/projects/${id}`);
   return data.data;
 }
 
 /**
  * Create a new project
  */
-async function createProject(
-  project: CreateProjectRequest,
-  onUnauthorized?: () => void
-): Promise<Project> {
-  const data: ProjectResponse = await fetchWithAuth(
-    "/api/projects",
-    {
-      method: "POST",
-      body: JSON.stringify(project),
-    },
-    onUnauthorized
-  );
+async function createProject(project: CreateProjectRequest): Promise<Project> {
+  const data = await api.post<ProjectResponse>("/api/projects", project);
   return data.data;
 }
 
@@ -76,34 +54,17 @@ async function createProject(
  */
 async function updateProject(
   id: string,
-  project: UpdateProjectRequest,
-  onUnauthorized?: () => void
+  project: UpdateProjectRequest
 ): Promise<Project> {
-  const data: ProjectResponse = await fetchWithAuth(
-    `/api/projects/${id}`,
-    {
-      method: "PATCH",
-      body: JSON.stringify(project),
-    },
-    onUnauthorized
-  );
+  const data = await api.patch<ProjectResponse>(`/api/projects/${id}`, project);
   return data.data;
 }
 
 /**
  * Delete a project
  */
-async function deleteProject(
-  id: string,
-  onUnauthorized?: () => void
-): Promise<Project> {
-  const data: ProjectResponse = await fetchWithAuth(
-    `/api/projects/${id}`,
-    {
-      method: "DELETE",
-    },
-    onUnauthorized
-  );
+async function deleteProject(id: string): Promise<Project> {
+  const data = await api.delete<ProjectResponse>(`/api/projects/${id}`);
   return data.data;
 }
 
@@ -112,17 +73,11 @@ async function deleteProject(
  */
 async function toggleProjectHidden(
   id: string,
-  is_hidden: boolean,
-  onUnauthorized?: () => void
+  is_hidden: boolean
 ): Promise<Project> {
-  const data: ProjectResponse = await fetchWithAuth(
-    `/api/projects/${id}/hide`,
-    {
-      method: "PATCH",
-      body: JSON.stringify({ is_hidden }),
-    },
-    onUnauthorized
-  );
+  const data = await api.patch<ProjectResponse>(`/api/projects/${id}/hide`, {
+    is_hidden,
+  });
   return data.data;
 }
 
@@ -130,11 +85,9 @@ async function toggleProjectHidden(
  * Hook to fetch all projects
  */
 export function useProjects(): UseQueryResult<Project[], Error> {
-  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
-
   return useQuery({
     queryKey: projectKeys.list(),
-    queryFn: () => fetchProjects(handleInvalidToken),
+    queryFn: () => fetchProjects(),
   });
 }
 
@@ -142,11 +95,9 @@ export function useProjects(): UseQueryResult<Project[], Error> {
  * Hook to fetch a single project
  */
 export function useProject(id: string): UseQueryResult<Project, Error> {
-  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
-
   return useQuery({
     queryKey: projectKeys.detail(id),
-    queryFn: () => fetchProject(id, handleInvalidToken),
+    queryFn: () => fetchProject(id),
     enabled: !!id, // Only run if id is provided
   });
 }
@@ -160,10 +111,9 @@ export function useCreateProject(): UseMutationResult<
   CreateProjectRequest
 > {
   const queryClient = useQueryClient();
-  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useMutation({
-    mutationFn: (project) => createProject(project, handleInvalidToken),
+    mutationFn: (project) => createProject(project),
     onSuccess: (newProject) => {
       // Invalidate and refetch projects list
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
@@ -190,10 +140,9 @@ export function useUpdateProject(): UseMutationResult<
   { id: string; data: UpdateProjectRequest }
 > {
   const queryClient = useQueryClient();
-  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useMutation({
-    mutationFn: ({ id, data }) => updateProject(id, data, handleInvalidToken),
+    mutationFn: ({ id, data }) => updateProject(id, data),
     onSuccess: (updatedProject) => {
       // Update the project in the list cache
       queryClient.setQueryData<Project[]>(projectKeys.list(), (old) => {
@@ -222,10 +171,9 @@ export function useUpdateProject(): UseMutationResult<
  */
 export function useDeleteProject(): UseMutationResult<Project, Error, string> {
   const queryClient = useQueryClient();
-  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useMutation({
-    mutationFn: (id) => deleteProject(id, handleInvalidToken),
+    mutationFn: (id) => deleteProject(id),
     onSuccess: (deletedProject) => {
       // Remove the project from the list cache
       queryClient.setQueryData<Project[]>(projectKeys.list(), (old) => {
@@ -249,15 +197,9 @@ export function useDeleteProject(): UseMutationResult<Project, Error, string> {
 /**
  * Sync projects from Claude CLI
  */
-async function syncProjects(
-  onUnauthorized?: () => void
-): Promise<SyncProjectsResponse> {
-  const data: { data: SyncProjectsResponse } = await fetchWithAuth(
-    "/api/projects/sync",
-    {
-      method: "POST",
-    },
-    onUnauthorized
+async function syncProjects(): Promise<SyncProjectsResponse> {
+  const data = await api.post<{ data: SyncProjectsResponse }>(
+    "/api/projects/sync"
   );
   return data.data;
 }
@@ -271,10 +213,9 @@ export function useSyncProjects(): UseMutationResult<
   void
 > {
   const queryClient = useQueryClient();
-  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useMutation({
-    mutationFn: () => syncProjects(handleInvalidToken),
+    mutationFn: () => syncProjects(),
     onSuccess: (data) => {
       // Invalidate projects list to trigger refetch
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
@@ -299,11 +240,9 @@ export function useToggleProjectHidden(): UseMutationResult<
   { id: string; is_hidden: boolean }
 > {
   const queryClient = useQueryClient();
-  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
 
   return useMutation({
-    mutationFn: ({ id, is_hidden }) =>
-      toggleProjectHidden(id, is_hidden, handleInvalidToken),
+    mutationFn: ({ id, is_hidden }) => toggleProjectHidden(id, is_hidden),
     onSuccess: (updatedProject) => {
       // Update the project in the list cache
       queryClient.setQueryData<Project[]>(projectKeys.list(), (old) => {

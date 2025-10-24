@@ -11,7 +11,7 @@ import { EditorView } from "@codemirror/view";
 import { X, Save, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/client/components/ui/button";
 import { useTheme } from "next-themes";
-import { useAuthStore } from "@/client/stores";
+import { api } from "@/client/lib/api-client";
 
 interface FileEditorProps {
   projectId: string;
@@ -55,8 +55,6 @@ export function FileEditor({
   fileName,
   onClose,
 }: FileEditorProps) {
-  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
-  const token = useAuthStore((s) => s.token);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -72,27 +70,9 @@ export function FileEditor({
     const loadFileContent = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
-          `/api/projects/${projectId}/files/content?path=${encodeURIComponent(filePath)}`,
-          {
-            headers: {
-              ...(token && { Authorization: `Bearer ${token}` }),
-            },
-          }
+        const data = await api.get<{ content: string }>(
+          `/api/projects/${projectId}/files/content?path=${encodeURIComponent(filePath)}`
         );
-
-        if (!response.ok) {
-          // Handle 401 Unauthorized - invalid or missing token
-          if (response.status === 401) {
-            handleInvalidToken();
-            return;
-          }
-          throw new Error(
-            `Failed to load file: ${response.status} ${response.statusText}`
-          );
-        }
-
-        const data = await response.json();
         setContent(data.content);
       } catch (error) {
         console.error("Error loading file:", error);
@@ -105,35 +85,15 @@ export function FileEditor({
     };
 
     loadFileContent();
-  }, [projectId, filePath, fileName, handleInvalidToken, token]);
+  }, [projectId, filePath, fileName]);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      const response = await fetch(
-        `/api/projects/${projectId}/files/content`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-          body: JSON.stringify({
-            path: filePath,
-            content,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        // Handle 401 Unauthorized - invalid or missing token
-        if (response.status === 401) {
-          handleInvalidToken();
-          return;
-        }
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Save failed: ${response.status}`);
-      }
+      await api.post(`/api/projects/${projectId}/files/content`, {
+        path: filePath,
+        content,
+      });
 
       // Show success feedback
       setSaveSuccess(true);
@@ -146,7 +106,7 @@ export function FileEditor({
     } finally {
       setSaving(false);
     }
-  }, [projectId, filePath, content, handleInvalidToken, token]);
+  }, [projectId, filePath, content]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);

@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuthStore } from "@/client/stores";
 import type { SessionResponse } from "@/shared/types";
-import { getAuthToken } from "@/client/lib/auth";
+import { api } from "@/client/lib/api-client";
 
 interface UseAgentSessionsOptions {
   projectId: string;
@@ -9,27 +8,11 @@ interface UseAgentSessionsOptions {
 }
 
 async function fetchAgentSessions(
-  projectId: string,
-  onUnauthorized?: () => void
+  projectId: string
 ): Promise<SessionResponse[]> {
-  const token = getAuthToken();
-
-  const response = await fetch(`/api/projects/${projectId}/sessions`, {
-    headers: {
-      ...(token && { Authorization: `Bearer ${token}` }),
-    },
-  });
-
-  if (!response.ok) {
-    // Handle 401 Unauthorized - invalid or missing token
-    if (response.status === 401 && onUnauthorized) {
-      onUnauthorized();
-      throw new Error("Session expired");
-    }
-    throw new Error(`Failed to fetch sessions: ${response.statusText}`);
-  }
-
-  const result = await response.json();
+  const result = await api.get<{ data: SessionResponse[] }>(
+    `/api/projects/${projectId}/sessions`
+  );
   return result.data || [];
 }
 
@@ -37,11 +20,9 @@ export function useAgentSessions({
   projectId,
   enabled = true,
 }: UseAgentSessionsOptions) {
-  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
-
   return useQuery({
     queryKey: ["agentSessions", projectId],
-    queryFn: () => fetchAgentSessions(projectId, handleInvalidToken),
+    queryFn: () => fetchAgentSessions(projectId),
     enabled: enabled && !!projectId,
     refetchOnWindowFocus: false,
     staleTime: 30000, // 30 seconds

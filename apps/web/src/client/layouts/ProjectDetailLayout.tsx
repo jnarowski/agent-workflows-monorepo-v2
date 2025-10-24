@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useProject } from "@/client/hooks/useProjects";
 import { Button } from "@/client/components/ui/button";
 import { Skeleton } from "@/client/components/ui/skeleton";
-import { getAuthToken } from '@/client/lib/auth';
+import { api } from '@/client/lib/api-client';
 import {
   AlertCircle,
   ArrowLeft,
@@ -14,12 +14,11 @@ import {
   FileText,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
-import { useAuthStore, useNavigationStore } from "@/client/stores";
+import { useNavigationStore } from "@/client/stores";
 
 export default function ProjectDetailLayout() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const handleInvalidToken = useAuthStore((state) => state.handleInvalidToken);
   const setActiveProject = useNavigationStore((state) => state.setActiveProject);
   const clearNavigation = useNavigationStore((state) => state.clearNavigation);
   const { data: project, isLoading, error } = useProject(id!);
@@ -52,28 +51,9 @@ export default function ProjectDetailLayout() {
     const syncSessions = async () => {
       try {
         setIsSyncing(true);
-        const token = getAuthToken();
 
-        const response = await fetch(`/api/projects/${id}/sessions/sync`, {
-          method: 'POST',
-          headers: {
-            ...(token && { 'Authorization': `Bearer ${token}` }),
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          // Handle 401 Unauthorized - invalid or missing token
-          if (response.status === 401) {
-            handleInvalidToken();
-            navigate("/login");
-            return;
-          }
-          console.error('Failed to sync sessions:', response.statusText);
-        } else {
-          const result = await response.json();
-          console.log('Sessions synced:', result);
-        }
+        const result = await api.post(`/api/projects/${id}/sessions/sync`);
+        console.log('Sessions synced:', result);
       } catch (err) {
         console.error('Error syncing sessions:', err);
       } finally {
@@ -82,7 +62,6 @@ export default function ProjectDetailLayout() {
     };
 
     syncSessions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]); // Only run when project ID changes
 
   // Loading state

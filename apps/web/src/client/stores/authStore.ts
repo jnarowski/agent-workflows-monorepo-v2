@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { toast } from "sonner";
 import { clearProjectSyncState } from "@/client/lib/projectSync";
+import { api } from "@/client/lib/api-client";
 
 /**
  * User interface matching the API response
@@ -74,21 +75,10 @@ export const useAuthStore = create<AuthStore>()(
       // Login action
       login: async (username: string, password: string) => {
         try {
-          const response = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ username, password }),
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            const errorMessage = typeof error.error === 'string' ? error.error : error.error?.message || "Login failed";
-            throw new Error(errorMessage);
-          }
-
-          const data = await response.json();
+          const data = await api.post<{ user: User; token: string }>(
+            "/api/auth/login",
+            { username, password }
+          );
 
           // Update store with user and token
           set({
@@ -109,21 +99,10 @@ export const useAuthStore = create<AuthStore>()(
       // Signup action
       signup: async (username: string, password: string) => {
         try {
-          const response = await fetch("/api/auth/register", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ username, password }),
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            const errorMessage = typeof error.error === 'string' ? error.error : error.error?.message || "Registration failed";
-            throw new Error(errorMessage);
-          }
-
-          const data = await response.json();
+          const data = await api.post<{ user: User; token: string }>(
+            "/api/auth/register",
+            { username, password }
+          );
 
           // Update store with user and token
           set({

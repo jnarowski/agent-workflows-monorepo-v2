@@ -2,8 +2,8 @@ import { create } from "zustand";
 import type { SessionMessage, ContentBlock } from "@/shared/types/message.types";
 import type { AgentSessionMetadata, SessionResponse } from "@/shared/types/agent-session.types";
 import type { AgentType } from "@/shared/types/agent.types";
-import { useAuthStore } from "@/client/stores/authStore";
 import { getAgent } from "@/client/lib/agents";
+import { api } from "@/client/lib/api-client";
 
 // Permission mode types from agent-cli-sdk
 export type ClaudePermissionMode = "default" | "plan" | "acceptEdits" | "reject";
@@ -70,22 +70,11 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
 
   // Load session from server
   loadSession: async (sessionId: string, projectId: string) => {
-    // Get auth token
-    const token = useAuthStore.getState().token;
-
     try {
       // First, fetch session details to get agent type
-      const sessionResponse = await fetch(`/api/projects/${projectId}/sessions`, {
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-      });
-
-      if (!sessionResponse.ok) {
-        throw new Error(`Failed to fetch session list: ${sessionResponse.statusText}`);
-      }
-
-      const sessionData = await sessionResponse.json();
+      const sessionData = await api.get<{ data: SessionResponse[] }>(
+        `/api/projects/${projectId}/sessions`
+      );
       const sessions: SessionResponse[] = sessionData.data || [];
       const session = sessions.find(s => s.id === sessionId);
 
@@ -112,29 +101,25 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       });
 
       // Now fetch messages
-      const response = await fetch(`/api/projects/${projectId}/sessions/${sessionId}/messages`, {
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-      });
-
-      if (response.status === 404) {
+      let rawMessages: SessionMessage[] = [];
+      try {
+        const data = await api.get<{ data: SessionMessage[] }>(
+          `/api/projects/${projectId}/sessions/${sessionId}/messages`
+        );
+        rawMessages = data.data || [];
+      } catch (error) {
         // JSONL file doesn't exist yet - this is expected for new sessions
-        console.log(`[sessionStore] JSONL file not found for session ${sessionId} - this is normal for new sessions`);
-        set((state) => ({
-          currentSession: state.currentSession
-            ? { ...state.currentSession, loadingState: "loaded" }
-            : null,
-        }));
-        return;
+        if (error instanceof Error && error.message.includes('404')) {
+          console.log(`[sessionStore] JSONL file not found for session ${sessionId} - this is normal for new sessions`);
+          set((state) => ({
+            currentSession: state.currentSession
+              ? { ...state.currentSession, loadingState: "loaded" }
+              : null,
+          }));
+          return;
+        }
+        throw error;
       }
-
-      if (!response.ok) {
-        throw new Error(`Failed to load session: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const rawMessages = data.data || [];
 
       // Transform messages using agent's transform function
       const messages = agent.transformMessages(rawMessages);

@@ -2,10 +2,8 @@ import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import type {
   FileTreeItem,
   FilesResponse,
-  FileErrorResponse,
 } from "@/shared/types/file.types";
-import { useAuthStore } from "@/client/stores";
-import { fetchWithAuth } from "@/client/lib/auth";
+import { api } from "@/client/lib/api-client";
 
 // Query keys factory - centralized key management
 export const fileKeys = {
@@ -17,8 +15,8 @@ export const fileKeys = {
 /**
  * Fetch file tree for a project
  */
-async function fetchProjectFiles(projectId: string, onUnauthorized?: () => void): Promise<FileTreeItem[]> {
-  const data: FilesResponse = await fetchWithAuth(`/api/projects/${projectId}/files`, {}, onUnauthorized);
+async function fetchProjectFiles(projectId: string): Promise<FileTreeItem[]> {
+  const data = await api.get<FilesResponse>(`/api/projects/${projectId}/files`);
   return data.data;
 }
 
@@ -26,11 +24,9 @@ async function fetchProjectFiles(projectId: string, onUnauthorized?: () => void)
  * Hook to fetch file tree for a project
  */
 export function useProjectFiles(projectId: string): UseQueryResult<FileTreeItem[], Error> {
-  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
-
   return useQuery({
     queryKey: fileKeys.project(projectId),
-    queryFn: () => fetchProjectFiles(projectId, handleInvalidToken),
+    queryFn: () => fetchProjectFiles(projectId),
     enabled: !!projectId, // Only run if projectId is provided
   });
 }

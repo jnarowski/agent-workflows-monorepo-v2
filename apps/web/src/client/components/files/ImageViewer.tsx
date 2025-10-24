@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/client/components/ui/button";
 import { X } from "lucide-react";
-import { useAuthStore } from "@/client/stores";
+import { api } from "@/client/lib/api-client";
 
 interface ImageViewerProps {
   projectId: string;
@@ -16,8 +16,6 @@ export function ImageViewer({
   fileName,
   onClose,
 }: ImageViewerProps) {
-  const handleInvalidToken = useAuthStore((s) => s.handleInvalidToken);
-  const token = useAuthStore((s) => s.token);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,25 +25,9 @@ export function ImageViewer({
     const loadImage = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
-          `/api/projects/${projectId}/files/content?path=${encodeURIComponent(filePath)}`,
-          {
-            headers: {
-              ...(token && { Authorization: `Bearer ${token}` }),
-            },
-          }
+        const blob = await api.getBlob(
+          `/api/projects/${projectId}/files/content?path=${encodeURIComponent(filePath)}`
         );
-
-        if (!response.ok) {
-          // Handle 401 Unauthorized - invalid or missing token
-          if (response.status === 401) {
-            handleInvalidToken();
-            return;
-          }
-          throw new Error(`Failed to load image: ${response.status}`);
-        }
-
-        const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         setImageUrl(url);
       } catch (err) {
@@ -65,7 +47,7 @@ export function ImageViewer({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId, filePath, handleInvalidToken, token]);
+  }, [projectId, filePath]);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
