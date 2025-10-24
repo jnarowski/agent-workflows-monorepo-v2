@@ -4,11 +4,11 @@
  */
 
 import { AlertCircle } from "lucide-react";
-import type { ChatMessage } from "@/shared/types/chat";
+import type { SessionMessage } from "@/shared/types/chat";
 import { ContentBlockRenderer } from "./ContentBlockRenderer";
 
 interface AssistantMessageProps {
-  message: ChatMessage;
+  message: SessionMessage;
   toolResults?: Map<string, { content: string; is_error?: boolean }>;
 }
 

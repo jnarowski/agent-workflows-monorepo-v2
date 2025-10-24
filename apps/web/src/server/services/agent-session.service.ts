@@ -292,10 +292,10 @@ export class AgentSessionService {
   }
 
   /**
-   * Transform JSONL entry to ChatMessage format
+   * Transform JSONL entry to SessionMessage format
    * Converts Claude CLI format (type field) to API format (role field)
    * @param entry - Raw JSONL entry
-   * @returns ChatMessage object or null if entry is not a message
+   * @returns SessionMessage object or null if entry is not a message
    */
   private transformToChatMessage(entry: any): any | null {
     // Extract role from either 'type' (Claude CLI format) or 'role' (API format)

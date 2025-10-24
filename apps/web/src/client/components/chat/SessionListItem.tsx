@@ -39,7 +39,7 @@ export function SessionListItem({
 
   return (
     <Link
-      to={`/projects/${projectId}/chat/${id}`}
+      to={`/projects/${projectId}/session/${id}`}
       className={cn(
         "block px-3 py-2 rounded-md transition-colors hover:bg-accent overflow-hidden",
         isActive && "bg-accent"

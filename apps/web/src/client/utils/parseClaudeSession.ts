@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 /**
- * Parse JSONL session data into ChatMessage array
+ * Parse JSONL session data into SessionMessage array
  * Supports multiple formats via adapter system
  */
 
 import type {
-  ChatMessage,
+  SessionMessage,
   ContentBlock,
   ToolUseBlock,
   ToolResultBlock,
@@ -24,13 +24,13 @@ interface RawStreamEvent {
 }
 
 /**
- * Parse JSONL content into an array of ChatMessage objects
+ * Parse JSONL content into an array of SessionMessage objects
  * Auto-detects format (Claude CLI or streaming) and uses appropriate adapter
  *
  * @param jsonlContent - Raw JSONL string content
- * @returns Array of parsed ChatMessage objects
+ * @returns Array of parsed SessionMessage objects
  */
-export function parseJSONLSession(jsonlContent: string): ChatMessage[] {
+export function parseJSONLSession(jsonlContent: string): SessionMessage[] {
   // Try adapter-based parsing first (handles Claude CLI format)
   const adapterResult = parseJSONLWithAdapter(jsonlContent);
   if (adapterResult.length > 0) {
@@ -43,11 +43,11 @@ export function parseJSONLSession(jsonlContent: string): ChatMessage[] {
   }
 
   const lines = jsonlContent.split("\n").filter((line) => line.trim() !== "");
-  const messages: ChatMessage[] = [];
+  const messages: SessionMessage[] = [];
   const toolResults = new Map<string, ToolResultBlock>();
 
   // Track current message being built
-  let currentMessage: ChatMessage | null = null;
+  let currentMessage: SessionMessage | null = null;
 
   for (const line of lines) {
     try {
@@ -160,7 +160,7 @@ export function parseJSONLSession(jsonlContent: string): ChatMessage[] {
 
       // Handle user message events
       if (event.type === "user_message") {
-        const userMsg: ChatMessage = {
+        const userMsg: SessionMessage = {
           id: crypto.randomUUID(),
           role: "user",
           content: [

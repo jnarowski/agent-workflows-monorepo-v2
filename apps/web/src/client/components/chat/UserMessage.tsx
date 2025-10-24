@@ -4,13 +4,13 @@
  */
 
 import type {
-  ChatMessage,
+  SessionMessage,
   TextBlock,
   ToolResultBlock,
 } from "@/shared/types/chat";
 
 interface UserMessageProps {
-  message: ChatMessage;
+  message: SessionMessage;
 }
 
 export function UserMessage({ message }: UserMessageProps) {

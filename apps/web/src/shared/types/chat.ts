@@ -81,10 +81,10 @@ export interface ToolResultBlock extends ContentBlockBase {
 export type ContentBlock = TextBlock | ThinkingBlock | ToolUseBlock | ToolResultBlock;
 
 /**
- * Chat message structure
+ * Session message structure
  * Content is always an array of ContentBlocks for consistent rendering
  */
-export interface ChatMessage {
+export interface SessionMessage {
   id: string;
   role: MessageRole;
   content: ContentBlock[];

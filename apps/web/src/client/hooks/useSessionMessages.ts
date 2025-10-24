@@ -4,7 +4,7 @@
 
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { getSessionMessages } from "@/client/lib/api";
-import type { ChatMessage } from "@/shared/types/chat";
+import type { SessionMessage } from "@/shared/types/chat";
 
 /**
  * Query keys factory for session messages
@@ -26,7 +26,7 @@ export const sessionMessageKeys = {
 export function useSessionMessages(
   projectId: string,
   sessionId: string
-): UseQueryResult<ChatMessage[], Error> {
+): UseQueryResult<SessionMessage[], Error> {
   return useQuery({
     queryKey: sessionMessageKeys.bySession(projectId, sessionId),
     queryFn: () => getSessionMessages(projectId, sessionId),

@@ -4,7 +4,7 @@
  */
 
 import type {
-  ChatMessage,
+  SessionMessage,
   ClaudeSessionRow,
   ClaudeUserMessageRow,
   ClaudeAssistantMessageRow,
@@ -16,7 +16,7 @@ import { isUserMessage, isAssistantMessage } from "@/shared/types/chat";
  * Normalize a single message object to ensure content is in ContentBlock[] format
  * Handles both raw API messages and pre-normalized messages
  */
-export function normalizeMessage(msg: any): ChatMessage {
+export function normalizeMessage(msg: any): SessionMessage {
   let content: string | ContentBlock[];
 
   // If content is already an array, use it as-is
@@ -109,12 +109,12 @@ function detectFormat(jsonlContent: string): TransformFn {
 /**
  * Parse JSONL with automatic format detection
  */
-export function parseJSONLWithAdapter(jsonlContent: string): ChatMessage[] {
+export function parseJSONLWithAdapter(jsonlContent: string): SessionMessage[] {
   if (!jsonlContent?.trim()) return [];
 
   const transform = detectFormat(jsonlContent);
   const lines = jsonlContent.split("\n").filter((line) => line.trim());
-  const messages: ChatMessage[] = [];
+  const messages: SessionMessage[] = [];
 
   for (const line of lines) {
     try {

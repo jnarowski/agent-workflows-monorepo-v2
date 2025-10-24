@@ -91,17 +91,15 @@ const ChatPromptInputInner = ({
   const { project } = useActiveProject();
 
   // Session store for permission modes
-  const {
-    getSessionPermissionMode,
-    setSessionPermissionMode,
-    defaultPermissionMode,
-  } = useSessionStore();
+  const defaultPermissionMode = useSessionStore((s) => s.defaultPermissionMode);
+  const getPermissionMode = useSessionStore((s) => s.getPermissionMode);
+  const setSessionPermissionMode = useSessionStore((s) => s.setPermissionMode);
 
-  // Initialize permission mode from store (session-specific or default)
+  // Initialize permission mode from store (current session or default)
   const [permissionMode, setPermissionMode] = useState<ClaudePermissionMode>(
     () => {
       if (activeSessionId) {
-        return getSessionPermissionMode(activeSessionId);
+        return getPermissionMode();
       }
       return defaultPermissionMode;
     }
@@ -110,18 +108,18 @@ const ChatPromptInputInner = ({
   // Sync permission mode when session changes
   useEffect(() => {
     if (activeSessionId) {
-      const sessionMode = getSessionPermissionMode(activeSessionId);
+      const sessionMode = getPermissionMode();
       setPermissionMode(sessionMode);
     } else {
       setPermissionMode(defaultPermissionMode);
     }
-  }, [activeSessionId, getSessionPermissionMode, defaultPermissionMode]);
+  }, [activeSessionId, getPermissionMode, defaultPermissionMode]);
 
   // Handle permission mode change
   const handlePermissionModeChange = (mode: ClaudePermissionMode) => {
     setPermissionMode(mode);
     if (activeSessionId) {
-      setSessionPermissionMode(activeSessionId, mode);
+      setSessionPermissionMode(mode);
     }
   };
 

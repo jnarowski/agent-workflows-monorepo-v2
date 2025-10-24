@@ -5,7 +5,7 @@ import AuthLayout from "@/client/layouts/AuthLayout";
 import ProjectDetailLayout from "@/client/layouts/ProjectDetailLayout";
 import Dashboard from "@/client/pages/Dashboard";
 import Projects from "@/client/pages/Projects";
-import ProjectChat from "@/client/pages/ProjectChat";
+import ProjectSession from "@/client/pages/ProjectSession";
 import ProjectShell from "@/client/pages/ProjectShell";
 import ProjectFiles from "@/client/pages/ProjectFiles";
 import AboutUs from "@/client/pages/AboutUs";
@@ -34,9 +34,9 @@ function App() {
 
             {/* Project detail with nested routes */}
             <Route path="/projects/:id" element={<ProjectDetailLayout />}>
-              <Route index element={<Navigate to="chat" replace />} />
-              <Route path="chat" element={<ProjectChat />} />
-              <Route path="chat/:sessionId" element={<ProjectChat />} />
+              <Route index element={<Navigate to="session/new" replace />} />
+              <Route path="session/new" element={<ProjectSession />} />
+              <Route path="session/:sessionId" element={<ProjectSession />} />
               <Route path="shell" element={<ProjectShell />} />
               <Route path="files" element={<ProjectFiles />} />
             </Route>

@@ -8,12 +8,12 @@ import { MessageCircle, AlertCircle, Loader2 } from "lucide-react";
 import { MessageRenderer } from "./MessageRenderer";
 import { ChatSkeleton } from "./ChatSkeleton";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
-import type { ChatMessage } from "@/shared/types/chat";
+import type { SessionMessage } from "@/shared/types/chat";
 
 interface ChatInterfaceProps {
   projectId: string;
   sessionId?: string;
-  messages?: ChatMessage[];
+  messages?: SessionMessage[];
   toolResults?: Map<string, { content: string; is_error?: boolean }>;
   isLoading?: boolean;
   error?: Error | null;

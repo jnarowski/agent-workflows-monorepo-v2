@@ -2,7 +2,7 @@
  * API client functions for making authenticated requests to the backend
  */
 
-import type { ChatMessage } from "@/shared/types/chat";
+import type { SessionMessage } from "@/shared/types/chat";
 import { fetchWithAuth } from "@/client/lib/auth";
 
 /**
@@ -14,9 +14,9 @@ import { fetchWithAuth } from "@/client/lib/auth";
 export async function getSessionMessages(
   projectId: string,
   sessionId: string
-): Promise<ChatMessage[]> {
+): Promise<SessionMessage[]> {
   try {
-    const response = await fetchWithAuth<{ data: ChatMessage[] }>(
+    const response = await fetchWithAuth<{ data: SessionMessage[] }>(
       `/api/projects/${projectId}/sessions/${sessionId}/messages`
     );
     return response.data || [];

@@ -383,26 +383,26 @@ export async function registerWebSocket(fastify: FastifyInstance) {
 
                   // After message completes, update session metadata
                   let metadata = null;
-                  // TEMPORARILY COMMENTED OUT TO DEBUG INFINITE LOOP
-                  // try {
-                  //   const jsonlPath = agentSessionService.getSessionFilePath(
-                  //     sessionData.projectPath,
-                  //     sessionId
-                  //   );
-                  //   metadata =
-                  //     await agentSessionService.parseJSONLFile(jsonlPath);
+                  try {
+                    const jsonlPath = agentSessionService.getSessionFilePath(
+                      sessionData.projectPath,
+                      sessionId
+                    );
+                    metadata =
+                      await agentSessionService.parseJSONLFile(jsonlPath);
 
-                  //   await agentSessionService.updateSessionMetadata(
-                  //     sessionId,
-                  //     metadata
-                  //   );
-                  // } catch (metadataErr: any) {
-                  //   // JSONL file might not exist yet for new sessions
-                  //   fastify.log.debug(
-                  //     { err: metadataErr, sessionId },
-                  //     "Could not update session metadata (file may not exist yet)"
-                  //   );
-                  // }
+                    await agentSessionService.updateSessionMetadata(
+                      sessionId,
+                      metadata
+                    );
+                  } catch (metadataErr: any) {
+                    // JSONL file might not exist yet for new sessions or parsing failed
+                    // Log but don't throw - we don't want to fail message completion
+                    fastify.log.debug(
+                      { err: metadataErr, sessionId },
+                      "Could not update session metadata (file may not exist yet)"
+                    );
+                  }
 
                   // Clean up temporary images
                   if (sessionData.tempImageDir) {
