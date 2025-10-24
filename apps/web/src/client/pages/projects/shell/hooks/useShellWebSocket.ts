@@ -48,7 +48,9 @@ export function useShellWebSocket({
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log('[Shell] WebSocket connected');
+        if (import.meta.env.DEV) {
+          console.log('[Shell] WebSocket connected');
+        }
         setIsConnected(true);
         reconnectAttemptsRef.current = 0;
 
@@ -69,7 +71,9 @@ export function useShellWebSocket({
 
           switch (message.type) {
             case 'initialized':
-              console.log('[Shell] Session initialized:', message.sessionId);
+              if (import.meta.env.DEV) {
+                console.log('[Shell] Session initialized:', message.sessionId);
+              }
               updateSession(sessionId, {
                 sessionId: message.sessionId as string,
               });
@@ -83,7 +87,9 @@ export function useShellWebSocket({
               break;
 
             case 'exit':
-              console.log('[Shell] Process exited:', message);
+              if (import.meta.env.DEV) {
+                console.log('[Shell] Process exited:', message);
+              }
               if (onExit) {
                 onExit(
                   message.exitCode as number,
@@ -115,11 +121,13 @@ export function useShellWebSocket({
       };
 
       ws.onclose = (event) => {
-        console.log('[Shell] WebSocket closed', {
-          code: event.code,
-          reason: event.reason,
-          wasClean: event.wasClean,
-        });
+        if (import.meta.env.DEV) {
+          console.log('[Shell] WebSocket closed', {
+            code: event.code,
+            reason: event.reason,
+            wasClean: event.wasClean,
+          });
+        }
         setIsConnected(false);
         wsRef.current = null;
         updateSessionStatus(sessionId, 'disconnected');
@@ -131,9 +139,11 @@ export function useShellWebSocket({
         ) {
           reconnectAttemptsRef.current++;
           const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
-          console.log(
-            `[Shell] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS})`
-          );
+          if (import.meta.env.DEV) {
+            console.log(
+              `[Shell] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS})`
+            );
+          }
 
           reconnectTimeoutRef.current = setTimeout(() => {
             connect(cols, rows);

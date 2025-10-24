@@ -4,8 +4,8 @@
  */
 
 import type { WriteToolInput } from "@/shared/types/tool.types";
-import { FileReference } from "../../../FileReference";
-import { CodeBlock } from "../../../CodeBlock";
+import { FileReference } from "@/client/pages/projects/sessions/components/FileReference";
+import { CodeBlock } from "@/client/pages/projects/sessions/components/CodeBlock";
 import { getLanguageFromPath } from "@/client/utils/getLanguageFromPath";
 
 interface WriteToolRendererProps {

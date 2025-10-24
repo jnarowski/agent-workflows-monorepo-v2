@@ -18,7 +18,7 @@ export interface WebSocketProviderProps {
  * Uses EventBus for pub/sub pattern to distribute events to subscribers.
  * Automatically connects on mount, handles reconnection with exponential backoff.
  */
-export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }) => {
+export function WebSocketProvider({ children }: WebSocketProviderProps) {
   const token = useAuthStore((state) => state.token);
 
   // WebSocket instance (stored in ref to avoid re-creating on state changes)
@@ -55,7 +55,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
   const connect = () => {
     // Don't connect if no token (user not logged in)
     if (!token) {
-      console.log('[WebSocket] No auth token, skipping connection');
+      if (import.meta.env.DEV) {
+        console.log('[WebSocket] No auth token, skipping connection');
+      }
       return;
     }
 
@@ -72,8 +74,10 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       const wsHost = isDev ? 'localhost:3456' : window.location.host;
       const wsUrl = `${wsProtocol}//${wsHost}/ws?token=${token}`;
 
-      console.log('[WebSocket] Environment:', { isDev, wsHost, protocol: wsProtocol });
-      console.log('[WebSocket] Connecting to', wsUrl.replace(token, '***'));
+      if (import.meta.env.DEV) {
+        console.log('[WebSocket] Environment:', { isDev, wsHost, protocol: wsProtocol });
+        console.log('[WebSocket] Connecting to', wsUrl.replace(token, '***'));
+      }
 
       const socket = new WebSocket(wsUrl);
       socketRef.current = socket;
@@ -82,7 +86,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
 
       // Handle connection open
       socket.onopen = () => {
-        console.log('[WebSocket] Connection established');
+        if (import.meta.env.DEV) {
+          console.log('[WebSocket] Connection established');
+        }
         setReadyState(ReadyState.OPEN);
         // Note: We wait for 'global.connected' message before setting isReady
       };
@@ -91,11 +97,15 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       socket.onmessage = (event) => {
         try {
           const message: WebSocketMessage = JSON.parse(event.data);
-          console.log('[WebSocket] Received:', message.type);
+          if (import.meta.env.DEV) {
+            console.log('[WebSocket] Received:', message.type);
+          }
 
           // Handle global.connected event
           if (message.type === 'global.connected') {
-            console.log('[WebSocket] Received global.connected, flushing message queue');
+            if (import.meta.env.DEV) {
+              console.log('[WebSocket] Received global.connected, flushing message queue');
+            }
             setIsReady(true);
             reconnectAttemptsRef.current = 0; // Reset reconnect attempts on successful connection
 
@@ -105,7 +115,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
             queue.forEach(({ type, data }) => {
               const msg = JSON.stringify({ type, data });
               socket.send(msg);
-              console.log('[WebSocket] Sent queued message:', type);
+              if (import.meta.env.DEV) {
+                console.log('[WebSocket] Sent queued message:', type);
+              }
             });
           }
 
@@ -126,13 +138,15 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
 
       // Handle connection close
       socket.onclose = (event) => {
-        console.log('[WebSocket] Connection closed', {
-          code: event.code,
-          reason: event.reason,
-          wasClean: event.wasClean,
-          intentionalClose: intentionalCloseRef.current,
-          reconnectAttempts: reconnectAttemptsRef.current,
-        });
+        if (import.meta.env.DEV) {
+          console.log('[WebSocket] Connection closed', {
+            code: event.code,
+            reason: event.reason,
+            wasClean: event.wasClean,
+            intentionalClose: intentionalCloseRef.current,
+            reconnectAttempts: reconnectAttemptsRef.current,
+          });
+        }
 
         setReadyState(ReadyState.CLOSED);
         setIsReady(false);
@@ -152,13 +166,17 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
         // Attempt reconnection if not intentional close
         if (!intentionalCloseRef.current && reconnectAttemptsRef.current < 5) {
           const delay = getReconnectDelay(reconnectAttemptsRef.current);
-          console.log(
-            `[WebSocket] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/5)`
-          );
+          if (import.meta.env.DEV) {
+            console.log(
+              `[WebSocket] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/5)`
+            );
+          }
 
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectAttemptsRef.current++;
-            console.log('[WebSocket] Executing reconnect attempt', reconnectAttemptsRef.current);
+            if (import.meta.env.DEV) {
+              console.log('[WebSocket] Executing reconnect attempt', reconnectAttemptsRef.current);
+            }
             connect();
           }, delay);
         } else if (!intentionalCloseRef.current && reconnectAttemptsRef.current >= 5) {
@@ -168,7 +186,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
             message: 'Maximum reconnection attempts reached',
           });
         } else if (intentionalCloseRef.current) {
-          console.log('[WebSocket] Intentional close, not reconnecting');
+          if (import.meta.env.DEV) {
+            console.log('[WebSocket] Intentional close, not reconnecting');
+          }
         }
 
         // Reset intentional close flag
@@ -191,7 +211,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
 
     // Queue message if not ready yet
     if (!isReady) {
-      console.log('[WebSocket] Queueing message (not ready yet):', type);
+      if (import.meta.env.DEV) {
+        console.log('[WebSocket] Queueing message (not ready yet):', type);
+      }
       messageQueueRef.current.push({ type, data });
       return;
     }
@@ -200,7 +222,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     if (socketRef.current.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({ type, data });
       socketRef.current.send(message);
-      console.log('[WebSocket] Sent:', type);
+      if (import.meta.env.DEV) {
+        console.log('[WebSocket] Sent:', type);
+      }
     } else {
       console.warn('[WebSocket] Cannot send message: connection not open');
     }
@@ -210,7 +234,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
    * Manually trigger reconnection (resets attempt counter)
    */
   const reconnect = () => {
-    console.log('[WebSocket] Manual reconnect triggered');
+    if (import.meta.env.DEV) {
+      console.log('[WebSocket] Manual reconnect triggered');
+    }
     reconnectAttemptsRef.current = 0;
 
     // Clear any pending reconnect timeout
@@ -232,7 +258,9 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     connect();
 
     return () => {
-      console.log('[WebSocket] Provider unmounting, closing connection');
+      if (import.meta.env.DEV) {
+        console.log('[WebSocket] Provider unmounting, closing connection');
+      }
       intentionalCloseRef.current = true;
 
       if (reconnectTimeoutRef.current) {
@@ -289,4 +317,4 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       {children}
     </WebSocketContext.Provider>
   );
-};
+}

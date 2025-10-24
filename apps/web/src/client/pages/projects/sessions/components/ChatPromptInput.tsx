@@ -242,7 +242,9 @@ const ChatPromptInputInner = forwardRef<ChatPromptInputHandle, ChatPromptInputPr
   };
 
   const stop = () => {
-    console.log("[ChatPromptInput] Stopping request...");
+    if (import.meta.env.DEV) {
+      console.log("[ChatPromptInput] Stopping request...");
+    }
 
     // Clear any pending timeouts
     if (timeoutRef.current) {
@@ -264,20 +266,26 @@ const ChatPromptInputInner = forwardRef<ChatPromptInputHandle, ChatPromptInputPr
     const hasAttachments = Boolean(message.files?.length);
 
     if (!(hasText || hasAttachments)) {
-      console.log("[ChatPromptInput] No text or attachments, skipping submit");
+      if (import.meta.env.DEV) {
+        console.log("[ChatPromptInput] No text or attachments, skipping submit");
+      }
       return;
     }
 
     if (disabled) {
-      console.log("[ChatPromptInput] Submit disabled, skipping");
+      if (import.meta.env.DEV) {
+        console.log("[ChatPromptInput] Submit disabled, skipping");
+      }
       return;
     }
 
-    console.log("[ChatPromptInput] Submitting message:", {
-      text: message.text,
-      filesCount: message.files?.length || 0,
-      hasOnSubmit: !!onSubmit,
-    });
+    if (import.meta.env.DEV) {
+      console.log("[ChatPromptInput] Submitting message:", {
+        text: message.text,
+        filesCount: message.files?.length || 0,
+        hasOnSubmit: !!onSubmit,
+      });
+    }
 
     setStatus("submitted");
 
@@ -285,7 +293,9 @@ const ChatPromptInputInner = forwardRef<ChatPromptInputHandle, ChatPromptInputPr
     if (onSubmit) {
       try {
         await onSubmit(message.text || "", message.files);
-        console.log("[ChatPromptInput] Message submitted successfully");
+        if (import.meta.env.DEV) {
+          console.log("[ChatPromptInput] Message submitted successfully");
+        }
       } catch (error) {
         console.error("[ChatPromptInput] Error submitting message:", error);
         setStatus("error");

@@ -168,7 +168,9 @@ export function Terminal({
         // Focus the terminal so user can start typing immediately
         terminal.focus();
       } catch (error) {
-        console.warn('[Terminal] Initial fit failed:', error);
+        if (import.meta.env.DEV) {
+          console.warn('[Terminal] Initial fit failed:', error);
+        }
         // Retry after a short delay
         setTimeout(() => {
           try {
@@ -196,7 +198,9 @@ export function Terminal({
           connect(dims.cols, dims.rows);
         }
       } catch (error) {
-        console.warn('[Terminal] Failed to get dimensions for WebSocket connection:', error);
+        if (import.meta.env.DEV) {
+          console.warn('[Terminal] Failed to get dimensions for WebSocket connection:', error);
+        }
         // Try again after a delay
         setTimeout(() => {
           try {

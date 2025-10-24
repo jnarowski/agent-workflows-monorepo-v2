@@ -43,10 +43,10 @@ import {
   useToggleProjectHidden,
 } from "@/client/pages/projects/hooks/useProjects";
 import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgentSessions";
-import { SessionListItem } from "../pages/projects/sessions/components/SessionListItem";
-import { NewSessionButton } from "../pages/projects/sessions/components/NewSessionButton";
+import { SessionListItem } from "@/client/pages/projects/sessions/components/SessionListItem";
+import { NewSessionButton } from "@/client/pages/projects/sessions/components/NewSessionButton";
 import { CommandMenu } from "./CommandMenu";
-import { ProjectDialog } from "../pages/projects/components/ProjectDialog";
+import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
 import type { Project } from "@/shared/types/project.types";
 
 interface AppInnerSidebarProps {

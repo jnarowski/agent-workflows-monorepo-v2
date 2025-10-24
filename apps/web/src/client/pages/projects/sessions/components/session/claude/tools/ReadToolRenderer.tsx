@@ -5,7 +5,7 @@
 
 import { FileText } from "lucide-react";
 import type { ReadToolInput } from "@/shared/types/tool.types";
-import { FileReference } from "../../../FileReference";
+import { FileReference } from "@/client/pages/projects/sessions/components/FileReference";
 
 interface ReadToolRendererProps {
   input: ReadToolInput;

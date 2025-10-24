@@ -51,7 +51,9 @@ export function useSessionWebSocket({
     // Get current session to access agent type
     const currentSession = useSessionStore.getState().currentSession;
     if (!currentSession) {
-      console.warn("[useSessionWebSocket] No current session, skipping stream update");
+      if (import.meta.env.DEV) {
+        console.warn("[useSessionWebSocket] No current session, skipping stream update");
+      }
       return;
     }
 
@@ -72,7 +74,9 @@ export function useSessionWebSocket({
    */
   const handleMessageComplete = useCallback(
     (data: SessionMessageCompleteData) => {
-      console.log("[useSessionWebSocket] Message complete");
+      if (import.meta.env.DEV) {
+        console.log("[useSessionWebSocket] Message complete");
+      }
 
       // Finalize the message in store
       useSessionStore.getState().finalizeMessage(sessionIdRef.current);
@@ -125,10 +129,12 @@ export function useSessionWebSocket({
   useEffect(() => {
     if (!sessionId) return;
 
-    console.log(
-      "[useSessionWebSocket] Subscribing to session events:",
-      sessionId
-    );
+    if (import.meta.env.DEV) {
+      console.log(
+        "[useSessionWebSocket] Subscribing to session events:",
+        sessionId
+      );
+    }
 
     // Subscribe to session-specific events
     const streamEvent = `session.${sessionId}.stream_output`;
@@ -141,10 +147,12 @@ export function useSessionWebSocket({
 
     // Cleanup subscriptions on unmount or sessionId change
     return () => {
-      console.log(
-        "[useSessionWebSocket] Unsubscribing from session events:",
-        sessionId
-      );
+      if (import.meta.env.DEV) {
+        console.log(
+          "[useSessionWebSocket] Unsubscribing from session events:",
+          sessionId
+        );
+      }
       eventBus.off(streamEvent, handleStreamOutput);
       eventBus.off(completeEvent, handleMessageComplete);
       eventBus.off(errorEvent, handleError);
@@ -171,10 +179,12 @@ export function useSessionWebSocket({
         return;
       }
 
-      console.log(
-        "[useSessionWebSocket] Sending message for session:",
-        currentSessionId
-      );
+      if (import.meta.env.DEV) {
+        console.log(
+          "[useSessionWebSocket] Sending message for session:",
+          currentSessionId
+        );
+      }
 
       // Send with flat event naming: session.{id}.send_message
       sendWsMessage(`session.${currentSessionId}.send_message`, {

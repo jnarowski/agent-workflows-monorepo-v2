@@ -62,7 +62,7 @@ export async function parseJSONLFile(
           }
         }
 
-        // Extract first user message for preview (skip "Warmup" messages)
+        // Extract first user message for preview (skip "Warmup" and system messages)
         const isUserMessage = entry.type === 'user' || entry.role === 'user';
         if (isUserMessage && !firstMessagePreview) {
           // Handle both Claude CLI format (message.content) and API format (content)
@@ -77,9 +77,9 @@ export async function parseJSONLFile(
                     .join(' ')
                 : '';
 
-          // Skip "Warmup" messages (case-insensitive)
+          // Skip "Warmup" messages and system messages (Caveat, command tags, etc.)
           const trimmedText = text.trim();
-          if (trimmedText.toLowerCase() !== 'warmup') {
+          if (trimmedText.toLowerCase() !== 'warmup' && !isSystemMessage(trimmedText)) {
             // Strip XML tags and take first 100 characters
             const cleanedText = stripXmlTags(text);
             firstMessagePreview = cleanedText.substring(0, 100);

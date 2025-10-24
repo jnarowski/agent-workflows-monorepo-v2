@@ -122,9 +122,11 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       } catch (error) {
         // JSONL file doesn't exist yet - this is expected for new sessions
         if (error instanceof Error && error.message.includes("404")) {
-          console.log(
-            `[sessionStore] JSONL file not found for session ${sessionId} - this is normal for new sessions`
-          );
+          if (import.meta.env.DEV) {
+            console.log(
+              `[sessionStore] JSONL file not found for session ${sessionId} - this is normal for new sessions`
+            );
+          }
           set((state) => ({
             currentSession: state.currentSession
               ? { ...state.currentSession, loadingState: "loaded" }

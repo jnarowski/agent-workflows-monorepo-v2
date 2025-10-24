@@ -64,7 +64,9 @@ export default function ProjectSession() {
     const queryParam = searchParams.get('query');
 
     if (queryParam) {
-      console.log("[ProjectSession] Query param detected - skipping loadSession");
+      if (import.meta.env.DEV) {
+        console.log("[ProjectSession] Query param detected - skipping loadSession");
+      }
       // Initialize session in store without fetching from server (only if not already initialized)
       if (currentSessionId !== sessionId) {
         clearCurrentSession();
@@ -88,7 +90,9 @@ export default function ProjectSession() {
 
     // If this is a different session, handle the transition
     if (currentSessionId !== sessionId) {
-      console.log("[ProjectSession] Session changed:", { from: currentSessionId, to: sessionId });
+      if (import.meta.env.DEV) {
+        console.log("[ProjectSession] Session changed:", { from: currentSessionId, to: sessionId });
+      }
 
       // Clear previous session only if we're coming from a different session
       if (currentSessionId && currentSessionId !== sessionId) {
@@ -97,12 +101,16 @@ export default function ProjectSession() {
 
       // Load session from server
       if (!session || session.id !== sessionId) {
-        console.log("[ProjectSession] Loading session from server:", sessionId);
+        if (import.meta.env.DEV) {
+          console.log("[ProjectSession] Loading session from server:", sessionId);
+        }
         loadSession(sessionId, projectId).catch((err) => {
           console.error("[ProjectSession] Error loading session:", err);
         });
       } else {
-        console.log("[ProjectSession] Session already in store, skipping load");
+        if (import.meta.env.DEV) {
+          console.log("[ProjectSession] Session already in store, skipping load");
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -134,7 +142,9 @@ export default function ProjectSession() {
     const queryParam = searchParams.get('query');
 
     if (queryParam) {
-      console.log("[ProjectSession] Processing initial message from query parameter");
+      if (import.meta.env.DEV) {
+        console.log("[ProjectSession] Processing initial message from query parameter");
+      }
       initialMessageSentRef.current = true;
 
       try {
@@ -163,12 +173,14 @@ export default function ProjectSession() {
   }, [sessionId, location.search]);
 
   const handleSubmit = async (message: string, images?: File[]) => {
-    console.log("[ProjectSession] handleSubmit called:", {
-      message: message.substring(0, 100),
-      imagesCount: images?.length || 0,
-      sessionId,
-      isFirstMessage: session?.isFirstMessage,
-    });
+    if (import.meta.env.DEV) {
+      console.log("[ProjectSession] handleSubmit called:", {
+        message: message.substring(0, 100),
+        imagesCount: images?.length || 0,
+        sessionId,
+        isFirstMessage: session?.isFirstMessage,
+      });
+    }
 
     if (!projectId) {
       console.error("[ProjectSession] No projectId available");
@@ -177,7 +189,9 @@ export default function ProjectSession() {
 
     // If no sessionId, we're on /session/new - create session first then redirect
     if (!sessionId) {
-      console.log("[ProjectSession] No sessionId - creating new session");
+      if (import.meta.env.DEV) {
+        console.log("[ProjectSession] No sessionId - creating new session");
+      }
 
       try {
         // Create session via API
@@ -186,7 +200,9 @@ export default function ProjectSession() {
           { sessionId: crypto.randomUUID() }
         );
 
-        console.log("[ProjectSession] Session created:", newSession.id);
+        if (import.meta.env.DEV) {
+          console.log("[ProjectSession] Session created:", newSession.id);
+        }
 
         // Invalidate sessions query to update sidebar immediately
         queryClient.invalidateQueries({ queryKey: sessionKeys.byProject(projectId) });
@@ -202,7 +218,9 @@ export default function ProjectSession() {
           config: {}, // First message, no resume
         });
 
-        console.log("[ProjectSession] Message sent via WebSocket, now navigating");
+        if (import.meta.env.DEV) {
+          console.log("[ProjectSession] Message sent via WebSocket, now navigating");
+        }
 
         // Navigate to the new session with query parameter
         // Query param signals: message already sent, just display it
@@ -238,11 +256,13 @@ export default function ProjectSession() {
       ? { resume: true, sessionId } // Subsequent messages: include resume flag
       : {}; // First message (no assistant responses yet): no resume
 
-    console.log("[ProjectSession] Sending message via WebSocket", {
-      assistantMessageCount,
-      shouldResume,
-      config
-    });
+    if (import.meta.env.DEV) {
+      console.log("[ProjectSession] Sending message via WebSocket", {
+        assistantMessageCount,
+        shouldResume,
+        config
+      });
+    }
 
     wsSendMessage(message, imagePaths, config);
   };

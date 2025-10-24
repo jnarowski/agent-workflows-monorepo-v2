@@ -5,6 +5,7 @@
 import { getAuthToken } from '@/client/lib/auth';
 import { useAuthStore } from '@/client/stores/authStore';
 import { ApiError, type ApiErrorResponse } from '@/client/lib/api-types';
+import type { SessionMessage } from "@/shared/types/chat";
 
 /**
  * Request options for API calls
@@ -163,3 +164,27 @@ class ApiClient {
  * Singleton API client instance
  */
 export const api = new ApiClient();
+
+/**
+ * Fetch historical messages for a session from JSONL file
+ * @param projectId - The project ID
+ * @param sessionId - The session ID
+ * @returns Array of chat messages
+ */
+export async function getSessionMessages(
+  projectId: string,
+  sessionId: string
+): Promise<SessionMessage[]> {
+  try {
+    const response = await api.get<{ data: SessionMessage[] }>(
+      `/api/projects/${projectId}/sessions/${sessionId}/messages`
+    );
+    return response.data || [];
+  } catch (error) {
+    // If 404, return empty array (no JSONL file exists yet)
+    if (error instanceof Error && error.message.includes('404')) {
+      return [];
+    }
+    throw error;
+  }
+}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Folder, MessageSquare, Terminal, FileText, Search } from "lucide-react";
+import { Folder, MessageSquare, Terminal, FileText, Search, Plus } from "lucide-react";
 
 import {
   CommandDialog,
@@ -17,6 +17,7 @@ import { useProjects } from "@/client/pages/projects/hooks/useProjects";
 import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgentSessions";
 import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
+import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
 
 interface CommandMenuProps {
   onSearchChange?: (query: string) => void;
@@ -25,6 +26,7 @@ interface CommandMenuProps {
 export function CommandMenu({ onSearchChange }: CommandMenuProps) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [projectDialogOpen, setProjectDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { data: projects = [], isLoading: projectsLoading } = useProjects();
 
@@ -63,16 +65,25 @@ export function CommandMenu({ onSearchChange }: CommandMenuProps) {
           value={searchQuery}
           onChange={(e) => handleSearchChange(e.target.value)}
           placeholder="Search projects..."
-          className="pl-9 pr-16"
+          className="pl-9 pr-24"
         />
-        <button
-          onClick={() => setOpen(true)}
-          className="absolute right-2 top-1/2 -translate-y-1/2"
-        >
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-            <span className="text-xs">⌘</span>J
-          </kbd>
-        </button>
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0"
+            onClick={() => setProjectDialogOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          <button
+            onClick={() => setOpen(true)}
+          >
+            <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+              <span className="text-xs">⌘</span>J
+            </kbd>
+          </button>
+        </div>
       </div>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Search projects and sessions..." />
@@ -96,6 +107,10 @@ export function CommandMenu({ onSearchChange }: CommandMenuProps) {
           )}
         </CommandList>
       </CommandDialog>
+      <ProjectDialog
+        open={projectDialogOpen}
+        onOpenChange={setProjectDialogOpen}
+      />
     </>
   );
 }

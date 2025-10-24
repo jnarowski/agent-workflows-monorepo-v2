@@ -17,14 +17,18 @@ function ProtectedLayout() {
   // Sync projects from Claude CLI on mount (only if needed based on localStorage)
   useEffect(() => {
     if (shouldSyncProjects(user?.id)) {
-      console.log("Syncing projects from Claude CLI...");
+      if (import.meta.env.DEV) {
+        console.log("Syncing projects from Claude CLI...");
+      }
       syncProjects.mutate(undefined, {
         onSuccess: () => {
           markProjectsSynced(user?.id);
         },
       });
     } else {
-      console.log("Skipping project sync - recently synced");
+      if (import.meta.env.DEV) {
+        console.log("Skipping project sync - recently synced");
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array = run once on mount

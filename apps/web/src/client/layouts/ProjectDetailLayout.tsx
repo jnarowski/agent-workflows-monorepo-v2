@@ -50,7 +50,9 @@ export default function ProjectDetailLayout() {
         setIsSyncing(true);
 
         const result = await api.post(`/api/projects/${id}/sessions/sync`);
-        console.log('Sessions synced:', result);
+        if (import.meta.env.DEV) {
+          console.log('Sessions synced:', result);
+        }
       } catch (err) {
         console.error('Error syncing sessions:', err);
       } finally {

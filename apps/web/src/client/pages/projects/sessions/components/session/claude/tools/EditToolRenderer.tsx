@@ -4,8 +4,8 @@
  */
 
 import type { EditToolInput } from "@/shared/types/tool.types";
-import { FileReference } from "../../../FileReference";
-import { DiffViewer } from "../../../DiffViewer";
+import { FileReference } from "@/client/pages/projects/sessions/components/FileReference";
+import { DiffViewer } from "@/client/pages/projects/sessions/components/DiffViewer";
 
 interface EditToolRendererProps {
   input: EditToolInput;
