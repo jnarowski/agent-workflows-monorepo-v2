@@ -14,7 +14,7 @@ import {
   getClaudeProjectsDir,
 } from '@/server/utils/path';
 import path from 'path';
-import { isSystemMessage } from '@/shared/utils/message.utils';
+import { isSystemMessage, stripXmlTags } from '@/shared/utils/message.utils';
 
 /**
  * Parse a JSONL file to extract session metadata
@@ -80,7 +80,9 @@ export async function parseJSONLFile(
           // Skip "Warmup" messages (case-insensitive)
           const trimmedText = text.trim();
           if (trimmedText.toLowerCase() !== 'warmup') {
-            firstMessagePreview = text.substring(0, 100);
+            // Strip XML tags and take first 100 characters
+            const cleanedText = stripXmlTags(text);
+            firstMessagePreview = cleanedText.substring(0, 100);
           }
         }
 

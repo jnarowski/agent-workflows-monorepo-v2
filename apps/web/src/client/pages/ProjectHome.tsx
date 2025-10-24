@@ -1,12 +1,21 @@
 import { useParams } from "react-router-dom";
-import { useProject } from "@/client/pages/projects/hooks/useProjects";
+import { useProject, useProjectReadme } from "@/client/pages/projects/hooks/useProjects";
+import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgentSessions";
+import { SessionListItem } from "@/client/pages/projects/sessions/components/SessionListItem";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/client/components/ui/card";
-import { FolderOpen, Calendar, GitBranch } from "lucide-react";
+import { FolderOpen, Calendar, MessageSquare, FileText } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function ProjectHome() {
   const { id } = useParams<{ id: string }>();
   const { data: project, isLoading } = useProject(id!);
+  const { data: sessions, isLoading: isLoadingSessions } = useAgentSessions({
+    projectId: id!,
+    enabled: !!id
+  });
+  const { data: readme, isLoading: isLoadingReadme, error: readmeError } = useProjectReadme(id!);
 
   if (isLoading) {
     return (
@@ -34,7 +43,7 @@ export default function ProjectHome() {
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Project Path</CardTitle>
@@ -54,23 +63,7 @@ export default function ProjectHome() {
           </CardHeader>
           <CardContent>
             <div className="text-xs text-muted-foreground">
-              {new Date(project.createdAt).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Last Updated</CardTitle>
-            <GitBranch className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-muted-foreground">
-              {new Date(project.updatedAt).toLocaleDateString('en-US', {
+              {new Date(project.created_at).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -80,21 +73,81 @@ export default function ProjectHome() {
         </Card>
       </div>
 
+      {/* Recent Sessions Section */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Recent Sessions
+            </CardTitle>
+            <CardDescription>
+              Your most recent chat sessions
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isLoadingSessions ? (
+            <div className="space-y-2">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </div>
+          ) : !sessions || sessions.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No sessions yet. Start a new chat to see it here.
+            </p>
+          ) : (
+            <div className="space-y-1">
+              {sessions
+                .sort((a, b) =>
+                  new Date(b.metadata.lastMessageAt).getTime() -
+                  new Date(a.metadata.lastMessageAt).getTime()
+                )
+                .slice(0, 10)
+                .map((session) => (
+                  <SessionListItem
+                    key={session.id}
+                    session={session}
+                    projectId={id!}
+                  />
+                ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* README Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
-            Get started with your project using the navigation tabs above
-          </CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Project README
+          </CardTitle>
+          {readme?.path && project && (
+            <CardDescription className="font-mono text-xs">
+              {project.path}/{readme.path}
+            </CardDescription>
+          )}
         </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="text-sm text-muted-foreground">
-            <ul className="list-disc list-inside space-y-1">
-              <li><strong>Chat</strong> - Interact with AI agents for your project</li>
-              <li><strong>Shell</strong> - Access a terminal session for your project</li>
-              <li><strong>Files</strong> - Browse and manage project files</li>
-            </ul>
-          </div>
+        <CardContent>
+          {isLoadingReadme ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-5/6" />
+            </div>
+          ) : readmeError ? (
+            <p className="text-sm text-muted-foreground">
+              No README.md found in this project.
+            </p>
+          ) : readme ? (
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {readme.content}
+              </ReactMarkdown>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
     </div>

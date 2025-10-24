@@ -23,6 +23,7 @@ export const projectKeys = {
   list: () => [...projectKeys.lists()] as const,
   details: () => [...projectKeys.all, "detail"] as const,
   detail: (id: string) => [...projectKeys.details(), id] as const,
+  readme: (id: string) => [...projectKeys.detail(id), "readme"] as const,
 };
 
 /**
@@ -268,5 +269,25 @@ export function useToggleProjectHidden(): UseMutationResult<
     onError: (error) => {
       toast.error(error.message || "Failed to update project visibility");
     },
+  });
+}
+
+/**
+ * Fetch README content for a project
+ */
+async function fetchProjectReadme(projectId: string): Promise<{ content: string; path: string }> {
+  const data = await api.get<{ content: string; path: string }>(`/api/projects/${projectId}/readme`);
+  return data;
+}
+
+/**
+ * Hook to fetch project README.md content
+ */
+export function useProjectReadme(projectId: string): UseQueryResult<{ content: string; path: string }, Error> {
+  return useQuery({
+    queryKey: projectKeys.readme(projectId),
+    queryFn: () => fetchProjectReadme(projectId),
+    enabled: !!projectId,
+    retry: false, // Don't retry if README doesn't exist
   });
 }

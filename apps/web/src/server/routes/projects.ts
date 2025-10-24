@@ -376,4 +376,64 @@ export async function projectRoutes(fastify: FastifyInstance) {
       }
     }
   );
+
+  /**
+   * GET /api/projects/:id/readme
+   * Get README.md content for a project
+   */
+  fastify.get<{
+    Params: { id: string };
+  }>(
+    "/api/projects/:id/readme",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: projectIdSchema,
+        response: {
+          200: fileContentResponseSchema,
+          403: errorResponse,
+          404: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        // Try README.md first, then readme.md
+        let content: string;
+        let readmePath: string;
+
+        try {
+          content = await readFile(
+            request.params.id,
+            'README.md',
+            fastify.log
+          );
+          readmePath = 'README.md';
+        } catch {
+          // Try lowercase version
+          content = await readFile(
+            request.params.id,
+            'readme.md',
+            fastify.log
+          );
+          readmePath = 'readme.md';
+        }
+
+        return reply.send({ content, path: readmePath });
+      } catch (error) {
+        const errorMessage = (error as Error).message;
+        if (errorMessage === "Project not found") {
+          return reply.code(404).send(buildErrorResponse(404, "Project not found"));
+        }
+        if (
+          errorMessage === "File not found or not accessible" ||
+          errorMessage === "Access denied: File is outside project directory"
+        ) {
+          return reply.code(404).send(buildErrorResponse(404, "README.md not found"));
+        }
+
+        throw error;
+      }
+    }
+  );
 }

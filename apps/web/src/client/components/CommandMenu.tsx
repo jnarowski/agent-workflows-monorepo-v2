@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Folder, MessageSquare, Terminal, FileText } from "lucide-react";
+import { Folder, MessageSquare, Terminal, FileText, Search } from "lucide-react";
 
 import {
   CommandDialog,
@@ -16,9 +16,15 @@ import {
 import { useProjects } from "@/client/pages/projects/hooks/useProjects";
 import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgentSessions";
 import { Button } from "@/client/components/ui/button";
+import { Input } from "@/client/components/ui/input";
 
-export function CommandMenu() {
+interface CommandMenuProps {
+  onSearchChange?: (query: string) => void;
+}
+
+export function CommandMenu({ onSearchChange }: CommandMenuProps) {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const { data: projects = [], isLoading: projectsLoading } = useProjects();
 
@@ -39,6 +45,11 @@ export function CommandMenu() {
     setOpen(false);
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    onSearchChange?.(value);
+  };
+
   // Filter out hidden projects and sort alphabetically by name
   const sortedProjects = [...projects]
     .filter((project) => !project.is_hidden)
@@ -46,15 +57,23 @@ export function CommandMenu() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="flex h-9 w-full items-center gap-2 rounded-md border border-input bg-transparent px-3 py-1 text-sm text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-      >
-        <span className="flex-1 text-left">Type to search...</span>
-        <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-          <span className="text-xs">⌘</span>J
-        </kbd>
-      </button>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={searchQuery}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          placeholder="Search projects..."
+          className="pl-9 pr-16"
+        />
+        <button
+          onClick={() => setOpen(true)}
+          className="absolute right-2 top-1/2 -translate-y-1/2"
+        >
+          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+            <span className="text-xs">⌘</span>J
+          </kbd>
+        </button>
+      </div>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput placeholder="Search projects and sessions..." />
         <CommandList>
@@ -105,57 +124,57 @@ function ProjectGroup({ project, onNavigate }: ProjectGroupProps) {
     .slice(0, 5);
 
   return (
-    <CommandGroup
-      heading={
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
-            <Folder className="h-4 w-4" />
-            <span>{project.name}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                onNavigate(`/projects/${project.id}/chat`);
-              }}
-            >
-              <MessageSquare className="h-3 w-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                onNavigate(`/projects/${project.id}/shell`);
-              }}
-            >
-              <Terminal className="h-3 w-3" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                onNavigate(`/projects/${project.id}/files`);
-              }}
-            >
-              <FileText className="h-3 w-3" />
-            </Button>
-          </div>
+    <CommandGroup heading={project.name}>
+      <CommandItem
+        onSelect={() => onNavigate(`/projects/${project.id}`)}
+        className="font-medium"
+      >
+        <Folder className="mr-2 h-4 w-4" />
+        <span>{project.name}</span>
+        <div className="ml-auto flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              onNavigate(`/projects/${project.id}/session/new`);
+            }}
+          >
+            <MessageSquare className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              onNavigate(`/projects/${project.id}/shell`);
+            }}
+          >
+            <Terminal className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              onNavigate(`/projects/${project.id}/files`);
+            }}
+          >
+            <FileText className="h-3 w-3" />
+          </Button>
         </div>
-      }
-    >
+      </CommandItem>
       {recentSessions.map((session) => (
         <CommandItem
           key={session.id}
           onSelect={() =>
-            onNavigate(`/projects/${project.id}/chat/${session.id}`)
+            onNavigate(`/projects/${project.id}/session/${session.id}`)
           }
+          className="pl-6"
+          keywords={[session.metadata.firstMessagePreview || ""]}
         >
           <MessageSquare className="mr-2 h-4 w-4" />
           <span className="truncate">

@@ -73,6 +73,7 @@ export function AppInnerSidebar({
   // Use navigation hook if available, otherwise use prop
   const activeProjectId = activeProjectIdFromHook || activeProjectIdProp;
 
+  const [searchQuery, setSearchQuery] = useState("");
   const [openProjects, setOpenProjects] = useState<string[]>(
     activeProjectId ? [activeProjectId] : []
   );
@@ -112,16 +113,23 @@ export function AppInnerSidebar({
         project.id === activeProjectId ? sessionsData?.length || 0 : 0,
     }));
 
-    const visible = allProjects
+    // Filter by search query
+    const filteredProjects = searchQuery
+      ? allProjects.filter((p) =>
+          p.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      : allProjects;
+
+    const visible = filteredProjects
       .filter((p) => !p.is_hidden)
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    const hidden = allProjects
+    const hidden = filteredProjects
       .filter((p) => p.is_hidden)
       .sort((a, b) => a.name.localeCompare(b.name));
 
     return { visibleProjects: visible, hiddenProjects: hidden };
-  }, [projectsData, activeProjectId, sessionsData]);
+  }, [projectsData, activeProjectId, sessionsData, searchQuery]);
 
 
   const toggleProject = (projectId: string) => {
@@ -160,7 +168,7 @@ export function AppInnerSidebar({
   return (
     <Sidebar collapsible="none" className="flex-1">
       <SidebarHeader className="gap-3.5 border-b p-4">
-        <CommandMenu />
+        <CommandMenu onSearchChange={setSearchQuery} />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

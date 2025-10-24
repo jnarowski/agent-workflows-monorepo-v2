@@ -41,3 +41,30 @@ export function isSystemMessage(textContent: string): boolean {
 
   return isSystemPattern;
 }
+
+/**
+ * Strips XML-like tags from text content for display purposes
+ *
+ * Removes:
+ * - XML-like tags: <tag_name>, <...>, </tag_name>
+ * - <system-reminder> blocks with their content
+ *
+ * @param text - The text content to clean
+ * @returns Cleaned text with XML tags removed
+ */
+export function stripXmlTags(text: string): string {
+  if (typeof text !== 'string') {
+    return '';
+  }
+
+  // Remove <system-reminder> blocks with their content
+  let cleaned = text.replace(/<system-reminder>[\s\S]*?<\/system-reminder>/gi, '');
+
+  // Remove all XML-like tags (opening, closing, and self-closing)
+  cleaned = cleaned.replace(/<[^>]+>/g, '');
+
+  // Collapse multiple spaces into single space and trim
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+
+  return cleaned;
+}
