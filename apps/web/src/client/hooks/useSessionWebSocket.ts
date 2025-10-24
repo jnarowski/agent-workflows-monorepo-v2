@@ -2,6 +2,7 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useSessionStore } from "@/client/stores/sessionStore";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
+import { getAgent } from "@/client/lib/agents";
 import type { ContentBlock } from "@/shared/types/chat";
 import type {
   SessionStreamOutputData,
@@ -44,33 +45,30 @@ export function useSessionWebSocket({
    */
   const handleStreamOutput = useCallback((data: SessionStreamOutputData) => {
     console.log("[useSessionWebSocket] Received stream_output", data);
-    // Extract content blocks from streaming events
-    // data.content.events contains the array of content blocks
-    if (data.content?.events && Array.isArray(data.content.events)) {
-      // Extract actual content from result blocks
-      const contentBlocks = data.content.events.flatMap((event: any) => {
-        // If this is a result block, extract the delta content
-        if (event.type === "result" && event.delta?.content) {
-          return event.delta.content;
-        }
-        // Otherwise return the event as-is
-        return event;
-      });
 
-      console.log("[useSessionWebSocket] Extracted content blocks:", contentBlocks);
-
-      useSessionStore
-        .getState()
-        .updateStreamingMessage(contentBlocks as ContentBlock[]);
-
-      // Log the store state after update
-      const currentSession = useSessionStore.getState().currentSession;
-      console.log("[useSessionWebSocket] Store after update:", {
-        sessionId: currentSession?.id,
-        messageCount: currentSession?.messages.length,
-        isStreaming: currentSession?.isStreaming,
-      });
+    // Get current session to access agent type
+    const currentSession = useSessionStore.getState().currentSession;
+    if (!currentSession) {
+      console.warn("[useSessionWebSocket] No current session, skipping stream update");
+      return;
     }
+
+    // Get agent implementation and use its transform
+    const agent = getAgent(currentSession.agent);
+    const contentBlocks = agent.transformStreaming(data);
+
+    console.log("[useSessionWebSocket] Transformed content blocks:", contentBlocks);
+
+    useSessionStore
+      .getState()
+      .updateStreamingMessage(contentBlocks as ContentBlock[]);
+
+    // Log the store state after update
+    console.log("[useSessionWebSocket] Store after update:", {
+      sessionId: currentSession?.id,
+      messageCount: currentSession?.messages.length,
+      isStreaming: currentSession?.isStreaming,
+    });
   }, []);
 
   /**

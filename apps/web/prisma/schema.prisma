@@ -54,14 +54,22 @@ model User {
   @@map("users")
 }
 
+enum AgentType {
+  claude
+  codex
+  cursor
+  gemini
+}
+
 model AgentSession {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   projectId  String
   userId     String
   name       String? // AI-generated session name (nullable for legacy sessions)
+  agent      AgentType @default(claude)
   metadata   Json // { totalTokens, messageCount, lastMessageAt, firstMessagePreview }
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)

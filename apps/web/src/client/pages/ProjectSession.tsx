@@ -68,6 +68,7 @@ export default function ProjectSession() {
           currentSessionId: sessionId,
           currentSession: {
             id: sessionId,
+            agent: 'claude', // Default to claude for new sessions
             messages: [],
             isStreaming: false,
             metadata: null,
@@ -286,6 +287,7 @@ export default function ProjectSession() {
         <ChatInterface
           projectId={projectId!}
           sessionId={sessionId || undefined}
+          agent={session?.agent || 'claude'}
           messages={session?.messages || []}
           toolResults={toolResults}
           isLoading={session?.loadingState === "loading"}

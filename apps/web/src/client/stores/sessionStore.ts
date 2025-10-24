@@ -1,7 +1,9 @@
 import { create } from "zustand";
 import type { SessionMessage, ContentBlock } from "@/shared/types/chat";
-import type { AgentSessionMetadata } from "@/shared/types/agent-session.types";
+import type { AgentSessionMetadata, SessionResponse } from "@/shared/types/agent-session.types";
+import type { AgentType } from "@/shared/types/agent.types";
 import { useAuthStore } from "@/client/stores/authStore";
+import { getAgent } from "@/client/lib/agents";
 
 // Permission mode types from agent-cli-sdk
 export type ClaudePermissionMode = "default" | "plan" | "acceptEdits" | "reject";
@@ -17,6 +19,7 @@ export type LoadingState = "idle" | "loading" | "loaded" | "error";
  */
 export interface SessionData {
   id: string;
+  agent: AgentType;
   messages: SessionMessage[];
   isStreaming: boolean;
   metadata: AgentSessionMetadata | null;
@@ -70,21 +73,45 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     // Get auth token
     const token = useAuthStore.getState().token;
 
-    // Set loading state
-    set({
-      currentSessionId: sessionId,
-      currentSession: {
-        id: sessionId,
-        messages: [],
-        isStreaming: false,
-        metadata: null,
-        loadingState: "loading",
-        error: null,
-        permissionMode: get().defaultPermissionMode,
-      },
-    });
-
     try {
+      // First, fetch session details to get agent type
+      const sessionResponse = await fetch(`/api/projects/${projectId}/sessions`, {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+
+      if (!sessionResponse.ok) {
+        throw new Error(`Failed to fetch session list: ${sessionResponse.statusText}`);
+      }
+
+      const sessionData = await sessionResponse.json();
+      const sessions: SessionResponse[] = sessionData.data || [];
+      const session = sessions.find(s => s.id === sessionId);
+
+      if (!session) {
+        throw new Error(`Session not found: ${sessionId}`);
+      }
+
+      // Get agent implementation for this session
+      const agent = getAgent(session.agent);
+
+      // Set loading state with agent type
+      set({
+        currentSessionId: sessionId,
+        currentSession: {
+          id: sessionId,
+          agent: session.agent,
+          messages: [],
+          isStreaming: false,
+          metadata: null,
+          loadingState: "loading",
+          error: null,
+          permissionMode: get().defaultPermissionMode,
+        },
+      });
+
+      // Now fetch messages
       const response = await fetch(`/api/projects/${projectId}/sessions/${sessionId}/messages`, {
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
@@ -107,7 +134,10 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       }
 
       const data = await response.json();
-      const messages: SessionMessage[] = data.data || [];
+      const rawMessages = data.data || [];
+
+      // Transform messages using agent's transform function
+      const messages = agent.transformMessages(rawMessages);
 
       set((state) => ({
         currentSession: state.currentSession

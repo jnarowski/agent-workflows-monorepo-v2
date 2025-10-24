@@ -9,10 +9,13 @@ import { MessageRenderer } from "./MessageRenderer";
 import { ChatSkeleton } from "./ChatSkeleton";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import type { SessionMessage } from "@/shared/types/chat";
+import type { AgentType } from "@/shared/types/agent.types";
+import { getAgent } from "@/client/lib/agents";
 
 interface ChatInterfaceProps {
   projectId: string;
   sessionId?: string;
+  agent?: AgentType;
   messages?: SessionMessage[];
   toolResults?: Map<string, { content: string; is_error?: boolean }>;
   isLoading?: boolean;
@@ -28,6 +31,7 @@ interface ChatInterfaceProps {
 export function ChatInterface({
   projectId,
   sessionId,
+  agent = 'claude',
   messages = [],
   toolResults = new Map(),
   isLoading = false,
@@ -38,6 +42,10 @@ export function ChatInterface({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const previousScrollHeight = useRef(0);
+
+  // Get agent renderer
+  const agentImpl = getAgent(agent);
+  const AgentMessageRenderer = agentImpl.MessageRenderer;
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -114,6 +122,7 @@ export function ChatInterface({
           <pre className="overflow-auto">
             {JSON.stringify(
               {
+                agent,
                 messageCount: messages.length,
                 isStreaming,
                 messages: messages.map((m) => ({
@@ -129,17 +138,11 @@ export function ChatInterface({
           </pre>
         </div>
 
-        {messages.map((message, index) => (
-          <MessageRenderer
-            key={message.id || `message-${index}`}
-            message={message}
-            toolResults={toolResults}
-          />
-        ))}
+        <AgentMessageRenderer messages={messages} />
         {isStreaming && (
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Claude is typing...</span>
+            <span>Agent is typing...</span>
           </div>
         )}
         <div ref={messagesEndRef} />

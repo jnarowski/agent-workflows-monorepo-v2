@@ -9,6 +9,8 @@ import type {
   SessionResponse,
   SyncSessionsResponse,
 } from '@/shared/types/agent-session.types';
+import { getAgent } from '@/server/agents';
+import type { SessionMessage } from '@/shared/types/message.types';
 
 /**
  * Agent Session Service
@@ -176,6 +178,7 @@ export class AgentSessionService {
         id: string;
         projectId: string;
         userId: string;
+        agent: 'claude';
         metadata: any;
       }> = [];
       const sessionsToUpdate: Array<{
@@ -200,11 +203,12 @@ export class AgentSessionService {
               metadata: metadata as any,
             });
           } else {
-            // Prepare create
+            // Prepare create with agent field
             sessionsToCreate.push({
               id: sessionId,
               projectId,
               userId,
+              agent: 'claude',
               metadata: metadata as any,
             });
           }
@@ -285,6 +289,7 @@ export class AgentSessionService {
       id: session.id,
       projectId: session.projectId,
       userId: session.userId,
+      agent: session.agent,
       metadata: session.metadata as AgentSessionMetadata,
       created_at: session.created_at,
       updated_at: session.updated_at,
@@ -292,101 +297,38 @@ export class AgentSessionService {
   }
 
   /**
-   * Transform JSONL entry to SessionMessage format
-   * Converts Claude CLI format (type field) to API format (role field)
-   * @param entry - Raw JSONL entry
-   * @returns SessionMessage object or null if entry is not a message
-   */
-  private transformToChatMessage(entry: any): any | null {
-    // Extract role from either 'type' (Claude CLI format) or 'role' (API format)
-    const role = entry.type || entry.role;
-
-    // Only process user and assistant messages
-    if (role !== 'user' && role !== 'assistant') {
-      return null;
-    }
-
-    // Extract content - handle both formats
-    let content = entry.message?.content ?? entry.content;
-
-    // Ensure content is an array of ContentBlocks
-    if (typeof content === 'string') {
-      content = [{ type: 'text', text: content }];
-    } else if (!Array.isArray(content)) {
-      content = [];
-    }
-
-    return {
-      id: entry.id || `${entry.timestamp}-${role}`,
-      role, // Use the role field instead of type
-      content,
-      timestamp: new Date(entry.timestamp || Date.now()).getTime(),
-    };
-  }
-
-  /**
    * Get messages for a specific session
-   * Reads from JSONL file
+   * Uses agent registry to load and parse messages
    * @param sessionId - Session ID
    * @param userId - User ID (for authorization)
-   * @returns Array of messages from JSONL file
+   * @returns Array of typed SessionMessage objects
    */
-  async getSessionMessages(sessionId: string, userId: string): Promise<any[]> {
-    try {
-      console.log('[getSessionMessages] Starting - sessionId:', sessionId, 'userId:', userId);
+  async getSessionMessages(sessionId: string, userId: string): Promise<SessionMessage[]> {
+    console.log('[getSessionMessages] Starting - sessionId:', sessionId, 'userId:', userId);
 
-      // Verify session exists and user has access
-      const session = await prisma.agentSession.findUnique({
-        where: { id: sessionId },
-        include: { project: true },
-      });
+    // Verify session exists and user has access
+    const session = await prisma.agentSession.findUnique({
+      where: { id: sessionId },
+      include: { project: true },
+    });
 
-      console.log('[getSessionMessages] Session found:', !!session);
-      console.log('[getSessionMessages] Session project:', session?.project?.id);
+    console.log('[getSessionMessages] Session found:', !!session);
+    console.log('[getSessionMessages] Session project:', session?.project?.id);
 
-      if (!session) {
-        throw new Error(`Session not found: ${sessionId}`);
-      }
-
-      if (session.userId !== userId) {
-        throw new Error('Unauthorized access to session');
-      }
-
-      const filePath = this.getSessionFilePath(session.project.path, sessionId);
-      console.log('[getSessionMessages] Session file path:', filePath);
-      console.log('[getSessionMessages] Project path:', session.project.path);
-      console.log('[getSessionMessages] Session ID:', sessionId);
-
-      try {
-        const content = await fs.readFile(filePath, 'utf-8');
-        const lines = content.trim().split('\n').filter(Boolean);
-
-        const messages = lines
-          .map((line) => {
-            try {
-              const entry = JSON.parse(line);
-              return this.transformToChatMessage(entry);
-            } catch {
-              return null;
-            }
-          })
-          .filter(Boolean);
-
-        console.log('[getSessionMessages] Successfully loaded', messages.length, 'messages');
-        return messages;
-      } catch (error: any) {
-        if (error.code === 'ENOENT') {
-          console.log('[getSessionMessages] File not found, returning empty array');
-          // Return empty array for new sessions without messages yet
-          return [];
-        }
-        console.error('[getSessionMessages] Error reading file:', error);
-        throw error;
-      }
-    } catch (error: any) {
-      console.error('[getSessionMessages] Top-level error:', error.message, error.stack);
-      throw error;
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
     }
+
+    if (session.userId !== userId) {
+      throw new Error('Unauthorized access to session');
+    }
+
+    // Use agent registry to load session
+    const agent = getAgent(session.agent);
+    const messages = await agent.loadSession(sessionId, session.project.path);
+
+    console.log('[getSessionMessages] Successfully loaded', messages.length, 'messages');
+    return messages;
   }
 
   /**
@@ -437,6 +379,7 @@ export class AgentSessionService {
       id: session.id,
       projectId: session.projectId,
       userId: session.userId,
+      agent: session.agent,
       metadata: metadata,
       created_at: session.created_at,
       updated_at: session.updated_at,
@@ -478,6 +421,7 @@ export class AgentSessionService {
         id: updatedSession.id,
         projectId: updatedSession.projectId,
         userId: updatedSession.userId,
+        agent: updatedSession.agent,
         metadata: updatedMetadata,
         created_at: updatedSession.created_at,
         updated_at: updatedSession.updated_at,

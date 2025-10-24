@@ -3,6 +3,8 @@
  * Shared type definitions for chat sessions with Claude Code
  */
 
+import type { AgentType } from './agent.types';
+
 /**
  * Session metadata stored in AgentSession.metadata JSON field
  */
@@ -27,6 +29,7 @@ export interface SessionResponse {
   id: string;
   projectId: string;
   userId: string;
+  agent: AgentType;
   metadata: AgentSessionMetadata;
   created_at: Date;
   updated_at: Date;
