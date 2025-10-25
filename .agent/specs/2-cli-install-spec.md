@@ -360,50 +360,55 @@ The implementation is mostly complete with all core functionality in place. Howe
 
 ### Phase 1: Foundation
 
-**Status:** ⚠️ Incomplete - Missing shebang in source file, incorrect path logic
+**Status:** ✅ Complete - All issues resolved
 
 #### HIGH Priority
 
-- [ ] **Missing shebang in CLI entry point source file**
+- [x] **Missing shebang in CLI entry point source file**
   - **File:** `apps/web/src/cli/index.ts:1`
   - **Spec Reference:** "Step 5: CLI Main Entry Point" task requires: "Add shebang: `#!/usr/bin/env node`"
   - **Expected:** The source file `src/cli/index.ts` should start with `#!/usr/bin/env node` on line 1
   - **Actual:** The source file does not contain a shebang (though the build script adds it to the output)
   - **Fix:** Add `#!/usr/bin/env node` as the first line of `src/cli/index.ts` before the imports
+  - **Resolution:** Added shebang to source file as first line
 
-- [ ] **getDefaultDbPath returns already-resolved path instead of unexpanded path**
+- [x] **getDefaultDbPath returns already-resolved path instead of unexpanded path**
   - **File:** `apps/web/src/cli/utils/paths.ts:25-26`
   - **Spec Reference:** "Step 2: Path Utilities Implementation" requires `getDefaultDbPath()` to return `~/.agent/database.db` (not an expanded path)
   - **Expected:** Function should return the string `"~/.agent/database.db"` with the tilde, to be resolved later
   - **Actual:** Function calls `resolvePath()` which immediately expands `~` to the home directory
   - **Fix:** Remove the `resolvePath()` call from `getDefaultDbPath()` and just return `"~/.agent/database.db"`
+  - **Resolution:** Removed `resolvePath()` call, now returns unexpanded path `"~/.agent/database.db"`
 
 ### Phase 2: Core Implementation
 
-**Status:** ⚠️ Incomplete - Incorrect environment variable and missing version
+**Status:** ✅ Complete - All issues resolved
 
 #### HIGH Priority
 
-- [ ] **Incorrect PRISMA_SCHEMA_PATH environment variable**
+- [x] **Incorrect PRISMA_SCHEMA_PATH environment variable**
   - **File:** `apps/web/src/cli/commands/install.ts:38`
   - **Spec Reference:** "Step 4: Install Command Implementation" specifies: `PRISMA_SCHEMA_PATH: './dist/prisma/schema.prisma'`
   - **Expected:** Prisma CLI should use `--schema` flag, not `PRISMA_SCHEMA_PATH` environment variable
   - **Actual:** Code sets `PRISMA_SCHEMA_PATH` environment variable, but Prisma CLI doesn't recognize this variable
   - **Fix:** Change the spawn command to use the `--schema` flag: `['prisma', 'migrate', 'deploy', '--schema=./dist/prisma/schema.prisma']` and remove `PRISMA_SCHEMA_PATH` from env
+  - **Resolution:** Updated spawnSync to use `--schema` flag in command arguments instead of environment variable
 
-- [ ] **CLI version hardcoded to "0.0.0" instead of reading from package.json**
+- [x] **CLI version hardcoded to "0.0.0" instead of reading from package.json**
   - **File:** `apps/web/src/cli/index.ts:9`
   - **Spec Reference:** "Step 5: CLI Main Entry Point" requires: "Set version from package.json"
   - **Expected:** Version should be dynamically read from package.json
   - **Actual:** Version is hardcoded to "0.0.0"
   - **Fix:** Import package.json and use its version: `import packageJson from '../../package.json' assert { type: 'json' }; ... .version(packageJson.version)`
+  - **Resolution:** Added dynamic package.json reading using `readFileSync` and `__dirname` resolution for ESM compatibility
 
-- [ ] **Missing resolvePath call in install command database check**
+- [x] **Missing resolvePath call in install command database check**
   - **File:** `apps/web/src/cli/commands/install.ts:13`
   - **Spec Reference:** While the code does call `resolvePath(getDefaultDbPath())`, with the fix to `getDefaultDbPath()` (HIGH priority issue above), this would be double-resolving. The function should return the unresolved path.
   - **Expected:** Since `getDefaultDbPath()` will return `"~/.agent/database.db"` (after fix), line 13 correctly calls `resolvePath()` on it
   - **Actual:** This is actually correct as-is, but depends on the fix to `getDefaultDbPath()`
   - **Fix:** No fix needed - this issue is resolved by fixing `getDefaultDbPath()`
+  - **Resolution:** Resolved by fixing `getDefaultDbPath()` to return unexpanded path
 
 ### Phase 3: Integration
 
@@ -424,4 +429,4 @@ The implementation is mostly complete with all core functionality in place. Howe
 
 - [x] All spec requirements reviewed
 - [x] Code quality checked
-- [ ] All findings addressed and tested
+- [x] All findings addressed and tested

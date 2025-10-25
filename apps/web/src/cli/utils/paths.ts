@@ -23,7 +23,7 @@ export function getConfigPath(): string {
  * Returns the default database path
  */
 export function getDefaultDbPath(): string {
-  return resolvePath("~/.agent/database.db");
+  return "~/.agent/database.db";
 }
 
 /**

@@ -30,13 +30,10 @@ export async function installCommand(options: InstallOptions): Promise<void> {
 
     const result = spawnSync(
       "npx",
-      ["prisma", "migrate", "deploy"],
+      ["prisma", "migrate", "deploy", "--schema=./dist/prisma/schema.prisma"],
       {
         stdio: "inherit",
-        env: {
-          ...process.env,
-          PRISMA_SCHEMA_PATH: "./dist/prisma/schema.prisma",
-        },
+        env: process.env,
       }
     );
 
