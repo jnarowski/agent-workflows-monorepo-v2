@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { NotFoundError } from '@/server/utils/error';
 import { buildSuccessResponse } from '@/server/utils/response';
-import { getProjectById } from '@/server/services/project.service';
+import { getProjectById } from '@/server/services/project';
 import * as gitService from '@/server/services/git.service';
 import * as gitSchemas from '@/server/schemas/git';
 
@@ -20,9 +20,8 @@ export async function gitRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = request.user!.id;
 
-      const project = await getProjectById(id, userId);
+      const project = await getProjectById(id);
       if (!project) {
         throw new NotFoundError('Project not found');
       }
@@ -45,9 +44,8 @@ export async function gitRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = request.user!.id;
 
-      const project = await getProjectById(id, userId);
+      const project = await getProjectById(id);
       if (!project) {
         throw new NotFoundError('Project not found');
       }

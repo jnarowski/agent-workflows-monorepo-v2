@@ -43,6 +43,11 @@ export function ProjectHeader({ projectId, projectName, currentBranch }: Project
         icon: TerminalIcon,
       },
       { to: `/projects/${projectId}/files`, label: "Files", icon: FileText },
+      {
+        to: `/projects/${projectId}/source-control`,
+        label: "Git",
+        icon: GitBranch,
+      },
     ],
     [projectId]
   );

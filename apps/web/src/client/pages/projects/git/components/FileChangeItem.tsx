@@ -5,7 +5,7 @@
 import { Checkbox } from '@/client/components/ui/checkbox';
 import { Badge } from '@/client/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/client/components/ui/collapsible';
-import { ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { DiffViewer } from '@/client/pages/projects/sessions/components/DiffViewer';
 import { useFileDiff } from '../hooks/useGitOperations';
 import type { GitFileStatus } from '@/shared/types/git.types';

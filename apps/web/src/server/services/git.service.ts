@@ -9,7 +9,6 @@ import type {
   GitBranch,
   GitCommit,
   GitCommitDiff,
-  PrData,
   PrResult,
 } from '@/shared/types/git.types';
 
@@ -181,7 +180,13 @@ export async function createAndSwitchBranch(
     }
 
     const git = simpleGit(projectPath);
-    await git.checkoutLocalBranch(branchName, from);
+
+    // If from branch is specified, checkout from that branch first
+    if (from) {
+      await git.checkout(from);
+    }
+
+    await git.checkoutLocalBranch(branchName);
 
     return {
       name: branchName,
