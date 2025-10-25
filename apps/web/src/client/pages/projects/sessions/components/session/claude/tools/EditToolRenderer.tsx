@@ -5,7 +5,7 @@
 
 import type { EditToolInput } from "@/shared/types/tool.types";
 import { FileReference } from "@/client/pages/projects/sessions/components/FileReference";
-import { DiffViewer } from "@/client/pages/projects/sessions/components/DiffViewer";
+import { SideBySideDiffViewer } from "@/client/pages/projects/sessions/components/SideBySideDiffViewer";
 
 interface EditToolRendererProps {
   input: EditToolInput;
@@ -21,7 +21,7 @@ export function EditToolRenderer({ input }: EditToolRendererProps) {
           <span className="text-xs text-muted-foreground">(replace all)</span>
         )}
       </div>
-      <DiffViewer
+      <SideBySideDiffViewer
         oldString={input.old_string}
         newString={input.new_string}
         filePath={input.file_path}

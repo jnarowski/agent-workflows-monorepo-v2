@@ -326,7 +326,8 @@ export async function getFileDiff(
 ): Promise<string> {
   try {
     const git = simpleGit(projectPath);
-    const diff = await git.diff(['--', filepath]);
+    // Use --text to force git to treat all files as text (prevents "Binary files differ" message)
+    const diff = await git.diff(['--text', '--', filepath]);
     return diff;
   } catch (error) {
     logger?.error({ error, projectPath, filepath }, 'Failed to get file diff');
@@ -382,7 +383,7 @@ export async function getCommitDiff(
     const git = simpleGit(projectPath);
 
     // Get commit details
-    const commits = await git.log({ maxCount: 1, from: commitHash, to: commitHash });
+    const commits = await git.log({ maxCount: 1, from: commitHash });
     const commit = commits.all[0];
 
     if (!commit) {

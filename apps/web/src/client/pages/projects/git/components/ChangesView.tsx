@@ -4,9 +4,15 @@
 
 import { Button } from '@/client/components/ui/button';
 import { Textarea } from '@/client/components/ui/textarea';
-import { FileChangeItem } from './FileChangeItem';
 import { CheckCircle2 } from 'lucide-react';
 import type { GitFileStatus } from '@/shared/types/git.types';
+import { DataTable } from '@/client/components/ui/data-table';
+import { createGitChangesColumns } from './git-changes-columns';
+import type { Row } from '@tanstack/react-table';
+import { RawGitDiffViewer } from './RawGitDiffViewer';
+import { useFileDiff } from '../hooks/useGitOperations';
+import { Skeleton } from '@/client/components/ui/skeleton';
+import { useMemo } from 'react';
 
 interface ChangesViewProps {
   projectId: string | undefined;
@@ -21,6 +27,54 @@ interface ChangesViewProps {
   onCommitMessageChange: (message: string) => void;
   onCommit: () => void;
   isCommitting?: boolean;
+}
+
+// Diff content component for expanded rows
+function DiffContent({
+  projectId,
+  file,
+}: {
+  projectId: string | undefined;
+  file: GitFileStatus;
+}) {
+  const { data: diff, isLoading } = useFileDiff(projectId, file.path);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2 p-4">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+      </div>
+    );
+  }
+
+  if (!diff) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <p className="text-sm">No diff available</p>
+      </div>
+    );
+  }
+
+  // Check if it's a binary file or has actual diff content
+  if (diff.includes('Binary files')) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <p className="text-sm">Binary file - cannot display diff</p>
+      </div>
+    );
+  }
+
+  if (diff.trim() === '') {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <p className="text-sm">No changes to display</p>
+      </div>
+    );
+  }
+
+  return <RawGitDiffViewer diff={diff} />;
 }
 
 export function ChangesView({
@@ -38,6 +92,19 @@ export function ChangesView({
   isCommitting,
 }: ChangesViewProps) {
   const canCommit = selectedFiles.size > 0 && commitMessage.trim().length > 0;
+
+  // Create columns with selection handlers
+  const columns = useMemo(
+    () =>
+      createGitChangesColumns(
+        selectedFiles,
+        onToggleFile,
+        onSelectAll,
+        onDeselectAll,
+        files?.length || 0
+      ),
+    [selectedFiles, onToggleFile, onSelectAll, onDeselectAll, files?.length]
+  );
 
   // Empty state
   if (!files || files.length === 0) {
@@ -86,35 +153,16 @@ export function ChangesView({
         </div>
       </div>
 
-      {/* File list section */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={selectedFiles.size === files.length ? onDeselectAll : onSelectAll}
-            className="h-8 text-xs"
-          >
-            {selectedFiles.size === files.length ? 'Deselect All' : 'Select All'}
-          </Button>
-          <div className="text-xs text-muted-foreground">
-            {files.length} {files.length === 1 ? 'changed file' : 'changed files'}
-          </div>
-        </div>
-
-        <div className="px-4 pb-4 space-y-2">
-          {files.map((file) => (
-            <FileChangeItem
-              key={file.path}
-              file={file}
-              selected={selectedFiles.has(file.path)}
-              expanded={expandedFiles.has(file.path)}
-              projectId={projectId}
-              onToggle={() => onToggleFile(file.path)}
-              onToggleExpand={() => onToggleExpand(file.path)}
-            />
-          ))}
-        </div>
+      {/* File list section with DataTable */}
+      <div className="flex-1 overflow-y-auto px-4 pt-4">
+        <DataTable
+          columns={columns}
+          data={files}
+          getRowId={(row) => row.path}
+          renderExpandedRow={(row: Row<GitFileStatus>) => (
+            <DiffContent projectId={projectId} file={row.original} />
+          )}
+        />
       </div>
     </div>
   );

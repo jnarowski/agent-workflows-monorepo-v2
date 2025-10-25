@@ -64,10 +64,10 @@ export function GitTopBar({
       {/* Left side - Branch selector */}
       <div className="flex items-center gap-2">
         <Select value={currentBranch} onValueChange={handleBranchSelect}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-[280px]">
             <div className="flex items-center gap-2">
               <GitBranch className="h-4 w-4" />
-              <SelectValue placeholder="Select branch" />
+              <span className="truncate">{currentBranch || "Select branch"}</span>
             </div>
           </SelectTrigger>
           <SelectContent>

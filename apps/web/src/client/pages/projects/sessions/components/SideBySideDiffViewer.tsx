@@ -1,19 +1,19 @@
 /**
  * Side-by-side diff viewer for file changes
- * Shows additions in green, deletions in red
+ * Compares old vs new content and shows additions in green, deletions in red
  */
 
 import { diffLines, type Change } from 'diff';
 import { FileEdit } from 'lucide-react';
 
-interface DiffViewerProps {
+interface SideBySideDiffViewerProps {
   oldString: string;
   newString: string;
   filePath: string;
   className?: string;
 }
 
-export function DiffViewer({ oldString, newString, filePath, className = '' }: DiffViewerProps) {
+export function SideBySideDiffViewer({ oldString, newString, filePath, className = '' }: SideBySideDiffViewerProps) {
   const changes = diffLines(oldString, newString);
 
   return (

@@ -120,6 +120,10 @@
   }
 }
 
+.shiki {
+  @apply p-2;
+}
+
 /* Override Shiki syntax highlighting for inline code to make it more subtle */
 .syntax-highlighter code {
   font-weight: normal !important;
