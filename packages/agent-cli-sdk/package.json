@@ -1,6 +1,6 @@
 {
   "name": "@repo/agent-cli-sdk",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "TypeScript SDK for orchestrating AI-powered CLI tools (Claude Code, OpenAI Codex) in development workflows",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

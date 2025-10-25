@@ -90,8 +90,12 @@ export class CodexAdapter {
             if (event.type === 'item.completed') {
               const data = event.data as Record<string, unknown>;
               const item = data?.item as Record<string, unknown>;
-              if (item?.type === 'agent_message' && item?.text) {
-                chunkText += String(item.text);
+              if (
+                item?.type === 'agent_message' &&
+                item?.text &&
+                typeof item.text === 'string'
+              ) {
+                chunkText += item.text;
               }
             }
 

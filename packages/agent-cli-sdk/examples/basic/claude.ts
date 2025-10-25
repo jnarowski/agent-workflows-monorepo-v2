@@ -1,22 +1,19 @@
 /**
- * Simple example: Basic usage with factory pattern
+ * Simple example: Basic Claude adapter usage
  */
 
-import { AgentClient, createClaudeAdapter } from '../../src/index.js';
+import { ClaudeAdapter } from '../../src/index.js';
 
 async function main() {
-  // Create adapter using factory function
-  const claude = createClaudeAdapter({
+  // Create adapter directly
+  const claude = new ClaudeAdapter({
     verbose: true,
   });
-
-  // Create client with adapter
-  const client = new AgentClient({ adapter: claude });
 
   console.log('Executing prompt...\n');
 
   // Execute a simple prompt
-  const result = await client.execute('What is 2 + 2?', {
+  const result = await claude.execute('What is 2 + 2?', {
     onOutput: (data) => {
       process.stdout.write(data.raw);
     },

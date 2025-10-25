@@ -9,6 +9,12 @@ export { CodexAdapter } from './codex';
 export { CursorAdapter } from './cursor';
 export { GeminiAdapter } from './gemini';
 
+// Import adapters for use in getAdapter helper
+import { ClaudeAdapter } from './claude';
+import { CodexAdapter } from './codex';
+import { CursorAdapter } from './cursor';
+import { GeminiAdapter } from './gemini';
+
 // Adapter types
 export type {
   ClaudeOptions,
@@ -151,24 +157,18 @@ export function getAdapter(
   config?: unknown
 ): unknown {
   switch (agent) {
-    case 'claude': {
-      const { ClaudeAdapter } = require('./claude');
+    case 'claude':
       return new ClaudeAdapter(config);
-    }
-    case 'codex': {
-      const { CodexAdapter } = require('./codex');
+    case 'codex':
       return new CodexAdapter(config);
-    }
-    case 'cursor': {
-      const { CursorAdapter } = require('./cursor');
+    case 'cursor':
       return new CursorAdapter(config);
-    }
-    case 'gemini': {
-      const { GeminiAdapter } = require('./gemini');
+    case 'gemini':
       return new GeminiAdapter(config);
+    default: {
+      const exhaustiveCheck: never = agent;
+      throw new Error(`Unknown agent: ${String(exhaustiveCheck)}`);
     }
-    default:
-      throw new Error(`Unknown agent: ${agent}`);
   }
 }
 

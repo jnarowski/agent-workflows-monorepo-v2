@@ -8,7 +8,7 @@
  *   npx tsx examples/advanced/structured-output.ts
  */
 
-import { AgentClient, createClaudeAdapter } from '../../src/index.js';
+import { ClaudeAdapter } from '../../src/index.js';
 import { z } from 'zod';
 
 // =============================================================================
@@ -18,10 +18,10 @@ import { z } from 'zod';
 async function example1_BasicJSONExtraction() {
   console.log('\n📦 Example 1: Basic JSON Extraction\n');
 
-  const client = new AgentClient({ adapter: createClaudeAdapter() });
+  const claude = new ClaudeAdapter();
 
   // Extract JSON without validation - just parse whatever JSON is returned
-  const result = await client.execute<{ name: string; age: number }>(
+  const result = await claude.execute<{ name: string; age: number }>(
     'Return a JSON object with name="Alice" and age=30. Return ONLY the JSON in a markdown code block.',
     {
       responseSchema: true, // true = auto-extract JSON, no validation
@@ -53,9 +53,9 @@ async function example2_ZodValidation() {
   // Infer TypeScript type from schema
   type User = z.infer<typeof UserSchema>;
 
-  const client = new AgentClient({ adapter: createClaudeAdapter() });
+  const claude = new ClaudeAdapter();
 
-  const result = await client.execute<User>(
+  const result = await claude.execute<User>(
     `Return a JSON object for a user with:
 - name: "Bob Smith"
 - email: "bob@example.com"
@@ -103,9 +103,9 @@ async function example3_NestedSchema() {
 
   type Project = z.infer<typeof ProjectSchema>;
 
-  const client = new AgentClient({ adapter: createClaudeAdapter() });
+  const claude = new ClaudeAdapter();
 
-  const result = await client.execute<Project>(
+  const result = await claude.execute<Project>(
     `Create a project structure as JSON:
 - name: "AI Agent SDK"
 - description: "TypeScript SDK for AI CLIs"
@@ -150,9 +150,9 @@ async function example4_ArraySchema() {
   const TaskListSchema = z.array(TaskSchema);
   type TaskList = z.infer<typeof TaskListSchema>;
 
-  const client = new AgentClient({ adapter: createClaudeAdapter() });
+  const claude = new ClaudeAdapter();
 
-  const result = await client.execute<TaskList>(
+  const result = await claude.execute<TaskList>(
     `Create a list of 4 development tasks as a JSON array. Each task should have:
 - id (number)
 - title (string)
@@ -208,9 +208,9 @@ function calculateTotal(items) {
   return total;
 }`;
 
-  const client = new AgentClient({ adapter: createClaudeAdapter() });
+  const claude = new ClaudeAdapter();
 
-  const result = await client.execute<CodeAnalysis>(
+  const result = await claude.execute<CodeAnalysis>(
     `Analyze this code and return a JSON analysis:
 
 ${sampleCode}
@@ -273,9 +273,9 @@ async function example6_OptionalFieldsAndDefaults() {
 
   type Config = z.infer<typeof ConfigSchema>;
 
-  const client = new AgentClient({ adapter: createClaudeAdapter() });
+  const claude = new ClaudeAdapter();
 
-  const result = await client.execute<Config>(
+  const result = await claude.execute<Config>(
     `Return a minimal config JSON with just:
 - name: "my-app"
 - metadata: { author: "Alice" }

@@ -1,0 +1,56 @@
+[
+  {
+    "session_id": "b6cf0c25-16e3-473d-b255-6b47b0d4d194",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b6cf0c25-16e3-473d-b255-6b47b0d4d194.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd packages/agent-cli-sdk && find src -type d -maxdepth 1 | sort",
+      "description": "List src subdirectories"
+    },
+    "tool_response": {
+      "stdout": "src\nsrc/adapters\nsrc/claude\nsrc/client\nsrc/codex\nsrc/core\nsrc/cursor\nsrc/factories\nsrc/gemini\nsrc/shared\nsrc/types\nsrc/utils",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  },
+  {
+    "session_id": "b6cf0c25-16e3-473d-b255-6b47b0d4d194",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b6cf0c25-16e3-473d-b255-6b47b0d4d194.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd packages/agent-cli-sdk && find examples -type d -maxdepth 1 | sort",
+      "description": "List examples subdirectories"
+    },
+    "tool_response": {
+      "stdout": "examples\nexamples/advanced\nexamples/basic\nexamples/sessions",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  },
+  {
+    "session_id": "b6cf0c25-16e3-473d-b255-6b47b0d4d194",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b6cf0c25-16e3-473d-b255-6b47b0d4d194.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd packages/agent-cli-sdk && find tests -type d -maxdepth 2 | sort",
+      "description": "List test subdirectories"
+    },
+    "tool_response": {
+      "stdout": "tests\ntests/e2e\ntests/fixtures\ntests/integration\ntests/unit\ntests/unit/adapters\ntests/unit/client\ntests/unit/core\ntests/unit/utils",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  }
+]

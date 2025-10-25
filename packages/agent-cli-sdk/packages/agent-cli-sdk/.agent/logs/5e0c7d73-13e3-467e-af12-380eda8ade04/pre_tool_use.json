@@ -1,0 +1,710 @@
+[
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/basic/claude.ts"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/basic/codex.ts"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/advanced/structured-output.ts"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Delete old architecture directories (needs permission)",
+          "status": "pending",
+          "activeForm": "Waiting for permission to delete directories"
+        },
+        {
+          "content": "Update examples/basic/claude.ts",
+          "status": "in_progress",
+          "activeForm": "Updating examples/basic/claude.ts"
+        },
+        {
+          "content": "Update examples/basic/codex.ts",
+          "status": "pending",
+          "activeForm": "Updating examples/basic/codex.ts"
+        },
+        {
+          "content": "Create examples/session-continuation.ts",
+          "status": "pending",
+          "activeForm": "Creating examples/session-continuation.ts"
+        },
+        {
+          "content": "Create examples/streaming.ts",
+          "status": "pending",
+          "activeForm": "Creating examples/streaming.ts"
+        },
+        {
+          "content": "Create examples/multi-agent.ts",
+          "status": "pending",
+          "activeForm": "Creating examples/multi-agent.ts"
+        },
+        {
+          "content": "Update examples/advanced/structured-output.ts",
+          "status": "pending",
+          "activeForm": "Updating structured-output.ts"
+        },
+        {
+          "content": "Update and reorganize tests",
+          "status": "pending",
+          "activeForm": "Updating tests"
+        },
+        {
+          "content": "Update documentation (README, CHANGELOG)",
+          "status": "pending",
+          "activeForm": "Updating documentation"
+        },
+        {
+          "content": "Run full validation suite",
+          "status": "pending",
+          "activeForm": "Running validation"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/basic/claude.ts",
+      "content": "/**\n * Simple example: Basic Claude adapter usage\n */\n\nimport { ClaudeAdapter } from '../../src/index.js';\n\nasync function main() {\n  // Create adapter directly\n  const claude = new ClaudeAdapter({\n    verbose: true,\n  });\n\n  console.log('Executing prompt...\\n');\n\n  // Execute a simple prompt\n  const result = await claude.execute('What is 2 + 2?', {\n    onOutput: (data) => {\n      process.stdout.write(data.raw);\n    },\n  });\n\n  console.log('\\n\\n=== Results ===');\n  console.log('Session ID:', result.sessionId);\n  console.log('Status:', result.status);\n  console.log('Duration:', result.duration, 'ms');\n  console.log('Output:', result.data);\n\n  // Show error details if execution failed\n  if (result.status === 'error' && result.error) {\n    console.log('\\n=== Error Details ===');\n    console.log('Code:', result.error.code);\n    console.log('Message:', result.error.message);\n    if (result.error.details) {\n      console.log('Details:', result.error.details);\n    }\n    if (result.raw?.stderr) {\n      console.log('Stderr:', result.raw.stderr);\n    }\n  }\n\n  if (result.usage) {\n    console.log('\\n=== Token Usage ===');\n    console.log('Input tokens:', result.usage.inputTokens);\n    console.log('Output tokens:', result.usage.outputTokens);\n    console.log('Total tokens:', result.usage.totalTokens);\n  }\n}\n\nmain().catch((error) => {\n  console.error('\\n\u274c Execution failed:');\n  console.error('Error:', error.message);\n  if (error.stack) {\n    console.error('\\nStack trace:', error.stack);\n  }\n  process.exit(1);\n});\n"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Delete old architecture directories (needs permission)",
+          "status": "pending",
+          "activeForm": "Waiting for permission to delete directories"
+        },
+        {
+          "content": "Update examples/basic/claude.ts",
+          "status": "completed",
+          "activeForm": "Updating examples/basic/claude.ts"
+        },
+        {
+          "content": "Update examples/basic/codex.ts",
+          "status": "in_progress",
+          "activeForm": "Updating examples/basic/codex.ts"
+        },
+        {
+          "content": "Create examples/session-continuation.ts",
+          "status": "pending",
+          "activeForm": "Creating examples/session-continuation.ts"
+        },
+        {
+          "content": "Create examples/streaming.ts",
+          "status": "pending",
+          "activeForm": "Creating examples/streaming.ts"
+        },
+        {
+          "content": "Create examples/multi-agent.ts",
+          "status": "pending",
+          "activeForm": "Creating examples/multi-agent.ts"
+        },
+        {
+          "content": "Update examples/advanced/structured-output.ts",
+          "status": "pending",
+          "activeForm": "Updating structured-output.ts"
+        },
+        {
+          "content": "Update and reorganize tests",
+          "status": "pending",
+          "activeForm": "Updating tests"
+        },
+        {
+          "content": "Update documentation (README, CHANGELOG)",
+          "status": "pending",
+          "activeForm": "Updating documentation"
+        },
+        {
+          "content": "Run full validation suite",
+          "status": "pending",
+          "activeForm": "Running validation"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/basic/codex.ts",
+      "content": "/**\n * Simple Codex adapter usage example\n * Based on Codex CLI 0.46.0\n */\n\nimport { CodexAdapter } from '../../dist/index.js';\n\nasync function main() {\n  console.log('=== Codex Adapter - Simple Usage ===\\n');\n\n  // Create adapter\n  const codex = new CodexAdapter();\n\n  // Option 1: Basic execution with full-auto\n  console.log('1. Basic execution:');\n  try {\n    const result1 = await codex.execute('What is 2 + 2?', {\n      fullAuto: true,\n      onEvent: (event) => {\n        console.log(`[Event: ${event.type}]`);\n      },\n    });\n\n    console.log('\\n\u2713 Execution complete!');\n    console.log('Session ID:', result1.sessionId);\n    console.log('Output:', result1.output);\n    console.log('Duration:', result1.duration, 'ms');\n    console.log('Usage:', result1.usage);\n  } catch (error) {\n    console.error('\u2717 Error:', error.message);\n  }\n\n  console.log('\\n' + '='.repeat(50) + '\\n');\n\n  // Option 2: Session resumption\n  console.log('2. Session resumption:');\n  try {\n    // Create a session\n    const session1 = await codex.execute('Remember the number 42', {\n      fullAuto: true,\n    });\n\n    console.log('\u2713 Created session:', session1.sessionId);\n    console.log('Response:', session1.output);\n\n    // Resume the session\n    const session2 = await codex.execute('What number did I tell you to remember?', {\n      sessionId: session1.sessionId,\n      resume: true,\n      fullAuto: true,\n    });\n\n    console.log('\\n\u2713 Resumed session:', session2.sessionId);\n    console.log('Response:', session2.output);\n  } catch (error) {\n    console.error('\u2717 Error:', error.message);\n  }\n\n  console.log('\\n' + '='.repeat(50) + '\\n');\n\n  // Option 3: Different sandbox modes\n  console.log('3. Using different sandbox modes:');\n  try {\n    const result3 = await codex.execute('Say hello', {\n      sandbox: 'read-only',\n      fullAuto: true,\n    });\n\n    console.log('\\n\u2713 Execution complete (read-only sandbox)!');\n    console.log('Output:', result3.output);\n  } catch (error) {\n    console.error('\u2717 Error:', error.message);\n  }\n\n  console.log('\\n' + '='.repeat(50) + '\\n');\n\n  // Option 4: Streaming with reasoning\n  console.log('4. Streaming with reasoning extraction:');\n  try {\n    const result4 = await codex.execute('Explain quantum computing in one sentence', {\n      fullAuto: true,\n      onEvent: (event) => {\n        if (event.type === 'item.completed' && event.data?.item?.type === 'reasoning') {\n          console.log('Reasoning:', event.data.item.text);\n        }\n      },\n    });\n\n    console.log('\\n\u2713 Execution complete!');\n    console.log('Output:', result4.output);\n    if (result4.metadata.reasoning && result4.metadata.reasoning.length > 0) {\n      console.log('\\nReasoning steps:');\n      result4.metadata.reasoning.forEach((r, i) => {\n        console.log(`  ${i + 1}. ${r}`);\n      });\n    }\n  } catch (error) {\n    console.error('\u2717 Error:', error.message);\n  }\n\n  console.log('\\n' + '='.repeat(50) + '\\n');\n  console.log('\u2713 All examples complete!');\n}\n\nmain().catch(console.error);\n"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Delete old architecture directories (needs permission)",
+          "status": "pending",
+          "activeForm": "Waiting for permission to delete directories"
+        },
+        {
+          "content": "Update examples/basic/claude.ts",
+          "status": "completed",
+          "activeForm": "Updating examples/basic/claude.ts"
+        },
+        {
+          "content": "Update examples/basic/codex.ts",
+          "status": "completed",
+          "activeForm": "Updating examples/basic/codex.ts"
+        },
+        {
+          "content": "Create examples/session-continuation.ts",
+          "status": "in_progress",
+          "activeForm": "Creating examples/session-continuation.ts"
+        },
+        {
+          "content": "Create examples/streaming.ts",
+          "status": "pending",
+          "activeForm": "Creating examples/streaming.ts"
+        },
+        {
+          "content": "Create examples/multi-agent.ts",
+          "status": "pending",
+          "activeForm": "Creating examples/multi-agent.ts"
+        },
+        {
+          "content": "Update examples/advanced/structured-output.ts",
+          "status": "pending",
+          "activeForm": "Updating structured-output.ts"
+        },
+        {
+          "content": "Update and reorganize tests",
+          "status": "pending",
+          "activeForm": "Updating tests"
+        },
+        {
+          "content": "Update documentation (README, CHANGELOG)",
+          "status": "pending",
+          "activeForm": "Updating documentation"
+        },
+        {
+          "content": "Run full validation suite",
+          "status": "pending",
+          "activeForm": "Running validation"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/session-continuation.ts",
+      "content": "/**\n * Session Continuation Example\n *\n * Demonstrates how to maintain context across multiple messages\n * using sessionId and the resume option.\n *\n * Run with:\n *   npx tsx examples/session-continuation.ts\n */\n\nimport { ClaudeAdapter } from '../src/index.js';\n\nasync function main() {\n  console.log('=== Session Continuation Example ===\\n');\n\n  const claude = new ClaudeAdapter();\n\n  // First message - creates a new session\n  console.log('1. Creating initial session...\\n');\n  const result1 = await claude.execute('Remember this: my favorite color is blue', {\n    onOutput: (data) => {\n      process.stdout.write(data.raw);\n    },\n  });\n\n  console.log('\\n\\n\u2713 Session created:', result1.sessionId);\n  console.log('  Status:', result1.status);\n  console.log('  Duration:', result1.duration, 'ms\\n');\n\n  // Second message - continue the session\n  console.log('2. Continuing session with context...\\n');\n  const result2 = await claude.execute('What is my favorite color?', {\n    sessionId: result1.sessionId, // Reuse the session ID\n    resume: true, // Continue from previous state\n    onOutput: (data) => {\n      process.stdout.write(data.raw);\n    },\n  });\n\n  console.log('\\n\\n\u2713 Session continued:', result2.sessionId);\n  console.log('  Status:', result2.status);\n  console.log('  Duration:', result2.duration, 'ms\\n');\n\n  // Third message - another turn in the same session\n  console.log('3. Adding more context to the session...\\n');\n  const result3 = await claude.execute('Now remember: my favorite number is 42', {\n    sessionId: result1.sessionId,\n    resume: true,\n    onOutput: (data) => {\n      process.stdout.write(data.raw);\n    },\n  });\n\n  console.log('\\n\\n\u2713 Session updated:', result3.sessionId);\n  console.log('  Status:', result3.status);\n  console.log('  Duration:', result3.duration, 'ms\\n');\n\n  // Fourth message - test that both pieces of context are retained\n  console.log('4. Testing context retention...\\n');\n  const result4 = await claude.execute(\n    'What are my favorite color and number? Answer in one sentence.',\n    {\n      sessionId: result1.sessionId,\n      resume: true,\n      onOutput: (data) => {\n        process.stdout.write(data.raw);\n      },\n    }\n  );\n\n  console.log('\\n\\n\u2713 Final result:', result4.sessionId);\n  console.log('  Status:', result4.status);\n  console.log('  Duration:', result4.duration, 'ms\\n');\n\n  console.log('='.repeat(50));\n  console.log('\u2705 Session continuation example complete!');\n  console.log('  All messages maintained shared context');\n  console.log('  Session ID:', result1.sessionId);\n  console.log('='.repeat(50));\n}\n\nmain().catch((error) => {\n  console.error('\\n\u274c Execution failed:');\n  console.error('Error:', error.message);\n  process.exit(1);\n});\n"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Delete old architecture directories (needs permission)",
+          "status": "pending",
+          "activeForm": "Waiting for permission to delete directories"
+        },
+        {
+          "content": "Update examples/basic/claude.ts",
+          "status": "completed",
+          "activeForm": "Updating examples/basic/claude.ts"
+        },
+        {
+          "content": "Update examples/basic/codex.ts",
+          "status": "completed",
+          "activeForm": "Updating examples/basic/codex.ts"
+        },
+        {
+          "content": "Create examples/session-continuation.ts",
+          "status": "completed",
+          "activeForm": "Creating examples/session-continuation.ts"
+        },
+        {
+          "content": "Create examples/streaming.ts",
+          "status": "in_progress",
+          "activeForm": "Creating examples/streaming.ts"
+        },
+        {
+          "content": "Create examples/multi-agent.ts",
+          "status": "pending",
+          "activeForm": "Creating examples/multi-agent.ts"
+        },
+        {
+          "content": "Update examples/advanced/structured-output.ts",
+          "status": "pending",
+          "activeForm": "Updating structured-output.ts"
+        },
+        {
+          "content": "Update and reorganize tests",
+          "status": "pending",
+          "activeForm": "Updating tests"
+        },
+        {
+          "content": "Update documentation (README, CHANGELOG)",
+          "status": "pending",
+          "activeForm": "Updating documentation"
+        },
+        {
+          "content": "Run full validation suite",
+          "status": "pending",
+          "activeForm": "Running validation"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/streaming.ts",
+      "content": "/**\n * Streaming Example\n *\n * Demonstrates how to use onOutput and onEvent callbacks\n * to handle real-time streaming output from AI CLIs.\n *\n * Run with:\n *   npx tsx examples/streaming.ts\n */\n\nimport { ClaudeAdapter, isUserMessageEvent, isAssistantMessageEvent } from '../src/index.js';\n\nasync function main() {\n  console.log('=== Streaming Example ===\\n');\n\n  const claude = new ClaudeAdapter();\n\n  // Example 1: Simple output streaming\n  console.log('1. Simple output streaming:\\n');\n  await claude.execute('Write a haiku about coding', {\n    onOutput: (data) => {\n      // Stream raw output directly to stdout\n      process.stdout.write(data.raw);\n    },\n  });\n\n  console.log('\\n\\n' + '='.repeat(50) + '\\n');\n\n  // Example 2: Event-based streaming with type guards\n  console.log('2. Event-based streaming with type safety:\\n');\n  let messageCount = 0;\n\n  await claude.execute('Explain recursion in 2 sentences', {\n    onEvent: (event) => {\n      // Use type guards for type-safe event handling\n      if (isUserMessageEvent(event)) {\n        console.log('\ud83d\udce4 User message:', event.data.message.slice(0, 50) + '...');\n        messageCount++;\n      } else if (isAssistantMessageEvent(event)) {\n        console.log('\ud83d\udce5 Assistant response:', event.data.message.slice(0, 50) + '...');\n        messageCount++;\n      }\n    },\n  });\n\n  console.log(`\\n\u2713 Processed ${messageCount} messages\\n`);\n  console.log('='.repeat(50) + '\\n');\n\n  // Example 3: Combined output and event streaming\n  console.log('3. Combined streaming (output + events):\\n');\n  let outputLength = 0;\n  const events: string[] = [];\n\n  const result = await claude.execute('What is 2 + 2?', {\n    onOutput: (data) => {\n      outputLength += data.raw.length;\n      process.stdout.write(data.raw);\n    },\n    onEvent: (event) => {\n      events.push(event.type);\n    },\n  });\n\n  console.log('\\n\\n\u2713 Streaming complete!');\n  console.log('  Output length:', outputLength, 'characters');\n  console.log('  Events received:', events.length);\n  console.log('  Event types:', [...new Set(events)].join(', '));\n  console.log('  Final status:', result.status);\n  console.log('  Session ID:', result.sessionId);\n\n  console.log('\\n' + '='.repeat(50) + '\\n');\n\n  // Example 4: Buffered streaming (collect chunks)\n  console.log('4. Buffered streaming:\\n');\n  const chunks: string[] = [];\n\n  await claude.execute('Count from 1 to 5', {\n    onOutput: (data) => {\n      chunks.push(data.raw);\n      process.stdout.write('.');\n    },\n  });\n\n  console.log('\\n\\n\u2713 Collected', chunks.length, 'chunks');\n  console.log('  First chunk:', chunks[0]?.slice(0, 30) + '...');\n  console.log('  Last chunk:', chunks[chunks.length - 1]?.slice(0, 30) + '...');\n\n  console.log('\\n' + '='.repeat(50));\n  console.log('\u2705 Streaming example complete!');\n  console.log('='.repeat(50));\n}\n\nmain().catch((error) => {\n  console.error('\\n\u274c Execution failed:');\n  console.error('Error:', error.message);\n  process.exit(1);\n});\n"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Delete old architecture directories (needs permission)",
+          "status": "pending",
+          "activeForm": "Waiting for permission to delete directories"
+        },
+        {
+          "content": "Update examples/basic/claude.ts",
+          "status": "completed",
+          "activeForm": "Updating examples/basic/claude.ts"
+        },
+        {
+          "content": "Update examples/basic/codex.ts",
+          "status": "completed",
+          "activeForm": "Updating examples/basic/codex.ts"
+        },
+        {
+          "content": "Create examples/session-continuation.ts",
+          "status": "completed",
+          "activeForm": "Creating examples/session-continuation.ts"
+        },
+        {
+          "content": "Create examples/streaming.ts",
+          "status": "completed",
+          "activeForm": "Creating examples/streaming.ts"
+        },
+        {
+          "content": "Create examples/multi-agent.ts",
+          "status": "in_progress",
+          "activeForm": "Creating examples/multi-agent.ts"
+        },
+        {
+          "content": "Update examples/advanced/structured-output.ts",
+          "status": "pending",
+          "activeForm": "Updating structured-output.ts"
+        },
+        {
+          "content": "Update and reorganize tests",
+          "status": "pending",
+          "activeForm": "Updating tests"
+        },
+        {
+          "content": "Update documentation (README, CHANGELOG)",
+          "status": "pending",
+          "activeForm": "Updating documentation"
+        },
+        {
+          "content": "Run full validation suite",
+          "status": "pending",
+          "activeForm": "Running validation"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/multi-agent.ts",
+      "content": "/**\n * Multi-Agent Example\n *\n * Demonstrates how to use the getAdapter() helper to dynamically\n * select between different AI agents (Claude, Codex, etc.).\n *\n * Run with:\n *   npx tsx examples/multi-agent.ts claude\n *   npx tsx examples/multi-agent.ts codex\n */\n\nimport { getAdapter } from '../src/index.js';\n\nasync function main() {\n  // Get agent name from command line args\n  const agentName = process.argv[2] || 'claude';\n\n  console.log(`=== Multi-Agent Example (${agentName}) ===\\n`);\n\n  // Use getAdapter() to dynamically select the adapter\n  // TypeScript will correctly infer the adapter type\n  const adapter = getAdapter(agentName as 'claude' | 'codex', {\n    verbose: true,\n  });\n\n  console.log(`\u2713 Selected adapter: ${adapter.name}\\n`);\n\n  // Execute a simple prompt\n  console.log('Executing prompt...\\n');\n  const result = await adapter.execute('What is your name and what can you do?', {\n    onOutput: (data) => {\n      process.stdout.write(data.raw);\n    },\n  });\n\n  console.log('\\n\\n=== Results ===');\n  console.log('Adapter:', adapter.name);\n  console.log('Session ID:', result.sessionId);\n  console.log('Status:', result.status);\n  console.log('Duration:', result.duration, 'ms');\n\n  if (result.usage) {\n    console.log('\\n=== Token Usage ===');\n    console.log('Input tokens:', result.usage.inputTokens);\n    console.log('Output tokens:', result.usage.outputTokens);\n    console.log('Total tokens:', result.usage.totalTokens);\n  }\n\n  console.log('\\n' + '='.repeat(50));\n  console.log('\u2705 Multi-agent example complete!');\n  console.log('  Try running with different agents:');\n  console.log('  - npx tsx examples/multi-agent.ts claude');\n  console.log('  - npx tsx examples/multi-agent.ts codex');\n  console.log('='.repeat(50));\n}\n\nmain().catch((error) => {\n  console.error('\\n\u274c Execution failed:');\n  console.error('Error:', error.message);\n  if (error.message.includes('not yet implemented')) {\n    console.error('\\n  This adapter is not yet implemented.');\n    console.error('  Try using \"claude\" or \"codex\" instead.');\n  }\n  process.exit(1);\n});\n"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Delete old architecture directories (needs permission)",
+          "status": "pending",
+          "activeForm": "Waiting for permission to delete directories"
+        },
+        {
+          "content": "Update examples/basic/claude.ts",
+          "status": "completed",
+          "activeForm": "Updating examples/basic/claude.ts"
+        },
+        {
+          "content": "Update examples/basic/codex.ts",
+          "status": "completed",
+          "activeForm": "Updating examples/basic/codex.ts"
+        },
+        {
+          "content": "Create examples/session-continuation.ts",
+          "status": "completed",
+          "activeForm": "Creating examples/session-continuation.ts"
+        },
+        {
+          "content": "Create examples/streaming.ts",
+          "status": "completed",
+          "activeForm": "Creating examples/streaming.ts"
+        },
+        {
+          "content": "Create examples/multi-agent.ts",
+          "status": "completed",
+          "activeForm": "Creating examples/multi-agent.ts"
+        },
+        {
+          "content": "Update examples/advanced/structured-output.ts",
+          "status": "in_progress",
+          "activeForm": "Updating structured-output.ts"
+        },
+        {
+          "content": "Update and reorganize tests",
+          "status": "pending",
+          "activeForm": "Updating tests"
+        },
+        {
+          "content": "Update documentation (README, CHANGELOG)",
+          "status": "pending",
+          "activeForm": "Updating documentation"
+        },
+        {
+          "content": "Run full validation suite",
+          "status": "pending",
+          "activeForm": "Running validation"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/advanced/structured-output.ts",
+      "old_string": "import { AgentClient, createClaudeAdapter } from '../../src/index.js';\nimport { z } from 'zod';",
+      "new_string": "import { ClaudeAdapter } from '../../src/index.js';\nimport { z } from 'zod';"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/advanced/structured-output.ts",
+      "old_string": "async function example1_BasicJSONExtraction() {\n  console.log('\\n\ud83d\udce6 Example 1: Basic JSON Extraction\\n');\n\n  const client = new AgentClient({ adapter: createClaudeAdapter() });\n\n  // Extract JSON without validation - just parse whatever JSON is returned\n  const result = await client.execute<{ name: string; age: number }>(",
+      "new_string": "async function example1_BasicJSONExtraction() {\n  console.log('\\n\ud83d\udce6 Example 1: Basic JSON Extraction\\n');\n\n  const claude = new ClaudeAdapter();\n\n  // Extract JSON without validation - just parse whatever JSON is returned\n  const result = await claude.execute<{ name: string; age: number }>("
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/advanced/structured-output.ts",
+      "old_string": "  const client = new AgentClient({ adapter: createClaudeAdapter() });\n\n  const result = await client.execute<User>(",
+      "new_string": "  const claude = new ClaudeAdapter();\n\n  const result = await claude.execute<User>("
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/advanced/structured-output.ts",
+      "old_string": "  type Project = z.infer<typeof ProjectSchema>;\n\n  const client = new AgentClient({ adapter: createClaudeAdapter() });\n\n  const result = await client.execute<Project>(",
+      "new_string": "  type Project = z.infer<typeof ProjectSchema>;\n\n  const claude = new ClaudeAdapter();\n\n  const result = await claude.execute<Project>("
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/advanced/structured-output.ts",
+      "old_string": "  const TaskListSchema = z.array(TaskSchema);\n  type TaskList = z.infer<typeof TaskListSchema>;\n\n  const client = new AgentClient({ adapter: createClaudeAdapter() });\n\n  const result = await client.execute<TaskList>(",
+      "new_string": "  const TaskListSchema = z.array(TaskSchema);\n  type TaskList = z.infer<typeof TaskListSchema>;\n\n  const claude = new ClaudeAdapter();\n\n  const result = await claude.execute<TaskList>("
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/advanced/structured-output.ts",
+      "old_string": "  const sampleCode = `\nfunction calculateTotal(items) {\n  let total = 0;\n  for (let i = 0; i < items.length; i++) {\n    total += items[i].price;\n  }\n  return total;\n}`;\n\n  const client = new AgentClient({ adapter: createClaudeAdapter() });\n\n  const result = await client.execute<CodeAnalysis>(",
+      "new_string": "  const sampleCode = `\nfunction calculateTotal(items) {\n  let total = 0;\n  for (let i = 0; i < items.length; i++) {\n    total += items[i].price;\n  }\n  return total;\n}`;\n\n  const claude = new ClaudeAdapter();\n\n  const result = await claude.execute<CodeAnalysis>("
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/examples/advanced/structured-output.ts",
+      "old_string": "  type Config = z.infer<typeof ConfigSchema>;\n\n  const client = new AgentClient({ adapter: createClaudeAdapter() });\n\n  const result = await client.execute<Config>(",
+      "new_string": "  type Config = z.infer<typeof ConfigSchema>;\n\n  const claude = new ClaudeAdapter();\n\n  const result = await claude.execute<Config>("
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Delete old architecture directories (needs permission)",
+          "status": "pending",
+          "activeForm": "Waiting for permission to delete directories"
+        },
+        {
+          "content": "Update examples/basic/claude.ts",
+          "status": "completed",
+          "activeForm": "Updating examples/basic/claude.ts"
+        },
+        {
+          "content": "Update examples/basic/codex.ts",
+          "status": "completed",
+          "activeForm": "Updating examples/basic/codex.ts"
+        },
+        {
+          "content": "Create examples/session-continuation.ts",
+          "status": "completed",
+          "activeForm": "Creating examples/session-continuation.ts"
+        },
+        {
+          "content": "Create examples/streaming.ts",
+          "status": "completed",
+          "activeForm": "Creating examples/streaming.ts"
+        },
+        {
+          "content": "Create examples/multi-agent.ts",
+          "status": "completed",
+          "activeForm": "Creating examples/multi-agent.ts"
+        },
+        {
+          "content": "Update examples/advanced/structured-output.ts",
+          "status": "completed",
+          "activeForm": "Updating structured-output.ts"
+        },
+        {
+          "content": "Update spec file with completion notes",
+          "status": "in_progress",
+          "activeForm": "Updating spec file"
+        },
+        {
+          "content": "Update and reorganize tests",
+          "status": "pending",
+          "activeForm": "Updating tests"
+        },
+        {
+          "content": "Update documentation (README, CHANGELOG)",
+          "status": "pending",
+          "activeForm": "Updating documentation"
+        },
+        {
+          "content": "Run full validation suite",
+          "status": "pending",
+          "activeForm": "Running validation"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.agent/specs/250125164500-agent-cli-refactor-spec.md",
+      "old_string": "### 12: Update Examples\n\n<!-- prettier-ignore -->\n- [ ] 12.1 Update `examples/basic/claude.ts`\n        - Use new ClaudeAdapter constructor\n        - Update execute() call\n        - File: `examples/basic/claude.ts`\n- [ ] 12.2 Update `examples/basic/codex.ts`\n        - Use new CodexAdapter constructor\n        - Update execute() call\n        - File: `examples/basic/codex.ts`\n- [ ] 12.3 Create `examples/session-continuation.ts`\n        - Show first message, capture sessionId\n        - Show second message with sessionId + resume\n        - File: `examples/session-continuation.ts`\n- [ ] 12.4 Create `examples/streaming.ts`\n        - Show onOutput callback usage\n        - File: `examples/streaming.ts`\n- [ ] 12.5 Create `examples/multi-agent.ts`\n        - Show getAdapter() usage\n        - File: `examples/multi-agent.ts`\n- [ ] 12.6 Update `examples/structured-output.ts` (if exists)\n        - Update to new adapter API\n        - File: `examples/structured-output.ts`\n\n#### Completion Notes\n\n(To be filled in during implementation)",
+      "new_string": "### 12: Update Examples\n\n<!-- prettier-ignore -->\n- [x] 12.1 Update `examples/basic/claude.ts`\n        - Use new ClaudeAdapter constructor\n        - Update execute() call\n        - File: `examples/basic/claude.ts`\n- [x] 12.2 Update `examples/basic/codex.ts`\n        - Use new CodexAdapter constructor\n        - Update execute() call\n        - File: `examples/basic/codex.ts`\n- [x] 12.3 Create `examples/session-continuation.ts`\n        - Show first message, capture sessionId\n        - Show second message with sessionId + resume\n        - File: `examples/session-continuation.ts`\n- [x] 12.4 Create `examples/streaming.ts`\n        - Show onOutput callback usage\n        - File: `examples/streaming.ts`\n- [x] 12.5 Create `examples/multi-agent.ts`\n        - Show getAdapter() usage\n        - File: `examples/multi-agent.ts`\n- [x] 12.6 Update `examples/structured-output.ts` (if exists)\n        - Update to new adapter API\n        - File: `examples/structured-output.ts`\n\n#### Completion Notes\n\n- Updated both basic examples (claude.ts, codex.ts) to use new adapter constructors directly (no AgentClient wrapper)\n- Created session-continuation.ts demonstrating sessionId reuse and resume option across 4 messages\n- Created streaming.ts showing 4 different streaming patterns (simple output, event-based, combined, buffered)\n- Created multi-agent.ts demonstrating getAdapter() helper for dynamic adapter selection\n- Updated structured-output.ts, replacing all AgentClient instances with ClaudeAdapter\n- All examples now follow the new simplified API pattern"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find packages/agent-cli-sdk/tests -name \"*.test.ts\" -type f | sort",
+      "description": "List all test files"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find packages/agent-cli-sdk -name \"*.test.ts\" -o -name \"*.spec.ts\" 2>/dev/null | head -20",
+      "description": "Find all test files in agent-cli-sdk"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "ls -la packages/agent-cli-sdk/ | grep -i test",
+      "description": "Check for test directories"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "ls -la | grep packages",
+      "description": "Check for packages directory"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "pwd",
+      "description": "Print current directory"
+    }
+  },
+  {
+    "session_id": "5e0c7d73-13e3-467e-af12-380eda8ade04",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/5e0c7d73-13e3-467e-af12-380eda8ade04.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2 && ls -la packages/agent-cli-sdk/ | grep -E \"(test|spec)\"",
+      "description": "Check for test directories from root"
+    }
+  }
+]

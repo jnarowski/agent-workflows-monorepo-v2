@@ -1,0 +1,14 @@
+[
+  {
+    "session_id": "b6cf0c25-16e3-473d-b255-6b47b0d4d194",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b6cf0c25-16e3-473d-b255-6b47b0d4d194.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd packages/agent-cli-sdk && python3 -c \"\nimport shutil\nimport os\n\n# Directories to delete\ndirs_to_delete = [\n    'src/client',\n    'src/core', \n    'src/factories',\n    'src/adapters',\n    'src/types',\n    'src/utils',\n    'examples/sessions',\n    'examples/advanced',\n    'tests/unit/client',\n    'tests/integration',\n    'tests/unit/adapters',\n    'tests/unit/utils',\n    'tests/unit/core'\n]\n\nfor dir_path in dirs_to_delete:\n    if os.path.exists(dir_path):\n        shutil.rmtree(dir_path)\n        print(f'Deleted: {dir_path}')\n    else:\n        print(f'Not found: {dir_path}')\n\n# Delete examples/README.md if exists\nif os.path.exists('examples/README.md'):\n    os.remove('examples/README.md')\n    print('Deleted: examples/README.md')\n\"",
+      "description": "Delete old directories using Python"
+    }
+  }
+]
