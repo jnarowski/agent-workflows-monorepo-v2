@@ -18,8 +18,6 @@ interface DiffViewerProps {
   // Language for syntax highlighting
   language?: string;
   // Display options
-  showHeaders?: boolean;
-  showLineNumbers?: boolean;
   className?: string;
 }
 
@@ -50,9 +48,6 @@ function detectLanguage(filePath?: string): string {
     yml: "yaml",
     sh: "bash",
   };
-
-  console.log("filePath", filePath);
-  console.log("ext", ext);
 
   return langMap[ext || ""] || "typescript";
 }
@@ -130,8 +125,6 @@ export function DiffViewer({
   newString,
   filePath,
   language,
-  showHeaders = false,
-  showLineNumbers = false,
   className = "",
 }: DiffViewerProps) {
   const [html, setHtml] = useState<string>("");
@@ -139,30 +132,29 @@ export function DiffViewer({
   // Detect language if not provided
   const lang = language || detectLanguage(filePath);
 
-  // Get line changes from either diff string or old/new strings
-  let changes: Change[] = [];
-
-  if (diff) {
-    changes = parseGitDiff(diff);
-  } else if (oldString !== undefined && newString !== undefined) {
-    changes = diffLines(oldString, newString);
-  }
-
-  // Handle edge cases
-  if (changes.length === 0) {
-    return (
-      <div className={`text-muted-foreground text-xs p-4 ${className}`}>
-        No changes to display
-      </div>
-    );
-  }
-
   // Highlight diff with language-specific syntax highlighting
   useEffect(() => {
     let cancelled = false;
 
     const highlight = async () => {
       try {
+        // Get line changes from either diff string or old/new strings
+        let changes: Change[] = [];
+
+        if (diff) {
+          changes = parseGitDiff(diff);
+        } else if (oldString !== undefined && newString !== undefined) {
+          changes = diffLines(oldString, newString);
+        }
+
+        // Handle edge cases
+        if (changes.length === 0) {
+          setHtml(
+            `<div class="text-muted-foreground text-xs p-4">No changes to display</div>`
+          );
+          return;
+        }
+
         const htmlLines: string[] = [];
 
         for (const part of changes) {
@@ -182,23 +174,34 @@ export function DiffViewer({
 
           for (const line of lines) {
             // Highlight each line
-            const lineHighlighted = await codeToHtml(line, {
-              lang: lang as BundledLanguage,
-              theme: "github-dark",
-            });
+            try {
+              const lineHighlighted = await codeToHtml(line, {
+                lang: lang as BundledLanguage,
+                theme: "github-dark",
+              });
 
-            // Extract just the code content from the pre/code tags
-            const codeMatch = lineHighlighted.match(
-              /<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s
-            );
-            const codeContent = codeMatch ? codeMatch[1] : escapeHtml(line);
+              // Extract just the code content from the pre/code tags
+              const codeMatch = lineHighlighted.match(
+                /<pre[^>]*><code[^>]*>(.*?)<\/code><\/pre>/s
+              );
+              const codeContent = codeMatch ? codeMatch[1] : escapeHtml(line);
 
-            htmlLines.push(`
-              <div class="diff-line" style="background: ${bgColor}; display: grid; grid-template-columns: 2ch 1fr; align-items: center; line-height: 1.5;">
-                <div class="diff-gutter" style="text-align: center; color: #888; background: #0d1117; padding: 0 4px; user-select: none; border-right: 1px solid #21262d;">${symbol}</div>
-                <div class="diff-code" style="overflow-x: auto; padding: 0 8px;"><code style="white-space: pre;">${codeContent}</code></div>
-              </div>
-            `);
+              htmlLines.push(`
+                <div class="diff-line" style="background: ${bgColor}; display: grid; grid-template-columns: 2ch 1fr; align-items: center; line-height: 1.5;">
+                  <div class="diff-gutter" style="text-align: center; color: #888; background: #0d1117; padding: 0 4px; user-select: none; border-right: 1px solid #21262d;">${symbol}</div>
+                  <div class="diff-code" style="overflow-x: auto; padding: 0 8px;"><code style="white-space: pre;">${codeContent}</code></div>
+                </div>
+              `);
+            } catch (lineError) {
+              // If highlighting fails for this line, fall back to plain text
+              console.warn("Failed to highlight line:", lineError);
+              htmlLines.push(`
+                <div class="diff-line" style="background: ${bgColor}; display: grid; grid-template-columns: 2ch 1fr; align-items: center; line-height: 1.5;">
+                  <div class="diff-gutter" style="text-align: center; color: #888; background: #0d1117; padding: 0 4px; user-select: none; border-right: 1px solid #21262d;">${symbol}</div>
+                  <div class="diff-code" style="overflow-x: auto; padding: 0 8px;"><code style="white-space: pre;">${escapeHtml(line)}</code></div>
+                </div>
+              `);
+            }
           }
         }
 
@@ -207,9 +210,17 @@ export function DiffViewer({
         }
       } catch (error) {
         console.warn("Diff highlighting failed:", error);
-        // Fallback to plain text
+        // Fallback to plain text with reconstructed changes
         if (!cancelled) {
-          const plainLines = changes
+          // Reconstruct changes for fallback
+          let fallbackChanges: Change[] = [];
+          if (diff) {
+            fallbackChanges = parseGitDiff(diff);
+          } else if (oldString !== undefined && newString !== undefined) {
+            fallbackChanges = diffLines(oldString, newString);
+          }
+
+          const plainLines = fallbackChanges
             .map((part) => {
               const symbol = part.added ? "+" : part.removed ? "-" : " ";
               return part.value
@@ -229,7 +240,8 @@ export function DiffViewer({
     return () => {
       cancelled = true;
     };
-  }, [changes, lang]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [diff, oldString, newString, lang]);
 
   return (
     <div

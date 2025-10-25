@@ -191,8 +191,8 @@ Update API routes to use new path-based structure. Refactor frontend hooks to ca
 ### 6: Update Frontend Components
 
 <!-- prettier-ignore -->
-- [ ] 6.1 Update git components to pass projectPath
-        - Update all components to accept and pass `projectPath: string` instead of `projectId: string`
+- [ ] 6.1 Update git components to pass path
+        - Update all components to accept and pass `path: string` instead of `projectId: string`
         - Files to update:
           - `apps/web/src/client/pages/projects/git/components/GitTopBar.tsx`
           - `apps/web/src/client/pages/projects/git/components/ChangesView.tsx`
@@ -240,7 +240,7 @@ Update API routes to use new path-based structure. Refactor frontend hooks to ca
 - [ ] API routes accept `path` in body instead of `projectId` in params
 - [ ] Git service has no dependencies on project service or logger
 - [ ] Frontend hooks use new path-based API structure
-- [ ] All git UI components work with projectPath instead of projectId
+- [ ] All git UI components work with path instead of projectId
 - [ ] Merge conflicts are handled gracefully with informative error messages
 - [ ] Stash operations preserve working directory state correctly
 - [ ] Reset operations (soft/mixed/hard) work as expected
