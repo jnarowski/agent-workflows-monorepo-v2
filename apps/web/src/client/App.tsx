@@ -12,6 +12,7 @@ import ProjectFiles from "@/client/pages/projects/files/ProjectFiles";
 import ProjectSourceControl from "@/client/pages/projects/git/ProjectSourceControl";
 import Login from "@/client/pages/auth/Login";
 import Signup from "@/client/pages/auth/Signup";
+import Components from "@/client/pages/Components";
 
 function App() {
   return (
@@ -19,6 +20,9 @@ function App() {
       <WebSocketProvider>
         <ShellProvider>
           <Routes>
+            {/* Public routes */}
+            <Route path="/components" element={<Components />} />
+
             {/* Auth routes */}
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<Login />} />
