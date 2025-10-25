@@ -29,6 +29,7 @@ import {
 } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation/useActiveProject";
 import { insertAtCursor, removeAllOccurrences } from "@/client/pages/projects/files/lib/fileUtils";
+import { cn } from "@/client/lib/utils";
 
 const permissionModes: Array<{
   id: ClaudePermissionMode;
@@ -319,7 +320,17 @@ const ChatPromptInputInner = forwardRef<ChatPromptInputHandle, ChatPromptInputPr
 
   return (
     <div className="flex flex-col justify-end size-full">
-      <PromptInput globalDrop multiple onSubmit={handleSubmit}>
+      <PromptInput
+        globalDrop
+        multiple
+        onSubmit={handleSubmit}
+        inputGroupClassName={cn(
+          "transition-colors",
+          permissionMode === "plan" && "border-green-500 md:has-[[data-slot=input-group-control]:focus-visible]:border-green-500",
+          permissionMode === "acceptEdits" && "border-purple-500 md:has-[[data-slot=input-group-control]:focus-visible]:border-purple-500",
+          permissionMode === "reject" && "border-red-500 md:has-[[data-slot=input-group-control]:focus-visible]:border-red-500"
+        )}
+      >
         <PromptInputBody>
           <PromptInputAttachments>
             {(attachment) => <PromptInputAttachment data={attachment} />}
@@ -386,7 +397,16 @@ const ChatPromptInputInner = forwardRef<ChatPromptInputHandle, ChatPromptInputPr
                 </span>
               </div>
             )}
-            <PromptInputSubmit className="!h-8" status={status} />
+            <PromptInputSubmit
+              className={cn(
+                "!h-8 transition-colors",
+                permissionMode === "plan" && "bg-green-500 hover:bg-green-600 text-white",
+                permissionMode === "acceptEdits" && "bg-purple-500 hover:bg-purple-600 text-white",
+                permissionMode === "reject" && "bg-red-500 hover:bg-red-600 text-white",
+                permissionMode === "default" && "bg-gray-500 hover:bg-gray-600 text-white"
+              )}
+              status={status}
+            />
           </div>
         </PromptInputFooter>
       </PromptInput>

@@ -452,6 +452,7 @@ export type PromptInputProps = Omit<
     message: PromptInputMessage,
     event: FormEvent<HTMLFormElement>
   ) => void | Promise<void>;
+  inputGroupClassName?: string;
 };
 
 export const PromptInput = ({
@@ -464,6 +465,7 @@ export const PromptInput = ({
   maxFileSize,
   onError,
   onSubmit,
+  inputGroupClassName,
   children,
   ...props
 }: PromptInputProps) => {
@@ -786,7 +788,7 @@ export const PromptInput = ({
         onSubmit={handleSubmit}
         {...props}
       >
-        <InputGroup>{children}</InputGroup>
+        <InputGroup className={inputGroupClassName}>{children}</InputGroup>
       </form>
     </>
   );
