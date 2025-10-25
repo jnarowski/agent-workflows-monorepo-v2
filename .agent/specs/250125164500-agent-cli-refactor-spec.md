@@ -155,11 +155,11 @@ Rewrite README with new API patterns. Update CHANGELOG with breaking changes. Ru
 ### 1: Create Shared Directory and Simplify Utilities
 
 <!-- prettier-ignore -->
-- [ ] 1.1 Create `src/shared/` directory
-- [ ] 1.2 Move `src/core/errors.ts` → `src/shared/errors.ts` (no modifications)
-- [ ] 1.3 Move `src/utils/spawn.ts` → `src/shared/spawn.ts` (no modifications)
-- [ ] 1.4 Move `src/utils/json-parser.ts` → `src/shared/json-parser.ts` (no modifications)
-- [ ] 1.5 Create `src/shared/logging.ts` - Simplified version
+- [x] 1.1 Create `src/shared/` directory
+- [x] 1.2 Move `src/core/errors.ts` → `src/shared/errors.ts` (no modifications)
+- [x] 1.3 Move `src/utils/spawn.ts` → `src/shared/spawn.ts` (no modifications)
+- [x] 1.4 Move `src/utils/json-parser.ts` → `src/shared/json-parser.ts` (no modifications)
+- [x] 1.5 Create `src/shared/logging.ts` - Simplified version
         - Single writeLog() function
         - Remove getLogPaths() - inline it
         - Remove createSessionMessageLogPath() - unused after deleting sessions
@@ -170,66 +170,85 @@ Rewrite README with new API patterns. Update CHANGELOG with breaking changes. Ru
 
 #### Completion Notes
 
-(To be filled in during implementation)
+- Created `src/shared/` directory structure
+- Copied errors.ts, spawn.ts, and json-parser.ts as-is from their original locations
+- Updated imports in spawn.ts and json-parser.ts to reference `./errors` instead of `../core/errors`
+- Created simplified logging.ts with single `writeLog()` function
+- Removed all console.log statements and verbose debugging
+- Inlined path logic and removed helper functions (getLogPaths, createSessionMessageLogPath)
+- Logging errors are silently caught and ignored as specified
 
 ### 2: Create Shared Base Types
 
 <!-- prettier-ignore -->
-- [ ] 2.1 Create `src/shared/types.ts`
+- [x] 2.1 Create `src/shared/types.ts`
         - Define ExecutionOptions interface with all common options
         - Define ExecutionResponse<T> interface
         - Define StreamEvent, OutputData, TokenUsage, ModelUsage
         - Define ActionLog, ValidationResult
         - File: `src/shared/types.ts`
-- [ ] 2.2 Verify imports in shared utilities
+- [x] 2.2 Verify imports in shared utilities
         - Update imports in shared/spawn.ts to use ./types
         - Update imports in shared/logging.ts to use ./types
         - File: `src/shared/spawn.ts`, `src/shared/logging.ts`
 
 #### Completion Notes
 
-(To be filled in during implementation)
+- Created `src/shared/types.ts` with all base type definitions from interfaces.ts
+- Included StreamEvent, OutputData, TokenUsage, ModelUsage, ActionLog, ValidationResult
+- Included ExecutionOptions and ExecutionResponse<T> as the core types
+- Shared utilities (spawn.ts, logging.ts, json-parser.ts) don't need type imports as they use primitive types
+- errors.ts already has no external dependencies
 
 ### 3: Create Claude Adapter Structure
 
 <!-- prettier-ignore -->
-- [ ] 3.1 Create `src/claude/` directory
-- [ ] 3.2 Move `src/adapters/claude/cli-detector.ts` → `src/claude/cli-detector.ts`
-- [ ] 3.3 Move `src/adapters/claude/parser.ts` → `src/claude/parser.ts`
+- [x] 3.1 Create `src/claude/` directory
+- [x] 3.2 Move `src/adapters/claude/cli-detector.ts` → `src/claude/cli-detector.ts`
+- [x] 3.3 Move `src/adapters/claude/parser.ts` → `src/claude/parser.ts`
         - Rename parseStreamOutput → parseClaudeOutput
         - Update imports to use ../shared/
-- [ ] 3.4 Move `src/adapters/claude/image-handler.ts` → `src/claude/image-handler.ts` (if exists)
-- [ ] 3.5 Move `src/adapters/claude/mcp-detector.ts` → `src/claude/mcp-detector.ts` (if exists)
-- [ ] 3.6 Extract buildClaudeArgs from `src/adapters/claude/cli-wrapper.ts` → `src/claude/cli-args.ts`
+- [x] 3.4 Move `src/adapters/claude/image-handler.ts` → `src/claude/image-handler.ts` (if exists)
+- [x] 3.5 Move `src/adapters/claude/mcp-detector.ts` → `src/claude/mcp-detector.ts` (if exists)
+- [x] 3.6 Extract buildClaudeArgs from `src/adapters/claude/cli-wrapper.ts` → `src/claude/cli-args.ts`
         - Keep only buildClaudeArgs function
         - Remove executeClaudeCLI function (logic moves to adapter)
         - Update imports
 
 #### Completion Notes
 
-(To be filled in during implementation)
+- Created `src/claude/` directory
+- Copied cli-detector.ts, image-handler.ts, and mcp-detector.ts as-is
+- Created new parser.ts with renamed function (parseStreamOutput → parseClaudeOutput)
+- Updated all imports in parser.ts to use ../shared/ paths
+- Created cli-args.ts with buildClaudeArgs function extracted from cli-wrapper.ts
+- All Claude utility files now use the new modular structure
 
 ### 4: Create Claude Types and Events
 
 <!-- prettier-ignore -->
-- [ ] 4.1 Create `src/claude/types.ts`
+- [x] 4.1 Create `src/claude/types.ts`
         - Define ClaudeOptions extends ExecutionOptions
         - Add Claude-specific options: model, apiKey, oauthToken, permissionMode, etc.
         - Define ClaudeConfig extends Partial<ClaudeOptions> with cliPath
         - File: `src/claude/types.ts`
-- [ ] 4.2 Move `src/types/events/claude.ts` → `src/claude/events.ts`
+- [x] 4.2 Move `src/types/events/claude.ts` → `src/claude/events.ts`
         - Keep all event types unchanged
         - Keep all type guards
         - Update imports to use ../shared/types
 
 #### Completion Notes
 
-(To be filled in during implementation)
+- Created `src/claude/types.ts` with ClaudeOptions (extends ExecutionOptions), ClaudeConfig, ImageInput, and utility types
+- Created `src/claude/events.ts` with all Claude event types (FileHistorySnapshotEvent, UserMessageEvent, AssistantMessageEvent)
+- All type guards preserved (isClaudeEvent, isFileHistorySnapshotEvent, isUserMessageEvent, isAssistantMessageEvent)
+- Updated imports to use ../shared/types (StreamEvent)
+- Removed BaseStreamEvent dependency as part of simplification
 
 ### 5: Implement ClaudeAdapter Class
 
 <!-- prettier-ignore -->
-- [ ] 5.1 Create `src/claude/index.ts` with ClaudeAdapter class
+- [x] 5.1 Create `src/claude/index.ts` with ClaudeAdapter class
         - Implement constructor: store cliPath and config
         - Implement execute<T>() method
         - Merge constructor config with execute options
@@ -238,13 +257,21 @@ Rewrite README with new API patterns. Update CHANGELOG with breaking changes. Ru
         - Add optional logging with writeLog
         - Export ClaudeAdapter, ClaudeOptions, ClaudeConfig, ClaudeStreamEvent
         - File: `src/claude/index.ts`
-- [ ] 5.2 Verify ClaudeAdapter compiles
+- [x] 5.2 Verify ClaudeAdapter compiles
         - Command: `pnpm check-types`
         - Expected: No TypeScript errors in Claude adapter
 
 #### Completion Notes
 
-(To be filled in during implementation)
+- Created ClaudeAdapter class with constructor that auto-detects CLI path or uses config
+- Implemented execute<T>() method with full streaming support (onEvent, onOutput callbacks)
+- Config merging works correctly (constructor config + execute options)
+- Inlined prompt validation as specified (4 lines)
+- Integrated buildClaudeArgs, spawnProcess, parseClaudeOutput
+- Added optional logging with writeLog
+- Exports ClaudeAdapter, ClaudeOptions, ClaudeConfig, ClaudeStreamEvent, and all event type guards
+- Fixed type issues by using BaseStreamEvent for Claude-specific events
+- Type checking passes with zero errors
 
 ### 6: Create Codex Adapter Structure
 

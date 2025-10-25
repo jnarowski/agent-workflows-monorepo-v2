@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "cbb49e5f-e4c8-4dce-a42a-c484e4ac81f4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/cbb49e5f-e4c8-4dce-a42a-c484e4ac81f4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can you run pnpm check within packages/agent-cli-sdk to make sure all tests and linting passes?"
+  }
+]
