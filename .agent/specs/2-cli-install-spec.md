@@ -345,3 +345,83 @@ pnpm --filter @repo/web build
 - Migrations will be at `dist/prisma/migrations/` after build
 - DATABASE_URL must be set before any Prisma operations
 - The install command runs before the server, so server code is not available
+
+## Review Findings
+
+**Review Date:** 2025-10-25
+**Reviewed By:** Claude Code
+**Review Iteration:** 1 of 3
+**Branch:** feat/agent-cli-sdk-revamp-v5
+**Commits Reviewed:** 5
+
+### Summary
+
+The implementation is mostly complete with all core functionality in place. However, there are 5 HIGH priority issues that need to be addressed: missing shebang in source file, incorrect PRISMA_SCHEMA_PATH environment variable, missing version reading from package.json, incorrect getDefaultDbPath implementation, and a missing call to resolvePath. These issues will prevent the CLI from functioning correctly.
+
+### Phase 1: Foundation
+
+**Status:** ⚠️ Incomplete - Missing shebang in source file, incorrect path logic
+
+#### HIGH Priority
+
+- [ ] **Missing shebang in CLI entry point source file**
+  - **File:** `apps/web/src/cli/index.ts:1`
+  - **Spec Reference:** "Step 5: CLI Main Entry Point" task requires: "Add shebang: `#!/usr/bin/env node`"
+  - **Expected:** The source file `src/cli/index.ts` should start with `#!/usr/bin/env node` on line 1
+  - **Actual:** The source file does not contain a shebang (though the build script adds it to the output)
+  - **Fix:** Add `#!/usr/bin/env node` as the first line of `src/cli/index.ts` before the imports
+
+- [ ] **getDefaultDbPath returns already-resolved path instead of unexpanded path**
+  - **File:** `apps/web/src/cli/utils/paths.ts:25-26`
+  - **Spec Reference:** "Step 2: Path Utilities Implementation" requires `getDefaultDbPath()` to return `~/.agent/database.db` (not an expanded path)
+  - **Expected:** Function should return the string `"~/.agent/database.db"` with the tilde, to be resolved later
+  - **Actual:** Function calls `resolvePath()` which immediately expands `~` to the home directory
+  - **Fix:** Remove the `resolvePath()` call from `getDefaultDbPath()` and just return `"~/.agent/database.db"`
+
+### Phase 2: Core Implementation
+
+**Status:** ⚠️ Incomplete - Incorrect environment variable and missing version
+
+#### HIGH Priority
+
+- [ ] **Incorrect PRISMA_SCHEMA_PATH environment variable**
+  - **File:** `apps/web/src/cli/commands/install.ts:38`
+  - **Spec Reference:** "Step 4: Install Command Implementation" specifies: `PRISMA_SCHEMA_PATH: './dist/prisma/schema.prisma'`
+  - **Expected:** Prisma CLI should use `--schema` flag, not `PRISMA_SCHEMA_PATH` environment variable
+  - **Actual:** Code sets `PRISMA_SCHEMA_PATH` environment variable, but Prisma CLI doesn't recognize this variable
+  - **Fix:** Change the spawn command to use the `--schema` flag: `['prisma', 'migrate', 'deploy', '--schema=./dist/prisma/schema.prisma']` and remove `PRISMA_SCHEMA_PATH` from env
+
+- [ ] **CLI version hardcoded to "0.0.0" instead of reading from package.json**
+  - **File:** `apps/web/src/cli/index.ts:9`
+  - **Spec Reference:** "Step 5: CLI Main Entry Point" requires: "Set version from package.json"
+  - **Expected:** Version should be dynamically read from package.json
+  - **Actual:** Version is hardcoded to "0.0.0"
+  - **Fix:** Import package.json and use its version: `import packageJson from '../../package.json' assert { type: 'json' }; ... .version(packageJson.version)`
+
+- [ ] **Missing resolvePath call in install command database check**
+  - **File:** `apps/web/src/cli/commands/install.ts:13`
+  - **Spec Reference:** While the code does call `resolvePath(getDefaultDbPath())`, with the fix to `getDefaultDbPath()` (HIGH priority issue above), this would be double-resolving. The function should return the unresolved path.
+  - **Expected:** Since `getDefaultDbPath()` will return `"~/.agent/database.db"` (after fix), line 13 correctly calls `resolvePath()` on it
+  - **Actual:** This is actually correct as-is, but depends on the fix to `getDefaultDbPath()`
+  - **Fix:** No fix needed - this issue is resolved by fixing `getDefaultDbPath()`
+
+### Phase 3: Integration
+
+**Status:** ✅ Complete - Prisma schema correctly updated and verified
+
+### Positive Findings
+
+- Well-implemented error handling throughout the install command with clear error messages
+- Good use of TypeScript types for config and options interfaces
+- Build scripts (`build-cli.js` and `copy-prisma-schema.js`) are well-structured and include proper error handling
+- Prisma schema correctly updated to use `env("DATABASE_URL")`
+- Success messaging is comprehensive and user-friendly with clear next steps
+- Config utilities properly handle missing files and errors
+- Directory creation uses `recursive: true` for safe operation
+- Example config file is clear and well-documented
+
+### Review Completion Checklist
+
+- [x] All spec requirements reviewed
+- [x] Code quality checked
+- [ ] All findings addressed and tested

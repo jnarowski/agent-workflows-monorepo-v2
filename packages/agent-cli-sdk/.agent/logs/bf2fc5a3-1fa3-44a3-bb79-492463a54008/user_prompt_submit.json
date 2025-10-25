@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "bf2fc5a3-1fa3-44a3-bb79-492463a54008",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/bf2fc5a3-1fa3-44a3-bb79-492463a54008.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "/implement-spec .agent/specs/250125164500-agent-cli-refactor-spec.md focus on review steps"
+  }
+]

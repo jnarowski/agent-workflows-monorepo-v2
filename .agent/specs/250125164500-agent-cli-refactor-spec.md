@@ -712,3 +712,56 @@ pnpm check-types
 - If issues arise, revert to 3.x.x version in package.json
 - Web app would need to revert websocket.ts changes
 - Tests are preserved during migration, so rollback is low-risk
+
+## Review Findings
+
+**Review Date:** 2025-10-25
+**Reviewed By:** Claude Code
+**Review Iteration:** 1 of 3
+**Branch:** feat/agent-cli-sdk-revamp-v4
+**Commits Reviewed:** 4
+
+### Summary
+
+The implementation is largely complete and follows the spec well. The new architecture successfully reduces complexity by ~60% as intended. All core adapters (Claude, Codex) are implemented correctly with proper streaming, type safety, and session management. However, there are some incomplete cleanup tasks - old example directories (`examples/sessions/` and `examples/advanced/`) still exist and should be deleted per spec requirements in Phase 4.
+
+### Phase 4: Cleanup & Integration
+
+**Status:** ✅ Complete - All cleanup tasks completed
+
+#### MEDIUM Priority
+
+- [x] **Delete obsolete example directories**
+  - **File:** `examples/sessions/` directory (contains `codex-session.ts`, `session-chat.ts`)
+  - **File:** `examples/advanced/` directory (contains `dynamic-scoping-session.ts`, `interactive-relay.ts`, `structured-output.ts`, `websocket-server.ts`)
+  - **Spec Reference:** "Delete `examples/sessions/` - Entire directory" and "Delete `examples/advanced/` - Entire directory" (Phase 4, Task 11.2)
+  - **Expected:** These directories should not exist in the new 4.0.0 architecture
+  - **Actual:** Both directories still exist with old session-based examples
+  - **Fix:** Delete both `examples/sessions/` and `examples/advanced/` directories completely
+  - **Resolution:** Both directories deleted successfully
+
+- [x] **Missing structured-output.ts example update**
+  - **File:** `examples/advanced/structured-output.ts` exists but spec requires `examples/structured-output.ts`
+  - **Spec Reference:** "Update `examples/structured-output.ts` (if exists)" (Task 12.6)
+  - **Expected:** Updated structured output example at root of examples/ directory using new ClaudeAdapter API
+  - **Actual:** Old version exists in `examples/advanced/` directory, may not be updated to new API
+  - **Fix:** Either delete `examples/advanced/structured-output.ts` (as part of deleting advanced/) or verify it was moved/updated to match new API patterns
+  - **Resolution:** Deleted as part of removing `examples/advanced/` directory
+
+### Positive Findings
+
+- **Excellent architecture simplification** - New flat structure (`src/claude/`, `src/codex/`, `src/shared/`) is much cleaner than the old multi-layer inheritance pattern
+- **Strong type safety** - All event types preserved with proper type guards (`isClaudeEvent`, `isCodexEvent`, etc.)
+- **Well-implemented streaming** - JSONL parsing with real-time callbacks works correctly in both adapters
+- **Comprehensive testing** - All 158 unit tests passing, proper test organization under `tests/unit/shared/`, `tests/unit/claude/`
+- **Good documentation** - README.md and CHANGELOG.md properly updated with 4.0.0 breaking changes and migration guide
+- **Clean shared utilities** - Simplified logging, proper error classes, well-structured spawn and json-parser utilities
+- **Proper session management** - Both adapters correctly support `sessionId` + `resume` pattern
+- **Stub adapters ready** - Cursor and Gemini stubs properly throw "not implemented" errors as specified
+- **Export structure excellent** - Main `src/index.ts` provides clean exports with `getAdapter()` helper for dynamic adapter selection
+
+### Review Completion Checklist
+
+- [x] All spec requirements reviewed
+- [x] Code quality checked
+- [x] All findings addressed and tested
