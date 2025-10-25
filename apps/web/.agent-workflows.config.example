@@ -1,0 +1,7 @@
+{
+  "$schema": "This is an example configuration file for agent-workflows-ui",
+  "uiPort": 5173,
+  "serverPort": 3456,
+  "dbPath": "~/.agent/database.db",
+  "logLevel": "info"
+}

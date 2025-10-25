@@ -166,12 +166,18 @@ class ClaudeAdapter {
 
 **Execute Options:**
 - `sessionId?: string` - Session ID for continuation
-- `resume?: boolean` - Resume existing session
+- `resume?: boolean` - Resume existing session (use with `sessionId`)
+- `continue?: boolean` - Continue last session
 - `timeout?: number` - Execution timeout in ms
 - `onOutput?: (data: OutputData) => void` - Output callback
 - `onEvent?: (event: ClaudeStreamEvent) => void` - Event callback
 - `logPath?: string` - Path for logging input/output
 - `responseSchema?: ZodSchema | true` - JSON extraction/validation
+- `streaming?: boolean` - Enable streaming (default: true)
+- `permissionMode?: 'ask' | 'acceptEdits' | 'acceptAll'` - Permission mode
+- `dangerouslySkipPermissions?: boolean` - Skip all permissions (sets permissionMode to 'acceptEdits')
+- `toolSettings?: { allowedTools?: string[], disallowedTools?: string[] }` - Tool filtering
+- `images?: Array<{ path: string }>` - Attach images to prompt
 - Plus all config options (merged with constructor config)
 
 ### CodexAdapter
@@ -192,23 +198,33 @@ class CodexAdapter {
 - `workingDir?: string` - Working directory
 
 **Execute Options:**
-- Similar to ClaudeAdapter plus Codex-specific options
-- `dangerouslyBypassApprovalsAndSandbox?: boolean` - Skip approvals
+- Similar to ClaudeAdapter with these Codex-specific additions:
+- `dangerouslyBypassApprovalsAndSandbox?: boolean` - Skip approvals and sandbox
 - `images?: string[]` - Image file paths
 - `search?: boolean` - Enable search capability
+- `resume?: boolean` - Resume session (use with `sessionId`)
 
 ### ExecutionResponse
 
 ```typescript
 interface ExecutionResponse<T = string> {
-  status: 'success' | 'error'
+  status: 'success' | 'error' | 'timeout'
   data: T                        // Parsed output (string or structured data)
-  output?: string                // Raw text output
-  sessionId?: string             // Session identifier
-  exitCode?: number              // Process exit code
+  sessionId: string              // Session identifier
+  exitCode: number               // Process exit code
   duration: number               // Execution time in ms
-  metadata: Record<string, any>  // Additional metadata
+  events?: StreamEvent[]         // Parsed JSONL events
+  actions?: ActionLog[]          // Tool usage and action logs
+  metadata: {                    // Execution metadata
+    model?: string
+    tokensUsed?: number
+    toolsUsed?: string[]
+    filesModified?: string[]
+    validation?: ValidationResult
+  }
   usage?: TokenUsage             // Token usage stats
+  modelUsage?: Record<string, ModelUsage>  // Per-model usage breakdown
+  totalCostUSD?: number          // Total estimated cost
   raw?: {                        // Raw process output
     stdout: string
     stderr: string
@@ -216,7 +232,7 @@ interface ExecutionResponse<T = string> {
   error?: {                      // Error details (if status === 'error')
     code: string
     message: string
-    details?: any
+    details?: Record<string, unknown>
   }
 }
 ```
@@ -225,13 +241,28 @@ interface ExecutionResponse<T = string> {
 
 **Claude Events:**
 - `ClaudeStreamEvent` - Union of all Claude event types
-- Event types: `file_history_snapshot`, `user_message`, `assistant_message`
+- Event types: `assistant`, `user`, `result`, plus synthetic events:
+  - `turn.started` - Emitted when first assistant message arrives
+  - `turn.completed` - Emitted when result event arrives
+  - `text` - Emitted for text content blocks
+  - `tool.started` - Emitted for tool_use blocks
+  - `tool.completed` - Emitted for tool_result blocks
 - Type guards: `isClaudeEvent()`, `isFileHistorySnapshotEvent()`, `isUserMessageEvent()`, `isAssistantMessageEvent()`
 
 **Codex Events:**
 - `CodexStreamEvent` - Union of all Codex event types
 - Event types: `thread.started`, `turn.completed`, `item.completed`, etc.
 - Type guards: `isCodexEvent()`, `isThreadStartedEvent()`, `isTurnCompletedEvent()`, etc.
+
+**OutputData Interface:**
+```typescript
+interface OutputData {
+  raw: string           // Raw stdout chunk
+  events?: StreamEvent[] // Parsed JSONL events from this chunk
+  text?: string         // Text content extracted from events
+  accumulated: string   // All text accumulated so far
+}
+```
 
 ### Helper Functions
 
@@ -243,21 +274,42 @@ function getAdapter(name: 'cursor', config?: CursorConfig): CursorAdapter
 function getAdapter(name: 'gemini', config?: GeminiConfig): GeminiAdapter
 
 // JSON utilities
-function extractJSON(text: string): any | null
-function parseJSONL(text: string): any[]
-function safeJSONParse(text: string): { success: true; data: any } | { success: false; error: Error }
+function extractJSON(text: string): any | null  // Extract first JSON object/array
+function parseJSONL(text: string): any[]        // Parse newline-delimited JSON
+function safeJSONParse(text: string, schema?: ZodSchema): any  // Parse with optional Zod validation
+
+// Error classes
+class AgentSDKError extends Error
+class ValidationError extends AgentSDKError
+class CLINotFoundError extends AgentSDKError
+class AuthenticationError extends AgentSDKError
+class ExecutionError extends AgentSDKError
+class TimeoutError extends AgentSDKError
+class ParseError extends AgentSDKError
+class SessionError extends AgentSDKError
 ```
 
 ## Examples
 
 See the [examples](./examples) directory for more:
 
+### Basic Examples
 - [examples/basic/claude.ts](./examples/basic/claude.ts) - Basic Claude usage
 - [examples/basic/codex.ts](./examples/basic/codex.ts) - Basic Codex usage
 - [examples/session-continuation.ts](./examples/session-continuation.ts) - Session management
 - [examples/streaming.ts](./examples/streaming.ts) - Streaming patterns
 - [examples/multi-agent.ts](./examples/multi-agent.ts) - Dynamic adapter selection
-- [examples/advanced/structured-output.ts](./examples/advanced/structured-output.ts) - JSON validation
+- [examples/typed-events.ts](./examples/typed-events.ts) - Type-safe event handling
+
+### Advanced Examples
+- [examples/advanced/structured-output.ts](./examples/advanced/structured-output.ts) - JSON validation with Zod
+- [examples/advanced/dynamic-scoping-session.ts](./examples/advanced/dynamic-scoping-session.ts) - Dynamic session management
+- [examples/advanced/interactive-relay.ts](./examples/advanced/interactive-relay.ts) - Interactive relay pattern
+- [examples/advanced/websocket-server.ts](./examples/advanced/websocket-server.ts) - WebSocket integration
+
+### Session Examples
+- [examples/sessions/session-chat.ts](./examples/sessions/session-chat.ts) - Multi-turn chat session
+- [examples/sessions/codex-session.ts](./examples/sessions/codex-session.ts) - Codex session management
 
 ## Architecture
 
@@ -323,6 +375,60 @@ const result2 = await claude.execute('Continued', {
 - **Better TypeScript** - Improved type inference and safety
 - **Easier Extension** - Adding new adapters (Cursor, Gemini) is trivial
 - **Same Functionality** - All features preserved, just simpler
+
+## Development
+
+### Setup
+```bash
+pnpm install
+pnpm build
+```
+
+### Testing
+```bash
+pnpm test              # Run unit tests
+pnpm test:watch        # Watch mode
+pnpm check             # Run all checks (tests + types + lint)
+
+# E2E tests (require real CLIs)
+RUN_E2E_TESTS=true pnpm test:e2e         # All E2E tests
+RUN_E2E_TESTS=true pnpm test:e2e:claude  # Claude only
+RUN_E2E_TESTS=true pnpm test:e2e:codex   # Codex only
+```
+
+### Requirements
+- Node.js >= 22.0.0
+- pnpm (recommended)
+- For E2E tests:
+  - Claude Code CLI (from claude.ai/download)
+  - OpenAI Codex CLI (from github.com/openai/openai-cli)
+
+## Troubleshooting
+
+### CLI Not Found
+If you get a `CLINotFoundError`, ensure the CLI is installed and in your PATH, or set the environment variable:
+```bash
+export CLAUDE_CLI_PATH=/path/to/claude
+export CODEX_CLI_PATH=/path/to/codex
+```
+
+Alternatively, pass `cliPath` in the adapter config:
+```typescript
+const claude = new ClaudeAdapter({
+  cliPath: '/custom/path/to/claude'
+});
+```
+
+### Session Management
+- `sessionId` alone creates a new session with that ID
+- `sessionId + resume: true` continues an existing session
+- `continue: true` (Claude only) continues the last session
+- These options are mutually exclusive
+
+### Structured Output
+- Use `responseSchema: true` to extract any JSON from output
+- Use `responseSchema: ZodSchema` for validated, type-safe parsing
+- Throws `ParseError` if JSON extraction or validation fails
 
 ## Contributing
 

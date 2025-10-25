@@ -11,8 +11,8 @@
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
-import { AgentClient, createCodexAdapter } from "../../src/index";
-import { isCodexCLIInstalled } from "../../src/adapters/codex/cli-detector";
+import { CodexAdapter } from "../../src/index";
+import { isCodexCLIInstalled } from "../../src/codex/cli-detector";
 
 const SHOULD_RUN = process.env.RUN_E2E_TESTS === "true";
 const describeE2E = SHOULD_RUN ? describe : describe.skip;
@@ -30,9 +30,9 @@ describeE2E("Codex E2E Tests", () => {
 
   describe("Basic Execution", () => {
     it("should execute a simple prompt successfully", async () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
+      const adapter = new CodexAdapter();
 
-      const result = await client.execute("What is 2 + 2? Reply with just the number.", {
+      const result = await adapter.execute("What is 2 + 2? Reply with just the number.", {
         timeout: 30000, // 30 second timeout
         fullAuto: false, // Require confirmation
       });
@@ -49,11 +49,11 @@ describeE2E("Codex E2E Tests", () => {
     }, 60000); // 60 second test timeout
 
     it("should handle streaming output", async () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
+      const adapter = new CodexAdapter();
       const outputChunks: string[] = [];
       const events: any[] = [];
 
-      const result = await client.execute("Say hello", {
+      const result = await adapter.execute("Say hello", {
         onOutput: (data) => outputChunks.push(data.raw),
         onEvent: (event) => events.push(event),
         timeout: 30000,
@@ -72,14 +72,12 @@ describeE2E("Codex E2E Tests", () => {
       expect(turnEvents.length).toBeGreaterThan(0);
     }, 60000);
 
-    it("should execute with factory-created adapter", async () => {
-      const codex = createCodexAdapter({
+    it("should execute with config options", async () => {
+      const adapter = new CodexAdapter({
         verbose: false,
       });
 
-      const client = new AgentClient({ adapter: codex });
-
-      const result = await client.execute("Respond with 'OK'", {
+      const result = await adapter.execute("Respond with 'OK'", {
         timeout: 30000,
       });
 
@@ -90,10 +88,10 @@ describeE2E("Codex E2E Tests", () => {
 
   describe("Session Management", () => {
     it("should support session resumption", async () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
+      const adapter = new CodexAdapter();
 
       // Create initial session
-      const session1 = await client.execute("Remember the number 42", {
+      const session1 = await adapter.execute("Remember the number 42", {
         fullAuto: true,
         timeout: 30000,
       });
@@ -102,7 +100,7 @@ describeE2E("Codex E2E Tests", () => {
       expect(session1.sessionId).toBeDefined();
 
       // Resume the session
-      const session2 = await client.execute("What number did I ask you to remember?", {
+      const session2 = await adapter.execute("What number did I ask you to remember?", {
         sessionId: session1.sessionId,
         fullAuto: true,
         timeout: 30000,
@@ -116,9 +114,9 @@ describeE2E("Codex E2E Tests", () => {
 
   describe("Full Auto Mode", () => {
     it("should execute in full auto mode", async () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
+      const adapter = new CodexAdapter();
 
-      const result = await client.execute("Echo 'test' to console", {
+      const result = await adapter.execute("Echo 'test' to console", {
         fullAuto: true, // Automatically approve actions
         timeout: 30000,
       });
@@ -128,9 +126,9 @@ describeE2E("Codex E2E Tests", () => {
     }, 60000);
 
     it("should execute with explicit sandbox mode", async () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
+      const adapter = new CodexAdapter();
 
-      const result = await client.execute("Say hello", {
+      const result = await adapter.execute("Say hello", {
         sandbox: "workspace-write",
         fullAuto: true,
         timeout: 30000,
@@ -140,9 +138,9 @@ describeE2E("Codex E2E Tests", () => {
     }, 60000);
 
     it("should execute with read-only sandbox", async () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
+      const adapter = new CodexAdapter();
 
-      const result = await client.execute("Say hi", {
+      const result = await adapter.execute("Say hi", {
         sandbox: "read-only",
         fullAuto: true,
         timeout: 30000,
@@ -154,12 +152,12 @@ describeE2E("Codex E2E Tests", () => {
 
   describe("Image Support", () => {
     it("should handle image inputs", async () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
+      const adapter = new CodexAdapter();
 
       // Use absolute path to avoid path resolution issues
       const imagePath = `${process.cwd()}/tests/fixtures/test-image.png`;
 
-      const result = await client.execute("What text do you see in this image?", {
+      const result = await adapter.execute("What text do you see in this image?", {
         images: [imagePath],
         fullAuto: true,
         timeout: 80000, // Increased timeout for image processing
@@ -181,43 +179,22 @@ describeE2E("Codex E2E Tests", () => {
     }, 90000);
   });
 
-  describe("Adapter Capabilities", () => {
-    it("should return correct capabilities", () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
-      const capabilities = client.getCapabilities();
-
-      expect(capabilities.streaming).toBe(true);
-      expect(capabilities.sessionManagement).toBe(false); // No createSession() method (planned for v1.1)
-      expect(capabilities.toolCalling).toBe(true);
-      expect(capabilities.multiModal).toBe(true); // Codex supports images
-    });
-
-    it("should provide access to underlying adapter", () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
-      const adapter = client.getAdapter();
-
-      expect(adapter).toBeDefined();
-      expect(adapter.getCapabilities).toBeDefined();
-      expect(typeof adapter.execute).toBe("function");
-    });
-  });
-
   describe("Error Handling", () => {
     it("should handle timeout errors", async () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
+      const adapter = new CodexAdapter();
 
       await expect(
-        client.execute("Count to 1000 slowly", {
+        adapter.execute("Count to 1000 slowly", {
           timeout: 100, // Very short timeout
         })
       ).rejects.toThrow();
     }, 10000);
 
     it("should handle invalid prompts", async () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
+      const adapter = new CodexAdapter();
 
       await expect(
-        client.execute("", {
+        adapter.execute("", {
           timeout: 5000,
         })
       ).rejects.toThrow("Prompt must be a non-empty string");
@@ -226,12 +203,11 @@ describeE2E("Codex E2E Tests", () => {
 
   describe("Advanced Options", () => {
     it("should respect working directory", async () => {
-      const client = new AgentClient({
-        adapter: createCodexAdapter(),
+      const adapter = new CodexAdapter({
         workingDir: process.cwd(),
       });
 
-      const result = await client.execute("What is the current directory?", {
+      const result = await adapter.execute("What is the current directory?", {
         timeout: 30000,
       });
 
@@ -242,9 +218,9 @@ describeE2E("Codex E2E Tests", () => {
 
   describe("Metadata Extraction", () => {
     it("should extract metadata from response", async () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
+      const adapter = new CodexAdapter();
 
-      const result = await client.execute("Tell me a short joke", {
+      const result = await adapter.execute("Tell me a short joke", {
         timeout: 30000,
         fullAuto: true,
       });
@@ -259,15 +235,15 @@ describeE2E("Codex E2E Tests", () => {
       // Should have usage info
       expect(result.usage).toBeDefined();
       if (result.usage) {
-        expect(result.usage.input_tokens).toBeGreaterThan(0);
-        expect(result.usage.output_tokens).toBeGreaterThan(0);
+        expect(result.usage.inputTokens).toBeGreaterThan(0);
+        expect(result.usage.outputTokens).toBeGreaterThan(0);
       }
     }, 60000);
 
     it("should extract reasoning from events", async () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
+      const adapter = new CodexAdapter();
 
-      const result = await client.execute("What is 1 + 1?", {
+      const result = await adapter.execute("What is 1 + 1?", {
         timeout: 30000,
         fullAuto: true,
       });
@@ -282,10 +258,10 @@ describeE2E("Codex E2E Tests", () => {
     }, 60000);
 
     it("should track tools used", async () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
+      const adapter = new CodexAdapter();
       const events: any[] = [];
 
-      await client.execute("What files are in the current directory?", {
+      await adapter.execute("What files are in the current directory?", {
         onEvent: (event) => events.push(event),
         timeout: 30000,
         fullAuto: true,
@@ -297,17 +273,17 @@ describeE2E("Codex E2E Tests", () => {
     }, 60000);
 
     it("should track token usage", async () => {
-      const client = new AgentClient({ adapter: createCodexAdapter() });
+      const adapter = new CodexAdapter();
 
-      const result = await client.execute("Say hello", {
+      const result = await adapter.execute("Say hello", {
         timeout: 30000,
         fullAuto: true,
       });
 
       expect(result.usage).toBeDefined();
       if (result.usage) {
-        expect(result.usage.input_tokens).toBeGreaterThan(0);
-        expect(result.usage.output_tokens).toBeGreaterThan(0);
+        expect(result.usage.inputTokens).toBeGreaterThan(0);
+        expect(result.usage.outputTokens).toBeGreaterThan(0);
       }
     }, 60000);
   });

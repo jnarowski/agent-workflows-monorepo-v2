@@ -5,20 +5,20 @@
   "type": "module",
   "main": "src/server/index.ts",
   "bin": {
-    "web": "src/server/index.ts"
+    "agent-workflows-ui": "./dist/cli.js"
   },
   "files": [
-    "src/server/",
-    "src/shared/",
     "dist/",
-    "README.md"
+    ".agent-workflows.config.example"
   ],
+  "preferGlobal": true,
   "scripts": {
     "dev": "concurrently --kill-others \"pnpm dev:server\" \"pnpm dev:client\"",
     "dev:server": "tsx watch src/server/index.ts",
     "dev:client": "vite --host",
     "dev:kill": "bash ./scripts/kill-ports.sh",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && pnpm build:cli",
+    "build:cli": "node scripts/build-cli.js && node scripts/copy-prisma-schema.js",
     "check": "pnpm lint && pnpm check-types && pnpm run test",
     "check-types": "tsc --noEmit",
     "lint": "eslint .",
@@ -96,6 +96,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "commander": "^14.0.2",
     "date-fns": "^4.1.0",
     "diff": "^8.0.2",
     "embla-carousel-react": "^8.6.0",
@@ -151,6 +152,7 @@
     "@vitejs/plugin-react": "^5.0.4",
     "@vitest/ui": "^4.0.3",
     "concurrently": "^8.2.2",
+    "esbuild": "^0.25.11",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",

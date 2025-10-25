@@ -12,8 +12,8 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { z } from "zod";
-import { AgentClient, createClaudeAdapter } from "../../src/index";
-import { detectAndValidateClaudeCLI } from "../../src/adapters/claude/cli-detector";
+import { ClaudeAdapter } from "../../src/index";
+import { detectAndValidateClaudeCLI } from "../../src/claude/cli-detector";
 
 const SHOULD_RUN = process.env.RUN_E2E_TESTS === "true";
 const describeE2E = SHOULD_RUN ? describe : describe.skip;
@@ -31,9 +31,9 @@ describeE2E("Structured Output E2E Tests", () => {
 
   describe("JSON Extraction Without Validation", () => {
     it("should extract JSON from Claude response", async () => {
-      const client = new AgentClient({ adapter: createClaudeAdapter() });
+      const adapter = new ClaudeAdapter();
 
-      const result = await client.execute<{
+      const result = await adapter.execute<{
         name: string;
         age: number;
         active: boolean;
@@ -57,9 +57,9 @@ describeE2E("Structured Output E2E Tests", () => {
     }, 60000);
 
     it("should extract JSON from plain response without code block", async () => {
-      const client = new AgentClient({ adapter: createClaudeAdapter() });
+      const adapter = new ClaudeAdapter();
 
-      const result = await client.execute<{ status: string; count: number }>(
+      const result = await adapter.execute<{ status: string; count: number }>(
         'Return this exact JSON (no code block): {"status": "ok", "count": 42}',
         { responseSchema: true, timeout: 30000 }
       );
@@ -71,11 +71,11 @@ describeE2E("Structured Output E2E Tests", () => {
     }, 60000);
 
     it("should handle response without JSON gracefully", async () => {
-      const client = new AgentClient({ adapter: createClaudeAdapter() });
+      const adapter = new ClaudeAdapter();
 
       // This should throw because there's no JSON to extract
       await expect(
-        client.execute(
+        adapter.execute(
           "Say hello world. Do not include any JSON in your response.",
           { responseSchema: true, timeout: 30000 }
         )
@@ -93,9 +93,9 @@ describeE2E("Structured Output E2E Tests", () => {
 
       type User = z.infer<typeof UserSchema>;
 
-      const client = new AgentClient({ adapter: createClaudeAdapter() });
+      const adapter = new ClaudeAdapter();
 
-      const result = await client.execute<User>(
+      const result = await adapter.execute<User>(
         'Return a JSON object with: name="John Doe", age=30, email="john@example.com". Return ONLY the JSON in a markdown code block.',
         { responseSchema: UserSchema, timeout: 30000 }
       );
@@ -123,9 +123,9 @@ describeE2E("Structured Output E2E Tests", () => {
 
       type Weather = z.infer<typeof WeatherSchema>;
 
-      const client = new AgentClient({ adapter: createClaudeAdapter() });
+      const adapter = new ClaudeAdapter();
 
-      const result = await client.execute<Weather>(
+      const result = await adapter.execute<Weather>(
         'Return weather data as JSON: location with city="San Francisco" and country="USA", temperature=72, conditions="Sunny", humidity=60. Return ONLY the JSON in a markdown code block.',
         { responseSchema: WeatherSchema, timeout: 30000 }
       );
@@ -148,9 +148,9 @@ describeE2E("Structured Output E2E Tests", () => {
       const ProductsSchema = z.array(ItemSchema);
       type Products = z.infer<typeof ProductsSchema>;
 
-      const client = new AgentClient({ adapter: createClaudeAdapter() });
+      const adapter = new ClaudeAdapter();
 
-      const result = await client.execute<Products>(
+      const result = await adapter.execute<Products>(
         "Return an array of 3 products as JSON. Each product has id (number), name (string), price (number). Return ONLY the JSON array in a markdown code block.",
         { responseSchema: ProductsSchema, timeout: 30000 }
       );
@@ -176,11 +176,11 @@ describeE2E("Structured Output E2E Tests", () => {
         status: z.enum(["active", "inactive"]),
       });
 
-      const client = new AgentClient({ adapter: createClaudeAdapter() });
+      const adapter = new ClaudeAdapter();
 
       // This should fail validation and throw
       await expect(
-        client.execute(
+        adapter.execute(
           'Return JSON with count=5 (a number less than 100) and status="pending". Return ONLY the JSON in a markdown code block.',
           { responseSchema: StrictSchema, timeout: 30000 }
         )
@@ -194,11 +194,11 @@ describeE2E("Structured Output E2E Tests", () => {
         phone: z.string(), // Required field
       });
 
-      const client = new AgentClient({ adapter: createClaudeAdapter() });
+      const adapter = new ClaudeAdapter();
 
       // Missing 'phone' field should cause validation to fail
       await expect(
-        client.execute(
+        adapter.execute(
           'Return JSON with only name="Test" and email="test@example.com". Do NOT include a phone field. Return ONLY the JSON in a markdown code block.',
           { responseSchema: RequiredFieldsSchema, timeout: 30000 }
         )
@@ -208,9 +208,9 @@ describeE2E("Structured Output E2E Tests", () => {
 
   describe("Backwards Compatibility", () => {
     it("should work normally without responseSchema", async () => {
-      const client = new AgentClient({ adapter: createClaudeAdapter() });
+      const adapter = new ClaudeAdapter();
 
-      const result = await client.execute('Say "Hello, World!"', {
+      const result = await adapter.execute('Say "Hello, World!"', {
         timeout: 30000,
       });
 
@@ -220,9 +220,9 @@ describeE2E("Structured Output E2E Tests", () => {
     }, 60000);
 
     it("should return string output when responseSchema not provided", async () => {
-      const client = new AgentClient({ adapter: createClaudeAdapter() });
+      const adapter = new ClaudeAdapter();
 
-      const result = await client.execute(
+      const result = await adapter.execute(
         "What is 2+2? Answer with just the number.",
         {
           timeout: 30000,
@@ -246,9 +246,9 @@ describeE2E("Structured Output E2E Tests", () => {
 
       type Data = z.infer<typeof Schema>;
 
-      const client = new AgentClient({ adapter: createClaudeAdapter() });
+      const adapter = new ClaudeAdapter();
 
-      const result = await client.execute<Data>(
+      const result = await adapter.execute<Data>(
         'Return JSON with just name="Test". Return ONLY the JSON in a markdown code block.',
         { responseSchema: Schema, timeout: 30000 }
       );
@@ -269,9 +269,9 @@ describeE2E("Structured Output E2E Tests", () => {
 
       type Data = z.infer<typeof Schema>;
 
-      const client = new AgentClient({ adapter: createClaudeAdapter() });
+      const adapter = new ClaudeAdapter();
 
-      const result = await client.execute<Data>(
+      const result = await adapter.execute<Data>(
         'Return JSON with required="value", optional="present", nullable=null. Return ONLY the JSON in a markdown code block.',
         { responseSchema: Schema, timeout: 30000 }
       );
@@ -294,9 +294,9 @@ describeE2E("Structured Output E2E Tests", () => {
 
       type Analysis = z.infer<typeof AnalysisSchema>;
 
-      const client = new AgentClient({ adapter: createClaudeAdapter() });
+      const adapter = new ClaudeAdapter();
 
-      const result = await client.execute<Analysis>(
+      const result = await adapter.execute<Analysis>(
         'Analyze this code and return JSON: language="typescript", linesOfCode=42, functions=["main", "helper"], complexity="low". Return ONLY the JSON in a markdown code block.',
         { responseSchema: AnalysisSchema, timeout: 30000 }
       );
@@ -323,9 +323,9 @@ describeE2E("Structured Output E2E Tests", () => {
 
       type Task = z.infer<typeof TaskSchema>;
 
-      const client = new AgentClient({ adapter: createClaudeAdapter() });
+      const adapter = new ClaudeAdapter();
 
-      const result = await client.execute<Task>(
+      const result = await adapter.execute<Task>(
         'Create a task breakdown for "Setup testing" with 3 steps. Return as JSON with title, steps array (each with step number, description, estimatedMinutes), and totalEstimate. Return ONLY the JSON in a markdown code block.',
         { responseSchema: TaskSchema, timeout: 45000 }
       );

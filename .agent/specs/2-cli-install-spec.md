@@ -56,23 +56,27 @@ Update the Prisma schema to use environment variables, test the complete flow en
 ### 1: CLI Infrastructure Setup
 
 <!-- prettier-ignore -->
-- [ ] Add commander dependency to package.json
+- [x] Add commander dependency to package.json
         - Run: `pnpm add commander`
         - File: `apps/web/package.json`
-- [ ] Update package.json bin field
+- [x] Update package.json bin field
         - Set: `"bin": { "agent-workflows-ui": "./dist/cli.js" }`
         - File: `apps/web/package.json`
-- [ ] Create CLI directory structure
+- [x] Create CLI directory structure
         - Create: `apps/web/src/cli/`
         - Create: `apps/web/src/cli/commands/`
         - Create: `apps/web/src/cli/utils/`
 
 #### Completion Notes
 
+- Commander dependency added (v14.0.2)
+- Updated bin field to point to `./dist/cli.js` for proper CLI execution
+- Created CLI directory structure with commands and utils subdirectories
+
 ### 2: Path Utilities Implementation
 
 <!-- prettier-ignore -->
-- [ ] Create path resolution utilities
+- [x] Create path resolution utilities
         - Implement `resolvePath(path: string): string` - Expands `~` to home directory
         - Implement `getConfigPath(): string` - Returns `~/.agents/agent-workflows-ui-config.json`
         - Implement `getDefaultDbPath(): string` - Returns `~/.agent/database.db`
@@ -83,58 +87,67 @@ Update the Prisma schema to use environment variables, test the complete flow en
 
 #### Completion Notes
 
+- Created path utilities with all required functions
+- Used Node.js os.homedir() for home directory expansion
+- Used fs.mkdirSync with recursive: true for safe directory creation
+
 ### 3: Config Utilities Implementation
 
 <!-- prettier-ignore -->
-- [ ] Create config type definition
+- [x] Create config type definition
         - Define interface with: `uiPort`, `serverPort`, `dbPath`, `logLevel`
         - File: `apps/web/src/cli/utils/config.ts`
-- [ ] Implement loadConfig function
+- [x] Implement loadConfig function
         - Read from `~/.agents/agent-workflows-ui-config.json`
         - Return empty object if file doesn't exist
         - Parse JSON and return typed config
         - File: `apps/web/src/cli/utils/config.ts`
-- [ ] Implement saveConfig function
+- [x] Implement saveConfig function
         - Accept config object as parameter
         - Ensure `~/.agents/` directory exists
         - Write JSON to `~/.agents/agent-workflows-ui-config.json`
         - Use pretty-printed JSON (2 space indent)
         - File: `apps/web/src/cli/utils/config.ts`
-- [ ] Implement getDefaultConfig function
+- [x] Implement getDefaultConfig function
         - Return object with defaults: `{ uiPort: 5173, serverPort: 3456, dbPath: "~/.agent/database.db", logLevel: "info" }`
         - File: `apps/web/src/cli/utils/config.ts`
 
 #### Completion Notes
 
+- Created AgentWorkflowsConfig interface with all required fields
+- Implemented loadConfig with proper error handling
+- Implemented saveConfig with directory creation and pretty formatting
+- Implemented getDefaultConfig with specified default values
+
 ### 4: Install Command Implementation
 
 <!-- prettier-ignore -->
-- [ ] Create install command file structure
+- [x] Create install command file structure
         - Import necessary utilities (paths, config)
         - Import fs, child_process from Node.js
         - Export async installCommand function
         - File: `apps/web/src/cli/commands/install.ts`
-- [ ] Implement database existence check
+- [x] Implement database existence check
         - Resolve DB path using `getDefaultDbPath()`
         - Check if file exists using `fs.existsSync()`
         - If exists and no `--force` flag: throw error with message "Database already exists at <path>. Use --force to overwrite."
         - If exists with `--force`: delete file using `fs.unlinkSync()`
         - File: `apps/web/src/cli/commands/install.ts`
-- [ ] Implement directory creation
+- [x] Implement directory creation
         - Call `ensureDirectoryExists('~/.agents/')`
         - Call `ensureDirectoryExists('~/.agent/')`
         - File: `apps/web/src/cli/commands/install.ts`
-- [ ] Implement Prisma migration execution
+- [x] Implement Prisma migration execution
         - Resolve DB path to absolute path
         - Set environment variable: `process.env.DATABASE_URL = 'file:' + dbPath`
         - Spawn Prisma CLI: `child_process.spawnSync('npx', ['prisma', 'migrate', 'deploy'], { stdio: 'inherit', env: { ...process.env, PRISMA_SCHEMA_PATH: './dist/prisma/schema.prisma' } })`
         - Check exit code, throw error if non-zero
         - File: `apps/web/src/cli/commands/install.ts`
-- [ ] Implement config file creation
+- [x] Implement config file creation
         - Get default config using `getDefaultConfig()`
         - Save using `saveConfig(defaultConfig)`
         - File: `apps/web/src/cli/commands/install.ts`
-- [ ] Add success messaging
+- [x] Add success messaging
         - Print: "✓ Created ~/.agent/ directory"
         - Print: "✓ Created database at ~/.agent/database.db"
         - Print: "✓ Applied database migrations"
@@ -152,10 +165,17 @@ Update the Prisma schema to use environment variables, test the complete flow en
 
 #### Completion Notes
 
+- Created install command with proper structure and error handling
+- Implemented database existence check with --force flag support
+- Directory creation uses ensureDirectoryExists for safe creation
+- Prisma migrations run with proper environment variables
+- Config file created with default values
+- Success messaging provides clear next steps for users
+
 ### 5: CLI Main Entry Point
 
 <!-- prettier-ignore -->
-- [ ] Create CLI index file with commander setup
+- [x] Create CLI index file with commander setup
         - Add shebang: `#!/usr/bin/env node`
         - Import Command from commander
         - Import installCommand from './commands/install'
@@ -164,35 +184,44 @@ Update the Prisma schema to use environment variables, test the complete flow en
         - Set description: 'Visual UI for agent workflows'
         - Set version from package.json
         - File: `apps/web/src/cli/index.ts`
-- [ ] Register install command
+- [x] Register install command
         - Add command: `program.command('install')`
         - Set description: 'Initialize database and configuration'
         - Add option: `--force` with description 'Overwrite existing database'
         - Set action to installCommand
         - File: `apps/web/src/cli/index.ts`
-- [ ] Add program parser
+- [x] Add program parser
         - Call `program.parse()` at end of file
         - File: `apps/web/src/cli/index.ts`
 
 #### Completion Notes
 
+- Created CLI entry point with proper shebang for executable
+- Configured commander with program name, description, and version
+- Registered install command with --force option
+- Added program.parse() to process command-line arguments
+
 ### 6: Prisma Schema Update
 
 <!-- prettier-ignore -->
-- [ ] Update datasource to use environment variable
+- [x] Update datasource to use environment variable
         - Change `url = "file:./dev.db"` to `url = env("DATABASE_URL")`
         - File: `apps/web/prisma/schema.prisma`
-- [ ] Verify Prisma client usage
+- [x] Verify Prisma client usage
         - Check that `src/shared/prisma.ts` doesn't override DATABASE_URL
         - Confirm PrismaClient constructor uses default behavior (reads from env)
         - File: `apps/web/src/shared/prisma.ts`
 
 #### Completion Notes
 
+- Updated Prisma schema datasource to use env("DATABASE_URL")
+- Verified that PrismaClient in src/shared/prisma.ts uses default constructor
+- No DATABASE_URL override detected in Prisma client initialization
+
 ### 7: Example Config File
 
 <!-- prettier-ignore -->
-- [ ] Create example config file
+- [x] Create example config file
         - Create file with minimal JSON structure
         - Include: `uiPort`, `serverPort`, `dbPath`, `logLevel`
         - Add comment header explaining purpose
@@ -200,17 +229,25 @@ Update the Prisma schema to use environment variables, test the complete flow en
 
 #### Completion Notes
 
+- Created example config file with all required fields
+- Added $schema field with description for documentation
+- Used default values matching getDefaultConfig()
+
 ### 8: Package.json Updates
 
 <!-- prettier-ignore -->
-- [ ] Update files field for npm publishing
+- [x] Update files field for npm publishing
         - Ensure includes: `["dist/", ".agent-workflows.config.example"]`
         - File: `apps/web/package.json`
-- [ ] Add preferGlobal field
+- [x] Add preferGlobal field
         - Set: `"preferGlobal": true`
         - File: `apps/web/package.json`
 
 #### Completion Notes
+
+- Updated files field to include dist/ and .agent-workflows.config.example
+- Added preferGlobal: true to indicate this package is meant to be installed globally
+- Removed unnecessary source files from the files array (only dist is needed for publishing)
 
 ## Acceptance Criteria
 

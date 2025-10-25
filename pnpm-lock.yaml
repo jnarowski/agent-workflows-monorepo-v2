@@ -360,6 +360,9 @@ importers:
       cmdk:
         specifier: ^1.1.1
         version: 1.1.1(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      commander:
+        specifier: ^14.0.2
+        version: 14.0.2
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -520,6 +523,9 @@ importers:
       concurrently:
         specifier: ^8.2.2
         version: 8.2.2
+      esbuild:
+        specifier: ^0.25.11
+        version: 0.25.11
       eslint:
         specifier: ^9.36.0
         version: 9.38.0(jiti@2.6.1)
@@ -3909,6 +3915,10 @@ packages:
 
   comma-separated-tokens@2.0.3:
     resolution: {integrity: sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==}
+
+  commander@14.0.2:
+    resolution: {integrity: sha512-TywoWNNRbhoD0BXs1P3ZEScW8W5iKrnbithIl0YH+uCmBd0QpPOA8yc82DS3BIE5Ma6FnBVUsJ7wVUDz4dvOWQ==}
+    engines: {node: '>=20'}
 
   commander@4.1.1:
     resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}
@@ -11582,6 +11592,8 @@ snapshots:
   comma-separated-tokens@1.0.8: {}
 
   comma-separated-tokens@2.0.3: {}
+
+  commander@14.0.2: {}
 
   commander@4.1.1: {}
 
