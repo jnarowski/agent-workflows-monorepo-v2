@@ -23,16 +23,21 @@ vim ~/.agents/agent-workflows-ui-config.json
 
 ### Run from dist (without installing)
 
-If you've built the application locally, you can run the CLI directly from the `dist` folder:
+If you've built the application locally, you can run the CLI directly using `node`:
 
 ```bash
 # Build the application first
 pnpm build
 
-# Run CLI commands directly
+# Run CLI commands from monorepo root
 node apps/web/dist/cli.js install
+node apps/web/dist/cli.js install --force
 node apps/web/dist/cli.js --version
 node apps/web/dist/cli.js --help
+
+# Or from apps/web directory
+cd apps/web
+node dist/cli.js install
 ```
 
 ## Commands

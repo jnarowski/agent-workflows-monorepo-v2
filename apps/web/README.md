@@ -268,8 +268,6 @@ The package includes a CLI tool (`agent-workflows-ui`) for easy installation and
 ```bash
 # Install globally from npm
 npm install -g @repo/web
-
-# Initialize database and configuration
 agent-workflows-ui install
 
 # Or run directly from dist without installing
