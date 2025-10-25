@@ -9,24 +9,27 @@
  * - MessageRenderer: Component to render messages
  */
 
-import type { AgentType } from '@/shared/types/agent.types';
-import type { SessionMessage, ContentBlock } from '@/shared/types/message.types';
+import type { AgentType } from "@/shared/types/agent.types";
+import type {
+  SessionMessage,
+  ContentBlock,
+} from "@/shared/types/message.types";
 
 // Import Claude transforms
-import { transformMessages as transformClaudeMessages } from './claude/transformMessages';
-import { transformStreaming as transformClaudeStreaming } from './claude/transformStreaming';
+import { transformMessages as transformClaudeMessages } from "./claude/transformMessages";
+import { transformStreaming as transformClaudeStreaming } from "./claude/transformStreaming";
 
 // Import stub transforms
-import { transformMessages as transformCodexMessages } from './codex/transformMessages';
-import { transformStreaming as transformCodexStreaming } from './codex/transformStreaming';
-import { transformMessages as transformCursorMessages } from './cursor/transformMessages';
-import { transformStreaming as transformCursorStreaming } from './cursor/transformStreaming';
-import { transformMessages as transformGeminiMessages } from './gemini/transformMessages';
-import { transformStreaming as transformGeminiStreaming } from './gemini/transformStreaming';
+import { transformMessages as transformCodexMessages } from "./codex/transformMessages";
+import { transformStreaming as transformCodexStreaming } from "./codex/transformStreaming";
+import { transformMessages as transformCursorMessages } from "./cursor/transformMessages";
+import { transformStreaming as transformCursorStreaming } from "./cursor/transformStreaming";
+import { transformMessages as transformGeminiMessages } from "./gemini/transformMessages";
+import { transformStreaming as transformGeminiStreaming } from "./gemini/transformStreaming";
 
 // Import components
-import { MessageRenderer as ClaudeMessageRenderer } from '@/client/pages/projects/sessions/components/session/claude/MessageRenderer';
-import { UnimplementedAgentRenderer } from '@/client/pages/projects/sessions/components/session/UnimplementedAgentRenderer';
+import { MessageRenderer as ClaudeMessageRenderer } from "@/client/pages/projects/sessions/components/session/claude/MessageRenderer";
+import { UnimplementedAgentRenderer } from "@/client/pages/projects/sessions/components/session/UnimplementedAgentRenderer";
 
 /**
  * Client agent interface
@@ -41,17 +44,24 @@ export interface ClientAgent {
  * Wrapper component for Claude MessageRenderer
  * Adapts array of messages to render each message
  */
-function ClaudeMessageListRenderer({ messages }: { messages: SessionMessage[] }) {
+function ClaudeMessageListRenderer({
+  messages,
+}: {
+  messages: SessionMessage[];
+}) {
   // Build tool results map for Claude renderer
-  const toolResults = new Map<string, { content: string; is_error?: boolean }>();
+  const toolResults = new Map<
+    string,
+    { content: string; is_error?: boolean }
+  >();
 
   // Build tool results map from both assistant and user messages
   // tool_result blocks can appear in user messages (following assistant tool_use blocks)
   messages.forEach((msg) => {
     msg.content.forEach((block) => {
-      if (block.type === 'tool_result') {
+      if (block.type === "tool_result") {
         toolResults.set(block.tool_use_id, {
-          content: block.content || '',
+          content: block.content || "",
           is_error: block.is_error,
         });
       }
@@ -59,9 +69,13 @@ function ClaudeMessageListRenderer({ messages }: { messages: SessionMessage[] })
   });
 
   return (
-    <div className="space-y-4">
+    <div id="lib-agents" className="space-y-2">
       {messages.map((message) => (
-        <ClaudeMessageRenderer key={message.id} message={message} toolResults={toolResults} />
+        <ClaudeMessageRenderer
+          key={message.id}
+          message={message}
+          toolResults={toolResults}
+        />
       ))}
     </div>
   );

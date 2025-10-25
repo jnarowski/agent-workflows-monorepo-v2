@@ -31,7 +31,7 @@ interface ChatInterfaceProps {
 export function ChatInterface({
   projectId,
   sessionId,
-  agent = 'claude',
+  agent = "claude",
   messages = [],
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   toolResults: _toolResults = new Map(),
@@ -120,7 +120,7 @@ export function ChatInterface({
       data-project-id={projectId}
       data-session-id={sessionId}
     >
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-4">
+      <div className="max-w-4xl mx-auto px-4 py-8">
         <AgentMessageRenderer messages={messages} />
         {isStreaming && (
           <div className="flex items-center gap-2 text-sm">

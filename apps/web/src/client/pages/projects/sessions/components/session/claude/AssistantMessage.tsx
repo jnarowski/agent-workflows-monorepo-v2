@@ -29,7 +29,7 @@ export function AssistantMessage({
     // Extract text from content blocks
     const errorText = content
       .filter((block) => block.type === "text")
-      .map((block) => block.type === "text" ? stripAnsiCodes(block.text) : "")
+      .map((block) => (block.type === "text" ? stripAnsiCodes(block.text) : ""))
       .join("\n");
 
     return (
@@ -59,15 +59,13 @@ export function AssistantMessage({
   return (
     <div className="w-full">
       {/* Content blocks */}
-      <div className="space-y-4">
-        {content.map((block, index) => (
-          <ContentBlockRenderer
-            key={index}
-            block={block}
-            toolResults={toolResults}
-          />
-        ))}
-      </div>
+      {content.map((block, index) => (
+        <ContentBlockRenderer
+          key={index}
+          block={block}
+          toolResults={toolResults}
+        />
+      ))}
     </div>
   );
 }

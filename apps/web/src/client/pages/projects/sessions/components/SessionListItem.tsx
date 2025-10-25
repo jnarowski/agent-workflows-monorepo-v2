@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { Code } from "lucide-react";
 import type { SessionResponse } from "@/shared/types";
 import { cn } from "@/client/lib/utils";
+import { AgentIcon } from "@/client/components/AgentIcon";
 
 interface SessionListItemProps {
   session: SessionResponse;
@@ -50,9 +50,10 @@ export function SessionListItem({
         <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary rounded-r" />
       )}
       <div className="flex items-start gap-2 min-w-0">
-        <Code
+        <AgentIcon
+          agent={session.agent}
           className={cn(
-            "h-4 w-4 mt-0.5 shrink-0",
+            "h-4 w-4 mt-0.5",
             isActive ? "text-primary" : "text-muted-foreground"
           )}
         />

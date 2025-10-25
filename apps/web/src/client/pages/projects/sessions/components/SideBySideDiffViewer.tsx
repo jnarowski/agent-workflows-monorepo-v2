@@ -4,7 +4,6 @@
  */
 
 import { diffLines, type Change } from 'diff';
-import { FileEdit } from 'lucide-react';
 
 interface SideBySideDiffViewerProps {
   oldString: string;
@@ -17,16 +16,10 @@ export function SideBySideDiffViewer({ oldString, newString, filePath, className
   const changes = diffLines(oldString, newString);
 
   return (
-    <div className={`rounded-lg border bg-muted/50 overflow-hidden ${className}`}>
-      {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-2 border-b bg-muted/30">
-        <FileEdit className="h-4 w-4 text-muted-foreground" />
-        <span className="font-mono text-sm">{filePath}</span>
-      </div>
-
+    <div className={`rounded-lg border border-border bg-[#2a2a2a] overflow-hidden ${className}`}>
       {/* Diff content */}
       <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-        <div className="font-mono text-xs">
+        <div className="font-mono text-xs py-3">
           {changes.map((change, index) => (
             <DiffLine key={index} change={change} />
           ))}
@@ -54,10 +47,10 @@ function DiffLine({ change }: DiffLineProps) {
         {lines.map((line, i) => (
           <div
             key={i}
-            className="bg-green-500/10 text-green-600 dark:text-green-400 px-4 py-0.5 border-l-2 border-green-500"
+            className="grid grid-cols-[24px_1fr] bg-green-500/15 text-green-400 py-0.5 border-l-2 border-green-500/50"
           >
-            <span className="select-none mr-2">+</span>
-            {line}
+            <span className="select-none text-center text-green-500">+</span>
+            <span className="pr-4">{line}</span>
           </div>
         ))}
       </>
@@ -70,10 +63,10 @@ function DiffLine({ change }: DiffLineProps) {
         {lines.map((line, i) => (
           <div
             key={i}
-            className="bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-0.5 border-l-2 border-red-500"
+            className="grid grid-cols-[24px_1fr] bg-red-500/15 text-red-400 py-0.5 border-l-2 border-red-500/50"
           >
-            <span className="select-none mr-2">-</span>
-            {line}
+            <span className="select-none text-center text-red-500">-</span>
+            <span className="pr-4">{line}</span>
           </div>
         ))}
       </>
@@ -84,9 +77,9 @@ function DiffLine({ change }: DiffLineProps) {
   return (
     <>
       {lines.map((line, i) => (
-        <div key={i} className="text-muted-foreground px-4 py-0.5">
-          <span className="select-none mr-2"> </span>
-          {line}
+        <div key={i} className="grid grid-cols-[24px_1fr] text-gray-400 py-0.5">
+          <span className="select-none"></span>
+          <span className="pr-4">{line}</span>
         </div>
       ))}
     </>

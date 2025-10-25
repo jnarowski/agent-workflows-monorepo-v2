@@ -4,9 +4,9 @@
 
 import { useState } from "react";
 import { diffLines } from "diff";
-import { getLanguageFromPath } from "@/client/utils/getLanguageFromPath";
 import { ToolDot } from "../components/ToolDot";
 import { getToolColor } from "../utils/getToolColor";
+import { SideBySideDiffViewer } from "@/client/pages/projects/sessions/components/SideBySideDiffViewer";
 import type { EditToolInput } from "@/shared/types/tool.types";
 
 interface EditToolBlockProps {
@@ -17,7 +17,7 @@ interface EditToolBlockProps {
   };
 }
 
-const MAX_LINES_PREVIEW = 10;
+const MAX_LINES_PREVIEW = 6;
 
 export function EditToolBlock({ input, result }: EditToolBlockProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -52,7 +52,7 @@ export function EditToolBlock({ input, result }: EditToolBlockProps) {
   const shouldTruncate = totalLines > MAX_LINES_PREVIEW;
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       {/* Header */}
       <div className="flex items-center gap-2.5">
         <ToolDot color={dotColor} />
@@ -72,64 +72,26 @@ export function EditToolBlock({ input, result }: EditToolBlockProps) {
       {/* Inline diff */}
       <div className="pl-5 relative">
         <div
-          className={`rounded-md border border-border overflow-hidden ${
-            shouldTruncate && !isExpanded ? "max-h-60" : ""
+          className={`overflow-hidden rounded-lg ${
+            shouldTruncate && !isExpanded ? "max-h-80" : ""
           }`}
         >
-          <div className="font-mono text-xs overflow-x-auto">
-            {changes.map((change, index) => {
-              const lines = change.value.split("\n");
-              if (lines[lines.length - 1] === "") {
-                lines.pop();
-              }
-
-              if (change.added) {
-                return lines.map((line, i) => (
-                  <div
-                    key={`${index}-${i}`}
-                    className="bg-green-500/10 text-green-600 dark:text-green-400 px-3 py-0.5 border-l-2 border-green-500"
-                  >
-                    <span className="select-none mr-2">+</span>
-                    {line}
-                  </div>
-                ));
-              }
-
-              if (change.removed) {
-                return lines.map((line, i) => (
-                  <div
-                    key={`${index}-${i}`}
-                    className="bg-red-500/10 text-red-600 dark:text-red-400 px-3 py-0.5 border-l-2 border-red-500"
-                  >
-                    <span className="select-none mr-2">-</span>
-                    {line}
-                  </div>
-                ));
-              }
-
-              // Unchanged lines
-              return lines.map((line, i) => (
-                <div
-                  key={`${index}-${i}`}
-                  className="text-muted-foreground px-3 py-0.5"
-                >
-                  <span className="select-none mr-2"> </span>
-                  {line}
-                </div>
-              ));
-            })}
-          </div>
+          <SideBySideDiffViewer
+            oldString={input.old_string}
+            newString={input.new_string}
+            filePath={input.file_path}
+          />
         </div>
 
-        {/* Click to expand overlay */}
+        {/* Click to expand button */}
         {shouldTruncate && !isExpanded && (
-          <div
-            className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent flex items-end justify-center pb-2 cursor-pointer"
-            onClick={() => setIsExpanded(true)}
-          >
-            <span className="text-xs text-muted-foreground bg-background px-3 py-1 rounded-md border border-border hover:bg-muted/50">
+          <div className="absolute bottom-4 right-4">
+            <button
+              className="text-xs text-muted-foreground bg-background px-3 py-1 rounded-md border border-border hover:bg-muted/50 cursor-pointer"
+              onClick={() => setIsExpanded(true)}
+            >
               Click to expand
-            </span>
+            </button>
           </div>
         )}
       </div>
