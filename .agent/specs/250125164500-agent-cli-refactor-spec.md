@@ -276,61 +276,78 @@ Rewrite README with new API patterns. Update CHANGELOG with breaking changes. Ru
 ### 6: Create Codex Adapter Structure
 
 <!-- prettier-ignore -->
-- [ ] 6.1 Create `src/codex/` directory
-- [ ] 6.2 Move `src/adapters/codex/cli-detector.ts` → `src/codex/cli-detector.ts`
-- [ ] 6.3 Move `src/adapters/codex/parser.ts` → `src/codex/parser.ts`
+- [x] 6.1 Create `src/codex/` directory
+- [x] 6.2 Move `src/adapters/codex/cli-detector.ts` → `src/codex/cli-detector.ts`
+- [x] 6.3 Move `src/adapters/codex/parser.ts` → `src/codex/parser.ts`
         - Update imports to use ../shared/
-- [ ] 6.4 Extract buildCodexArgs from `src/adapters/codex/cli-wrapper.ts` → `src/codex/cli-args.ts`
+- [x] 6.4 Extract buildCodexArgs from `src/adapters/codex/cli-wrapper.ts` → `src/codex/cli-args.ts`
         - Keep only buildCodexArgs function
         - Update imports
 
 #### Completion Notes
 
-(To be filled in during implementation)
+- Created `src/codex/` directory structure
+- Copied cli-detector.ts as-is from adapters/codex/
+- Created parser.ts with updated imports to use ../shared/types and ../shared/json-parser
+- Extracted buildCodexArgs function into cli-args.ts with CodexOptions type reference
+- All Codex utility files now use the new modular structure
 
 ### 7: Create Codex Types and Events
 
 <!-- prettier-ignore -->
-- [ ] 7.1 Create `src/codex/types.ts`
+- [x] 7.1 Create `src/codex/types.ts`
         - Define CodexOptions extends ExecutionOptions
         - Add Codex-specific options
         - Define CodexConfig
         - File: `src/codex/types.ts`
-- [ ] 7.2 Move `src/types/events/codex.ts` → `src/codex/events.ts`
+- [x] 7.2 Move `src/types/events/codex.ts` → `src/codex/events.ts`
         - Keep all event types unchanged
         - Keep all type guards
         - Update imports
 
 #### Completion Notes
 
-(To be filled in during implementation)
+- Created `src/codex/types.ts` with CodexOptions (extends ExecutionOptions), CodexConfig, SandboxMode type
+- All Codex-specific options included (model, sandbox, fullAuto, dangerouslyBypassApprovalsAndSandbox, images, search, etc.)
+- Created `src/codex/events.ts` with all Codex event types (ThreadStartedEvent, TurnCompletedEvent, ItemCompletedEvent, etc.)
+- All type guards preserved (isCodexEvent, isThreadStartedEvent, isTurnCompletedEvent, etc.)
+- Defined BaseStreamEvent inline (same pattern as Claude events)
+- All event types use proper TypeScript structure with data interfaces
 
 ### 8: Implement CodexAdapter Class
 
 <!-- prettier-ignore -->
-- [ ] 8.1 Create `src/codex/index.ts` with CodexAdapter class
+- [x] 8.1 Create `src/codex/index.ts` with CodexAdapter class
         - Follow same pattern as ClaudeAdapter
         - Implement constructor and execute() method
         - Inline prompt validation (same 4 lines as Claude)
         - Export CodexAdapter, CodexOptions, CodexConfig, CodexStreamEvent
         - File: `src/codex/index.ts`
-- [ ] 8.2 Verify CodexAdapter compiles
+- [x] 8.2 Verify CodexAdapter compiles
         - Command: `pnpm check-types`
         - Expected: No TypeScript errors
 
 #### Completion Notes
 
-(To be filled in during implementation)
+- Created CodexAdapter class following the same pattern as ClaudeAdapter
+- Constructor auto-detects CLI path or uses config, throws CLINotFoundError if not found
+- Implemented execute<T>() method with full streaming support (onEvent, onOutput callbacks)
+- Config merging works correctly (constructor config + execute options)
+- Inlined prompt validation (4 lines, same as Claude)
+- Integrated buildCodexArgs, spawnProcess, parseCodexOutput
+- Added optional logging with writeLog
+- Exports CodexAdapter, CodexOptions, CodexConfig, CodexStreamEvent, and all event type guards
+- Type checking passes with zero errors
 
 ### 9: Create Cursor and Gemini Stubs
 
 <!-- prettier-ignore -->
-- [ ] 9.1 Create `src/cursor/index.ts` with stub adapter
+- [x] 9.1 Create `src/cursor/index.ts` with stub adapter
         - Class with name='cursor'
         - Constructor throws "not yet implemented"
         - execute() throws "not yet implemented"
         - File: `src/cursor/index.ts`
-- [ ] 9.2 Create `src/gemini/index.ts` with stub adapter
+- [x] 9.2 Create `src/gemini/index.ts` with stub adapter
         - Class with name='gemini'
         - Constructor throws "not yet implemented"
         - execute() throws "not yet implemented"
@@ -338,12 +355,17 @@ Rewrite README with new API patterns. Update CHANGELOG with breaking changes. Ru
 
 #### Completion Notes
 
-(To be filled in during implementation)
+- Created CursorAdapter stub with name property set to 'cursor'
+- Constructor and execute() both throw helpful error message about not being implemented yet
+- Created GeminiAdapter stub with name property set to 'gemini'
+- Constructor and execute() both throw helpful error message about not being implemented yet
+- Both stubs include basic type definitions (Config, Options) for future implementation
+- Type safety maintained with ExecutionResponse<T> return type
 
 ### 10: Update Main Exports
 
 <!-- prettier-ignore -->
-- [ ] 10.1 Rewrite `src/index.ts`
+- [x] 10.1 Rewrite `src/index.ts`
         - Export ClaudeAdapter, CodexAdapter, CursorAdapter, GeminiAdapter
         - Export all shared types (ExecutionResponse, ExecutionOptions, etc.)
         - Export Claude types and events
@@ -354,13 +376,22 @@ Rewrite README with new API patterns. Update CHANGELOG with breaking changes. Ru
         - Add getAdapter(agent, config) helper function
         - Add version constant '4.0.0'
         - File: `src/index.ts`
-- [ ] 10.2 Verify all exports resolve
+- [x] 10.2 Verify all exports resolve
         - Command: `pnpm build`
         - Expected: Successful build with all exports
 
 #### Completion Notes
 
-(To be filled in during implementation)
+- Rewrote src/index.ts with clean, flat export structure
+- Exports all four adapters (ClaudeAdapter, CodexAdapter, CursorAdapter, GeminiAdapter)
+- Exports all adapter-specific types and configs
+- Exports all shared types from shared/types
+- Exports all errors from shared/errors
+- Exports JSON utilities (extractJSON, parseJSONL, safeJSONParse)
+- Exports all Claude and Codex event types and type guards
+- Added getAdapter() helper function with proper overloads for type safety
+- Version set to 4.0.0
+- Build successful (152.39 kB total, 460ms)
 
 ### 11: Delete Old Code
 
@@ -450,14 +481,14 @@ Rewrite README with new API patterns. Update CHANGELOG with breaking changes. Ru
 ### 14: Update Web App Integration
 
 <!-- prettier-ignore -->
-- [ ] 14.1 Update `apps/web/src/server/websocket.ts`
+- [x] 14.1 Update `apps/web/src/server/websocket.ts`
         - Replace: `import { AgentClient, createClaudeAdapter }`
         - With: `import { ClaudeAdapter }`
         - Replace AgentClient instantiation with ClaudeAdapter
         - Update ActiveSessionData type (agentClient → adapter)
         - Update all execute() calls
         - File: `apps/web/src/server/websocket.ts`
-- [ ] 14.2 Verify web app compiles
+- [x] 14.2 Verify web app compiles
         - Command: `cd apps/web && pnpm check-types`
         - Expected: No TypeScript errors
 - [ ] 14.3 Test web app websocket functionality
@@ -467,7 +498,13 @@ Rewrite README with new API patterns. Update CHANGELOG with breaking changes. Ru
 
 #### Completion Notes
 
-(To be filled in during implementation)
+- Updated websocket.ts to use new ClaudeAdapter API instead of AgentClient
+- Replaced createClaudeAdapter() with new ClaudeAdapter({ workingDir })
+- Updated ActiveSessionData type in websocket.types.ts (agentClient → adapter)
+- Updated execute() call to use adapter.execute() directly with new options format
+- Added resume option for session continuation
+- Removed redundant AgentClient wrapper layer - using adapter directly is simpler
+- Web app should now be compatible with agent-cli-sdk 4.0.0
 
 ### 15: Update Documentation
 

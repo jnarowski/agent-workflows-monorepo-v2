@@ -1,0 +1,859 @@
+[
+  {
+    "session_id": "7df4a542-3889-4eb8-ac1f-8d8c297c84f4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/7df4a542-3889-4eb8-ac1f-8d8c297c84f4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd packages/agent-cli-sdk && pnpm check-types 2>&1 | head -100",
+      "description": "Check TypeScript types"
+    },
+    "tool_response": {
+      "stdout": "> @repo/agent-cli-sdk@3.0.0 check-types /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk\n> tsc --noEmit",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  },
+  {
+    "session_id": "7df4a542-3889-4eb8-ac1f-8d8c297c84f4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/7df4a542-3889-4eb8-ac1f-8d8c297c84f4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.agent/specs/250125164500-agent-cli-refactor-spec.md",
+      "old_string": "### 8: Implement CodexAdapter Class\n\n<!-- prettier-ignore -->\n- [ ] 8.1 Create `src/codex/index.ts` with CodexAdapter class\n        - Follow same pattern as ClaudeAdapter\n        - Implement constructor and execute() method\n        - Inline prompt validation (same 4 lines as Claude)\n        - Export CodexAdapter, CodexOptions, CodexConfig, CodexStreamEvent\n        - File: `src/codex/index.ts`\n- [ ] 8.2 Verify CodexAdapter compiles\n        - Command: `pnpm check-types`\n        - Expected: No TypeScript errors\n\n#### Completion Notes\n\n(To be filled in during implementation)",
+      "new_string": "### 8: Implement CodexAdapter Class\n\n<!-- prettier-ignore -->\n- [x] 8.1 Create `src/codex/index.ts` with CodexAdapter class\n        - Follow same pattern as ClaudeAdapter\n        - Implement constructor and execute() method\n        - Inline prompt validation (same 4 lines as Claude)\n        - Export CodexAdapter, CodexOptions, CodexConfig, CodexStreamEvent\n        - File: `src/codex/index.ts`\n- [x] 8.2 Verify CodexAdapter compiles\n        - Command: `pnpm check-types`\n        - Expected: No TypeScript errors\n\n#### Completion Notes\n\n- Created CodexAdapter class following the same pattern as ClaudeAdapter\n- Constructor auto-detects CLI path or uses config, throws CLINotFoundError if not found\n- Implemented execute<T>() method with full streaming support (onEvent, onOutput callbacks)\n- Config merging works correctly (constructor config + execute options)\n- Inlined prompt validation (4 lines, same as Claude)\n- Integrated buildCodexArgs, spawnProcess, parseCodexOutput\n- Added optional logging with writeLog\n- Exports CodexAdapter, CodexOptions, CodexConfig, CodexStreamEvent, and all event type guards\n- Type checking passes with zero errors"
+    },
+    "tool_response": {
+      "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.agent/specs/250125164500-agent-cli-refactor-spec.md",
+      "oldString": "### 8: Implement CodexAdapter Class\n\n<!-- prettier-ignore -->\n- [ ] 8.1 Create `src/codex/index.ts` with CodexAdapter class\n        - Follow same pattern as ClaudeAdapter\n        - Implement constructor and execute() method\n        - Inline prompt validation (same 4 lines as Claude)\n        - Export CodexAdapter, CodexOptions, CodexConfig, CodexStreamEvent\n        - File: `src/codex/index.ts`\n- [ ] 8.2 Verify CodexAdapter compiles\n        - Command: `pnpm check-types`\n        - Expected: No TypeScript errors\n\n#### Completion Notes\n\n(To be filled in during implementation)",
+      "newString": "### 8: Implement CodexAdapter Class\n\n<!-- prettier-ignore -->\n- [x] 8.1 Create `src/codex/index.ts` with CodexAdapter class\n        - Follow same pattern as ClaudeAdapter\n        - Implement constructor and execute() method\n        - Inline prompt validation (same 4 lines as Claude)\n        - Export CodexAdapter, CodexOptions, CodexConfig, CodexStreamEvent\n        - File: `src/codex/index.ts`\n- [x] 8.2 Verify CodexAdapter compiles\n        - Command: `pnpm check-types`\n        - Expected: No TypeScript errors\n\n#### Completion Notes\n\n- Created CodexAdapter class following the same pattern as ClaudeAdapter\n- Constructor auto-detects CLI path or uses config, throws CLINotFoundError if not found\n- Implemented execute<T>() method with full streaming support (onEvent, onOutput callbacks)\n- Config merging works correctly (constructor config + execute options)\n- Inlined prompt validation (4 lines, same as Claude)\n- Integrated buildCodexArgs, spawnProcess, parseCodexOutput\n- Added optional logging with writeLog\n- Exports CodexAdapter, CodexOptions, CodexConfig, CodexStreamEvent, and all event type guards\n- Type checking passes with zero errors",
+      "originalFile": "# Feature: Agent CLI SDK Complete Refactor\n\n## What We're Building\n\nA complete architectural simplification of the agent-cli-sdk package, removing session management abstractions, eliminating inheritance patterns, and restructuring to a flat, lightweight adapter-based design. This refactor reduces complexity by ~60% while maintaining full functionality and preparing the codebase for easy addition of Cursor and Gemini adapters.\n\n## User Story\n\nAs a developer using the agent-cli-sdk\nI want a simple, predictable API with lightweight adapter classes\nSo that I can execute AI CLI commands without navigating complex abstractions and easily add new AI tools\n\n## Technical Approach\n\nReplace the current multi-layer architecture (AgentClient \u2192 BaseAdapter \u2192 Adapter \u2192 Session) with lightweight adapter classes that directly manage CLI execution. Move shared utilities to a `shared/` directory, consolidate types into a flat hierarchy, preserve all existing event types for type safety, and delete unused code (session management, factory functions, async utilities). The refactor maintains test coverage throughout to ensure no regressions.\n\n## Files to Touch\n\n### Existing Files to Delete\n\n**Core Architecture (to be replaced):**\n- `src/client/agent-client.ts` - AgentClient wrapper class\n- `src/client/session.ts` - Unified Session wrapper\n- `src/core/base-adapter.ts` - BaseAdapter inheritance\n- `src/core/interfaces.ts` - Old interface definitions\n- `src/factories/index.ts` - Factory functions\n- `src/adapters/claude/session.ts` - ClaudeSession class\n- `src/adapters/claude/index.ts` - Old ClaudeAdapter\n- `src/adapters/codex/index.ts` - Old CodexAdapter\n\n**Type System (to be restructured):**\n- `src/types/session.ts` - Session types\n- `src/types/config.ts` - Config types\n- `src/types/logging.ts` - Will merge into shared\n- `src/types/events/base.ts` - Generic base type\n- `src/types/events/index.ts` - Re-export file\n- `src/types/index.ts` - Old type exports\n- `src/types/interfaces.ts` - Old interfaces\n\n**Utilities (to be moved/deleted/simplified):**\n- `src/utils/async.ts` - Unused utilities (DELETE)\n- `src/utils/index.ts` - Re-export file (DELETE)\n- `src/utils/validation.ts` - Unused validation functions (DELETE)\n- `src/utils/spawn.ts` - Move to shared/ (keep as-is)\n- `src/utils/logger.ts` - Simplify and move to shared/logging.ts\n- `src/utils/json-parser.ts` - Move to shared/ (keep as-is)\n\n**Examples (obsolete):**\n- `examples/sessions/` - Entire directory\n- `examples/advanced/` - Entire directory\n- `examples/README.md` - Will recreate\n\n**Tests (to be replaced):**\n- `tests/unit/client/` - Entire directory\n- `tests/integration/` - Entire directory\n- `tests/unit/adapters/` - Will recreate as tests/unit/claude/ and tests/unit/codex/\n\n### New Files to Create\n\n**Claude Adapter:**\n- `src/claude/index.ts` - New lightweight ClaudeAdapter class\n- `src/claude/types.ts` - ClaudeOptions, ClaudeConfig types\n- `src/claude/events.ts` - Move from src/types/events/claude.ts\n- `src/claude/cli-args.ts` - Extract buildClaudeArgs from cli-wrapper.ts\n\n**Codex Adapter:**\n- `src/codex/index.ts` - New lightweight CodexAdapter class\n- `src/codex/types.ts` - CodexOptions, CodexConfig types\n- `src/codex/events.ts` - Move from src/types/events/codex.ts\n- `src/codex/cli-args.ts` - Extract buildCodexArgs from cli-wrapper.ts\n\n**Cursor & Gemini Stubs:**\n- `src/cursor/index.ts` - Stub adapter (throws not implemented)\n- `src/gemini/index.ts` - Stub adapter (throws not implemented)\n\n**Shared Utilities:**\n- `src/shared/types.ts` - Base ExecutionOptions, ExecutionResponse, etc.\n- `src/shared/spawn.ts` - Moved from utils/ (keep as-is)\n- `src/shared/logging.ts` - Simplified version of utils/logger.ts\n- `src/shared/json-parser.ts` - Moved from utils/ (keep as-is)\n- `src/shared/errors.ts` - Moved from core/errors.ts (keep as-is)\n\n**Examples:**\n- `examples/basic/claude.ts` - Update to new API\n- `examples/basic/codex.ts` - Update to new API\n- `examples/session-continuation.ts` - New example showing sessionId pattern\n- `examples/streaming.ts` - New example showing onOutput callbacks\n- `examples/multi-agent.ts` - New example showing getAdapter()\n- `examples/structured-output.ts` - Update existing example\n\n**Tests:**\n- `tests/unit/claude/adapter.test.ts` - New ClaudeAdapter tests\n- `tests/unit/codex/adapter.test.ts` - New CodexAdapter tests\n- `tests/unit/claude/parser.test.ts` - Move from old location\n- `tests/unit/codex/parser.test.ts` - Move from old location\n- `tests/unit/shared/spawn.test.ts` - Move from old utils/ tests\n- `tests/unit/shared/json-parser.test.ts` - Move from old utils/ tests\n\n**Documentation:**\n- `README.md` - Complete rewrite with new API\n- `CHANGELOG.md` - Add 4.0.0 breaking changes section\n\n### Existing Files to Modify\n\n**Adapters (move and refactor):**\n- `src/adapters/claude/cli-detector.ts` \u2192 `src/claude/cli-detector.ts`\n- `src/adapters/claude/cli-wrapper.ts` \u2192 Extract to `src/claude/cli-args.ts`\n- `src/adapters/claude/parser.ts` \u2192 `src/claude/parser.ts` (rename parseStreamOutput \u2192 parseClaudeOutput)\n- `src/adapters/claude/image-handler.ts` \u2192 `src/claude/image-handler.ts`\n- `src/adapters/claude/mcp-detector.ts` \u2192 `src/claude/mcp-detector.ts`\n- `src/adapters/codex/cli-detector.ts` \u2192 `src/codex/cli-detector.ts`\n- `src/adapters/codex/cli-wrapper.ts` \u2192 Extract to `src/codex/cli-args.ts`\n- `src/adapters/codex/parser.ts` \u2192 `src/codex/parser.ts`\n\n**Core:**\n- `src/core/errors.ts` \u2192 `src/shared/errors.ts` (move, keep as-is)\n\n**Main:**\n- `src/index.ts` - Complete rewrite of exports\n\n**Tests:**\n- `tests/e2e/claude-e2e.test.ts` - Update to use new ClaudeAdapter\n- `tests/e2e/codex-e2e.test.ts` - Update to use new CodexAdapter\n\n**Web App Integration:**\n- `apps/web/src/server/websocket.ts` - Update to use ClaudeAdapter directly\n\n**Config:**\n- `package.json` - Update version to 4.0.0\n\n## Implementation Plan\n\n### Phase 1: Foundation (Setup & Shared Utilities)\n\nCreate the new shared utilities directory with base types and helper functions. This establishes the foundation that all adapters will depend on. Move spawn and json-parser as-is to minimize risk. Simplify logging by removing verbose console output and unused helper functions. Delete validation.ts entirely (prompt validation will be inlined in adapters - only 4 lines). Create the base type system (ExecutionOptions, ExecutionResponse) that will be extended by adapter-specific types.\n\n### Phase 2: Claude Adapter (Reference Implementation)\n\nBuild the new lightweight ClaudeAdapter as the reference implementation. Extract and reorganize Claude-specific code from the old nested adapter structure into a flat directory. Create the ClaudeAdapter class with constructor config storage and execute() method. Test thoroughly to ensure full compatibility with existing functionality.\n\n### Phase 3: Codex Adapter (Apply Pattern)\n\nApply the same pattern to Codex, using Claude as the reference. This validates that the pattern works for multiple adapters and ensures consistency.\n\n### Phase 4: Cleanup & Integration\n\nDelete all old code (client/, core/, factories/, old adapters/, old types/, session code). Update main exports in src/index.ts. Create Cursor/Gemini stubs. Update web app integration. Update examples and tests.\n\n### Phase 5: Documentation & Validation\n\nRewrite README with new API patterns. Update CHANGELOG with breaking changes. Run full test suite to ensure no regressions. Manually test session continuation, streaming, and multi-agent patterns.\n\n## Step by Step Tasks\n\n### 1: Create Shared Directory and Simplify Utilities\n\n<!-- prettier-ignore -->\n- [x] 1.1 Create `src/shared/` directory\n- [x] 1.2 Move `src/core/errors.ts` \u2192 `src/shared/errors.ts` (no modifications)\n- [x] 1.3 Move `src/utils/spawn.ts` \u2192 `src/shared/spawn.ts` (no modifications)\n- [x] 1.4 Move `src/utils/json-parser.ts` \u2192 `src/shared/json-parser.ts` (no modifications)\n- [x] 1.5 Create `src/shared/logging.ts` - Simplified version\n        - Single writeLog() function\n        - Remove getLogPaths() - inline it\n        - Remove createSessionMessageLogPath() - unused after deleting sessions\n        - Remove all console.log statements (verbose debugging)\n        - Keep only: mkdir, writeFile for input/output/error\n        - Silently catch and ignore logging errors\n        - File: `src/shared/logging.ts`\n\n#### Completion Notes\n\n- Created `src/shared/` directory structure\n- Copied errors.ts, spawn.ts, and json-parser.ts as-is from their original locations\n- Updated imports in spawn.ts and json-parser.ts to reference `./errors` instead of `../core/errors`\n- Created simplified logging.ts with single `writeLog()` function\n- Removed all console.log statements and verbose debugging\n- Inlined path logic and removed helper functions (getLogPaths, createSessionMessageLogPath)\n- Logging errors are silently caught and ignored as specified\n\n### 2: Create Shared Base Types\n\n<!-- prettier-ignore -->\n- [x] 2.1 Create `src/shared/types.ts`\n        - Define ExecutionOptions interface with all common options\n        - Define ExecutionResponse<T> interface\n        - Define StreamEvent, OutputData, TokenUsage, ModelUsage\n        - Define ActionLog, ValidationResult\n        - File: `src/shared/types.ts`\n- [x] 2.2 Verify imports in shared utilities\n        - Update imports in shared/spawn.ts to use ./types\n        - Update imports in shared/logging.ts to use ./types\n        - File: `src/shared/spawn.ts`, `src/shared/logging.ts`\n\n#### Completion Notes\n\n- Created `src/shared/types.ts` with all base type definitions from interfaces.ts\n- Included StreamEvent, OutputData, TokenUsage, ModelUsage, ActionLog, ValidationResult\n- Included ExecutionOptions and ExecutionResponse<T> as the core types\n- Shared utilities (spawn.ts, logging.ts, json-parser.ts) don't need type imports as they use primitive types\n- errors.ts already has no external dependencies\n\n### 3: Create Claude Adapter Structure\n\n<!-- prettier-ignore -->\n- [x] 3.1 Create `src/claude/` directory\n- [x] 3.2 Move `src/adapters/claude/cli-detector.ts` \u2192 `src/claude/cli-detector.ts`\n- [x] 3.3 Move `src/adapters/claude/parser.ts` \u2192 `src/claude/parser.ts`\n        - Rename parseStreamOutput \u2192 parseClaudeOutput\n        - Update imports to use ../shared/\n- [x] 3.4 Move `src/adapters/claude/image-handler.ts` \u2192 `src/claude/image-handler.ts` (if exists)\n- [x] 3.5 Move `src/adapters/claude/mcp-detector.ts` \u2192 `src/claude/mcp-detector.ts` (if exists)\n- [x] 3.6 Extract buildClaudeArgs from `src/adapters/claude/cli-wrapper.ts` \u2192 `src/claude/cli-args.ts`\n        - Keep only buildClaudeArgs function\n        - Remove executeClaudeCLI function (logic moves to adapter)\n        - Update imports\n\n#### Completion Notes\n\n- Created `src/claude/` directory\n- Copied cli-detector.ts, image-handler.ts, and mcp-detector.ts as-is\n- Created new parser.ts with renamed function (parseStreamOutput \u2192 parseClaudeOutput)\n- Updated all imports in parser.ts to use ../shared/ paths\n- Created cli-args.ts with buildClaudeArgs function extracted from cli-wrapper.ts\n- All Claude utility files now use the new modular structure\n\n### 4: Create Claude Types and Events\n\n<!-- prettier-ignore -->\n- [x] 4.1 Create `src/claude/types.ts`\n        - Define ClaudeOptions extends ExecutionOptions\n        - Add Claude-specific options: model, apiKey, oauthToken, permissionMode, etc.\n        - Define ClaudeConfig extends Partial<ClaudeOptions> with cliPath\n        - File: `src/claude/types.ts`\n- [x] 4.2 Move `src/types/events/claude.ts` \u2192 `src/claude/events.ts`\n        - Keep all event types unchanged\n        - Keep all type guards\n        - Update imports to use ../shared/types\n\n#### Completion Notes\n\n- Created `src/claude/types.ts` with ClaudeOptions (extends ExecutionOptions), ClaudeConfig, ImageInput, and utility types\n- Created `src/claude/events.ts` with all Claude event types (FileHistorySnapshotEvent, UserMessageEvent, AssistantMessageEvent)\n- All type guards preserved (isClaudeEvent, isFileHistorySnapshotEvent, isUserMessageEvent, isAssistantMessageEvent)\n- Updated imports to use ../shared/types (StreamEvent)\n- Removed BaseStreamEvent dependency as part of simplification\n\n### 5: Implement ClaudeAdapter Class\n\n<!-- prettier-ignore -->\n- [x] 5.1 Create `src/claude/index.ts` with ClaudeAdapter class\n        - Implement constructor: store cliPath and config\n        - Implement execute<T>() method\n        - Merge constructor config with execute options\n        - Inline prompt validation (4 lines): check non-empty string\n        - Call buildClaudeArgs, spawnCLI, parseClaudeOutput\n        - Add optional logging with writeLog\n        - Export ClaudeAdapter, ClaudeOptions, ClaudeConfig, ClaudeStreamEvent\n        - File: `src/claude/index.ts`\n- [x] 5.2 Verify ClaudeAdapter compiles\n        - Command: `pnpm check-types`\n        - Expected: No TypeScript errors in Claude adapter\n\n#### Completion Notes\n\n- Created ClaudeAdapter class with constructor that auto-detects CLI path or uses config\n- Implemented execute<T>() method with full streaming support (onEvent, onOutput callbacks)\n- Config merging works correctly (constructor config + execute options)\n- Inlined prompt validation as specified (4 lines)\n- Integrated buildClaudeArgs, spawnProcess, parseClaudeOutput\n- Added optional logging with writeLog\n- Exports ClaudeAdapter, ClaudeOptions, ClaudeConfig, ClaudeStreamEvent, and all event type guards\n- Fixed type issues by using BaseStreamEvent for Claude-specific events\n- Type checking passes with zero errors\n\n### 6: Create Codex Adapter Structure\n\n<!-- prettier-ignore -->\n- [x] 6.1 Create `src/codex/` directory\n- [x] 6.2 Move `src/adapters/codex/cli-detector.ts` \u2192 `src/codex/cli-detector.ts`\n- [x] 6.3 Move `src/adapters/codex/parser.ts` \u2192 `src/codex/parser.ts`\n        - Update imports to use ../shared/\n- [x] 6.4 Extract buildCodexArgs from `src/adapters/codex/cli-wrapper.ts` \u2192 `src/codex/cli-args.ts`\n        - Keep only buildCodexArgs function\n        - Update imports\n\n#### Completion Notes\n\n- Created `src/codex/` directory structure\n- Copied cli-detector.ts as-is from adapters/codex/\n- Created parser.ts with updated imports to use ../shared/types and ../shared/json-parser\n- Extracted buildCodexArgs function into cli-args.ts with CodexOptions type reference\n- All Codex utility files now use the new modular structure\n\n### 7: Create Codex Types and Events\n\n<!-- prettier-ignore -->\n- [x] 7.1 Create `src/codex/types.ts`\n        - Define CodexOptions extends ExecutionOptions\n        - Add Codex-specific options\n        - Define CodexConfig\n        - File: `src/codex/types.ts`\n- [x] 7.2 Move `src/types/events/codex.ts` \u2192 `src/codex/events.ts`\n        - Keep all event types unchanged\n        - Keep all type guards\n        - Update imports\n\n#### Completion Notes\n\n- Created `src/codex/types.ts` with CodexOptions (extends ExecutionOptions), CodexConfig, SandboxMode type\n- All Codex-specific options included (model, sandbox, fullAuto, dangerouslyBypassApprovalsAndSandbox, images, search, etc.)\n- Created `src/codex/events.ts` with all Codex event types (ThreadStartedEvent, TurnCompletedEvent, ItemCompletedEvent, etc.)\n- All type guards preserved (isCodexEvent, isThreadStartedEvent, isTurnCompletedEvent, etc.)\n- Defined BaseStreamEvent inline (same pattern as Claude events)\n- All event types use proper TypeScript structure with data interfaces\n\n### 8: Implement CodexAdapter Class\n\n<!-- prettier-ignore -->\n- [ ] 8.1 Create `src/codex/index.ts` with CodexAdapter class\n        - Follow same pattern as ClaudeAdapter\n        - Implement constructor and execute() method\n        - Inline prompt validation (same 4 lines as Claude)\n        - Export CodexAdapter, CodexOptions, CodexConfig, CodexStreamEvent\n        - File: `src/codex/index.ts`\n- [ ] 8.2 Verify CodexAdapter compiles\n        - Command: `pnpm check-types`\n        - Expected: No TypeScript errors\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n### 9: Create Cursor and Gemini Stubs\n\n<!-- prettier-ignore -->\n- [ ] 9.1 Create `src/cursor/index.ts` with stub adapter\n        - Class with name='cursor'\n        - Constructor throws \"not yet implemented\"\n        - execute() throws \"not yet implemented\"\n        - File: `src/cursor/index.ts`\n- [ ] 9.2 Create `src/gemini/index.ts` with stub adapter\n        - Class with name='gemini'\n        - Constructor throws \"not yet implemented\"\n        - execute() throws \"not yet implemented\"\n        - File: `src/gemini/index.ts`\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n### 10: Update Main Exports\n\n<!-- prettier-ignore -->\n- [ ] 10.1 Rewrite `src/index.ts`\n        - Export ClaudeAdapter, CodexAdapter, CursorAdapter, GeminiAdapter\n        - Export all shared types (ExecutionResponse, ExecutionOptions, etc.)\n        - Export Claude types and events\n        - Export Codex types and events\n        - Export all errors from shared/errors\n        - Export json-parser utilities (extractJSON, parseJSONL, safeJSONParse)\n        - Export type guards from adapter events\n        - Add getAdapter(agent, config) helper function\n        - Add version constant '4.0.0'\n        - File: `src/index.ts`\n- [ ] 10.2 Verify all exports resolve\n        - Command: `pnpm build`\n        - Expected: Successful build with all exports\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n### 11: Delete Old Code\n\n<!-- prettier-ignore -->\n- [ ] 11.1 Delete old architecture\n        - Delete `src/client/` directory\n        - Delete `src/core/` directory\n        - Delete `src/factories/` directory\n        - Delete `src/adapters/` directory\n        - Delete `src/types/` directory\n        - Delete `src/utils/` directory\n- [ ] 11.2 Delete obsolete examples\n        - Delete `examples/sessions/` directory\n        - Delete `examples/advanced/` directory\n        - Delete `examples/README.md`\n- [ ] 11.3 Delete obsolete tests\n        - Delete `tests/unit/client/` directory\n        - Delete `tests/integration/` directory\n        - Delete `tests/unit/adapters/` directory\n- [ ] 11.4 Verify build still works\n        - Command: `pnpm build`\n        - Expected: Clean build with no errors\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n### 12: Update Examples\n\n<!-- prettier-ignore -->\n- [ ] 12.1 Update `examples/basic/claude.ts`\n        - Use new ClaudeAdapter constructor\n        - Update execute() call\n        - File: `examples/basic/claude.ts`\n- [ ] 12.2 Update `examples/basic/codex.ts`\n        - Use new CodexAdapter constructor\n        - Update execute() call\n        - File: `examples/basic/codex.ts`\n- [ ] 12.3 Create `examples/session-continuation.ts`\n        - Show first message, capture sessionId\n        - Show second message with sessionId + resume\n        - File: `examples/session-continuation.ts`\n- [ ] 12.4 Create `examples/streaming.ts`\n        - Show onOutput callback usage\n        - File: `examples/streaming.ts`\n- [ ] 12.5 Create `examples/multi-agent.ts`\n        - Show getAdapter() usage\n        - File: `examples/multi-agent.ts`\n- [ ] 12.6 Update `examples/structured-output.ts` (if exists)\n        - Update to new adapter API\n        - File: `examples/structured-output.ts`\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n### 13: Update Tests\n\n<!-- prettier-ignore -->\n- [ ] 13.1 Create `tests/unit/claude/adapter.test.ts`\n        - Test ClaudeAdapter constructor\n        - Test execute() method\n        - File: `tests/unit/claude/adapter.test.ts`\n- [ ] 13.2 Create `tests/unit/codex/adapter.test.ts`\n        - Test CodexAdapter constructor\n        - Test execute() method\n        - File: `tests/unit/codex/adapter.test.ts`\n- [ ] 13.3 Move parser tests\n        - Move `tests/unit/adapters/claude/parser.test.ts` \u2192 `tests/unit/claude/parser.test.ts`\n        - Update imports\n- [ ] 13.4 Move utility tests\n        - Move `tests/unit/utils/json-parser.test.ts` \u2192 `tests/unit/shared/json-parser.test.ts`\n        - Move `tests/unit/utils/spawn.test.ts` \u2192 `tests/unit/shared/spawn.test.ts`\n        - Delete `tests/unit/utils/validation.test.ts` (validation.ts deleted)\n        - Update imports in all moved tests\n- [ ] 13.5 Update E2E tests\n        - Update `tests/e2e/claude-e2e.test.ts` to use ClaudeAdapter\n        - Update `tests/e2e/codex-e2e.test.ts` to use CodexAdapter\n- [ ] 13.6 Run all tests\n        - Command: `pnpm test`\n        - Expected: All tests passing\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n### 14: Update Web App Integration\n\n<!-- prettier-ignore -->\n- [ ] 14.1 Update `apps/web/src/server/websocket.ts`\n        - Replace: `import { AgentClient, createClaudeAdapter }`\n        - With: `import { ClaudeAdapter }`\n        - Replace AgentClient instantiation with ClaudeAdapter\n        - Update ActiveSessionData type (agentClient \u2192 adapter)\n        - Update all execute() calls\n        - File: `apps/web/src/server/websocket.ts`\n- [ ] 14.2 Verify web app compiles\n        - Command: `cd apps/web && pnpm check-types`\n        - Expected: No TypeScript errors\n- [ ] 14.3 Test web app websocket functionality\n        - Start: `cd apps/web && pnpm dev`\n        - Send test message through websocket\n        - Verify agent executes correctly\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n### 15: Update Documentation\n\n<!-- prettier-ignore -->\n- [ ] 15.1 Rewrite `README.md`\n        - Update Quick Start section with new API\n        - Add Session Continuation section (sessionId + resume pattern)\n        - Add Streaming section (onOutput callbacks)\n        - Add Multi-Agent Usage section (getAdapter())\n        - Update all code examples\n        - Add API Reference for adapters\n        - File: `README.md`\n- [ ] 15.2 Update `CHANGELOG.md`\n        - Add 4.0.0 section with breaking changes\n        - List removed features\n        - List new patterns\n        - Include migration note (no backwards compatibility)\n        - File: `CHANGELOG.md`\n- [ ] 15.3 Update `package.json`\n        - Set version to \"4.0.0\"\n        - File: `package.json`\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n## Acceptance Criteria\n\n**Must Work:**\n\n- [ ] ClaudeAdapter executes prompts successfully\n- [ ] CodexAdapter executes prompts successfully\n- [ ] Session continuation works (sessionId + resume)\n- [ ] Streaming works (onOutput callbacks)\n- [ ] Event types are preserved (ClaudeStreamEvent, CodexStreamEvent)\n- [ ] getAdapter() helper returns correct adapter\n- [ ] Web app websocket integration works\n- [ ] All existing unit tests pass (after migration)\n- [ ] All existing E2E tests pass (after migration)\n- [ ] Type checking passes with zero errors\n- [ ] Build completes successfully\n- [ ] Structured output validation works (Zod schema)\n\n**Should Not:**\n\n- [ ] Break any existing functionality\n- [ ] Introduce type errors or warnings\n- [ ] Cause performance regressions\n- [ ] Break web app integration\n- [ ] Lose event type safety\n\n## Validation\n\nExecute these commands to verify the feature works correctly:\n\n**Automated Verification:**\n\n```bash\n# Build verification\ncd packages/agent-cli-sdk\npnpm build\n# Expected: Clean build, dist/ contains compiled code\n\n# Type checking\npnpm check-types\n# Expected: 0 errors, 0 warnings\n\n# Linting\npnpm lint\n# Expected: No lint errors\n\n# Unit tests\npnpm test\n# Expected: All tests pass (adapt existing tests to new structure)\n\n# E2E tests (Claude)\nRUN_E2E_TESTS=true pnpm test:e2e:claude\n# Expected: Claude E2E tests pass\n\n# E2E tests (Codex)\nRUN_E2E_TESTS=true pnpm test:e2e:codex\n# Expected: Codex E2E tests pass\n\n# Web app type checking\ncd ../../apps/web\npnpm check-types\n# Expected: 0 errors\n```\n\n**Manual Verification:**\n\n1. Test basic execution:\n   ```bash\n   cd packages/agent-cli-sdk\n   tsx examples/basic/claude.ts\n   # Verify: Executes successfully, prints response\n   ```\n\n2. Test session continuation:\n   ```bash\n   tsx examples/session-continuation.ts\n   # Verify: Two messages in same session, second remembers context\n   ```\n\n3. Test streaming:\n   ```bash\n   tsx examples/streaming.ts\n   # Verify: Output streams to console in real-time\n   ```\n\n4. Test multi-agent:\n   ```bash\n   tsx examples/multi-agent.ts claude\n   tsx examples/multi-agent.ts codex\n   # Verify: Both agents execute correctly\n   ```\n\n5. Test web app integration:\n   ```bash\n   cd apps/web\n   pnpm dev\n   # Navigate to session page, send message\n   # Verify: Message executes, streams back to UI\n   ```\n\n**Feature-Specific Checks:**\n\n- Import ClaudeAdapter from package, verify TypeScript autocomplete works\n- Verify event types (ClaudeStreamEvent) provide proper type narrowing\n- Check that sessionId is captured and can be reused\n- Verify config merging (constructor config + execute options)\n- Test error handling (invalid CLI path, authentication errors)\n- Verify logging works when logPath is provided\n- Check that Cursor/Gemini stubs throw appropriate errors\n\n## Definition of Done\n\n- [ ] All tasks completed and marked as done\n- [ ] All automated tests passing (unit, E2E)\n- [ ] TypeScript compiles with zero errors\n- [ ] Linting passes\n- [ ] Manual testing confirms all features work\n- [ ] Web app integration tested and working\n- [ ] No console errors or warnings\n- [ ] Examples run successfully\n- [ ] Documentation updated (README, CHANGELOG)\n- [ ] Code follows new flat architecture pattern\n- [ ] Version bumped to 4.0.0\n\n## Notes\n\n**Key Design Decisions:**\n- Keep event types unchanged for type safety (ClaudeStreamEvent, CodexStreamEvent with all subtypes)\n- Simplify utilities where possible: inline prompt validation, simplify logging, delete unused code\n- Delete async.ts and validation.ts entirely (unused in codebase)\n- No backwards compatibility - clean break to 4.0.0\n- Lightweight classes over pure functions (config reuse pattern matches web app usage)\n\n**Utility Simplifications:**\n- **validation.ts** - DELETE (all functions unused, inline 4-line prompt check in adapters)\n- **async.ts** - DELETE (sequential, parallel, retry, withTimeout, debounce all unused)\n- **logging.ts** - SIMPLIFY (remove verbose console.logs, inline helpers, single writeLog function)\n- **spawn.ts** - KEEP AS-IS (actively used, well-tested)\n- **json-parser.ts** - KEEP AS-IS (actively used, well-tested)\n\n**Dependencies:**\n- Web app depends on this package, must update after refactor\n- Tests must be migrated alongside code to maintain coverage\n\n**Future Considerations:**\n- Cursor adapter implementation (stub is ready)\n- Gemini adapter implementation (stub is ready)\n- Potential for additional shared utilities as patterns emerge\n- Consider adding retry/timeout utilities if needed in the future\n\n**Rollback Plan:**\n- If issues arise, revert to 3.x.x version in package.json\n- Web app would need to revert websocket.ts changes\n- Tests are preserved during migration, so rollback is low-risk\n",
+      "structuredPatch": [
+        {
+          "oldStart": 317,
+          "oldLines": 19,
+          "newStart": 317,
+          "newLines": 27,
+          "lines": [
+            " ### 8: Implement CodexAdapter Class",
+            " ",
+            " <!-- prettier-ignore -->",
+            "-- [ ] 8.1 Create `src/codex/index.ts` with CodexAdapter class",
+            "+- [x] 8.1 Create `src/codex/index.ts` with CodexAdapter class",
+            "         - Follow same pattern as ClaudeAdapter",
+            "         - Implement constructor and execute() method",
+            "         - Inline prompt validation (same 4 lines as Claude)",
+            "         - Export CodexAdapter, CodexOptions, CodexConfig, CodexStreamEvent",
+            "         - File: `src/codex/index.ts`",
+            "-- [ ] 8.2 Verify CodexAdapter compiles",
+            "+- [x] 8.2 Verify CodexAdapter compiles",
+            "         - Command: `pnpm check-types`",
+            "         - Expected: No TypeScript errors",
+            " ",
+            " #### Completion Notes",
+            " ",
+            "-(To be filled in during implementation)",
+            "+- Created CodexAdapter class following the same pattern as ClaudeAdapter",
+            "+- Constructor auto-detects CLI path or uses config, throws CLINotFoundError if not found",
+            "+- Implemented execute<T>() method with full streaming support (onEvent, onOutput callbacks)",
+            "+- Config merging works correctly (constructor config + execute options)",
+            "+- Inlined prompt validation (4 lines, same as Claude)",
+            "+- Integrated buildCodexArgs, spawnProcess, parseCodexOutput",
+            "+- Added optional logging with writeLog",
+            "+- Exports CodexAdapter, CodexOptions, CodexConfig, CodexStreamEvent, and all event type guards",
+            "+- Type checking passes with zero errors",
+            " ",
+            " ### 9: Create Cursor and Gemini Stubs",
+            " "
+          ]
+        }
+      ],
+      "userModified": false,
+      "replaceAll": false
+    }
+  },
+  {
+    "session_id": "7df4a542-3889-4eb8-ac1f-8d8c297c84f4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/7df4a542-3889-4eb8-ac1f-8d8c297c84f4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Create Codex adapter structure (phase 2 tasks 6.1-6.4)",
+          "status": "completed",
+          "activeForm": "Creating Codex adapter structure"
+        },
+        {
+          "content": "Create Codex types and events (phase 2 tasks 7.1-7.2)",
+          "status": "completed",
+          "activeForm": "Creating Codex types and events"
+        },
+        {
+          "content": "Implement CodexAdapter class (phase 2 tasks 8.1-8.2)",
+          "status": "completed",
+          "activeForm": "Implementing CodexAdapter class"
+        },
+        {
+          "content": "Create Cursor and Gemini stubs (phase 3 tasks 9.1-9.2)",
+          "status": "in_progress",
+          "activeForm": "Creating Cursor and Gemini stubs"
+        },
+        {
+          "content": "Update main exports (phase 3 tasks 10.1-10.2)",
+          "status": "pending",
+          "activeForm": "Updating main exports"
+        },
+        {
+          "content": "Delete old code (phase 4 tasks 11.1-11.4)",
+          "status": "pending",
+          "activeForm": "Deleting old code"
+        },
+        {
+          "content": "Update examples (phase 4 tasks 12.1-12.6)",
+          "status": "pending",
+          "activeForm": "Updating examples"
+        },
+        {
+          "content": "Update tests (phase 4 tasks 13.1-13.6)",
+          "status": "pending",
+          "activeForm": "Updating tests"
+        },
+        {
+          "content": "Update web app integration (phase 4 tasks 14.1-14.3)",
+          "status": "pending",
+          "activeForm": "Updating web app integration"
+        },
+        {
+          "content": "Update documentation (phase 5 tasks 15.1-15.3)",
+          "status": "pending",
+          "activeForm": "Updating documentation"
+        }
+      ]
+    },
+    "tool_response": {
+      "oldTodos": [
+        {
+          "content": "Create Codex adapter structure (phase 2 tasks 6.1-6.4)",
+          "status": "completed",
+          "activeForm": "Creating Codex adapter structure"
+        },
+        {
+          "content": "Create Codex types and events (phase 2 tasks 7.1-7.2)",
+          "status": "completed",
+          "activeForm": "Creating Codex types and events"
+        },
+        {
+          "content": "Implement CodexAdapter class (phase 2 tasks 8.1-8.2)",
+          "status": "in_progress",
+          "activeForm": "Implementing CodexAdapter class"
+        },
+        {
+          "content": "Create Cursor and Gemini stubs (phase 3 tasks 9.1-9.2)",
+          "status": "pending",
+          "activeForm": "Creating Cursor and Gemini stubs"
+        },
+        {
+          "content": "Update main exports (phase 3 tasks 10.1-10.2)",
+          "status": "pending",
+          "activeForm": "Updating main exports"
+        },
+        {
+          "content": "Delete old code (phase 4 tasks 11.1-11.4)",
+          "status": "pending",
+          "activeForm": "Deleting old code"
+        },
+        {
+          "content": "Update examples (phase 4 tasks 12.1-12.6)",
+          "status": "pending",
+          "activeForm": "Updating examples"
+        },
+        {
+          "content": "Update tests (phase 4 tasks 13.1-13.6)",
+          "status": "pending",
+          "activeForm": "Updating tests"
+        },
+        {
+          "content": "Update web app integration (phase 4 tasks 14.1-14.3)",
+          "status": "pending",
+          "activeForm": "Updating web app integration"
+        },
+        {
+          "content": "Update documentation (phase 5 tasks 15.1-15.3)",
+          "status": "pending",
+          "activeForm": "Updating documentation"
+        }
+      ],
+      "newTodos": [
+        {
+          "content": "Create Codex adapter structure (phase 2 tasks 6.1-6.4)",
+          "status": "completed",
+          "activeForm": "Creating Codex adapter structure"
+        },
+        {
+          "content": "Create Codex types and events (phase 2 tasks 7.1-7.2)",
+          "status": "completed",
+          "activeForm": "Creating Codex types and events"
+        },
+        {
+          "content": "Implement CodexAdapter class (phase 2 tasks 8.1-8.2)",
+          "status": "completed",
+          "activeForm": "Implementing CodexAdapter class"
+        },
+        {
+          "content": "Create Cursor and Gemini stubs (phase 3 tasks 9.1-9.2)",
+          "status": "in_progress",
+          "activeForm": "Creating Cursor and Gemini stubs"
+        },
+        {
+          "content": "Update main exports (phase 3 tasks 10.1-10.2)",
+          "status": "pending",
+          "activeForm": "Updating main exports"
+        },
+        {
+          "content": "Delete old code (phase 4 tasks 11.1-11.4)",
+          "status": "pending",
+          "activeForm": "Deleting old code"
+        },
+        {
+          "content": "Update examples (phase 4 tasks 12.1-12.6)",
+          "status": "pending",
+          "activeForm": "Updating examples"
+        },
+        {
+          "content": "Update tests (phase 4 tasks 13.1-13.6)",
+          "status": "pending",
+          "activeForm": "Updating tests"
+        },
+        {
+          "content": "Update web app integration (phase 4 tasks 14.1-14.3)",
+          "status": "pending",
+          "activeForm": "Updating web app integration"
+        },
+        {
+          "content": "Update documentation (phase 5 tasks 15.1-15.3)",
+          "status": "pending",
+          "activeForm": "Updating documentation"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "7df4a542-3889-4eb8-ac1f-8d8c297c84f4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/7df4a542-3889-4eb8-ac1f-8d8c297c84f4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "mkdir -p packages/agent-cli-sdk/src/cursor packages/agent-cli-sdk/src/gemini",
+      "description": "Create cursor and gemini directories"
+    },
+    "tool_response": {
+      "stdout": "",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  },
+  {
+    "session_id": "7df4a542-3889-4eb8-ac1f-8d8c297c84f4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/7df4a542-3889-4eb8-ac1f-8d8c297c84f4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/cursor/index.ts",
+      "content": "/**\n * Cursor CLI Adapter (Stub)\n *\n * This adapter is a placeholder for future Cursor integration.\n * Implementation coming soon.\n */\n\nimport type { ExecutionResponse } from '../shared/types';\n\nexport interface CursorConfig {\n  cliPath?: string;\n  [key: string]: unknown;\n}\n\nexport interface CursorOptions {\n  workingDir?: string;\n  timeout?: number;\n  [key: string]: unknown;\n}\n\n/**\n * Cursor adapter (not yet implemented)\n */\nexport class CursorAdapter {\n  public readonly name = 'cursor';\n\n  constructor(_config: CursorConfig = {}) {\n    throw new Error('Cursor adapter is not yet implemented. Stay tuned for future releases!');\n  }\n\n  async execute<T = string>(\n    _prompt: string,\n    _options: CursorOptions = {}\n  ): Promise<ExecutionResponse<T>> {\n    throw new Error('Cursor adapter is not yet implemented. Stay tuned for future releases!');\n  }\n}\n"
+    },
+    "tool_response": {
+      "type": "create",
+      "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/cursor/index.ts",
+      "content": "/**\n * Cursor CLI Adapter (Stub)\n *\n * This adapter is a placeholder for future Cursor integration.\n * Implementation coming soon.\n */\n\nimport type { ExecutionResponse } from '../shared/types';\n\nexport interface CursorConfig {\n  cliPath?: string;\n  [key: string]: unknown;\n}\n\nexport interface CursorOptions {\n  workingDir?: string;\n  timeout?: number;\n  [key: string]: unknown;\n}\n\n/**\n * Cursor adapter (not yet implemented)\n */\nexport class CursorAdapter {\n  public readonly name = 'cursor';\n\n  constructor(_config: CursorConfig = {}) {\n    throw new Error('Cursor adapter is not yet implemented. Stay tuned for future releases!');\n  }\n\n  async execute<T = string>(\n    _prompt: string,\n    _options: CursorOptions = {}\n  ): Promise<ExecutionResponse<T>> {\n    throw new Error('Cursor adapter is not yet implemented. Stay tuned for future releases!');\n  }\n}\n",
+      "structuredPatch": []
+    }
+  },
+  {
+    "session_id": "7df4a542-3889-4eb8-ac1f-8d8c297c84f4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/7df4a542-3889-4eb8-ac1f-8d8c297c84f4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/gemini/index.ts",
+      "content": "/**\n * Gemini CLI Adapter (Stub)\n *\n * This adapter is a placeholder for future Gemini integration.\n * Implementation coming soon.\n */\n\nimport type { ExecutionResponse } from '../shared/types';\n\nexport interface GeminiConfig {\n  cliPath?: string;\n  [key: string]: unknown;\n}\n\nexport interface GeminiOptions {\n  workingDir?: string;\n  timeout?: number;\n  [key: string]: unknown;\n}\n\n/**\n * Gemini adapter (not yet implemented)\n */\nexport class GeminiAdapter {\n  public readonly name = 'gemini';\n\n  constructor(_config: GeminiConfig = {}) {\n    throw new Error('Gemini adapter is not yet implemented. Stay tuned for future releases!');\n  }\n\n  async execute<T = string>(\n    _prompt: string,\n    _options: GeminiOptions = {}\n  ): Promise<ExecutionResponse<T>> {\n    throw new Error('Gemini adapter is not yet implemented. Stay tuned for future releases!');\n  }\n}\n"
+    },
+    "tool_response": {
+      "type": "create",
+      "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/gemini/index.ts",
+      "content": "/**\n * Gemini CLI Adapter (Stub)\n *\n * This adapter is a placeholder for future Gemini integration.\n * Implementation coming soon.\n */\n\nimport type { ExecutionResponse } from '../shared/types';\n\nexport interface GeminiConfig {\n  cliPath?: string;\n  [key: string]: unknown;\n}\n\nexport interface GeminiOptions {\n  workingDir?: string;\n  timeout?: number;\n  [key: string]: unknown;\n}\n\n/**\n * Gemini adapter (not yet implemented)\n */\nexport class GeminiAdapter {\n  public readonly name = 'gemini';\n\n  constructor(_config: GeminiConfig = {}) {\n    throw new Error('Gemini adapter is not yet implemented. Stay tuned for future releases!');\n  }\n\n  async execute<T = string>(\n    _prompt: string,\n    _options: GeminiOptions = {}\n  ): Promise<ExecutionResponse<T>> {\n    throw new Error('Gemini adapter is not yet implemented. Stay tuned for future releases!');\n  }\n}\n",
+      "structuredPatch": []
+    }
+  },
+  {
+    "session_id": "7df4a542-3889-4eb8-ac1f-8d8c297c84f4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/7df4a542-3889-4eb8-ac1f-8d8c297c84f4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.agent/specs/250125164500-agent-cli-refactor-spec.md",
+      "old_string": "### 9: Create Cursor and Gemini Stubs\n\n<!-- prettier-ignore -->\n- [ ] 9.1 Create `src/cursor/index.ts` with stub adapter\n        - Class with name='cursor'\n        - Constructor throws \"not yet implemented\"\n        - execute() throws \"not yet implemented\"\n        - File: `src/cursor/index.ts`\n- [ ] 9.2 Create `src/gemini/index.ts` with stub adapter\n        - Class with name='gemini'\n        - Constructor throws \"not yet implemented\"\n        - execute() throws \"not yet implemented\"\n        - File: `src/gemini/index.ts`\n\n#### Completion Notes\n\n(To be filled in during implementation)",
+      "new_string": "### 9: Create Cursor and Gemini Stubs\n\n<!-- prettier-ignore -->\n- [x] 9.1 Create `src/cursor/index.ts` with stub adapter\n        - Class with name='cursor'\n        - Constructor throws \"not yet implemented\"\n        - execute() throws \"not yet implemented\"\n        - File: `src/cursor/index.ts`\n- [x] 9.2 Create `src/gemini/index.ts` with stub adapter\n        - Class with name='gemini'\n        - Constructor throws \"not yet implemented\"\n        - execute() throws \"not yet implemented\"\n        - File: `src/gemini/index.ts`\n\n#### Completion Notes\n\n- Created CursorAdapter stub with name property set to 'cursor'\n- Constructor and execute() both throw helpful error message about not being implemented yet\n- Created GeminiAdapter stub with name property set to 'gemini'\n- Constructor and execute() both throw helpful error message about not being implemented yet\n- Both stubs include basic type definitions (Config, Options) for future implementation\n- Type safety maintained with ExecutionResponse<T> return type"
+    },
+    "tool_response": {
+      "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/.agent/specs/250125164500-agent-cli-refactor-spec.md",
+      "oldString": "### 9: Create Cursor and Gemini Stubs\n\n<!-- prettier-ignore -->\n- [ ] 9.1 Create `src/cursor/index.ts` with stub adapter\n        - Class with name='cursor'\n        - Constructor throws \"not yet implemented\"\n        - execute() throws \"not yet implemented\"\n        - File: `src/cursor/index.ts`\n- [ ] 9.2 Create `src/gemini/index.ts` with stub adapter\n        - Class with name='gemini'\n        - Constructor throws \"not yet implemented\"\n        - execute() throws \"not yet implemented\"\n        - File: `src/gemini/index.ts`\n\n#### Completion Notes\n\n(To be filled in during implementation)",
+      "newString": "### 9: Create Cursor and Gemini Stubs\n\n<!-- prettier-ignore -->\n- [x] 9.1 Create `src/cursor/index.ts` with stub adapter\n        - Class with name='cursor'\n        - Constructor throws \"not yet implemented\"\n        - execute() throws \"not yet implemented\"\n        - File: `src/cursor/index.ts`\n- [x] 9.2 Create `src/gemini/index.ts` with stub adapter\n        - Class with name='gemini'\n        - Constructor throws \"not yet implemented\"\n        - execute() throws \"not yet implemented\"\n        - File: `src/gemini/index.ts`\n\n#### Completion Notes\n\n- Created CursorAdapter stub with name property set to 'cursor'\n- Constructor and execute() both throw helpful error message about not being implemented yet\n- Created GeminiAdapter stub with name property set to 'gemini'\n- Constructor and execute() both throw helpful error message about not being implemented yet\n- Both stubs include basic type definitions (Config, Options) for future implementation\n- Type safety maintained with ExecutionResponse<T> return type",
+      "originalFile": "# Feature: Agent CLI SDK Complete Refactor\n\n## What We're Building\n\nA complete architectural simplification of the agent-cli-sdk package, removing session management abstractions, eliminating inheritance patterns, and restructuring to a flat, lightweight adapter-based design. This refactor reduces complexity by ~60% while maintaining full functionality and preparing the codebase for easy addition of Cursor and Gemini adapters.\n\n## User Story\n\nAs a developer using the agent-cli-sdk\nI want a simple, predictable API with lightweight adapter classes\nSo that I can execute AI CLI commands without navigating complex abstractions and easily add new AI tools\n\n## Technical Approach\n\nReplace the current multi-layer architecture (AgentClient \u2192 BaseAdapter \u2192 Adapter \u2192 Session) with lightweight adapter classes that directly manage CLI execution. Move shared utilities to a `shared/` directory, consolidate types into a flat hierarchy, preserve all existing event types for type safety, and delete unused code (session management, factory functions, async utilities). The refactor maintains test coverage throughout to ensure no regressions.\n\n## Files to Touch\n\n### Existing Files to Delete\n\n**Core Architecture (to be replaced):**\n- `src/client/agent-client.ts` - AgentClient wrapper class\n- `src/client/session.ts` - Unified Session wrapper\n- `src/core/base-adapter.ts` - BaseAdapter inheritance\n- `src/core/interfaces.ts` - Old interface definitions\n- `src/factories/index.ts` - Factory functions\n- `src/adapters/claude/session.ts` - ClaudeSession class\n- `src/adapters/claude/index.ts` - Old ClaudeAdapter\n- `src/adapters/codex/index.ts` - Old CodexAdapter\n\n**Type System (to be restructured):**\n- `src/types/session.ts` - Session types\n- `src/types/config.ts` - Config types\n- `src/types/logging.ts` - Will merge into shared\n- `src/types/events/base.ts` - Generic base type\n- `src/types/events/index.ts` - Re-export file\n- `src/types/index.ts` - Old type exports\n- `src/types/interfaces.ts` - Old interfaces\n\n**Utilities (to be moved/deleted/simplified):**\n- `src/utils/async.ts` - Unused utilities (DELETE)\n- `src/utils/index.ts` - Re-export file (DELETE)\n- `src/utils/validation.ts` - Unused validation functions (DELETE)\n- `src/utils/spawn.ts` - Move to shared/ (keep as-is)\n- `src/utils/logger.ts` - Simplify and move to shared/logging.ts\n- `src/utils/json-parser.ts` - Move to shared/ (keep as-is)\n\n**Examples (obsolete):**\n- `examples/sessions/` - Entire directory\n- `examples/advanced/` - Entire directory\n- `examples/README.md` - Will recreate\n\n**Tests (to be replaced):**\n- `tests/unit/client/` - Entire directory\n- `tests/integration/` - Entire directory\n- `tests/unit/adapters/` - Will recreate as tests/unit/claude/ and tests/unit/codex/\n\n### New Files to Create\n\n**Claude Adapter:**\n- `src/claude/index.ts` - New lightweight ClaudeAdapter class\n- `src/claude/types.ts` - ClaudeOptions, ClaudeConfig types\n- `src/claude/events.ts` - Move from src/types/events/claude.ts\n- `src/claude/cli-args.ts` - Extract buildClaudeArgs from cli-wrapper.ts\n\n**Codex Adapter:**\n- `src/codex/index.ts` - New lightweight CodexAdapter class\n- `src/codex/types.ts` - CodexOptions, CodexConfig types\n- `src/codex/events.ts` - Move from src/types/events/codex.ts\n- `src/codex/cli-args.ts` - Extract buildCodexArgs from cli-wrapper.ts\n\n**Cursor & Gemini Stubs:**\n- `src/cursor/index.ts` - Stub adapter (throws not implemented)\n- `src/gemini/index.ts` - Stub adapter (throws not implemented)\n\n**Shared Utilities:**\n- `src/shared/types.ts` - Base ExecutionOptions, ExecutionResponse, etc.\n- `src/shared/spawn.ts` - Moved from utils/ (keep as-is)\n- `src/shared/logging.ts` - Simplified version of utils/logger.ts\n- `src/shared/json-parser.ts` - Moved from utils/ (keep as-is)\n- `src/shared/errors.ts` - Moved from core/errors.ts (keep as-is)\n\n**Examples:**\n- `examples/basic/claude.ts` - Update to new API\n- `examples/basic/codex.ts` - Update to new API\n- `examples/session-continuation.ts` - New example showing sessionId pattern\n- `examples/streaming.ts` - New example showing onOutput callbacks\n- `examples/multi-agent.ts` - New example showing getAdapter()\n- `examples/structured-output.ts` - Update existing example\n\n**Tests:**\n- `tests/unit/claude/adapter.test.ts` - New ClaudeAdapter tests\n- `tests/unit/codex/adapter.test.ts` - New CodexAdapter tests\n- `tests/unit/claude/parser.test.ts` - Move from old location\n- `tests/unit/codex/parser.test.ts` - Move from old location\n- `tests/unit/shared/spawn.test.ts` - Move from old utils/ tests\n- `tests/unit/shared/json-parser.test.ts` - Move from old utils/ tests\n\n**Documentation:**\n- `README.md` - Complete rewrite with new API\n- `CHANGELOG.md` - Add 4.0.0 breaking changes section\n\n### Existing Files to Modify\n\n**Adapters (move and refactor):**\n- `src/adapters/claude/cli-detector.ts` \u2192 `src/claude/cli-detector.ts`\n- `src/adapters/claude/cli-wrapper.ts` \u2192 Extract to `src/claude/cli-args.ts`\n- `src/adapters/claude/parser.ts` \u2192 `src/claude/parser.ts` (rename parseStreamOutput \u2192 parseClaudeOutput)\n- `src/adapters/claude/image-handler.ts` \u2192 `src/claude/image-handler.ts`\n- `src/adapters/claude/mcp-detector.ts` \u2192 `src/claude/mcp-detector.ts`\n- `src/adapters/codex/cli-detector.ts` \u2192 `src/codex/cli-detector.ts`\n- `src/adapters/codex/cli-wrapper.ts` \u2192 Extract to `src/codex/cli-args.ts`\n- `src/adapters/codex/parser.ts` \u2192 `src/codex/parser.ts`\n\n**Core:**\n- `src/core/errors.ts` \u2192 `src/shared/errors.ts` (move, keep as-is)\n\n**Main:**\n- `src/index.ts` - Complete rewrite of exports\n\n**Tests:**\n- `tests/e2e/claude-e2e.test.ts` - Update to use new ClaudeAdapter\n- `tests/e2e/codex-e2e.test.ts` - Update to use new CodexAdapter\n\n**Web App Integration:**\n- `apps/web/src/server/websocket.ts` - Update to use ClaudeAdapter directly\n\n**Config:**\n- `package.json` - Update version to 4.0.0\n\n## Implementation Plan\n\n### Phase 1: Foundation (Setup & Shared Utilities)\n\nCreate the new shared utilities directory with base types and helper functions. This establishes the foundation that all adapters will depend on. Move spawn and json-parser as-is to minimize risk. Simplify logging by removing verbose console output and unused helper functions. Delete validation.ts entirely (prompt validation will be inlined in adapters - only 4 lines). Create the base type system (ExecutionOptions, ExecutionResponse) that will be extended by adapter-specific types.\n\n### Phase 2: Claude Adapter (Reference Implementation)\n\nBuild the new lightweight ClaudeAdapter as the reference implementation. Extract and reorganize Claude-specific code from the old nested adapter structure into a flat directory. Create the ClaudeAdapter class with constructor config storage and execute() method. Test thoroughly to ensure full compatibility with existing functionality.\n\n### Phase 3: Codex Adapter (Apply Pattern)\n\nApply the same pattern to Codex, using Claude as the reference. This validates that the pattern works for multiple adapters and ensures consistency.\n\n### Phase 4: Cleanup & Integration\n\nDelete all old code (client/, core/, factories/, old adapters/, old types/, session code). Update main exports in src/index.ts. Create Cursor/Gemini stubs. Update web app integration. Update examples and tests.\n\n### Phase 5: Documentation & Validation\n\nRewrite README with new API patterns. Update CHANGELOG with breaking changes. Run full test suite to ensure no regressions. Manually test session continuation, streaming, and multi-agent patterns.\n\n## Step by Step Tasks\n\n### 1: Create Shared Directory and Simplify Utilities\n\n<!-- prettier-ignore -->\n- [x] 1.1 Create `src/shared/` directory\n- [x] 1.2 Move `src/core/errors.ts` \u2192 `src/shared/errors.ts` (no modifications)\n- [x] 1.3 Move `src/utils/spawn.ts` \u2192 `src/shared/spawn.ts` (no modifications)\n- [x] 1.4 Move `src/utils/json-parser.ts` \u2192 `src/shared/json-parser.ts` (no modifications)\n- [x] 1.5 Create `src/shared/logging.ts` - Simplified version\n        - Single writeLog() function\n        - Remove getLogPaths() - inline it\n        - Remove createSessionMessageLogPath() - unused after deleting sessions\n        - Remove all console.log statements (verbose debugging)\n        - Keep only: mkdir, writeFile for input/output/error\n        - Silently catch and ignore logging errors\n        - File: `src/shared/logging.ts`\n\n#### Completion Notes\n\n- Created `src/shared/` directory structure\n- Copied errors.ts, spawn.ts, and json-parser.ts as-is from their original locations\n- Updated imports in spawn.ts and json-parser.ts to reference `./errors` instead of `../core/errors`\n- Created simplified logging.ts with single `writeLog()` function\n- Removed all console.log statements and verbose debugging\n- Inlined path logic and removed helper functions (getLogPaths, createSessionMessageLogPath)\n- Logging errors are silently caught and ignored as specified\n\n### 2: Create Shared Base Types\n\n<!-- prettier-ignore -->\n- [x] 2.1 Create `src/shared/types.ts`\n        - Define ExecutionOptions interface with all common options\n        - Define ExecutionResponse<T> interface\n        - Define StreamEvent, OutputData, TokenUsage, ModelUsage\n        - Define ActionLog, ValidationResult\n        - File: `src/shared/types.ts`\n- [x] 2.2 Verify imports in shared utilities\n        - Update imports in shared/spawn.ts to use ./types\n        - Update imports in shared/logging.ts to use ./types\n        - File: `src/shared/spawn.ts`, `src/shared/logging.ts`\n\n#### Completion Notes\n\n- Created `src/shared/types.ts` with all base type definitions from interfaces.ts\n- Included StreamEvent, OutputData, TokenUsage, ModelUsage, ActionLog, ValidationResult\n- Included ExecutionOptions and ExecutionResponse<T> as the core types\n- Shared utilities (spawn.ts, logging.ts, json-parser.ts) don't need type imports as they use primitive types\n- errors.ts already has no external dependencies\n\n### 3: Create Claude Adapter Structure\n\n<!-- prettier-ignore -->\n- [x] 3.1 Create `src/claude/` directory\n- [x] 3.2 Move `src/adapters/claude/cli-detector.ts` \u2192 `src/claude/cli-detector.ts`\n- [x] 3.3 Move `src/adapters/claude/parser.ts` \u2192 `src/claude/parser.ts`\n        - Rename parseStreamOutput \u2192 parseClaudeOutput\n        - Update imports to use ../shared/\n- [x] 3.4 Move `src/adapters/claude/image-handler.ts` \u2192 `src/claude/image-handler.ts` (if exists)\n- [x] 3.5 Move `src/adapters/claude/mcp-detector.ts` \u2192 `src/claude/mcp-detector.ts` (if exists)\n- [x] 3.6 Extract buildClaudeArgs from `src/adapters/claude/cli-wrapper.ts` \u2192 `src/claude/cli-args.ts`\n        - Keep only buildClaudeArgs function\n        - Remove executeClaudeCLI function (logic moves to adapter)\n        - Update imports\n\n#### Completion Notes\n\n- Created `src/claude/` directory\n- Copied cli-detector.ts, image-handler.ts, and mcp-detector.ts as-is\n- Created new parser.ts with renamed function (parseStreamOutput \u2192 parseClaudeOutput)\n- Updated all imports in parser.ts to use ../shared/ paths\n- Created cli-args.ts with buildClaudeArgs function extracted from cli-wrapper.ts\n- All Claude utility files now use the new modular structure\n\n### 4: Create Claude Types and Events\n\n<!-- prettier-ignore -->\n- [x] 4.1 Create `src/claude/types.ts`\n        - Define ClaudeOptions extends ExecutionOptions\n        - Add Claude-specific options: model, apiKey, oauthToken, permissionMode, etc.\n        - Define ClaudeConfig extends Partial<ClaudeOptions> with cliPath\n        - File: `src/claude/types.ts`\n- [x] 4.2 Move `src/types/events/claude.ts` \u2192 `src/claude/events.ts`\n        - Keep all event types unchanged\n        - Keep all type guards\n        - Update imports to use ../shared/types\n\n#### Completion Notes\n\n- Created `src/claude/types.ts` with ClaudeOptions (extends ExecutionOptions), ClaudeConfig, ImageInput, and utility types\n- Created `src/claude/events.ts` with all Claude event types (FileHistorySnapshotEvent, UserMessageEvent, AssistantMessageEvent)\n- All type guards preserved (isClaudeEvent, isFileHistorySnapshotEvent, isUserMessageEvent, isAssistantMessageEvent)\n- Updated imports to use ../shared/types (StreamEvent)\n- Removed BaseStreamEvent dependency as part of simplification\n\n### 5: Implement ClaudeAdapter Class\n\n<!-- prettier-ignore -->\n- [x] 5.1 Create `src/claude/index.ts` with ClaudeAdapter class\n        - Implement constructor: store cliPath and config\n        - Implement execute<T>() method\n        - Merge constructor config with execute options\n        - Inline prompt validation (4 lines): check non-empty string\n        - Call buildClaudeArgs, spawnCLI, parseClaudeOutput\n        - Add optional logging with writeLog\n        - Export ClaudeAdapter, ClaudeOptions, ClaudeConfig, ClaudeStreamEvent\n        - File: `src/claude/index.ts`\n- [x] 5.2 Verify ClaudeAdapter compiles\n        - Command: `pnpm check-types`\n        - Expected: No TypeScript errors in Claude adapter\n\n#### Completion Notes\n\n- Created ClaudeAdapter class with constructor that auto-detects CLI path or uses config\n- Implemented execute<T>() method with full streaming support (onEvent, onOutput callbacks)\n- Config merging works correctly (constructor config + execute options)\n- Inlined prompt validation as specified (4 lines)\n- Integrated buildClaudeArgs, spawnProcess, parseClaudeOutput\n- Added optional logging with writeLog\n- Exports ClaudeAdapter, ClaudeOptions, ClaudeConfig, ClaudeStreamEvent, and all event type guards\n- Fixed type issues by using BaseStreamEvent for Claude-specific events\n- Type checking passes with zero errors\n\n### 6: Create Codex Adapter Structure\n\n<!-- prettier-ignore -->\n- [x] 6.1 Create `src/codex/` directory\n- [x] 6.2 Move `src/adapters/codex/cli-detector.ts` \u2192 `src/codex/cli-detector.ts`\n- [x] 6.3 Move `src/adapters/codex/parser.ts` \u2192 `src/codex/parser.ts`\n        - Update imports to use ../shared/\n- [x] 6.4 Extract buildCodexArgs from `src/adapters/codex/cli-wrapper.ts` \u2192 `src/codex/cli-args.ts`\n        - Keep only buildCodexArgs function\n        - Update imports\n\n#### Completion Notes\n\n- Created `src/codex/` directory structure\n- Copied cli-detector.ts as-is from adapters/codex/\n- Created parser.ts with updated imports to use ../shared/types and ../shared/json-parser\n- Extracted buildCodexArgs function into cli-args.ts with CodexOptions type reference\n- All Codex utility files now use the new modular structure\n\n### 7: Create Codex Types and Events\n\n<!-- prettier-ignore -->\n- [x] 7.1 Create `src/codex/types.ts`\n        - Define CodexOptions extends ExecutionOptions\n        - Add Codex-specific options\n        - Define CodexConfig\n        - File: `src/codex/types.ts`\n- [x] 7.2 Move `src/types/events/codex.ts` \u2192 `src/codex/events.ts`\n        - Keep all event types unchanged\n        - Keep all type guards\n        - Update imports\n\n#### Completion Notes\n\n- Created `src/codex/types.ts` with CodexOptions (extends ExecutionOptions), CodexConfig, SandboxMode type\n- All Codex-specific options included (model, sandbox, fullAuto, dangerouslyBypassApprovalsAndSandbox, images, search, etc.)\n- Created `src/codex/events.ts` with all Codex event types (ThreadStartedEvent, TurnCompletedEvent, ItemCompletedEvent, etc.)\n- All type guards preserved (isCodexEvent, isThreadStartedEvent, isTurnCompletedEvent, etc.)\n- Defined BaseStreamEvent inline (same pattern as Claude events)\n- All event types use proper TypeScript structure with data interfaces\n\n### 8: Implement CodexAdapter Class\n\n<!-- prettier-ignore -->\n- [x] 8.1 Create `src/codex/index.ts` with CodexAdapter class\n        - Follow same pattern as ClaudeAdapter\n        - Implement constructor and execute() method\n        - Inline prompt validation (same 4 lines as Claude)\n        - Export CodexAdapter, CodexOptions, CodexConfig, CodexStreamEvent\n        - File: `src/codex/index.ts`\n- [x] 8.2 Verify CodexAdapter compiles\n        - Command: `pnpm check-types`\n        - Expected: No TypeScript errors\n\n#### Completion Notes\n\n- Created CodexAdapter class following the same pattern as ClaudeAdapter\n- Constructor auto-detects CLI path or uses config, throws CLINotFoundError if not found\n- Implemented execute<T>() method with full streaming support (onEvent, onOutput callbacks)\n- Config merging works correctly (constructor config + execute options)\n- Inlined prompt validation (4 lines, same as Claude)\n- Integrated buildCodexArgs, spawnProcess, parseCodexOutput\n- Added optional logging with writeLog\n- Exports CodexAdapter, CodexOptions, CodexConfig, CodexStreamEvent, and all event type guards\n- Type checking passes with zero errors\n\n### 9: Create Cursor and Gemini Stubs\n\n<!-- prettier-ignore -->\n- [ ] 9.1 Create `src/cursor/index.ts` with stub adapter\n        - Class with name='cursor'\n        - Constructor throws \"not yet implemented\"\n        - execute() throws \"not yet implemented\"\n        - File: `src/cursor/index.ts`\n- [ ] 9.2 Create `src/gemini/index.ts` with stub adapter\n        - Class with name='gemini'\n        - Constructor throws \"not yet implemented\"\n        - execute() throws \"not yet implemented\"\n        - File: `src/gemini/index.ts`\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n### 10: Update Main Exports\n\n<!-- prettier-ignore -->\n- [ ] 10.1 Rewrite `src/index.ts`\n        - Export ClaudeAdapter, CodexAdapter, CursorAdapter, GeminiAdapter\n        - Export all shared types (ExecutionResponse, ExecutionOptions, etc.)\n        - Export Claude types and events\n        - Export Codex types and events\n        - Export all errors from shared/errors\n        - Export json-parser utilities (extractJSON, parseJSONL, safeJSONParse)\n        - Export type guards from adapter events\n        - Add getAdapter(agent, config) helper function\n        - Add version constant '4.0.0'\n        - File: `src/index.ts`\n- [ ] 10.2 Verify all exports resolve\n        - Command: `pnpm build`\n        - Expected: Successful build with all exports\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n### 11: Delete Old Code\n\n<!-- prettier-ignore -->\n- [ ] 11.1 Delete old architecture\n        - Delete `src/client/` directory\n        - Delete `src/core/` directory\n        - Delete `src/factories/` directory\n        - Delete `src/adapters/` directory\n        - Delete `src/types/` directory\n        - Delete `src/utils/` directory\n- [ ] 11.2 Delete obsolete examples\n        - Delete `examples/sessions/` directory\n        - Delete `examples/advanced/` directory\n        - Delete `examples/README.md`\n- [ ] 11.3 Delete obsolete tests\n        - Delete `tests/unit/client/` directory\n        - Delete `tests/integration/` directory\n        - Delete `tests/unit/adapters/` directory\n- [ ] 11.4 Verify build still works\n        - Command: `pnpm build`\n        - Expected: Clean build with no errors\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n### 12: Update Examples\n\n<!-- prettier-ignore -->\n- [ ] 12.1 Update `examples/basic/claude.ts`\n        - Use new ClaudeAdapter constructor\n        - Update execute() call\n        - File: `examples/basic/claude.ts`\n- [ ] 12.2 Update `examples/basic/codex.ts`\n        - Use new CodexAdapter constructor\n        - Update execute() call\n        - File: `examples/basic/codex.ts`\n- [ ] 12.3 Create `examples/session-continuation.ts`\n        - Show first message, capture sessionId\n        - Show second message with sessionId + resume\n        - File: `examples/session-continuation.ts`\n- [ ] 12.4 Create `examples/streaming.ts`\n        - Show onOutput callback usage\n        - File: `examples/streaming.ts`\n- [ ] 12.5 Create `examples/multi-agent.ts`\n        - Show getAdapter() usage\n        - File: `examples/multi-agent.ts`\n- [ ] 12.6 Update `examples/structured-output.ts` (if exists)\n        - Update to new adapter API\n        - File: `examples/structured-output.ts`\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n### 13: Update Tests\n\n<!-- prettier-ignore -->\n- [ ] 13.1 Create `tests/unit/claude/adapter.test.ts`\n        - Test ClaudeAdapter constructor\n        - Test execute() method\n        - File: `tests/unit/claude/adapter.test.ts`\n- [ ] 13.2 Create `tests/unit/codex/adapter.test.ts`\n        - Test CodexAdapter constructor\n        - Test execute() method\n        - File: `tests/unit/codex/adapter.test.ts`\n- [ ] 13.3 Move parser tests\n        - Move `tests/unit/adapters/claude/parser.test.ts` \u2192 `tests/unit/claude/parser.test.ts`\n        - Update imports\n- [ ] 13.4 Move utility tests\n        - Move `tests/unit/utils/json-parser.test.ts` \u2192 `tests/unit/shared/json-parser.test.ts`\n        - Move `tests/unit/utils/spawn.test.ts` \u2192 `tests/unit/shared/spawn.test.ts`\n        - Delete `tests/unit/utils/validation.test.ts` (validation.ts deleted)\n        - Update imports in all moved tests\n- [ ] 13.5 Update E2E tests\n        - Update `tests/e2e/claude-e2e.test.ts` to use ClaudeAdapter\n        - Update `tests/e2e/codex-e2e.test.ts` to use CodexAdapter\n- [ ] 13.6 Run all tests\n        - Command: `pnpm test`\n        - Expected: All tests passing\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n### 14: Update Web App Integration\n\n<!-- prettier-ignore -->\n- [ ] 14.1 Update `apps/web/src/server/websocket.ts`\n        - Replace: `import { AgentClient, createClaudeAdapter }`\n        - With: `import { ClaudeAdapter }`\n        - Replace AgentClient instantiation with ClaudeAdapter\n        - Update ActiveSessionData type (agentClient \u2192 adapter)\n        - Update all execute() calls\n        - File: `apps/web/src/server/websocket.ts`\n- [ ] 14.2 Verify web app compiles\n        - Command: `cd apps/web && pnpm check-types`\n        - Expected: No TypeScript errors\n- [ ] 14.3 Test web app websocket functionality\n        - Start: `cd apps/web && pnpm dev`\n        - Send test message through websocket\n        - Verify agent executes correctly\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n### 15: Update Documentation\n\n<!-- prettier-ignore -->\n- [ ] 15.1 Rewrite `README.md`\n        - Update Quick Start section with new API\n        - Add Session Continuation section (sessionId + resume pattern)\n        - Add Streaming section (onOutput callbacks)\n        - Add Multi-Agent Usage section (getAdapter())\n        - Update all code examples\n        - Add API Reference for adapters\n        - File: `README.md`\n- [ ] 15.2 Update `CHANGELOG.md`\n        - Add 4.0.0 section with breaking changes\n        - List removed features\n        - List new patterns\n        - Include migration note (no backwards compatibility)\n        - File: `CHANGELOG.md`\n- [ ] 15.3 Update `package.json`\n        - Set version to \"4.0.0\"\n        - File: `package.json`\n\n#### Completion Notes\n\n(To be filled in during implementation)\n\n## Acceptance Criteria\n\n**Must Work:**\n\n- [ ] ClaudeAdapter executes prompts successfully\n- [ ] CodexAdapter executes prompts successfully\n- [ ] Session continuation works (sessionId + resume)\n- [ ] Streaming works (onOutput callbacks)\n- [ ] Event types are preserved (ClaudeStreamEvent, CodexStreamEvent)\n- [ ] getAdapter() helper returns correct adapter\n- [ ] Web app websocket integration works\n- [ ] All existing unit tests pass (after migration)\n- [ ] All existing E2E tests pass (after migration)\n- [ ] Type checking passes with zero errors\n- [ ] Build completes successfully\n- [ ] Structured output validation works (Zod schema)\n\n**Should Not:**\n\n- [ ] Break any existing functionality\n- [ ] Introduce type errors or warnings\n- [ ] Cause performance regressions\n- [ ] Break web app integration\n- [ ] Lose event type safety\n\n## Validation\n\nExecute these commands to verify the feature works correctly:\n\n**Automated Verification:**\n\n```bash\n# Build verification\ncd packages/agent-cli-sdk\npnpm build\n# Expected: Clean build, dist/ contains compiled code\n\n# Type checking\npnpm check-types\n# Expected: 0 errors, 0 warnings\n\n# Linting\npnpm lint\n# Expected: No lint errors\n\n# Unit tests\npnpm test\n# Expected: All tests pass (adapt existing tests to new structure)\n\n# E2E tests (Claude)\nRUN_E2E_TESTS=true pnpm test:e2e:claude\n# Expected: Claude E2E tests pass\n\n# E2E tests (Codex)\nRUN_E2E_TESTS=true pnpm test:e2e:codex\n# Expected: Codex E2E tests pass\n\n# Web app type checking\ncd ../../apps/web\npnpm check-types\n# Expected: 0 errors\n```\n\n**Manual Verification:**\n\n1. Test basic execution:\n   ```bash\n   cd packages/agent-cli-sdk\n   tsx examples/basic/claude.ts\n   # Verify: Executes successfully, prints response\n   ```\n\n2. Test session continuation:\n   ```bash\n   tsx examples/session-continuation.ts\n   # Verify: Two messages in same session, second remembers context\n   ```\n\n3. Test streaming:\n   ```bash\n   tsx examples/streaming.ts\n   # Verify: Output streams to console in real-time\n   ```\n\n4. Test multi-agent:\n   ```bash\n   tsx examples/multi-agent.ts claude\n   tsx examples/multi-agent.ts codex\n   # Verify: Both agents execute correctly\n   ```\n\n5. Test web app integration:\n   ```bash\n   cd apps/web\n   pnpm dev\n   # Navigate to session page, send message\n   # Verify: Message executes, streams back to UI\n   ```\n\n**Feature-Specific Checks:**\n\n- Import ClaudeAdapter from package, verify TypeScript autocomplete works\n- Verify event types (ClaudeStreamEvent) provide proper type narrowing\n- Check that sessionId is captured and can be reused\n- Verify config merging (constructor config + execute options)\n- Test error handling (invalid CLI path, authentication errors)\n- Verify logging works when logPath is provided\n- Check that Cursor/Gemini stubs throw appropriate errors\n\n## Definition of Done\n\n- [ ] All tasks completed and marked as done\n- [ ] All automated tests passing (unit, E2E)\n- [ ] TypeScript compiles with zero errors\n- [ ] Linting passes\n- [ ] Manual testing confirms all features work\n- [ ] Web app integration tested and working\n- [ ] No console errors or warnings\n- [ ] Examples run successfully\n- [ ] Documentation updated (README, CHANGELOG)\n- [ ] Code follows new flat architecture pattern\n- [ ] Version bumped to 4.0.0\n\n## Notes\n\n**Key Design Decisions:**\n- Keep event types unchanged for type safety (ClaudeStreamEvent, CodexStreamEvent with all subtypes)\n- Simplify utilities where possible: inline prompt validation, simplify logging, delete unused code\n- Delete async.ts and validation.ts entirely (unused in codebase)\n- No backwards compatibility - clean break to 4.0.0\n- Lightweight classes over pure functions (config reuse pattern matches web app usage)\n\n**Utility Simplifications:**\n- **validation.ts** - DELETE (all functions unused, inline 4-line prompt check in adapters)\n- **async.ts** - DELETE (sequential, parallel, retry, withTimeout, debounce all unused)\n- **logging.ts** - SIMPLIFY (remove verbose console.logs, inline helpers, single writeLog function)\n- **spawn.ts** - KEEP AS-IS (actively used, well-tested)\n- **json-parser.ts** - KEEP AS-IS (actively used, well-tested)\n\n**Dependencies:**\n- Web app depends on this package, must update after refactor\n- Tests must be migrated alongside code to maintain coverage\n\n**Future Considerations:**\n- Cursor adapter implementation (stub is ready)\n- Gemini adapter implementation (stub is ready)\n- Potential for additional shared utilities as patterns emerge\n- Consider adding retry/timeout utilities if needed in the future\n\n**Rollback Plan:**\n- If issues arise, revert to 3.x.x version in package.json\n- Web app would need to revert websocket.ts changes\n- Tests are preserved during migration, so rollback is low-risk\n",
+      "structuredPatch": [
+        {
+          "oldStart": 342,
+          "oldLines": 12,
+          "newStart": 342,
+          "newLines": 12,
+          "lines": [
+            " ### 9: Create Cursor and Gemini Stubs",
+            " ",
+            " <!-- prettier-ignore -->",
+            "-- [ ] 9.1 Create `src/cursor/index.ts` with stub adapter",
+            "+- [x] 9.1 Create `src/cursor/index.ts` with stub adapter",
+            "         - Class with name='cursor'",
+            "         - Constructor throws \"not yet implemented\"",
+            "         - execute() throws \"not yet implemented\"",
+            "         - File: `src/cursor/index.ts`",
+            "-- [ ] 9.2 Create `src/gemini/index.ts` with stub adapter",
+            "+- [x] 9.2 Create `src/gemini/index.ts` with stub adapter",
+            "         - Class with name='gemini'",
+            "         - Constructor throws \"not yet implemented\"",
+            "         - execute() throws \"not yet implemented\""
+          ]
+        },
+        {
+          "oldStart": 355,
+          "oldLines": 7,
+          "newStart": 355,
+          "newLines": 12,
+          "lines": [
+            " ",
+            " #### Completion Notes",
+            " ",
+            "-(To be filled in during implementation)",
+            "+- Created CursorAdapter stub with name property set to 'cursor'",
+            "+- Constructor and execute() both throw helpful error message about not being implemented yet",
+            "+- Created GeminiAdapter stub with name property set to 'gemini'",
+            "+- Constructor and execute() both throw helpful error message about not being implemented yet",
+            "+- Both stubs include basic type definitions (Config, Options) for future implementation",
+            "+- Type safety maintained with ExecutionResponse<T> return type",
+            " ",
+            " ### 10: Update Main Exports",
+            " "
+          ]
+        }
+      ],
+      "userModified": false,
+      "replaceAll": false
+    }
+  },
+  {
+    "session_id": "7df4a542-3889-4eb8-ac1f-8d8c297c84f4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/7df4a542-3889-4eb8-ac1f-8d8c297c84f4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Create Codex adapter structure (phase 2 tasks 6.1-6.4)",
+          "status": "completed",
+          "activeForm": "Creating Codex adapter structure"
+        },
+        {
+          "content": "Create Codex types and events (phase 2 tasks 7.1-7.2)",
+          "status": "completed",
+          "activeForm": "Creating Codex types and events"
+        },
+        {
+          "content": "Implement CodexAdapter class (phase 2 tasks 8.1-8.2)",
+          "status": "completed",
+          "activeForm": "Implementing CodexAdapter class"
+        },
+        {
+          "content": "Create Cursor and Gemini stubs (phase 3 tasks 9.1-9.2)",
+          "status": "completed",
+          "activeForm": "Creating Cursor and Gemini stubs"
+        },
+        {
+          "content": "Update main exports (phase 3 tasks 10.1-10.2)",
+          "status": "in_progress",
+          "activeForm": "Updating main exports"
+        },
+        {
+          "content": "Delete old code (phase 4 tasks 11.1-11.4)",
+          "status": "pending",
+          "activeForm": "Deleting old code"
+        },
+        {
+          "content": "Update examples (phase 4 tasks 12.1-12.6)",
+          "status": "pending",
+          "activeForm": "Updating examples"
+        },
+        {
+          "content": "Update tests (phase 4 tasks 13.1-13.6)",
+          "status": "pending",
+          "activeForm": "Updating tests"
+        },
+        {
+          "content": "Update web app integration (phase 4 tasks 14.1-14.3)",
+          "status": "pending",
+          "activeForm": "Updating web app integration"
+        },
+        {
+          "content": "Update documentation (phase 5 tasks 15.1-15.3)",
+          "status": "pending",
+          "activeForm": "Updating documentation"
+        }
+      ]
+    },
+    "tool_response": {
+      "oldTodos": [
+        {
+          "content": "Create Codex adapter structure (phase 2 tasks 6.1-6.4)",
+          "status": "completed",
+          "activeForm": "Creating Codex adapter structure"
+        },
+        {
+          "content": "Create Codex types and events (phase 2 tasks 7.1-7.2)",
+          "status": "completed",
+          "activeForm": "Creating Codex types and events"
+        },
+        {
+          "content": "Implement CodexAdapter class (phase 2 tasks 8.1-8.2)",
+          "status": "completed",
+          "activeForm": "Implementing CodexAdapter class"
+        },
+        {
+          "content": "Create Cursor and Gemini stubs (phase 3 tasks 9.1-9.2)",
+          "status": "in_progress",
+          "activeForm": "Creating Cursor and Gemini stubs"
+        },
+        {
+          "content": "Update main exports (phase 3 tasks 10.1-10.2)",
+          "status": "pending",
+          "activeForm": "Updating main exports"
+        },
+        {
+          "content": "Delete old code (phase 4 tasks 11.1-11.4)",
+          "status": "pending",
+          "activeForm": "Deleting old code"
+        },
+        {
+          "content": "Update examples (phase 4 tasks 12.1-12.6)",
+          "status": "pending",
+          "activeForm": "Updating examples"
+        },
+        {
+          "content": "Update tests (phase 4 tasks 13.1-13.6)",
+          "status": "pending",
+          "activeForm": "Updating tests"
+        },
+        {
+          "content": "Update web app integration (phase 4 tasks 14.1-14.3)",
+          "status": "pending",
+          "activeForm": "Updating web app integration"
+        },
+        {
+          "content": "Update documentation (phase 5 tasks 15.1-15.3)",
+          "status": "pending",
+          "activeForm": "Updating documentation"
+        }
+      ],
+      "newTodos": [
+        {
+          "content": "Create Codex adapter structure (phase 2 tasks 6.1-6.4)",
+          "status": "completed",
+          "activeForm": "Creating Codex adapter structure"
+        },
+        {
+          "content": "Create Codex types and events (phase 2 tasks 7.1-7.2)",
+          "status": "completed",
+          "activeForm": "Creating Codex types and events"
+        },
+        {
+          "content": "Implement CodexAdapter class (phase 2 tasks 8.1-8.2)",
+          "status": "completed",
+          "activeForm": "Implementing CodexAdapter class"
+        },
+        {
+          "content": "Create Cursor and Gemini stubs (phase 3 tasks 9.1-9.2)",
+          "status": "completed",
+          "activeForm": "Creating Cursor and Gemini stubs"
+        },
+        {
+          "content": "Update main exports (phase 3 tasks 10.1-10.2)",
+          "status": "in_progress",
+          "activeForm": "Updating main exports"
+        },
+        {
+          "content": "Delete old code (phase 4 tasks 11.1-11.4)",
+          "status": "pending",
+          "activeForm": "Deleting old code"
+        },
+        {
+          "content": "Update examples (phase 4 tasks 12.1-12.6)",
+          "status": "pending",
+          "activeForm": "Updating examples"
+        },
+        {
+          "content": "Update tests (phase 4 tasks 13.1-13.6)",
+          "status": "pending",
+          "activeForm": "Updating tests"
+        },
+        {
+          "content": "Update web app integration (phase 4 tasks 14.1-14.3)",
+          "status": "pending",
+          "activeForm": "Updating web app integration"
+        },
+        {
+          "content": "Update documentation (phase 5 tasks 15.1-15.3)",
+          "status": "pending",
+          "activeForm": "Updating documentation"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "7df4a542-3889-4eb8-ac1f-8d8c297c84f4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/7df4a542-3889-4eb8-ac1f-8d8c297c84f4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/index.ts"
+    },
+    "tool_response": {
+      "type": "text",
+      "file": {
+        "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/index.ts",
+        "content": "/**\n * agent-cli-sdk-three - TypeScript SDK for AI CLI orchestration\n * @packageDocumentation\n */\n\n// Core exports\nexport { AgentClient } from './client/agent-client';\nexport { Session } from './client/session';\n\n// Adapters\nexport { ClaudeAdapter } from './adapters/claude/index';\nexport { ClaudeSession } from './adapters/claude/session';\nexport { CodexAdapter } from './adapters/codex/index';\n\n// Base classes\nexport { BaseAdapter } from './core/base-adapter';\n\n// Factory functions\nexport { createClaudeAdapter, createCodexAdapter } from './factories/index';\n\n// Errors\nexport {\n  AgentSDKError,\n  ValidationError,\n  CLINotFoundError,\n  AuthenticationError,\n  ExecutionError,\n  TimeoutError,\n  ParseError,\n  SessionError,\n} from './core/errors';\n\n// Type exports\nexport type {\n  // Core interfaces\n  AIAdapter,\n  AdapterCapabilities,\n  ExecutionOptions,\n  ExecutionResponse,\n  StreamEvent,\n  TokenUsage,\n  ModelUsage,\n  ActionLog,\n  ValidationResult,\n  // Client types\n  AgentClientOptions,\n  ExecuteOptions,\n  SessionOptions,\n  SendOptions,\n  SessionInfo,\n  // Claude-specific types\n  ClaudeConfig,\n  ClaudeExecutionOptions,\n  ImageInput,\n  MCPServer,\n  CLIDetectionResult,\n  // Codex-specific types\n  CodexConfig,\n  CodexExecutionOptions,\n  // Session types\n  SessionEventType,\n  SessionEventData,\n  // Logging types\n  ExecutionLog,\n  LogPaths,\n  // Event types (adapter-specific)\n  BaseStreamEvent,\n  // Claude event types\n  FileHistorySnapshotData,\n  ThinkingMetadata,\n  MessageContent,\n  TextContent,\n  ThinkingContent,\n  ToolUseContent,\n  ToolResultContent,\n  ClaudeTokenUsage,\n  ClaudeMessage,\n  ToolUseResult,\n  UserMessageData,\n  AssistantMessageData,\n  FileHistorySnapshotEvent,\n  UserMessageEvent,\n  AssistantMessageEvent,\n  ClaudeStreamEvent,\n  // Codex event types\n  CodexUsage,\n  ThreadStartedData,\n  TurnCompletedData,\n  CodexItemType,\n  CodexItem,\n  ItemCompletedData,\n  ToolStartedData,\n  ToolUseData,\n  FileWrittenData,\n  FileModifiedData,\n  UsageEventData,\n  CompletionEventData,\n  ThreadStartedEvent,\n  TurnCompletedEvent,\n  ItemCompletedEvent,\n  ToolStartedEvent,\n  ToolUseEvent,\n  FileWrittenEvent,\n  FileModifiedEvent,\n  UsageEvent,\n  CompletionEvent,\n  CodexStreamEvent,\n  // Union type\n  AdapterStreamEvent,\n} from './types';\n\n// Event type guards\nexport {\n  // Claude type guards\n  isClaudeEvent,\n  isFileHistorySnapshotEvent,\n  isUserMessageEvent,\n  isAssistantMessageEvent,\n  // Codex type guards\n  isCodexEvent,\n  isThreadStartedEvent,\n  isTurnCompletedEvent,\n  isItemCompletedEvent,\n  isToolStartedEvent,\n  isFileWrittenEvent,\n  isFileModifiedEvent,\n} from './types';\n\n// Utilities (selective export)\nexport {\n  extractJSON,\n  parseJSONL,\n  safeJSONParse,\n  sequential,\n  parallel,\n  retry,\n  sleep,\n} from './utils';\n\n// Version\nexport const version = '0.1.19';\n",
+        "numLines": 142,
+        "startLine": 1,
+        "totalLines": 142
+      }
+    }
+  },
+  {
+    "session_id": "7df4a542-3889-4eb8-ac1f-8d8c297c84f4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/7df4a542-3889-4eb8-ac1f-8d8c297c84f4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Write",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/index.ts",
+      "content": "/**\n * agent-cli-sdk - TypeScript SDK for AI CLI orchestration\n * @packageDocumentation\n */\n\n// Adapters\nexport { ClaudeAdapter } from './claude';\nexport { CodexAdapter } from './codex';\nexport { CursorAdapter } from './cursor';\nexport { GeminiAdapter } from './gemini';\n\n// Adapter types\nexport type {\n  ClaudeOptions,\n  ClaudeConfig,\n  ClaudeStreamEvent,\n} from './claude';\n\nexport type {\n  CodexOptions,\n  CodexConfig,\n  CodexStreamEvent,\n} from './codex';\n\nexport type {\n  CursorConfig,\n  CursorOptions,\n} from './cursor';\n\nexport type {\n  GeminiConfig,\n  GeminiOptions,\n} from './gemini';\n\n// Shared types\nexport type {\n  ExecutionOptions,\n  ExecutionResponse,\n  StreamEvent,\n  OutputData,\n  TokenUsage,\n  ModelUsage,\n  ActionLog,\n  ValidationResult,\n} from './shared/types';\n\n// Errors\nexport {\n  AgentSDKError,\n  ValidationError,\n  CLINotFoundError,\n  AuthenticationError,\n  ExecutionError,\n  TimeoutError,\n  ParseError,\n  SessionError,\n} from './shared/errors';\n\n// JSON utilities\nexport {\n  extractJSON,\n  parseJSONL,\n  safeJSONParse,\n} from './shared/json-parser';\n\n// Claude event types and guards\nexport type {\n  FileHistorySnapshotData,\n  FileHistorySnapshotEvent,\n  ThinkingMetadata,\n  MessageContent,\n  TextContent,\n  ThinkingContent,\n  ToolUseContent,\n  ToolResultContent,\n  ClaudeTokenUsage,\n  ClaudeMessage,\n  ToolUseResult,\n  UserMessageData,\n  UserMessageEvent,\n  AssistantMessageData,\n  AssistantMessageEvent,\n} from './claude/events';\n\nexport {\n  isClaudeEvent,\n  isFileHistorySnapshotEvent,\n  isUserMessageEvent,\n  isAssistantMessageEvent,\n} from './claude/events';\n\n// Codex event types and guards\nexport type {\n  CodexUsage,\n  ThreadStartedData,\n  ThreadStartedEvent,\n  TurnCompletedData,\n  TurnCompletedEvent,\n  CodexItemType,\n  CodexItem,\n  ItemCompletedData,\n  ItemCompletedEvent,\n  ToolStartedData,\n  ToolStartedEvent,\n  ToolUseData,\n  ToolUseEvent,\n  FileWrittenData,\n  FileWrittenEvent,\n  FileModifiedData,\n  FileModifiedEvent,\n  UsageEventData,\n  UsageEvent,\n  CompletionEventData,\n  CompletionEvent,\n} from './codex/events';\n\nexport {\n  isCodexEvent,\n  isThreadStartedEvent,\n  isTurnCompletedEvent,\n  isItemCompletedEvent,\n  isToolStartedEvent,\n  isFileWrittenEvent,\n  isFileModifiedEvent,\n} from './codex/events';\n\n/**\n * Helper function to get an adapter instance by name\n * @param agent - Adapter name ('claude', 'codex', 'cursor', 'gemini')\n * @param config - Adapter configuration\n * @returns Adapter instance\n */\nexport function getAdapter(\n  agent: 'claude',\n  config?: import('./claude').ClaudeConfig\n): import('./claude').ClaudeAdapter;\nexport function getAdapter(\n  agent: 'codex',\n  config?: import('./codex').CodexConfig\n): import('./codex').CodexAdapter;\nexport function getAdapter(\n  agent: 'cursor',\n  config?: import('./cursor').CursorConfig\n): import('./cursor').CursorAdapter;\nexport function getAdapter(\n  agent: 'gemini',\n  config?: import('./gemini').GeminiConfig\n): import('./gemini').GeminiAdapter;\nexport function getAdapter(\n  agent: 'claude' | 'codex' | 'cursor' | 'gemini',\n  config?: unknown\n): unknown {\n  switch (agent) {\n    case 'claude': {\n      const { ClaudeAdapter } = require('./claude');\n      return new ClaudeAdapter(config);\n    }\n    case 'codex': {\n      const { CodexAdapter } = require('./codex');\n      return new CodexAdapter(config);\n    }\n    case 'cursor': {\n      const { CursorAdapter } = require('./cursor');\n      return new CursorAdapter(config);\n    }\n    case 'gemini': {\n      const { GeminiAdapter } = require('./gemini');\n      return new GeminiAdapter(config);\n    }\n    default:\n      throw new Error(`Unknown agent: ${agent}`);\n  }\n}\n\n// Version\nexport const version = '4.0.0';\n"
+    },
+    "tool_response": {
+      "type": "update",
+      "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/index.ts",
+      "content": "/**\n * agent-cli-sdk - TypeScript SDK for AI CLI orchestration\n * @packageDocumentation\n */\n\n// Adapters\nexport { ClaudeAdapter } from './claude';\nexport { CodexAdapter } from './codex';\nexport { CursorAdapter } from './cursor';\nexport { GeminiAdapter } from './gemini';\n\n// Adapter types\nexport type {\n  ClaudeOptions,\n  ClaudeConfig,\n  ClaudeStreamEvent,\n} from './claude';\n\nexport type {\n  CodexOptions,\n  CodexConfig,\n  CodexStreamEvent,\n} from './codex';\n\nexport type {\n  CursorConfig,\n  CursorOptions,\n} from './cursor';\n\nexport type {\n  GeminiConfig,\n  GeminiOptions,\n} from './gemini';\n\n// Shared types\nexport type {\n  ExecutionOptions,\n  ExecutionResponse,\n  StreamEvent,\n  OutputData,\n  TokenUsage,\n  ModelUsage,\n  ActionLog,\n  ValidationResult,\n} from './shared/types';\n\n// Errors\nexport {\n  AgentSDKError,\n  ValidationError,\n  CLINotFoundError,\n  AuthenticationError,\n  ExecutionError,\n  TimeoutError,\n  ParseError,\n  SessionError,\n} from './shared/errors';\n\n// JSON utilities\nexport {\n  extractJSON,\n  parseJSONL,\n  safeJSONParse,\n} from './shared/json-parser';\n\n// Claude event types and guards\nexport type {\n  FileHistorySnapshotData,\n  FileHistorySnapshotEvent,\n  ThinkingMetadata,\n  MessageContent,\n  TextContent,\n  ThinkingContent,\n  ToolUseContent,\n  ToolResultContent,\n  ClaudeTokenUsage,\n  ClaudeMessage,\n  ToolUseResult,\n  UserMessageData,\n  UserMessageEvent,\n  AssistantMessageData,\n  AssistantMessageEvent,\n} from './claude/events';\n\nexport {\n  isClaudeEvent,\n  isFileHistorySnapshotEvent,\n  isUserMessageEvent,\n  isAssistantMessageEvent,\n} from './claude/events';\n\n// Codex event types and guards\nexport type {\n  CodexUsage,\n  ThreadStartedData,\n  ThreadStartedEvent,\n  TurnCompletedData,\n  TurnCompletedEvent,\n  CodexItemType,\n  CodexItem,\n  ItemCompletedData,\n  ItemCompletedEvent,\n  ToolStartedData,\n  ToolStartedEvent,\n  ToolUseData,\n  ToolUseEvent,\n  FileWrittenData,\n  FileWrittenEvent,\n  FileModifiedData,\n  FileModifiedEvent,\n  UsageEventData,\n  UsageEvent,\n  CompletionEventData,\n  CompletionEvent,\n} from './codex/events';\n\nexport {\n  isCodexEvent,\n  isThreadStartedEvent,\n  isTurnCompletedEvent,\n  isItemCompletedEvent,\n  isToolStartedEvent,\n  isFileWrittenEvent,\n  isFileModifiedEvent,\n} from './codex/events';\n\n/**\n * Helper function to get an adapter instance by name\n * @param agent - Adapter name ('claude', 'codex', 'cursor', 'gemini')\n * @param config - Adapter configuration\n * @returns Adapter instance\n */\nexport function getAdapter(\n  agent: 'claude',\n  config?: import('./claude').ClaudeConfig\n): import('./claude').ClaudeAdapter;\nexport function getAdapter(\n  agent: 'codex',\n  config?: import('./codex').CodexConfig\n): import('./codex').CodexAdapter;\nexport function getAdapter(\n  agent: 'cursor',\n  config?: import('./cursor').CursorConfig\n): import('./cursor').CursorAdapter;\nexport function getAdapter(\n  agent: 'gemini',\n  config?: import('./gemini').GeminiConfig\n): import('./gemini').GeminiAdapter;\nexport function getAdapter(\n  agent: 'claude' | 'codex' | 'cursor' | 'gemini',\n  config?: unknown\n): unknown {\n  switch (agent) {\n    case 'claude': {\n      const { ClaudeAdapter } = require('./claude');\n      return new ClaudeAdapter(config);\n    }\n    case 'codex': {\n      const { CodexAdapter } = require('./codex');\n      return new CodexAdapter(config);\n    }\n    case 'cursor': {\n      const { CursorAdapter } = require('./cursor');\n      return new CursorAdapter(config);\n    }\n    case 'gemini': {\n      const { GeminiAdapter } = require('./gemini');\n      return new GeminiAdapter(config);\n    }\n    default:\n      throw new Error(`Unknown agent: ${agent}`);\n  }\n}\n\n// Version\nexport const version = '4.0.0';\n",
+      "structuredPatch": [
+        {
+          "oldStart": 1,
+          "oldLines": 23,
+          "newStart": 1,
+          "newLines": 49,
+          "lines": [
+            " /**",
+            "- * agent-cli-sdk-three - TypeScript SDK for AI CLI orchestration",
+            "+ * agent-cli-sdk - TypeScript SDK for AI CLI orchestration",
+            "  * @packageDocumentation",
+            "  */",
+            " ",
+            "-// Core exports",
+            "-export { AgentClient } from './client/agent-client';",
+            "-export { Session } from './client/session';",
+            "-",
+            " // Adapters",
+            "-export { ClaudeAdapter } from './adapters/claude/index';",
+            "-export { ClaudeSession } from './adapters/claude/session';",
+            "-export { CodexAdapter } from './adapters/codex/index';",
+            "+export { ClaudeAdapter } from './claude';",
+            "+export { CodexAdapter } from './codex';",
+            "+export { CursorAdapter } from './cursor';",
+            "+export { GeminiAdapter } from './gemini';",
+            " ",
+            "-// Base classes",
+            "-export { BaseAdapter } from './core/base-adapter';",
+            "+// Adapter types",
+            "+export type {",
+            "+  ClaudeOptions,",
+            "+  ClaudeConfig,",
+            "+  ClaudeStreamEvent,",
+            "+} from './claude';",
+            " ",
+            "-// Factory functions",
+            "-export { createClaudeAdapter, createCodexAdapter } from './factories/index';",
+            "+export type {",
+            "+  CodexOptions,",
+            "+  CodexConfig,",
+            "+  CodexStreamEvent,",
+            "+} from './codex';",
+            " ",
+            "+export type {",
+            "+  CursorConfig,",
+            "+  CursorOptions,",
+            "+} from './cursor';",
+            "+",
+            "+export type {",
+            "+  GeminiConfig,",
+            "+  GeminiOptions,",
+            "+} from './gemini';",
+            "+",
+            "+// Shared types",
+            "+export type {",
+            "+  ExecutionOptions,",
+            "+  ExecutionResponse,",
+            "+  StreamEvent,",
+            "+  OutputData,",
+            "+  TokenUsage,",
+            "+  ModelUsage,",
+            "+  ActionLog,",
+            "+  ValidationResult,",
+            "+} from './shared/types';",
+            "+",
+            " // Errors",
+            " export {",
+            "   AgentSDKError,"
+          ]
+        },
+        {
+          "oldStart": 28,
+          "oldLines": 45,
+          "newStart": 54,
+          "newLines": 19,
+          "lines": [
+            "   TimeoutError,",
+            "   ParseError,",
+            "   SessionError,",
+            "-} from './core/errors';",
+            "+} from './shared/errors';",
+            " ",
+            "-// Type exports",
+            "+// JSON utilities",
+            "+export {",
+            "+  extractJSON,",
+            "+  parseJSONL,",
+            "+  safeJSONParse,",
+            "+} from './shared/json-parser';",
+            "+",
+            "+// Claude event types and guards",
+            " export type {",
+            "-  // Core interfaces",
+            "-  AIAdapter,",
+            "-  AdapterCapabilities,",
+            "-  ExecutionOptions,",
+            "-  ExecutionResponse,",
+            "-  StreamEvent,",
+            "-  TokenUsage,",
+            "-  ModelUsage,",
+            "-  ActionLog,",
+            "-  ValidationResult,",
+            "-  // Client types",
+            "-  AgentClientOptions,",
+            "-  ExecuteOptions,",
+            "-  SessionOptions,",
+            "-  SendOptions,",
+            "-  SessionInfo,",
+            "-  // Claude-specific types",
+            "-  ClaudeConfig,",
+            "-  ClaudeExecutionOptions,",
+            "-  ImageInput,",
+            "-  MCPServer,",
+            "-  CLIDetectionResult,",
+            "-  // Codex-specific types",
+            "-  CodexConfig,",
+            "-  CodexExecutionOptions,",
+            "-  // Session types",
+            "-  SessionEventType,",
+            "-  SessionEventData,",
+            "-  // Logging types",
+            "-  ExecutionLog,",
+            "-  LogPaths,",
+            "-  // Event types (adapter-specific)",
+            "-  BaseStreamEvent,",
+            "-  // Claude event types",
+            "   FileHistorySnapshotData,",
+            "+  FileHistorySnapshotEvent,",
+            "   ThinkingMetadata,",
+            "   MessageContent,",
+            "   TextContent,"
+          ]
+        },
+        {
+          "oldStart": 77,
+          "oldLines": 46,
+          "newStart": 77,
+          "newLines": 44,
+          "lines": [
+            "   ClaudeMessage,",
+            "   ToolUseResult,",
+            "   UserMessageData,",
+            "-  AssistantMessageData,",
+            "-  FileHistorySnapshotEvent,",
+            "   UserMessageEvent,",
+            "+  AssistantMessageData,",
+            "   AssistantMessageEvent,",
+            "-  ClaudeStreamEvent,",
+            "-  // Codex event types",
+            "+} from './claude/events';",
+            "+",
+            "+export {",
+            "+  isClaudeEvent,",
+            "+  isFileHistorySnapshotEvent,",
+            "+  isUserMessageEvent,",
+            "+  isAssistantMessageEvent,",
+            "+} from './claude/events';",
+            "+",
+            "+// Codex event types and guards",
+            "+export type {",
+            "   CodexUsage,",
+            "   ThreadStartedData,",
+            "+  ThreadStartedEvent,",
+            "   TurnCompletedData,",
+            "+  TurnCompletedEvent,",
+            "   CodexItemType,",
+            "   CodexItem,",
+            "   ItemCompletedData,",
+            "-  ToolStartedData,",
+            "-  ToolUseData,",
+            "-  FileWrittenData,",
+            "-  FileModifiedData,",
+            "-  UsageEventData,",
+            "-  CompletionEventData,",
+            "-  ThreadStartedEvent,",
+            "-  TurnCompletedEvent,",
+            "   ItemCompletedEvent,",
+            "+  ToolStartedData,",
+            "   ToolStartedEvent,",
+            "+  ToolUseData,",
+            "   ToolUseEvent,",
+            "+  FileWrittenData,",
+            "   FileWrittenEvent,",
+            "+  FileModifiedData,",
+            "   FileModifiedEvent,",
+            "+  UsageEventData,",
+            "   UsageEvent,",
+            "+  CompletionEventData,",
+            "   CompletionEvent,",
+            "-  CodexStreamEvent,",
+            "-  // Union type",
+            "-  AdapterStreamEvent,",
+            "-} from './types';",
+            "+} from './codex/events';",
+            " ",
+            "-// Event type guards",
+            " export {",
+            "-  // Claude type guards",
+            "-  isClaudeEvent,",
+            "-  isFileHistorySnapshotEvent,",
+            "-  isUserMessageEvent,",
+            "-  isAssistantMessageEvent,",
+            "-  // Codex type guards",
+            "   isCodexEvent,",
+            "   isThreadStartedEvent,",
+            "   isTurnCompletedEvent,"
+          ]
+        },
+        {
+          "oldStart": 124,
+          "oldLines": 18,
+          "newStart": 122,
+          "newLines": 55,
+          "lines": [
+            "   isToolStartedEvent,",
+            "   isFileWrittenEvent,",
+            "   isFileModifiedEvent,",
+            "-} from './types';",
+            "+} from './codex/events';",
+            " ",
+            "-// Utilities (selective export)",
+            "-export {",
+            "-  extractJSON,",
+            "-  parseJSONL,",
+            "-  safeJSONParse,",
+            "-  sequential,",
+            "-  parallel,",
+            "-  retry,",
+            "-  sleep,",
+            "-} from './utils';",
+            "+/**",
+            "+ * Helper function to get an adapter instance by name",
+            "+ * @param agent - Adapter name ('claude', 'codex', 'cursor', 'gemini')",
+            "+ * @param config - Adapter configuration",
+            "+ * @returns Adapter instance",
+            "+ */",
+            "+export function getAdapter(",
+            "+  agent: 'claude',",
+            "+  config?: import('./claude').ClaudeConfig",
+            "+): import('./claude').ClaudeAdapter;",
+            "+export function getAdapter(",
+            "+  agent: 'codex',",
+            "+  config?: import('./codex').CodexConfig",
+            "+): import('./codex').CodexAdapter;",
+            "+export function getAdapter(",
+            "+  agent: 'cursor',",
+            "+  config?: import('./cursor').CursorConfig",
+            "+): import('./cursor').CursorAdapter;",
+            "+export function getAdapter(",
+            "+  agent: 'gemini',",
+            "+  config?: import('./gemini').GeminiConfig",
+            "+): import('./gemini').GeminiAdapter;",
+            "+export function getAdapter(",
+            "+  agent: 'claude' | 'codex' | 'cursor' | 'gemini',",
+            "+  config?: unknown",
+            "+): unknown {",
+            "+  switch (agent) {",
+            "+    case 'claude': {",
+            "+      const { ClaudeAdapter } = require('./claude');",
+            "+      return new ClaudeAdapter(config);",
+            "+    }",
+            "+    case 'codex': {",
+            "+      const { CodexAdapter } = require('./codex');",
+            "+      return new CodexAdapter(config);",
+            "+    }",
+            "+    case 'cursor': {",
+            "+      const { CursorAdapter } = require('./cursor');",
+            "+      return new CursorAdapter(config);",
+            "+    }",
+            "+    case 'gemini': {",
+            "+      const { GeminiAdapter } = require('./gemini');",
+            "+      return new GeminiAdapter(config);",
+            "+    }",
+            "+    default:",
+            "+      throw new Error(`Unknown agent: ${agent}`);",
+            "+  }",
+            "+}",
+            " ",
+            " // Version",
+            "-export const version = '0.1.19';",
+            "+export const version = '4.0.0';"
+          ]
+        }
+      ]
+    }
+  }
+]

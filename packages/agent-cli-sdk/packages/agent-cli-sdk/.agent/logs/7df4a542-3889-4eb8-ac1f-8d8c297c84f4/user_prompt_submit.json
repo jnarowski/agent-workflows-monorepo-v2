@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "7df4a542-3889-4eb8-ac1f-8d8c297c84f4",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/7df4a542-3889-4eb8-ac1f-8d8c297c84f4.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "@repo/web:dev: [0] SyntaxError: The requested module '@repo/agent-cli-sdk' does not provide an export named 'AgentClient'\n@repo/web:dev: [0]     at ModuleJob._instantiate (node:internal/modules/esm/module_job:228:21)\n@repo/web:dev: [0]     at async ModuleJob.run (node:internal/modules/esm/module_job:337:5)\n@repo/web:dev: [0]     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:665:26)\n@repo/web:dev: [0]     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)\n@repo/web:dev: [0] "
+  }
+]

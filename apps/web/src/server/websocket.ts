@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { FastifyInstance } from "fastify";
 import type { WebSocket } from '@fastify/websocket';
-import { AgentClient, createClaudeAdapter } from "@repo/agent-cli-sdk";
+import { ClaudeAdapter } from "@repo/agent-cli-sdk";
 import { prisma } from "@/shared/prisma";
 import fs from "fs/promises";
 import path from "path";
@@ -95,24 +95,19 @@ async function handleSessionEvent(
 
       const projectPath = session.project.path;
 
-      // Initialize agent-cli-sdk client if not already active
+      // Initialize agent adapter if not already active
       let sessionData = activeSessions.get(sessionId);
 
       if (!sessionData) {
-        fastify.log.info({ sessionId, projectPath }, '[WebSocket] Creating AgentClient');
+        fastify.log.info({ sessionId, projectPath }, '[WebSocket] Creating ClaudeAdapter');
 
-        // Create Claude adapter
-        const claudeAdapter = createClaudeAdapter();
-
-        // Create agent client with verbose mode enabled
-        const agentClient = new AgentClient({
-          adapter: claudeAdapter,
+        // Create Claude adapter with working directory
+        const adapter = new ClaudeAdapter({
           workingDir: projectPath,
-          verbose: true,
         });
 
         sessionData = {
-          agentClient,
+          adapter,
           projectPath,
           userId,
         };
@@ -168,10 +163,11 @@ async function handleSessionEvent(
           "[WebSocket] Sending message to agent-cli-sdk"
         );
 
-        const response = await sessionData.agentClient.execute(
+        const response = await sessionData.adapter.execute(
           messageData.message,
           {
             sessionId,
+            resume: !!session.claudeSessionId, // Resume existing session
             images: imagePaths.length > 0 ? imagePaths : undefined,
             onOutput: (outputData: unknown) => {
               // Stream output back to client with flat event name
@@ -179,6 +175,7 @@ async function handleSessionEvent(
                 content: outputData,
               });
             },
+            verbose: true,
             ...messageData.config,
           }
         );
