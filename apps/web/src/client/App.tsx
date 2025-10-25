@@ -9,6 +9,7 @@ import ProjectHome from "@/client/pages/ProjectHome";
 import ProjectSession from "@/client/pages/projects/sessions/ProjectSession";
 import ProjectShell from "@/client/pages/projects/shell/ProjectShell";
 import ProjectFiles from "@/client/pages/projects/files/ProjectFiles";
+import ProjectSourceControl from "@/client/pages/projects/git/ProjectSourceControl";
 import Login from "@/client/pages/auth/Login";
 import Signup from "@/client/pages/auth/Signup";
 
@@ -43,6 +44,7 @@ function App() {
                 <Route path="session/:sessionId" element={<ProjectSession />} />
                 <Route path="shell" element={<ProjectShell />} />
                 <Route path="files" element={<ProjectFiles />} />
+                <Route path="source-control" element={<ProjectSourceControl />} />
               </Route>
             </Route>
           </Routes>
