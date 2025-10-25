@@ -6,7 +6,7 @@ import { useCommitDiff } from '../hooks/useGitOperations';
 import { Skeleton } from '@/client/components/ui/skeleton';
 import { Badge } from '@/client/components/ui/badge';
 import { Calendar, User, Hash } from 'lucide-react';
-import { RawGitDiffViewer } from './RawGitDiffViewer';
+import { DiffViewer } from '@/client/components/DiffViewer';
 
 interface CommitDiffViewProps {
   projectId: string | undefined;
@@ -89,7 +89,7 @@ export function CommitDiffView({
 
       {/* Diff content */}
       <div className="max-h-96 overflow-y-auto">
-        <RawGitDiffViewer diff={commitDiff.diff} showHeaders={true} />
+        <DiffViewer diff={commitDiff.diff} showHeaders={true} />
       </div>
     </div>
   );

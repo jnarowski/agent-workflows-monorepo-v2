@@ -6,7 +6,7 @@ import { Checkbox } from '@/client/components/ui/checkbox';
 import { Badge } from '@/client/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/client/components/ui/collapsible';
 import { ChevronRight } from 'lucide-react';
-import { RawGitDiffViewer } from './RawGitDiffViewer';
+import { DiffViewer } from '@/client/components/DiffViewer';
 import { useFileDiff } from '../hooks/useGitOperations';
 import type { GitFileStatus } from '@/shared/types/git.types';
 import { Skeleton } from '@/client/components/ui/skeleton';
@@ -114,7 +114,7 @@ export function FileChangeItem({
                   <p className="text-sm">No changes to display</p>
                 </div>
               ) : (
-                <RawGitDiffViewer diff={diff} />
+                <DiffViewer diff={diff} />
               )
             ) : (
               <div className="text-center py-8 text-muted-foreground">

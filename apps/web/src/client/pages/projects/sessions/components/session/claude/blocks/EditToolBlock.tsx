@@ -3,10 +3,9 @@
  */
 
 import { useState } from "react";
-import { diffLines } from "diff";
 import { ToolDot } from "../components/ToolDot";
 import { getToolColor } from "../utils/getToolColor";
-import { SideBySideDiffViewer } from "@/client/pages/projects/sessions/components/SideBySideDiffViewer";
+import { DiffViewer } from "@/client/components/DiffViewer";
 import type { EditToolInput } from "@/shared/types/tool.types";
 
 interface EditToolBlockProps {
@@ -37,17 +36,11 @@ export function EditToolBlock({ input, result }: EditToolBlockProps) {
   };
 
   const dotColor = getToolColor("Edit", result?.is_error);
-  const changes = diffLines(input.old_string, input.new_string);
 
-  // Calculate total lines
-  let totalLines = 0;
-  changes.forEach((change) => {
-    const lines = change.value.split("\n");
-    if (lines[lines.length - 1] === "") {
-      lines.pop();
-    }
-    totalLines += lines.length;
-  });
+  // Calculate total lines for truncation (approximate using max of old/new line counts)
+  const oldLines = input.old_string.split("\n").length;
+  const newLines = input.new_string.split("\n").length;
+  const totalLines = Math.max(oldLines, newLines);
 
   const shouldTruncate = totalLines > MAX_LINES_PREVIEW;
 
@@ -76,7 +69,7 @@ export function EditToolBlock({ input, result }: EditToolBlockProps) {
             shouldTruncate && !isExpanded ? "max-h-80" : ""
           }`}
         >
-          <SideBySideDiffViewer
+          <DiffViewer
             oldString={input.old_string}
             newString={input.new_string}
             filePath={input.file_path}

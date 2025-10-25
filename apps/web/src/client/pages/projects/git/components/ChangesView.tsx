@@ -9,7 +9,7 @@ import type { GitFileStatus } from '@/shared/types/git.types';
 import { DataTable } from '@/client/components/ui/data-table';
 import { createGitChangesColumns } from './git-changes-columns';
 import type { Row } from '@tanstack/react-table';
-import { RawGitDiffViewer } from './RawGitDiffViewer';
+import { DiffViewer } from '@/client/components/DiffViewer';
 import { useFileDiff, useGenerateCommitMessage } from '../hooks/useGitOperations';
 import { Skeleton } from '@/client/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/client/components/ui/tooltip';
@@ -76,7 +76,7 @@ function DiffContent({
     );
   }
 
-  return <RawGitDiffViewer diff={diff} />;
+  return <DiffViewer diff={diff} />;
 }
 
 export function ChangesView({
