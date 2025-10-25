@@ -2,10 +2,9 @@
  * Glob tool block component
  */
 
-import { Search } from 'lucide-react';
-import { ToolCollapsibleWrapper } from '../ToolCollapsibleWrapper';
-import { ToolResultRenderer } from '../tools/ToolResultRenderer';
-import type { GlobToolInput } from '@/shared/types/tool.types';
+import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
+import { ToolResultRenderer } from "../tools/ToolResultRenderer";
+import type { GlobToolInput } from "@/shared/types/tool.types";
 
 interface GlobToolBlockProps {
   input: GlobToolInput;
@@ -16,34 +15,32 @@ interface GlobToolBlockProps {
 }
 
 export function GlobToolBlock({ input, result }: GlobToolBlockProps) {
+  // Count files in result
+  const getDescription = (): string | null => {
+    if (!result || result.is_error) return null;
+
+    const lines = result.content.trim().split("\n");
+    const count = lines.filter((line) => line.trim().length > 0).length;
+
+    if (count === 1) {
+      return "Found 1 file";
+    }
+    return `Found ${count} files`;
+  };
+
   return (
     <ToolCollapsibleWrapper
-      icon={Search}
       toolName="Glob"
-      contextInfo={input.pattern}
+      contextInfo={`pattern: "${input.pattern}"`}
+      description={getDescription()}
+      hasError={result?.is_error}
     >
-      {/* Tool Input */}
-      <div className="space-y-1.5">
-        <div className="text-xs font-medium text-muted-foreground">Input:</div>
-        <div className="text-sm font-mono bg-muted/50 px-3 py-2 rounded-md border">
-          <div className="text-muted-foreground">Pattern:</div>
-          <div>{input.pattern}</div>
-          {input.path && (
-            <>
-              <div className="text-muted-foreground mt-2">Path:</div>
-              <div>{input.path}</div>
-            </>
-          )}
-        </div>
+      <div className="border border-border rounded-md p-2 bg-background/50">
+        <ToolResultRenderer
+          result={result?.content || ""}
+          isError={result?.is_error}
+        />
       </div>
-
-      {/* Tool Result */}
-      {result && (
-        <div className="space-y-1.5">
-          <div className="text-xs font-medium text-muted-foreground">Output:</div>
-          <ToolResultRenderer result={result.content} isError={result.is_error} />
-        </div>
-      )}
     </ToolCollapsibleWrapper>
   );
 }

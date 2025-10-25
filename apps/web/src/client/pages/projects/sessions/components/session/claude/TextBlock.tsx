@@ -12,8 +12,12 @@ interface TextBlockProps {
 
 export function TextBlock({ text, className = "" }: TextBlockProps) {
   return (
-    <div
-      className={`prose prose-sm dark:prose-invert max-w-none prose-hr:my-2 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-headings:mb-2 prose-headings:mt-3 ${className}`}
+    <div className={`flex gap-2.5 ${className}`}>
+      {/* Gray dot indicator */}
+      <div className="h-2 w-2 rounded-full bg-gray-500 shrink-0 mt-1.5" />
+
+      {/* Text content */}
+      <div className="prose prose-sm dark:prose-invert max-w-none prose-hr:my-2 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-headings:mb-2 prose-headings:mt-3 flex-1 min-w-0"
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
@@ -113,6 +117,7 @@ export function TextBlock({ text, className = "" }: TextBlockProps) {
       >
         {text}
       </ReactMarkdown>
+      </div>
     </div>
   );
 }

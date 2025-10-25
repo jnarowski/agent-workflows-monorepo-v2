@@ -2,11 +2,10 @@
  * Read tool block component
  */
 
-import { Eye } from 'lucide-react';
-import { ToolCollapsibleWrapper } from '../ToolCollapsibleWrapper';
-import { ReadToolRenderer } from '../tools/ReadToolRenderer';
-import { ToolResultRenderer } from '../tools/ToolResultRenderer';
-import type { ReadToolInput } from '@/shared/types/tool.types';
+import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
+import { SyntaxHighlighter } from "@/client/utils/syntaxHighlighter";
+import { getLanguageFromPath } from "@/client/utils/getLanguageFromPath";
+import type { ReadToolInput } from "@/shared/types/tool.types";
 
 interface ReadToolBlockProps {
   input: ReadToolInput;
@@ -19,28 +18,42 @@ interface ReadToolBlockProps {
 export function ReadToolBlock({ input, result }: ReadToolBlockProps) {
   // Extract filename from path
   const getFileName = (filePath: string): string => {
-    const parts = filePath.split('/');
+    const parts = filePath.split("/");
     return parts[parts.length - 1];
   };
 
+  // Create context info with filename and line numbers
+  const getContextInfo = (): string => {
+    const filename = getFileName(input.file_path);
+    if (input.offset !== undefined && input.limit !== undefined) {
+      const startLine = input.offset + 1;
+      const endLine = input.offset + input.limit;
+      return `${filename} (lines ${startLine}-${endLine})`;
+    }
+    return filename;
+  };
+
+  // Auto-detect language for syntax highlighting
+  const language = getLanguageFromPath(input.file_path);
+
   return (
     <ToolCollapsibleWrapper
-      icon={Eye}
       toolName="Read"
-      contextInfo={getFileName(input.file_path)}
+      contextInfo={getContextInfo()}
+      description={null}
+      hasError={result?.is_error}
     >
-      {/* Tool Input */}
-      <div className="space-y-1.5">
-        <div className="text-xs font-medium text-muted-foreground">Input:</div>
-        <ReadToolRenderer input={input} />
-      </div>
-
-      {/* Tool Result */}
-      {result && (
-        <div className="space-y-1.5">
-          <div className="text-xs font-medium text-muted-foreground">Output:</div>
-          <ToolResultRenderer result={result.content} isError={result.is_error} />
+      {result && !result.is_error && (
+        <div className="border border-border rounded-md overflow-hidden">
+          <SyntaxHighlighter
+            code={result.content}
+            language={language}
+            showLineNumbers={false}
+          />
         </div>
+      )}
+      {result?.is_error && (
+        <div className="text-sm text-red-500">{result.content}</div>
       )}
     </ToolCollapsibleWrapper>
   );

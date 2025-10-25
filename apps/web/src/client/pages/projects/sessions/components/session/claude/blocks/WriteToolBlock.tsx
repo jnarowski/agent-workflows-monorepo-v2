@@ -2,11 +2,10 @@
  * Write tool block component
  */
 
-import { FileEdit } from 'lucide-react';
-import { ToolCollapsibleWrapper } from '../ToolCollapsibleWrapper';
-import { WriteToolRenderer } from '../tools/WriteToolRenderer';
-import { ToolResultRenderer } from '../tools/ToolResultRenderer';
-import type { WriteToolInput } from '@/shared/types/tool.types';
+import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
+import { SyntaxHighlighter } from "@/client/utils/syntaxHighlighter";
+import { getLanguageFromPath } from "@/client/utils/getLanguageFromPath";
+import type { WriteToolInput } from "@/shared/types/tool.types";
 
 interface WriteToolBlockProps {
   input: WriteToolInput;
@@ -19,29 +18,27 @@ interface WriteToolBlockProps {
 export function WriteToolBlock({ input, result }: WriteToolBlockProps) {
   // Extract filename from path
   const getFileName = (filePath: string): string => {
-    const parts = filePath.split('/');
+    const parts = filePath.split("/");
     return parts[parts.length - 1];
   };
 
+  // Auto-detect language for syntax highlighting
+  const language = getLanguageFromPath(input.file_path);
+
   return (
     <ToolCollapsibleWrapper
-      icon={FileEdit}
       toolName="Write"
       contextInfo={getFileName(input.file_path)}
+      description="Created"
+      hasError={result?.is_error}
     >
-      {/* Tool Input */}
-      <div className="space-y-1.5">
-        <div className="text-xs font-medium text-muted-foreground">Input:</div>
-        <WriteToolRenderer input={input} />
+      <div className="border border-border rounded-md overflow-hidden">
+        <SyntaxHighlighter
+          code={input.content}
+          language={language}
+          showLineNumbers={false}
+        />
       </div>
-
-      {/* Tool Result */}
-      {result && (
-        <div className="space-y-1.5">
-          <div className="text-xs font-medium text-muted-foreground">Output:</div>
-          <ToolResultRenderer result={result.content} isError={result.is_error} />
-        </div>
-      )}
     </ToolCollapsibleWrapper>
   );
 }

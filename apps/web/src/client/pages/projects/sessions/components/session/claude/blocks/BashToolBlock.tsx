@@ -2,11 +2,10 @@
  * Bash tool block component
  */
 
-import { Terminal } from 'lucide-react';
-import { ToolCollapsibleWrapper } from '../ToolCollapsibleWrapper';
-import { BashToolRenderer } from '../tools/BashToolRenderer';
-import { ToolResultRenderer } from '../tools/ToolResultRenderer';
-import type { BashToolInput } from '@/shared/types/tool.types';
+import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
+import { BashToolRenderer } from "../tools/BashToolRenderer";
+import { ToolResultRenderer } from "../tools/ToolResultRenderer";
+import type { BashToolInput } from "@/shared/types/tool.types";
 
 interface BashToolBlockProps {
   input: BashToolInput;
@@ -17,30 +16,34 @@ interface BashToolBlockProps {
 }
 
 export function BashToolBlock({ input, result }: BashToolBlockProps) {
-  // Show description or truncated command
-  const getContextInfo = (): string | null => {
-    if (input.description) return input.description;
-    if (input.command && input.command.length <= 40) return input.command;
-    return null;
-  };
+  // Use description as summary in header
+  const description = input.description || null;
 
   return (
     <ToolCollapsibleWrapper
-      icon={Terminal}
       toolName="Bash"
-      contextInfo={getContextInfo()}
+      contextInfo={null}
+      description={description}
+      hasError={result?.is_error}
     >
-      {/* Tool Input */}
-      <div className="space-y-1.5">
-        <div className="text-xs font-medium text-muted-foreground">Input:</div>
-        <BashToolRenderer input={input} />
+      {/* IN section - Command */}
+      <div className="space-y-2">
+        <div className="text-xs font-semibold text-muted-foreground">IN</div>
+        <div className="border border-border rounded-md p-2 bg-background/50">
+          <BashToolRenderer input={input} />
+        </div>
       </div>
 
-      {/* Tool Result */}
+      {/* OUT section - Result */}
       {result && (
-        <div className="space-y-1.5">
-          <div className="text-xs font-medium text-muted-foreground">Output:</div>
-          <ToolResultRenderer result={result.content} isError={result.is_error} />
+        <div className="space-y-2">
+          <div className="text-xs font-semibold text-muted-foreground">OUT</div>
+          <div className="border border-border rounded-md p-2 bg-background/50">
+            <ToolResultRenderer
+              result={result.content}
+              isError={result.is_error}
+            />
+          </div>
         </div>
       )}
     </ToolCollapsibleWrapper>

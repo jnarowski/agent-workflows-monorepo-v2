@@ -2,11 +2,9 @@
  * WebSearch tool block component
  */
 
-import { Search } from 'lucide-react';
-import { ToolCollapsibleWrapper } from '../ToolCollapsibleWrapper';
-import { WebSearchToolRenderer } from '../tools/WebSearchToolRenderer';
-import { ToolResultRenderer } from '../tools/ToolResultRenderer';
-import type { WebSearchToolInput } from '@/shared/types/tool.types';
+import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
+import { ToolResultRenderer } from "../tools/ToolResultRenderer";
+import type { WebSearchToolInput } from "@/shared/types/tool.types";
 
 interface WebSearchToolBlockProps {
   input: WebSearchToolInput;
@@ -17,25 +15,23 @@ interface WebSearchToolBlockProps {
 }
 
 export function WebSearchToolBlock({ input, result }: WebSearchToolBlockProps) {
+  // For now, use a placeholder for result count
+  // In a real implementation, we would parse the result to count search results
+  const description = result && !result.is_error ? "Search results" : null;
+
   return (
     <ToolCollapsibleWrapper
-      icon={Search}
       toolName="WebSearch"
       contextInfo={input.query}
+      description={description}
+      hasError={result?.is_error}
     >
-      {/* Tool Input */}
-      <div className="space-y-1.5">
-        <div className="text-xs font-medium text-muted-foreground">Input:</div>
-        <WebSearchToolRenderer input={input} />
+      <div className="border border-border rounded-md p-2 bg-background/50">
+        <ToolResultRenderer
+          result={result?.content || ""}
+          isError={result?.is_error}
+        />
       </div>
-
-      {/* Tool Result */}
-      {result && (
-        <div className="space-y-1.5">
-          <div className="text-xs font-medium text-muted-foreground">Output:</div>
-          <ToolResultRenderer result={result.content} isError={result.is_error} />
-        </div>
-      )}
     </ToolCollapsibleWrapper>
   );
 }

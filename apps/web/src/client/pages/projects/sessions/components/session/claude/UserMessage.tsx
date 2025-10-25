@@ -1,6 +1,6 @@
 /**
  * User message component
- * Right-aligned with blue bubble design
+ * Bordered box design for better scannability
  */
 
 import type {
@@ -35,11 +35,11 @@ export function UserMessage({ message }: UserMessageProps) {
   }
 
   return (
-    <div className="flex justify-end mb-4">
-      <div className="max-w-[80%]">
+    <div className="mb-4">
+      <div className="max-w-full">
         {/* Text content */}
         {hasText && (
-          <div className="rounded-lg bg-primary text-primary-foreground px-4 py-3 shadow-sm">
+          <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
             <div className="whitespace-pre-wrap break-words text-sm">
               {textBlocks.map((block: TextBlock) => block.text).join("\n\n")}
             </div>
