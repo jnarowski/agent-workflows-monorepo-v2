@@ -344,3 +344,21 @@ export function useCreatePr() {
     },
   });
 }
+
+/**
+ * Generate AI-powered commit message based on staged files
+ */
+export function useGenerateCommitMessage() {
+  return useMutation({
+    mutationFn: async ({ projectId, files }: { projectId: string; files: string[] }) => {
+      const response = await api.post<{ data: { message: string } }>(
+        `/api/projects/${projectId}/git/generate-commit-message`,
+        { files }
+      );
+      return response.data.message;
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to generate commit message: ${error.message}`);
+    },
+  });
+}

@@ -403,4 +403,37 @@ export async function gitRoutes(fastify: FastifyInstance) {
       return reply.send(buildSuccessResponse(prResult));
     }
   );
+
+  // POST /api/projects/:id/git/generate-commit-message - Generate AI commit message
+  fastify.post<{
+    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
+    Body: z.infer<typeof gitSchemas.gitGenerateCommitMessageBodySchema>;
+  }>(
+    '/api/projects/:id/git/generate-commit-message',
+    {
+      schema: {
+        params: gitSchemas.gitProjectParamsSchema,
+        body: gitSchemas.gitGenerateCommitMessageBodySchema,
+      },
+      preHandler: fastify.authenticate,
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+      const { files } = request.body;
+      const userId = request.user!.id;
+
+      const project = await getProjectById(id, userId);
+      if (!project) {
+        throw new NotFoundError('Project not found');
+      }
+
+      const message = await gitService.generateCommitMessage(
+        project.path,
+        files,
+        fastify.log
+      );
+
+      return reply.send(buildSuccessResponse({ message }));
+    }
+  );
 }

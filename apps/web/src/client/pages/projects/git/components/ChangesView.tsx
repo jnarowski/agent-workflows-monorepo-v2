@@ -4,15 +4,17 @@
 
 import { Button } from '@/client/components/ui/button';
 import { Textarea } from '@/client/components/ui/textarea';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Wand2, Loader2 } from 'lucide-react';
 import type { GitFileStatus } from '@/shared/types/git.types';
 import { DataTable } from '@/client/components/ui/data-table';
 import { createGitChangesColumns } from './git-changes-columns';
 import type { Row } from '@tanstack/react-table';
 import { RawGitDiffViewer } from './RawGitDiffViewer';
-import { useFileDiff } from '../hooks/useGitOperations';
+import { useFileDiff, useGenerateCommitMessage } from '../hooks/useGitOperations';
 import { Skeleton } from '@/client/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/client/components/ui/tooltip';
 import { useMemo } from 'react';
+import { toast } from 'sonner';
 
 interface ChangesViewProps {
   projectId: string | undefined;
@@ -92,6 +94,7 @@ export function ChangesView({
   isCommitting,
 }: ChangesViewProps) {
   const canCommit = selectedFiles.size > 0 && commitMessage.trim().length > 0;
+  const generateCommitMessage = useGenerateCommitMessage();
 
   // Create columns with selection handlers
   const columns = useMemo(
@@ -105,6 +108,25 @@ export function ChangesView({
       ),
     [selectedFiles, onToggleFile, onSelectAll, onDeselectAll, files?.length]
   );
+
+  // Handle AI commit message generation
+  const handleGenerateCommitMessage = async () => {
+    if (!projectId || selectedFiles.size === 0) {
+      return;
+    }
+
+    const filesArray = Array.from(selectedFiles);
+
+    generateCommitMessage.mutate(
+      { projectId, files: filesArray },
+      {
+        onSuccess: (message) => {
+          onCommitMessageChange(message);
+          toast.success('Commit message generated');
+        },
+      }
+    );
+  };
 
   // Empty state
   if (!files || files.length === 0) {
@@ -124,32 +146,59 @@ export function ChangesView({
   return (
     <div className="h-full flex flex-col">
       {/* Commit message section */}
-      <div className="flex-shrink-0 px-4 py-4 border-b space-y-3 bg-background">
+      <div className="shrink-0 px-4 py-4 border-b bg-background">
         <div className="space-y-2">
           <label htmlFor="commit-message" className="text-sm font-medium">
             Commit message
           </label>
-          <Textarea
-            id="commit-message"
-            placeholder="Enter commit message..."
-            value={commitMessage}
-            onChange={(e) => onCommitMessageChange(e.target.value)}
-            rows={3}
-            className="resize-none"
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            {selectedFiles.size} {selectedFiles.size === 1 ? 'file' : 'files'} selected
+          <div className="relative">
+            <Textarea
+              id="commit-message"
+              placeholder="Enter commit message..."
+              value={commitMessage}
+              onChange={(e) => onCommitMessageChange(e.target.value)}
+              rows={3}
+              className="resize-none pr-24"
+            />
+            <div className="absolute bottom-2 right-2 flex items-center gap-2">
+              <div className="text-xs text-muted-foreground">
+                {selectedFiles.size} {selectedFiles.size === 1 ? 'file' : 'files'}
+              </div>
+              <Tooltip delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      onClick={handleGenerateCommitMessage}
+                      disabled={selectedFiles.size === 0 || generateCommitMessage.isPending}
+                      size="sm"
+                      variant="outline"
+                      className="h-8 w-8 p-0"
+                    >
+                      {generateCommitMessage.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Wand2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" sideOffset={4}>
+                  <div className="text-center">
+                    <p>Generate commit message with AI</p>
+                    <p className="text-xs opacity-70">Requires ANTHROPIC_API_KEY</p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+              <Button
+                onClick={onCommit}
+                disabled={!canCommit || isCommitting}
+                size="sm"
+                className="h-8"
+              >
+                {isCommitting ? 'Committing...' : 'Commit'}
+              </Button>
+            </div>
           </div>
-          <Button
-            onClick={onCommit}
-            disabled={!canCommit || isCommitting}
-            size="sm"
-          >
-            {isCommitting ? 'Committing...' : `Commit (${selectedFiles.size})`}
-          </Button>
         </div>
       </div>
 

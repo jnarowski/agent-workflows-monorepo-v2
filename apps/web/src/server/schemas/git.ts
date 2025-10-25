@@ -66,3 +66,8 @@ export const gitCreatePrBodySchema = z.object({
   description: z.string(),
   baseBranch: z.string().default('main'),
 });
+
+// Generate commit message schema
+export const gitGenerateCommitMessageBodySchema = z.object({
+  files: z.array(z.string()).min(1),
+});
