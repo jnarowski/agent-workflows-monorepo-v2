@@ -1087,5 +1087,84 @@
         }
       ]
     }
+  },
+  {
+    "session_id": "b6cf0c25-16e3-473d-b255-6b47b0d4d194",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b6cf0c25-16e3-473d-b255-6b47b0d4d194.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/index.ts",
+      "offset": 140,
+      "limit": 40
+    },
+    "tool_response": {
+      "type": "text",
+      "file": {
+        "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/index.ts",
+        "content": "  agent: 'claude',\n  config?: import('./claude').ClaudeConfig\n): import('./claude').ClaudeAdapter;\nexport function getAdapter(\n  agent: 'codex',\n  config?: import('./codex').CodexConfig\n): import('./codex').CodexAdapter;\nexport function getAdapter(\n  agent: 'cursor',\n  config?: import('./cursor').CursorConfig\n): import('./cursor').CursorAdapter;\nexport function getAdapter(\n  agent: 'gemini',\n  config?: import('./gemini').GeminiConfig\n): import('./gemini').GeminiAdapter;\nexport function getAdapter(\n  agent: 'claude' | 'codex' | 'cursor' | 'gemini',\n  config?: unknown\n): unknown {\n  switch (agent) {\n    case 'claude':\n      return new ClaudeAdapter(config);\n    case 'codex':\n      return new CodexAdapter(config);\n    case 'cursor':\n      return new CursorAdapter(config);\n    case 'gemini':\n      return new GeminiAdapter(config);\n    default: {\n      const exhaustiveCheck: never = agent;\n      throw new Error(`Unknown agent: ${String(exhaustiveCheck)}`);\n    }\n  }\n}\n\n// Version\nexport const version = '4.0.0';\n",
+        "numLines": 38,
+        "startLine": 140,
+        "totalLines": 177
+      }
+    }
+  },
+  {
+    "session_id": "b6cf0c25-16e3-473d-b255-6b47b0d4d194",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b6cf0c25-16e3-473d-b255-6b47b0d4d194.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/index.ts",
+      "old_string": "export function getAdapter(\n  agent: 'claude' | 'codex' | 'cursor' | 'gemini',\n  config?: unknown\n): unknown {\n  switch (agent) {\n    case 'claude':\n      return new ClaudeAdapter(config);\n    case 'codex':\n      return new CodexAdapter(config);\n    case 'cursor':\n      return new CursorAdapter(config);\n    case 'gemini':\n      return new GeminiAdapter(config);\n    default: {\n      const exhaustiveCheck: never = agent;\n      throw new Error(`Unknown agent: ${String(exhaustiveCheck)}`);\n    }\n  }\n}",
+      "new_string": "export function getAdapter(\n  agent: 'claude' | 'codex' | 'cursor' | 'gemini',\n  config?: unknown\n): unknown {\n  switch (agent) {\n    case 'claude':\n      return new ClaudeAdapter(\n        config as import('./claude').ClaudeConfig | undefined\n      );\n    case 'codex':\n      return new CodexAdapter(\n        config as import('./codex').CodexConfig | undefined\n      );\n    case 'cursor':\n      return new CursorAdapter(\n        config as import('./cursor').CursorConfig | undefined\n      );\n    case 'gemini':\n      return new GeminiAdapter(\n        config as import('./gemini').GeminiConfig | undefined\n      );\n    default: {\n      const exhaustiveCheck: never = agent;\n      throw new Error(`Unknown agent: ${String(exhaustiveCheck)}`);\n    }\n  }\n}"
+    },
+    "tool_response": {
+      "filePath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/index.ts",
+      "oldString": "export function getAdapter(\n  agent: 'claude' | 'codex' | 'cursor' | 'gemini',\n  config?: unknown\n): unknown {\n  switch (agent) {\n    case 'claude':\n      return new ClaudeAdapter(config);\n    case 'codex':\n      return new CodexAdapter(config);\n    case 'cursor':\n      return new CursorAdapter(config);\n    case 'gemini':\n      return new GeminiAdapter(config);\n    default: {\n      const exhaustiveCheck: never = agent;\n      throw new Error(`Unknown agent: ${String(exhaustiveCheck)}`);\n    }\n  }\n}",
+      "newString": "export function getAdapter(\n  agent: 'claude' | 'codex' | 'cursor' | 'gemini',\n  config?: unknown\n): unknown {\n  switch (agent) {\n    case 'claude':\n      return new ClaudeAdapter(\n        config as import('./claude').ClaudeConfig | undefined\n      );\n    case 'codex':\n      return new CodexAdapter(\n        config as import('./codex').CodexConfig | undefined\n      );\n    case 'cursor':\n      return new CursorAdapter(\n        config as import('./cursor').CursorConfig | undefined\n      );\n    case 'gemini':\n      return new GeminiAdapter(\n        config as import('./gemini').GeminiConfig | undefined\n      );\n    default: {\n      const exhaustiveCheck: never = agent;\n      throw new Error(`Unknown agent: ${String(exhaustiveCheck)}`);\n    }\n  }\n}",
+      "originalFile": "/**\n * agent-cli-sdk - TypeScript SDK for AI CLI orchestration\n * @packageDocumentation\n */\n\n// Adapters\nexport { ClaudeAdapter } from './claude';\nexport { CodexAdapter } from './codex';\nexport { CursorAdapter } from './cursor';\nexport { GeminiAdapter } from './gemini';\n\n// Import adapters for use in getAdapter helper\nimport { ClaudeAdapter } from './claude';\nimport { CodexAdapter } from './codex';\nimport { CursorAdapter } from './cursor';\nimport { GeminiAdapter } from './gemini';\n\n// Adapter types\nexport type {\n  ClaudeOptions,\n  ClaudeConfig,\n  ClaudeStreamEvent,\n} from './claude';\n\nexport type {\n  CodexOptions,\n  CodexConfig,\n  CodexStreamEvent,\n} from './codex';\n\nexport type {\n  CursorConfig,\n  CursorOptions,\n} from './cursor';\n\nexport type {\n  GeminiConfig,\n  GeminiOptions,\n} from './gemini';\n\n// Shared types\nexport type {\n  ExecutionOptions,\n  ExecutionResponse,\n  StreamEvent,\n  OutputData,\n  TokenUsage,\n  ModelUsage,\n  ActionLog,\n  ValidationResult,\n} from './shared/types';\n\n// Errors\nexport {\n  AgentSDKError,\n  ValidationError,\n  CLINotFoundError,\n  AuthenticationError,\n  ExecutionError,\n  TimeoutError,\n  ParseError,\n  SessionError,\n} from './shared/errors';\n\n// JSON utilities\nexport {\n  extractJSON,\n  parseJSONL,\n  safeJSONParse,\n} from './shared/json-parser';\n\n// Claude event types and guards\nexport type {\n  FileHistorySnapshotData,\n  FileHistorySnapshotEvent,\n  ThinkingMetadata,\n  MessageContent,\n  TextContent,\n  ThinkingContent,\n  ToolUseContent,\n  ToolResultContent,\n  ClaudeTokenUsage,\n  ClaudeMessage,\n  ToolUseResult,\n  UserMessageData,\n  UserMessageEvent,\n  AssistantMessageData,\n  AssistantMessageEvent,\n} from './claude/events';\n\nexport {\n  isClaudeEvent,\n  isFileHistorySnapshotEvent,\n  isUserMessageEvent,\n  isAssistantMessageEvent,\n} from './claude/events';\n\n// Codex event types and guards\nexport type {\n  CodexUsage,\n  ThreadStartedData,\n  ThreadStartedEvent,\n  TurnCompletedData,\n  TurnCompletedEvent,\n  CodexItemType,\n  CodexItem,\n  ItemCompletedData,\n  ItemCompletedEvent,\n  ToolStartedData,\n  ToolStartedEvent,\n  ToolUseData,\n  ToolUseEvent,\n  FileWrittenData,\n  FileWrittenEvent,\n  FileModifiedData,\n  FileModifiedEvent,\n  UsageEventData,\n  UsageEvent,\n  CompletionEventData,\n  CompletionEvent,\n} from './codex/events';\n\nexport {\n  isCodexEvent,\n  isThreadStartedEvent,\n  isTurnCompletedEvent,\n  isItemCompletedEvent,\n  isToolStartedEvent,\n  isFileWrittenEvent,\n  isFileModifiedEvent,\n} from './codex/events';\n\n/**\n * Helper function to get an adapter instance by name\n * @param agent - Adapter name ('claude', 'codex', 'cursor', 'gemini')\n * @param config - Adapter configuration\n * @returns Adapter instance\n */\nexport function getAdapter(\n  agent: 'claude',\n  config?: import('./claude').ClaudeConfig\n): import('./claude').ClaudeAdapter;\nexport function getAdapter(\n  agent: 'codex',\n  config?: import('./codex').CodexConfig\n): import('./codex').CodexAdapter;\nexport function getAdapter(\n  agent: 'cursor',\n  config?: import('./cursor').CursorConfig\n): import('./cursor').CursorAdapter;\nexport function getAdapter(\n  agent: 'gemini',\n  config?: import('./gemini').GeminiConfig\n): import('./gemini').GeminiAdapter;\nexport function getAdapter(\n  agent: 'claude' | 'codex' | 'cursor' | 'gemini',\n  config?: unknown\n): unknown {\n  switch (agent) {\n    case 'claude':\n      return new ClaudeAdapter(config);\n    case 'codex':\n      return new CodexAdapter(config);\n    case 'cursor':\n      return new CursorAdapter(config);\n    case 'gemini':\n      return new GeminiAdapter(config);\n    default: {\n      const exhaustiveCheck: never = agent;\n      throw new Error(`Unknown agent: ${String(exhaustiveCheck)}`);\n    }\n  }\n}\n\n// Version\nexport const version = '4.0.0';\n",
+      "structuredPatch": [
+        {
+          "oldStart": 158,
+          "oldLines": 13,
+          "newStart": 158,
+          "newLines": 21,
+          "lines": [
+            " ): unknown {",
+            "   switch (agent) {",
+            "     case 'claude':",
+            "-      return new ClaudeAdapter(config);",
+            "+      return new ClaudeAdapter(",
+            "+        config as import('./claude').ClaudeConfig | undefined",
+            "+      );",
+            "     case 'codex':",
+            "-      return new CodexAdapter(config);",
+            "+      return new CodexAdapter(",
+            "+        config as import('./codex').CodexConfig | undefined",
+            "+      );",
+            "     case 'cursor':",
+            "-      return new CursorAdapter(config);",
+            "+      return new CursorAdapter(",
+            "+        config as import('./cursor').CursorConfig | undefined",
+            "+      );",
+            "     case 'gemini':",
+            "-      return new GeminiAdapter(config);",
+            "+      return new GeminiAdapter(",
+            "+        config as import('./gemini').GeminiConfig | undefined",
+            "+      );",
+            "     default: {",
+            "       const exhaustiveCheck: never = agent;",
+            "       throw new Error(`Unknown agent: ${String(exhaustiveCheck)}`);"
+          ]
+        }
+      ],
+      "userModified": false,
+      "replaceAll": false
+    }
   }
 ]

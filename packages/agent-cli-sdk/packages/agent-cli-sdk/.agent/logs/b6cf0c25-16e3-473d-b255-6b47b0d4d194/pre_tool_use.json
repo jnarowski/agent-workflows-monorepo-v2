@@ -424,5 +424,44 @@
       "timeout": 120000,
       "description": "Run pnpm check after fixes"
     }
+  },
+  {
+    "session_id": "b6cf0c25-16e3-473d-b255-6b47b0d4d194",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b6cf0c25-16e3-473d-b255-6b47b0d4d194.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/index.ts",
+      "offset": 140,
+      "limit": 40
+    }
+  },
+  {
+    "session_id": "b6cf0c25-16e3-473d-b255-6b47b0d4d194",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b6cf0c25-16e3-473d-b255-6b47b0d4d194.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/src/index.ts",
+      "old_string": "export function getAdapter(\n  agent: 'claude' | 'codex' | 'cursor' | 'gemini',\n  config?: unknown\n): unknown {\n  switch (agent) {\n    case 'claude':\n      return new ClaudeAdapter(config);\n    case 'codex':\n      return new CodexAdapter(config);\n    case 'cursor':\n      return new CursorAdapter(config);\n    case 'gemini':\n      return new GeminiAdapter(config);\n    default: {\n      const exhaustiveCheck: never = agent;\n      throw new Error(`Unknown agent: ${String(exhaustiveCheck)}`);\n    }\n  }\n}",
+      "new_string": "export function getAdapter(\n  agent: 'claude' | 'codex' | 'cursor' | 'gemini',\n  config?: unknown\n): unknown {\n  switch (agent) {\n    case 'claude':\n      return new ClaudeAdapter(\n        config as import('./claude').ClaudeConfig | undefined\n      );\n    case 'codex':\n      return new CodexAdapter(\n        config as import('./codex').CodexConfig | undefined\n      );\n    case 'cursor':\n      return new CursorAdapter(\n        config as import('./cursor').CursorConfig | undefined\n      );\n    case 'gemini':\n      return new GeminiAdapter(\n        config as import('./gemini').GeminiConfig | undefined\n      );\n    default: {\n      const exhaustiveCheck: never = agent;\n      throw new Error(`Unknown agent: ${String(exhaustiveCheck)}`);\n    }\n  }\n}"
+    }
+  },
+  {
+    "session_id": "b6cf0c25-16e3-473d-b255-6b47b0d4d194",
+    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/b6cf0c25-16e3-473d-b255-6b47b0d4d194.jsonl",
+    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd /Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk && pnpm check",
+      "timeout": 120000,
+      "description": "Run pnpm check after type fixes"
+    }
   }
 ]

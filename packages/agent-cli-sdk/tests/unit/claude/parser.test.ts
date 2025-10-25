@@ -3,15 +3,15 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parseStreamOutput } from '../../../../src/adapters/claude/parser';
-import { ParseError } from '../../../../src/core/errors';
+import { parseClaudeOutput } from '../../../src/claude/parser';
+import { ParseError } from '../../../src/shared/errors';
 import { z } from 'zod';
 
-describe('parseStreamOutput', () => {
+describe('parseClaudeOutput', () => {
   describe('Basic Parsing', () => {
     it('should parse result event', async () => {
       const stdout = JSON.stringify({ type: 'result', result: 'Hello, world!', sessionId: 'test-123' });
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.data).toBe('Hello, world!');
       expect(response.sessionId).toBe('test-123');
@@ -29,7 +29,7 @@ describe('parseStreamOutput', () => {
         sessionId: 'sess-456',
       });
 
-      const response = await parseStreamOutput(stdout, 200, 0);
+      const response = await parseClaudeOutput(stdout, 200, 0);
 
       expect(response.data).toBe('Response text');
       expect(response.sessionId).toBe('sess-456');
@@ -44,7 +44,7 @@ describe('parseStreamOutput', () => {
         session_id: 'snake-case-id',
       });
 
-      const response = await parseStreamOutput(stdout, 150, 0);
+      const response = await parseClaudeOutput(stdout, 150, 0);
 
       expect(response.data).toBe('Direct string content');
       expect(response.sessionId).toBe('snake-case-id');
@@ -58,21 +58,21 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.data).toBe('Part 1 Part 2 Part 3');
     });
 
     it('should fallback to raw stdout if no events found', async () => {
       const stdout = 'Plain text output without JSONL';
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.data).toBe('Plain text output without JSONL');
     });
 
     it('should return empty string if no output', async () => {
       const stdout = '';
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.data).toBe('');
     });
@@ -81,14 +81,14 @@ describe('parseStreamOutput', () => {
   describe('Session ID Extraction', () => {
     it('should extract camelCase sessionId', async () => {
       const stdout = JSON.stringify({ type: 'result', result: 'test', sessionId: 'camel-123' });
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.sessionId).toBe('camel-123');
     });
 
     it('should extract snake_case session_id', async () => {
       const stdout = JSON.stringify({ type: 'result', result: 'test', session_id: 'snake-456' });
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.sessionId).toBe('snake-456');
     });
@@ -100,7 +100,7 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       // Parser updates with each event, so last one wins
       expect(response.sessionId).toBe('second-id');
@@ -108,7 +108,7 @@ describe('parseStreamOutput', () => {
 
     it('should default to unknown if no session ID', async () => {
       const stdout = JSON.stringify({ type: 'result', result: 'test' });
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.sessionId).toBe('unknown');
     });
@@ -123,7 +123,7 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.metadata?.toolsUsed).toEqual(['Read']);
       expect(response.actions).toHaveLength(1);
@@ -140,7 +140,7 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.metadata?.toolsUsed).toEqual(['Read', 'Write', 'Bash']);
     });
@@ -155,14 +155,14 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.metadata?.toolsUsed).toEqual(['Read', 'Write']);
     });
 
     it('should handle missing toolsUsed gracefully', async () => {
       const stdout = JSON.stringify({ type: 'result', result: 'test' });
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.metadata?.toolsUsed).toBeUndefined();
     });
@@ -177,7 +177,7 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.metadata?.filesModified).toEqual(['/path/to/file1.ts', '/path/to/file2.ts']);
     });
@@ -191,7 +191,7 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.metadata?.filesModified).toEqual(['/file.ts', '/other.ts']);
     });
@@ -212,7 +212,7 @@ describe('parseStreamOutput', () => {
         sessionId: 'test',
       });
 
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.usage).toEqual({
         inputTokens: 100,
@@ -231,7 +231,7 @@ describe('parseStreamOutput', () => {
         },
       });
 
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.usage).toEqual({
         inputTokens: 200,
@@ -264,7 +264,7 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.usage).toEqual({
         inputTokens: 100,
@@ -275,7 +275,7 @@ describe('parseStreamOutput', () => {
 
     it('should be undefined if no usage data', async () => {
       const stdout = JSON.stringify({ type: 'result', result: 'test' });
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.usage).toBeUndefined();
     });
@@ -292,7 +292,7 @@ describe('parseStreamOutput', () => {
         },
       });
 
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.modelUsage).toBeDefined();
       expect(response.modelUsage?.['claude-3-opus-20240229']).toEqual({
@@ -324,7 +324,7 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.modelUsage?.['claude-3-haiku']).toEqual({
         model: 'claude-3-haiku',
@@ -355,7 +355,7 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.modelUsage?.['claude-3-opus']).toBeDefined();
       expect(response.modelUsage?.['claude-3-haiku']).toBeDefined();
@@ -367,7 +367,7 @@ describe('parseStreamOutput', () => {
   describe('Status and Exit Code', () => {
     it('should set status to success for exit code 0', async () => {
       const stdout = JSON.stringify({ type: 'result', result: 'done' });
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.status).toBe('success');
       expect(response.exitCode).toBe(0);
@@ -375,7 +375,7 @@ describe('parseStreamOutput', () => {
 
     it('should set status to error for non-zero exit code', async () => {
       const stdout = JSON.stringify({ type: 'result', result: 'failed' });
-      const response = await parseStreamOutput(stdout, 100, 1);
+      const response = await parseClaudeOutput(stdout, 100, 1);
 
       expect(response.status).toBe('error');
       expect(response.exitCode).toBe(1);
@@ -394,7 +394,7 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
-      const response = await parseStreamOutput(stdout, 100, 1);
+      const response = await parseClaudeOutput(stdout, 100, 1);
 
       expect(response.status).toBe('error');
       expect(response.error).toEqual({
@@ -414,7 +414,7 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
-      const response = await parseStreamOutput(stdout, 100, 1);
+      const response = await parseClaudeOutput(stdout, 100, 1);
 
       expect(response.error).toEqual({
         code: 'TIMEOUT',
@@ -425,7 +425,7 @@ describe('parseStreamOutput', () => {
 
     it('should create NO_OUTPUT error if no output and no error event', async () => {
       const stdout = '';
-      const response = await parseStreamOutput(stdout, 100, 1);
+      const response = await parseClaudeOutput(stdout, 100, 1);
 
       expect(response.error).toEqual({
         code: 'NO_OUTPUT',
@@ -435,7 +435,7 @@ describe('parseStreamOutput', () => {
 
     it('should use output as error message if no error event', async () => {
       const stdout = 'Some error output';
-      const response = await parseStreamOutput(stdout, 100, 1);
+      const response = await parseClaudeOutput(stdout, 100, 1);
 
       expect(response.error).toEqual({
         code: 'EXECUTION_FAILED',
@@ -451,7 +451,7 @@ describe('parseStreamOutput', () => {
         result: '```json\n{"name": "test", "value": 42}\n```',
       });
 
-      const response = await parseStreamOutput(stdout, 100, 0, true);
+      const response = await parseClaudeOutput(stdout, 100, 0, true);
 
       expect(response.data).toEqual({ name: 'test', value: 42 });
     });
@@ -467,7 +467,7 @@ describe('parseStreamOutput', () => {
         result: '{"name": "Alice", "age": 30}',
       });
 
-      const response = await parseStreamOutput(stdout, 100, 0, UserSchema);
+      const response = await parseClaudeOutput(stdout, 100, 0, UserSchema);
 
       expect(response.data).toEqual({ name: 'Alice', age: 30 });
     });
@@ -478,7 +478,7 @@ describe('parseStreamOutput', () => {
         result: 'Not valid JSON at all',
       });
 
-      await expect(parseStreamOutput(stdout, 100, 0, true)).rejects.toThrow(ParseError);
+      await expect(parseClaudeOutput(stdout, 100, 0, true)).rejects.toThrow(ParseError);
     });
 
     it('should throw ParseError for schema validation failure', async () => {
@@ -491,14 +491,14 @@ describe('parseStreamOutput', () => {
         result: '{"wrong": "field"}',
       });
 
-      await expect(parseStreamOutput(stdout, 100, 0, StrictSchema)).rejects.toThrow(ParseError);
+      await expect(parseClaudeOutput(stdout, 100, 0, StrictSchema)).rejects.toThrow(ParseError);
     });
 
     it('should extract JSON from code block', async () => {
       const jsonInMarkdown = '```json\n{"status": "ok", "count": 5}\n```';
       const stdout = JSON.stringify({ type: 'result', result: jsonInMarkdown });
 
-      const response = await parseStreamOutput(stdout, 100, 0, true);
+      const response = await parseClaudeOutput(stdout, 100, 0, true);
 
       expect(response.data).toEqual({ status: 'ok', count: 5 });
     });
@@ -507,7 +507,7 @@ describe('parseStreamOutput', () => {
   describe('Raw Output', () => {
     it('should include raw stdout', async () => {
       const stdout = JSON.stringify({ type: 'result', result: 'test' });
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.raw?.stdout).toBe(stdout);
     });
@@ -517,7 +517,7 @@ describe('parseStreamOutput', () => {
       const event2 = { type: 'result', result: 'done' };
       const stdout = `${JSON.stringify(event1)}\n${JSON.stringify(event2)}`;
 
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.events).toHaveLength(2);
       expect(response.events?.[0].type).toBe('start');
@@ -526,7 +526,7 @@ describe('parseStreamOutput', () => {
 
     it('should set stderr to empty string', async () => {
       const stdout = JSON.stringify({ type: 'result', result: 'test' });
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.raw?.stderr).toBe('');
     });
@@ -540,7 +540,7 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.data).toBe('Chunk 1 Chunk 2');
     });
@@ -551,7 +551,7 @@ describe('parseStreamOutput', () => {
         message: 'Turn complete message',
       });
 
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.data).toBe('Turn complete message');
     });
@@ -563,7 +563,7 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = events.map((e) => JSON.stringify(e)).join('\n');
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.data).toBe('Final result');
     });
@@ -572,7 +572,7 @@ describe('parseStreamOutput', () => {
   describe('Edge Cases', () => {
     it('should handle empty JSONL', async () => {
       const stdout = '\n\n\n';
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       // Falls back to raw stdout if no events
       expect(response.data).toBe(stdout);
@@ -580,7 +580,7 @@ describe('parseStreamOutput', () => {
 
     it('should handle malformed JSONL gracefully', async () => {
       const stdout = '{invalid json}\n{"type": "result", "result": "valid"}\n{also invalid}';
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.data).toBe('valid');
     });
@@ -594,7 +594,7 @@ describe('parseStreamOutput', () => {
       ];
 
       const stdout = lines.join('\n');
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.data).toBe('output');
       expect(response.events).toHaveLength(2);
@@ -602,7 +602,7 @@ describe('parseStreamOutput', () => {
 
     it('should handle zero duration', async () => {
       const stdout = JSON.stringify({ type: 'result', result: 'fast' });
-      const response = await parseStreamOutput(stdout, 0, 0);
+      const response = await parseClaudeOutput(stdout, 0, 0);
 
       expect(response.duration).toBe(0);
     });
@@ -610,7 +610,7 @@ describe('parseStreamOutput', () => {
     it('should handle very large output', async () => {
       const largeResult = 'x'.repeat(100000);
       const stdout = JSON.stringify({ type: 'result', result: largeResult });
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.data).toBe(largeResult);
       expect(response.data.length).toBe(100000);
@@ -619,7 +619,7 @@ describe('parseStreamOutput', () => {
     it('should handle special characters in output', async () => {
       const specialChars = 'Special chars: \n\t\r"\'\\';
       const stdout = JSON.stringify({ type: 'result', result: specialChars });
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.data).toBe(specialChars);
     });
@@ -628,7 +628,7 @@ describe('parseStreamOutput', () => {
   describe('Metadata', () => {
     it('should not include empty metadata fields', async () => {
       const stdout = JSON.stringify({ type: 'result', result: 'test' });
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.metadata?.toolsUsed).toBeUndefined();
       expect(response.metadata?.filesModified).toBeUndefined();
@@ -642,7 +642,7 @@ describe('parseStreamOutput', () => {
         usage: { input_tokens: 50, output_tokens: 25 },
       });
 
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.metadata?.tokensUsed).toBe(75);
     });
@@ -654,7 +654,7 @@ describe('parseStreamOutput', () => {
         usage: { input_tokens: 0, output_tokens: 0 },
       });
 
-      const response = await parseStreamOutput(stdout, 100, 0);
+      const response = await parseClaudeOutput(stdout, 100, 0);
 
       expect(response.metadata?.tokensUsed).toBeUndefined();
     });

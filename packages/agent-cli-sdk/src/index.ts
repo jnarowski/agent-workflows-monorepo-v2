@@ -158,13 +158,21 @@ export function getAdapter(
 ): unknown {
   switch (agent) {
     case 'claude':
-      return new ClaudeAdapter(config);
+      return new ClaudeAdapter(
+        config as import('./claude').ClaudeConfig | undefined
+      );
     case 'codex':
-      return new CodexAdapter(config);
+      return new CodexAdapter(
+        config as import('./codex').CodexConfig | undefined
+      );
     case 'cursor':
-      return new CursorAdapter(config);
+      return new CursorAdapter(
+        config as import('./cursor').CursorConfig | undefined
+      );
     case 'gemini':
-      return new GeminiAdapter(config);
+      return new GeminiAdapter(
+        config as import('./gemini').GeminiConfig | undefined
+      );
     default: {
       const exhaustiveCheck: never = agent;
       throw new Error(`Unknown agent: ${String(exhaustiveCheck)}`);

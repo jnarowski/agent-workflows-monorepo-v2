@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { extractJSON, parseJSONL, safeJSONParse } from '../../../src/utils/json-parser';
-import { ParseError } from '../../../src/core/errors';
+import { extractJSON, parseJSONL, safeJSONParse } from '../../../src/shared/json-parser';
+import { ParseError } from '../../../src/shared/errors';
 
 describe('extractJSON', () => {
   it('should parse valid JSON', () => {
