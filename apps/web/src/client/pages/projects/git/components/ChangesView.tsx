@@ -88,22 +88,21 @@ export function ChangesView({
 
       {/* File list section */}
       <div className="flex-1 overflow-y-auto">
-        <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between sticky top-0 z-10">
-          <div className="text-sm font-medium">
+        <div className="px-4 pt-3 pb-2 flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={selectedFiles.size === files.length ? onDeselectAll : onSelectAll}
+            className="h-8 text-xs"
+          >
+            {selectedFiles.size === files.length ? 'Deselect All' : 'Select All'}
+          </Button>
+          <div className="text-xs text-muted-foreground">
             {files.length} {files.length === 1 ? 'changed file' : 'changed files'}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={selectedFiles.size === files.length ? onDeselectAll : onSelectAll}
-            >
-              {selectedFiles.size === files.length ? 'Deselect All' : 'Select All'}
-            </Button>
           </div>
         </div>
 
-        <div className="px-4 py-4 space-y-2">
+        <div className="px-4 pb-4 space-y-2">
           {files.map((file) => (
             <FileChangeItem
               key={file.path}

@@ -35,6 +35,7 @@ model Project {
   name       String
   path       String         @unique
   is_hidden  Boolean        @default(false)
+  is_starred Boolean        @default(false)
   created_at DateTime       @default(now())
   updated_at DateTime       @updatedAt
   sessions   AgentSession[]

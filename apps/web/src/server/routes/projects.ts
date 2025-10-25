@@ -6,6 +6,7 @@ import {
   updateProject,
   deleteProject,
   toggleProjectHidden,
+  toggleProjectStarred,
   projectExistsByPath,
 } from "@/server/services/project";
 import { syncFromClaudeProjects } from "@/server/services/projectSync";
@@ -17,6 +18,7 @@ import {
   fileContentQuerySchema,
   fileContentBodySchema,
   hideProjectSchema,
+  starProjectSchema,
 } from "@/server/schemas/project";
 import {
   projectsResponseSchema,
@@ -260,6 +262,42 @@ export async function projectRoutes(fastify: FastifyInstance) {
       const project = await toggleProjectHidden(
         request.params.id,
         request.body.is_hidden
+      );
+
+      if (!project) {
+        return reply
+          .code(404)
+          .send(buildErrorResponse(404, "Project not found"));
+      }
+
+      return reply.send({ data: project });
+    }
+  );
+
+  /**
+   * PATCH /api/projects/:id/star
+   * Toggle project starred state
+   */
+  fastify.patch<{
+    Params: { id: string };
+    Body: { is_starred: boolean };
+  }>(
+    "/api/projects/:id/star",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: projectIdSchema,
+        body: starProjectSchema,
+        response: {
+          200: projectResponseSchema,
+          404: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      const project = await toggleProjectStarred(
+        request.params.id,
+        request.body.is_starred
       );
 
       if (!project) {

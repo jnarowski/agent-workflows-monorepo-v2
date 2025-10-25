@@ -83,6 +83,19 @@ async function toggleProjectHidden(
 }
 
 /**
+ * Toggle project starred state
+ */
+async function toggleProjectStarred(
+  id: string,
+  is_starred: boolean
+): Promise<Project> {
+  const data = await api.patch<ProjectResponse>(`/api/projects/${id}/star`, {
+    is_starred,
+  });
+  return data.data;
+}
+
+/**
  * Hook to fetch all projects
  */
 export function useProjects(): UseQueryResult<Project[], Error> {
@@ -268,6 +281,46 @@ export function useToggleProjectHidden(): UseMutationResult<
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update project visibility");
+    },
+  });
+}
+
+/**
+ * Hook to toggle project starred state
+ */
+export function useToggleProjectStarred(): UseMutationResult<
+  Project,
+  Error,
+  { id: string; is_starred: boolean }
+> {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, is_starred }) => toggleProjectStarred(id, is_starred),
+    onSuccess: (updatedProject) => {
+      // Update the project in the list cache
+      queryClient.setQueryData<Project[]>(projectKeys.list(), (old) => {
+        if (!old) return [updatedProject];
+        return old.map((project) =>
+          project.id === updatedProject.id ? updatedProject : project
+        );
+      });
+
+      // Update the individual project cache
+      queryClient.setQueryData(
+        projectKeys.detail(updatedProject.id),
+        updatedProject
+      );
+
+      // Invalidate queries to ensure consistency
+      queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+
+      // Show success toast
+      const action = updatedProject.is_starred ? "starred" : "unstarred";
+      toast.success(`Project ${action} successfully`);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update project starred status");
     },
   });
 }

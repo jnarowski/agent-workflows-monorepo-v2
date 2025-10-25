@@ -5,6 +5,7 @@ export interface Project {
   name: string;
   path: string;
   is_hidden: boolean;
+  is_starred: boolean;
   created_at: Date;
   updated_at: Date;
   currentBranch?: string;
@@ -20,6 +21,7 @@ export interface UpdateProjectRequest {
   name?: string;
   path?: string;
   is_hidden?: boolean;
+  is_starred?: boolean;
 }
 
 export interface ProjectResponse {

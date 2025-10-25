@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Folder, MessageSquare, Terminal, FileText, Search, Plus } from "lucide-react";
+import {
+  Folder,
+  MessageSquare,
+  Terminal,
+  FileText,
+  Search,
+  Plus,
+} from "lucide-react";
 
 import {
   CommandDialog,
@@ -57,10 +64,30 @@ export function CommandMenu({ onSearchChange }: CommandMenuProps) {
     onSearchChange?.(value);
   };
 
-  // Filter out hidden projects and sort alphabetically by name
-  const sortedProjects = [...projects]
+  // Filter out hidden projects, separate starred and non-starred, sort alphabetically
+  const { starredProjects, regularProjects } = [...projects]
     .filter((project) => !project.is_hidden)
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .reduce<{
+      starredProjects: typeof projects;
+      regularProjects: typeof projects;
+    }>(
+      (acc, project) => {
+        if (project.is_starred) {
+          acc.starredProjects.push(project);
+        } else {
+          acc.regularProjects.push(project);
+        }
+        return acc;
+      },
+      { starredProjects: [], regularProjects: [] }
+    );
+
+  // Sort each group alphabetically
+  starredProjects.sort((a, b) => a.name.localeCompare(b.name));
+  regularProjects.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Combine: starred first, then regular
+  const sortedProjects = [...starredProjects, ...regularProjects];
 
   return (
     <>
@@ -136,14 +163,14 @@ function ProjectGroup({ project, onNavigate }: ProjectGroupProps) {
     projectId: project.id,
   });
 
-  // Get the 5 most recent sessions, sorted by lastMessageAt
+  // Get the 3 most recent sessions, sorted by lastMessageAt
   const recentSessions = [...sessions]
     .sort((a, b) => {
       const dateA = new Date(a.metadata.lastMessageAt).getTime();
       const dateB = new Date(b.metadata.lastMessageAt).getTime();
       return dateB - dateA; // Most recent first
     })
-    .slice(0, 5);
+    .slice(0, 3);
 
   return (
     <CommandGroup heading={project.name}>

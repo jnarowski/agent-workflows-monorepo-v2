@@ -22,6 +22,7 @@ function transformProject(
     name: prismaProject.name,
     path: prismaProject.path,
     is_hidden: prismaProject.is_hidden,
+    is_starred: prismaProject.is_starred,
     created_at: prismaProject.created_at,
     updated_at: prismaProject.updated_at,
     ...(currentBranch !== null && { currentBranch }),
@@ -155,6 +156,19 @@ export async function toggleProjectHidden(
   is_hidden: boolean
 ): Promise<Project | null> {
   return await updateProject(projectId, { is_hidden });
+}
+
+/**
+ * Toggle the starred state of a project
+ * @param projectId - Project ID
+ * @param is_starred - Whether the project should be starred
+ * @returns Updated project or null if not found
+ */
+export async function toggleProjectStarred(
+  projectId: string,
+  is_starred: boolean
+): Promise<Project | null> {
+  return await updateProject(projectId, { is_starred });
 }
 
 /**

@@ -23,6 +23,7 @@ export const projectSchema = z.object({
   name: z.string(),
   path: z.string(),
   is_hidden: z.boolean(),
+  is_starred: z.boolean(),
   created_at: z.date(),
   updated_at: z.date(),
   currentBranch: z.string().optional(),

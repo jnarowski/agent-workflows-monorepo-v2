@@ -11,6 +11,7 @@ export const updateProjectSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   path: z.string().min(1).optional(),
   is_hidden: z.boolean().optional(),
+  is_starred: z.boolean().optional(),
 });
 
 // Schema for project ID parameter
@@ -34,6 +35,11 @@ export const hideProjectSchema = z.object({
   is_hidden: z.boolean(),
 });
 
+// Schema for starring/unstarring a project
+export const starProjectSchema = z.object({
+  is_starred: z.boolean(),
+});
+
 // Export types inferred from schemas
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
@@ -41,3 +47,4 @@ export type ProjectIdParam = z.infer<typeof projectIdSchema>;
 export type FileContentQuery = z.infer<typeof fileContentQuerySchema>;
 export type FileContentBody = z.infer<typeof fileContentBodySchema>;
 export type HideProjectInput = z.infer<typeof hideProjectSchema>;
+export type StarProjectInput = z.infer<typeof starProjectSchema>;
