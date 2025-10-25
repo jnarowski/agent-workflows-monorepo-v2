@@ -3,12 +3,17 @@
  * Provides tabs for Changes and History views with full git workflow
  */
 
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/client/components/ui/tabs';
-import { GitTopBar } from './components/GitTopBar';
-import { ChangesView } from './components/ChangesView';
-import { HistoryView } from './components/HistoryView';
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/client/components/ui/tabs";
+import { GitTopBar } from "./components/GitTopBar";
+import { ChangesView } from "./components/ChangesView";
+import { HistoryView } from "./components/HistoryView";
 import {
   useGitStatus,
   useBranches,
@@ -19,8 +24,8 @@ import {
   useCommit,
   usePush,
   useFetch,
-} from './hooks/useGitOperations';
-import { useQueryClient } from '@tanstack/react-query';
+} from "./hooks/useGitOperations";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ProjectSourceControl() {
   const { id: projectId } = useParams<{ id: string }>();
@@ -40,15 +45,17 @@ export default function ProjectSourceControl() {
   const fetchMutation = useFetch();
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<'changes' | 'history'>('changes');
+  const [activeTab, setActiveTab] = useState<"changes" | "history">("changes");
 
   // Changes tab state
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
-  const [commitMessage, setCommitMessage] = useState('');
+  const [commitMessage, setCommitMessage] = useState("");
 
   // History tab state
-  const [expandedCommits, setExpandedCommits] = useState<Set<string>>(new Set());
+  const [expandedCommits, setExpandedCommits] = useState<Set<string>>(
+    new Set()
+  );
 
   // Helper functions for Changes tab
   const handleToggleFile = (filepath: string) => {
@@ -104,11 +111,11 @@ export default function ProjectSourceControl() {
 
       // Clear selections and message on success
       setSelectedFiles(new Set());
-      setCommitMessage('');
+      setCommitMessage("");
       setExpandedFiles(new Set());
     } catch (error) {
       // Error handling is done in the mutation hooks via toast
-      console.error('Commit failed:', error);
+      console.error("Commit failed:", error);
     }
   };
 
@@ -150,7 +157,7 @@ export default function ProjectSourceControl() {
   };
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ['git', 'status', projectId] });
+    queryClient.invalidateQueries({ queryKey: ["git", "status", projectId] });
   };
 
   // Show not a git repo message if needed
@@ -158,7 +165,9 @@ export default function ProjectSourceControl() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center space-y-4">
-          <div className="text-muted-foreground text-lg">Not a git repository</div>
+          <div className="text-muted-foreground text-lg">
+            Not a git repository
+          </div>
           <p className="text-sm text-muted-foreground">
             Initialize git in this project to use source control features
           </p>
@@ -184,18 +193,20 @@ export default function ProjectSourceControl() {
       />
 
       {/* Main content with tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'changes' | 'history')} className="flex-1 flex flex-col">
-        <TabsList className="w-full justify-start border-b rounded-none bg-transparent px-4">
-          <TabsTrigger value="changes" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">
-            Changes
-          </TabsTrigger>
-          <TabsTrigger value="history" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">
-            History
-          </TabsTrigger>
-        </TabsList>
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as "changes" | "history")}
+        className="flex-1 flex flex-col gap-0"
+      >
+        <div className="px-4 pt-4">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="changes">Changes</TabsTrigger>
+            <TabsTrigger value="history">History</TabsTrigger>
+          </TabsList>
+        </div>
 
         <div className="flex-1 overflow-hidden">
-          <TabsContent value="changes" className="h-full m-0">
+          <TabsContent value="changes" className="h-full mt-0">
             <ChangesView
               projectId={projectId}
               files={gitStatus?.files}
@@ -212,7 +223,7 @@ export default function ProjectSourceControl() {
             />
           </TabsContent>
 
-          <TabsContent value="history" className="h-full m-0">
+          <TabsContent value="history" className="h-full mt-0">
             <HistoryView
               projectId={projectId}
               expandedCommits={expandedCommits}
