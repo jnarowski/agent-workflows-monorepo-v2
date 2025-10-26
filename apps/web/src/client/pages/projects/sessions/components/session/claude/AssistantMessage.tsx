@@ -57,7 +57,7 @@ export function AssistantMessage({
 
   // Render content blocks with proper formatting
   return (
-    <div className="w-full">
+    <div className="w-full overflow-hidden">
       {/* Content blocks */}
       {content.map((block, index) => (
         <ContentBlockRenderer
