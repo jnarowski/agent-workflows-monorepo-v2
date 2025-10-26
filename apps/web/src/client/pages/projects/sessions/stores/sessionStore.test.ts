@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { useSessionStore } from "./sessionStore";
+import { useSessionStore, selectTotalTokens } from "./sessionStore";
 import type { SessionMessage } from "@/shared/types/chat";
 
 // Mock the agents module
@@ -32,12 +32,12 @@ describe("SessionStore", () => {
         sessionId: "test-session-id",
         session: {
           id: "test-session-id",
+          agent: "claude",
           messages: [],
           isStreaming: false,
           metadata: null,
           loadingState: "idle",
           error: null,
-          currentMessageTokens: 0,
         },
       });
 
@@ -138,12 +138,12 @@ describe("SessionStore", () => {
         sessionId: "test-session-id",
         session: {
           id: "test-session-id",
+          agent: "claude",
           messages: [],
           isStreaming: false,
           metadata: null,
           loadingState: "idle",
           error: null,
-          currentMessageTokens: 0,
         },
       });
     });
@@ -289,12 +289,12 @@ describe("SessionStore", () => {
         sessionId: "test-session-id",
         session: {
           id: "test-session-id",
+          agent: "claude",
           messages: [],
           isStreaming: false,
           metadata: null,
           loadingState: "idle",
           error: null,
-          currentMessageTokens: 0,
         },
       });
     });
@@ -332,17 +332,16 @@ describe("SessionStore", () => {
     it("should update metadata", () => {
       const { updateMetadata } = useSessionStore.getState();
 
-      // updateMetadata has special logic for totalTokens - it calculates from usage
-      // Test with usage data to properly update tokens
+      // updateMetadata now just merges metadata without computing tokens
       updateMetadata({
+        totalTokens: 100,
         messageCount: 2,
-        lastMessageAt: Date.now(),
+        lastMessageAt: "2025-01-01T00:00:00Z",
         firstMessagePreview: "Hello",
-        usage: { input_tokens: 50, output_tokens: 50 },
       });
 
       const metadata = useSessionStore.getState().session?.metadata;
-      expect(metadata?.totalTokens).toBe(100); // 50 + 50 from usage
+      expect(metadata?.totalTokens).toBe(100);
       expect(metadata?.messageCount).toBe(2);
       expect(metadata?.firstMessagePreview).toBe("Hello");
     });
@@ -375,12 +374,12 @@ describe("SessionStore", () => {
         sessionId: "test-session-id",
         session: {
           id: "test-session-id",
+          agent: "claude",
           messages: [],
           isStreaming: false,
           metadata: null,
           loadingState: "idle",
           error: null,
-          currentMessageTokens: 0,
         },
       });
     });
@@ -414,6 +413,194 @@ describe("SessionStore", () => {
       expect((messages?.[0].content[0] as { type: string; text: string }).text).toBe("Message 1");
       expect((messages?.[1].content[0] as { type: string; text: string }).text).toBe("Response 1");
       expect((messages?.[2].content[0] as { type: string; text: string }).text).toBe("Message 2");
+    });
+  });
+
+  describe("selectTotalTokens Selector", () => {
+    it("should calculate total tokens from assistant messages with full usage data", () => {
+      // Set up session with 2 assistant messages with usage data
+      useSessionStore.setState({
+        sessionId: "test-session",
+        session: {
+          id: "test-session",
+          agent: "claude",
+          messages: [
+            {
+              id: "msg-1",
+              role: "user",
+              content: [{ type: "text", text: "Hello" }],
+              timestamp: Date.now(),
+            },
+            {
+              id: "msg-2",
+              role: "assistant",
+              content: [{ type: "text", text: "Hi!" }],
+              timestamp: Date.now(),
+              usage: {
+                input_tokens: 10,
+                output_tokens: 5,
+                cache_creation_input_tokens: 100,
+                cache_read_input_tokens: 50,
+              },
+            },
+            {
+              id: "msg-3",
+              role: "user",
+              content: [{ type: "text", text: "How are you?" }],
+              timestamp: Date.now(),
+            },
+            {
+              id: "msg-4",
+              role: "assistant",
+              content: [{ type: "text", text: "I'm good!" }],
+              timestamp: Date.now(),
+              usage: {
+                input_tokens: 20,
+                output_tokens: 10,
+                cache_creation_input_tokens: 0,
+                cache_read_input_tokens: 75,
+              },
+            },
+          ],
+          isStreaming: false,
+          metadata: null,
+          loadingState: "loaded",
+          error: null,
+        },
+        form: { permissionMode: "acceptEdits" },
+      });
+
+      const totalTokens = selectTotalTokens(useSessionStore.getState());
+      // (10 + 5 + 100 + 50) + (20 + 10 + 0 + 75) = 165 + 105 = 270
+      expect(totalTokens).toBe(270);
+    });
+
+    it("should return 0 for empty messages array", () => {
+      useSessionStore.setState({
+        sessionId: "test-session",
+        session: {
+          id: "test-session",
+          agent: "claude",
+          messages: [],
+          isStreaming: false,
+          metadata: null,
+          loadingState: "loaded",
+          error: null,
+        },
+        form: { permissionMode: "acceptEdits" },
+      });
+
+      const totalTokens = selectTotalTokens(useSessionStore.getState());
+      expect(totalTokens).toBe(0);
+    });
+
+    it("should return 0 for null session", () => {
+      useSessionStore.setState({
+        sessionId: null,
+        session: null,
+        form: { permissionMode: "acceptEdits" },
+      });
+
+      const totalTokens = selectTotalTokens(useSessionStore.getState());
+      expect(totalTokens).toBe(0);
+    });
+
+    it("should ignore user messages (they have no usage data)", () => {
+      useSessionStore.setState({
+        sessionId: "test-session",
+        session: {
+          id: "test-session",
+          agent: "claude",
+          messages: [
+            {
+              id: "msg-1",
+              role: "user",
+              content: [{ type: "text", text: "Hello" }],
+              timestamp: Date.now(),
+            },
+            {
+              id: "msg-2",
+              role: "user",
+              content: [{ type: "text", text: "How are you?" }],
+              timestamp: Date.now(),
+            },
+          ],
+          isStreaming: false,
+          metadata: null,
+          loadingState: "loaded",
+          error: null,
+        },
+        form: { permissionMode: "acceptEdits" },
+      });
+
+      const totalTokens = selectTotalTokens(useSessionStore.getState());
+      expect(totalTokens).toBe(0);
+    });
+
+    it("should handle mixed messages (user + assistant with/without usage)", () => {
+      useSessionStore.setState({
+        sessionId: "test-session",
+        session: {
+          id: "test-session",
+          agent: "claude",
+          messages: [
+            {
+              id: "msg-1",
+              role: "user",
+              content: [{ type: "text", text: "Hello" }],
+              timestamp: Date.now(),
+            },
+            {
+              id: "msg-2",
+              role: "assistant",
+              content: [{ type: "text", text: "Hi!" }],
+              timestamp: Date.now(),
+              usage: {
+                input_tokens: 10,
+                output_tokens: 5,
+                cache_creation_input_tokens: 0,
+                cache_read_input_tokens: 0,
+              },
+            },
+            {
+              id: "msg-3",
+              role: "user",
+              content: [{ type: "text", text: "What's up?" }],
+              timestamp: Date.now(),
+            },
+            {
+              id: "msg-4",
+              role: "assistant",
+              content: [{ type: "text", text: "Streaming..." }],
+              timestamp: Date.now(),
+              isStreaming: true,
+              // No usage data yet - still streaming
+            },
+            {
+              id: "msg-5",
+              role: "assistant",
+              content: [{ type: "text", text: "Done!" }],
+              timestamp: Date.now(),
+              usage: {
+                input_tokens: 20,
+                output_tokens: 10,
+                cache_creation_input_tokens: 5,
+                cache_read_input_tokens: 15,
+              },
+            },
+          ],
+          isStreaming: false,
+          metadata: null,
+          loadingState: "loaded",
+          error: null,
+        },
+        form: { permissionMode: "acceptEdits" },
+      });
+
+      const totalTokens = selectTotalTokens(useSessionStore.getState());
+      // Only count msg-2 (10+5+0+0=15) and msg-5 (20+10+5+15=50)
+      // msg-4 has no usage data (still streaming)
+      expect(totalTokens).toBe(65); // 15 + 50
     });
   });
 });

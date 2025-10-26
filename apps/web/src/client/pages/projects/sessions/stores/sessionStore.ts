@@ -43,7 +43,6 @@ export interface SessionData {
   metadata: AgentSessionMetadata | null;
   loadingState: LoadingState;
   error: string | null;
-  currentMessageTokens: number; // Tokens for the currently streaming message
 }
 
 /**
@@ -115,7 +114,6 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
           metadata: session.metadata || null,
           loadingState: "loading",
           error: null,
-          currentMessageTokens: 0,
         },
       });
 
@@ -190,11 +188,6 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         session: {
           ...state.session,
           messages: [...state.session.messages, message],
-          // Reset current message tokens when user sends a new message
-          currentMessageTokens:
-            message.role === "user"
-              ? 0
-              : state.session.currentMessageTokens,
         },
       };
     });
@@ -286,26 +279,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   },
 
   // Update metadata
-  updateMetadata: (
-    metadata: Partial<AgentSessionMetadata> & {
-      usage?: { input_tokens?: number; output_tokens?: number };
-    }
-  ) => {
+  updateMetadata: (metadata: Partial<AgentSessionMetadata>) => {
     set((state) => {
       if (!state.session) return state;
-
-      // Calculate current message tokens from usage data if provided
-      let currentMessageTokens = state.session.currentMessageTokens;
-      let updatedTotalTokens = state.session.metadata?.totalTokens || 0;
-
-      if (metadata.usage) {
-        const inputTokens = metadata.usage.input_tokens || 0;
-        const outputTokens = metadata.usage.output_tokens || 0;
-        currentMessageTokens = inputTokens + outputTokens;
-
-        // Add current message tokens to total
-        updatedTotalTokens += currentMessageTokens;
-      }
 
       return {
         session: {
@@ -318,9 +294,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
               firstMessagePreview: "",
             }),
             ...metadata,
-            totalTokens: updatedTotalTokens,
           } as AgentSessionMetadata,
-          currentMessageTokens,
         },
       };
     });
@@ -360,3 +334,27 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     return state.form.permissionMode;
   },
 }));
+
+/**
+ * Memoized selector to calculate total tokens from all assistant messages
+ * Returns the sum of all token types: input, output, cache_creation, cache_read
+ */
+export const selectTotalTokens = (state: SessionStore): number => {
+  if (!state.session?.messages) return 0;
+
+  return state.session.messages.reduce((total, message) => {
+    // Only count assistant messages that have usage data
+    if (message.role !== "assistant" || !message.usage) {
+      return total;
+    }
+
+    const usage = message.usage;
+    return (
+      total +
+      (usage.input_tokens || 0) +
+      (usage.output_tokens || 0) +
+      (usage.cache_creation_input_tokens || 0) +
+      (usage.cache_read_input_tokens || 0)
+    );
+  }, 0);
+};

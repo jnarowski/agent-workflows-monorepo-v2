@@ -5,7 +5,7 @@ import { ChatInterface } from "./components/ChatInterface";
 import { ChatPromptInput, type ChatPromptInputHandle } from "./components/ChatPromptInput";
 import { useSessionWebSocket } from "./hooks/useSessionWebSocket";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
-import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
+import { useSessionStore, selectTotalTokens } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation";
 import { useNavigationStore } from "@/client/stores/index";
 import { api } from "@/client/lib/api-client";
@@ -32,6 +32,7 @@ export default function ProjectSession() {
   const clearSession = useSessionStore((s) => s.clearSession);
   const addMessage = useSessionStore((s) => s.addMessage);
   const setStreaming = useSessionStore((s) => s.setStreaming);
+  const totalTokens = useSessionStore(selectTotalTokens);
 
   // App-wide WebSocket hook for sending messages during session creation
   const { sendMessage: globalSendMessage, isConnected: globalIsConnected, reconnect } = useWebSocket();
@@ -80,7 +81,6 @@ export default function ProjectSession() {
             metadata: null,
             loadingState: "loaded",
             error: null,
-            currentMessageTokens: 0,
           },
         });
       }
@@ -339,8 +339,7 @@ export default function ProjectSession() {
             onSubmit={handleSubmit}
             disabled={inputDisabled}
             isStreaming={session?.isStreaming || false}
-            totalTokens={session?.metadata?.totalTokens}
-            currentMessageTokens={session?.currentMessageTokens}
+            totalTokens={totalTokens}
           />
         </div>
       </div>

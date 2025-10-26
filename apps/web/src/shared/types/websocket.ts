@@ -69,12 +69,14 @@ export interface SessionStreamOutputData {
 }
 
 export interface SessionMessageCompleteData {
-  metadata: {
+  usage?: {
+    input_tokens?: number;
+    output_tokens?: number;
+    cache_creation_input_tokens?: number;
+    cache_read_input_tokens?: number;
+  };
+  metadata?: {
     model?: string;
-    usage?: {
-      input_tokens?: number;
-      output_tokens?: number;
-    };
     stop_reason?: string;
   };
 }

@@ -48,7 +48,7 @@ Update all UI components to use the new selector, remove old metadata fields, an
 ### 1: Add Memoized Selector
 
 <!-- prettier-ignore -->
-- [ ] 1.1 Add selectTotalTokens selector to sessionStore
+- [x] 1.1 Add selectTotalTokens selector to sessionStore
         - Export memoized selector that sums tokens from all assistant messages
         - Handle all token types: input_tokens, output_tokens, cache_creation_input_tokens, cache_read_input_tokens
         - Return 0 if no session or no messages
@@ -57,12 +57,15 @@ Update all UI components to use the new selector, remove old metadata fields, an
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Added `selectTotalTokens` selector at line 368 after store definition
+- Selector sums all four token types from assistant messages with usage data
+- Returns 0 for empty messages array or null session
+- Properly filters to only count assistant messages (user messages have no usage data)
 
 ### 2: Update Message Completion Handler
 
 <!-- prettier-ignore -->
-- [ ] 2.1 Attach usage to assistant messages in handleMessageComplete
+- [x] 2.1 Attach usage to assistant messages in handleMessageComplete
         - When message_complete event arrives with usage data, update the last assistant message
         - Create updated messages array with usage attached to last message
         - Update store with new messages array
@@ -71,35 +74,43 @@ Update all UI components to use the new selector, remove old metadata fields, an
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Updated `SessionMessageCompleteData` type to have `usage` at top-level with all 4 token types
+- Modified `handleMessageComplete` to attach usage data to last assistant message
+- Creates new messages array immutably and updates store via setState
+- Falls back to old finalizeMessage behavior if no usage data provided
+- Metadata still updated for other fields like model and stop_reason
 
 ### 3: Remove Server JSONL Re-parsing
 
 <!-- prettier-ignore -->
-- [ ] 3.1 Remove JSONL parsing after message completion
+- [x] 3.1 Remove JSONL parsing after message completion
         - Delete lines 213-230 (parseJSONLFile call and updateSessionMetadata)
         - Keep usage extraction from response.events (lines 270-318)
         - This is the expensive operation causing duplication
         - File: `apps/web/src/server/websocket.ts`
-- [ ] 3.2 Simplify message_complete event payload
+- [x] 3.2 Simplify message_complete event payload
         - Change from sending { metadata: { ...metadata, usage } } to just { usage }
         - Remove metadata parameter from sendMessage call (line 330-338)
         - File: `apps/web/src/server/websocket.ts`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Removed entire JSONL re-parsing block (lines 213-230) that was causing duplication
+- Updated usage extraction to include all 4 token types (input, output, cache_creation, cache_read)
+- Simplified message_complete payload to only send `{ usage }` instead of nested metadata structure
+- Server now extracts usage once from response.events and sends directly to client
+- Messages loaded from JSONL already have usage data, so no re-parsing needed
 
 ### 4: Update UI Components
 
 <!-- prettier-ignore -->
-- [ ] 4.1 Update ProjectSession to use selector
+- [x] 4.1 Update ProjectSession to use selector
         - Import selectTotalTokens from sessionStore
         - Replace `session?.metadata?.totalTokens || 0` with `useSessionStore(selectTotalTokens)`
         - Remove currentMessageTokens variable (no longer needed)
         - File: `apps/web/src/client/pages/projects/sessions/ProjectSession.tsx`
         - Around line 342-343
-- [ ] 4.2 Simplify ChatPromptInput token display
+- [x] 4.2 Simplify ChatPromptInput token display
         - Remove the (+X tokens) green indicator
         - Show only total tokens: `{totalTokens.toLocaleString()} tokens`
         - Remove currentMessageTokens prop (no longer passed from parent)
@@ -108,16 +119,20 @@ Update all UI components to use the new selector, remove old metadata fields, an
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Imported and used `selectTotalTokens` selector in ProjectSession at line 35
+- Updated ChatPromptInput to only pass `totalTokens` prop (removed currentMessageTokens)
+- Removed currentMessageTokens from ChatPromptInputProps interface
+- Simplified token display to show only `{totalTokens.toLocaleString()} tokens`
+- Removed green (+X) indicator for streaming message tokens
 
 ### 5: Clean Up Store
 
 <!-- prettier-ignore -->
-- [ ] 5.1 Remove unused metadata fields from SessionData interface
+- [x] 5.1 Remove unused metadata fields from SessionData interface
         - Remove currentMessageTokens from SessionData type
         - File: `apps/web/src/client/pages/projects/sessions/stores/sessionStore.ts`
         - Around line 44-45
-- [ ] 5.2 Simplify updateMetadata function
+- [x] 5.2 Simplify updateMetadata function
         - Remove usage calculation logic (lines 297-308)
         - Just merge metadata without computing tokens
         - File: `apps/web/src/client/pages/projects/sessions/stores/sessionStore.ts`
@@ -125,39 +140,52 @@ Update all UI components to use the new selector, remove old metadata fields, an
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Removed `currentMessageTokens` from SessionData interface (line 46)
+- Removed all references to currentMessageTokens in store functions (loadSession, addMessage)
+- Removed currentMessageTokens initialization in ProjectSession.tsx
+- Simplified updateMetadata to just merge metadata without any token calculations
+- Removed usage parameter type from updateMetadata (now just Partial<AgentSessionMetadata>)
+- Store is now cleaner with single source of truth for tokens via selectTotalTokens
 
 ### 6: Add Comprehensive Tests
 
 <!-- prettier-ignore -->
-- [ ] 6.1 Add selectTotalTokens test - basic calculation
+- [x] 6.1 Add selectTotalTokens test - basic calculation
         - Test with 2 assistant messages with full usage data
         - Verify sum includes all token types: input, output, cache_creation, cache_read
         - Expected: (10+5+100+50) + (20+10+0+75) = 270
         - File: `apps/web/src/client/pages/projects/sessions/stores/sessionStore.test.ts`
-- [ ] 6.2 Add selectTotalTokens test - no messages
+- [x] 6.2 Add selectTotalTokens test - no messages
         - Test with empty messages array
         - Expected: 0
         - File: `apps/web/src/client/pages/projects/sessions/stores/sessionStore.test.ts`
-- [ ] 6.3 Add selectTotalTokens test - no session
+- [x] 6.3 Add selectTotalTokens test - no session
         - Test with null session
         - Expected: 0
         - File: `apps/web/src/client/pages/projects/sessions/stores/sessionStore.test.ts`
-- [ ] 6.4 Add selectTotalTokens test - ignore user messages
+- [x] 6.4 Add selectTotalTokens test - ignore user messages
         - Test with user messages only (they have no usage data)
         - Expected: 0
         - File: `apps/web/src/client/pages/projects/sessions/stores/sessionStore.test.ts`
-- [ ] 6.5 Add selectTotalTokens test - mixed messages
+- [x] 6.5 Add selectTotalTokens test - mixed messages
         - Test with user messages + assistant messages with/without usage
         - Only count assistant messages that have usage data
         - File: `apps/web/src/client/pages/projects/sessions/stores/sessionStore.test.ts`
-- [ ] 6.6 Run tests
+- [x] 6.6 Run tests
         - Command: `pnpm test sessionStore.test.ts`
         - Expected: All new tests pass
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Added 5 comprehensive tests for selectTotalTokens in new test suite
+- Test 1: Basic calculation with 2 assistant messages (expected 270 tokens)
+- Test 2: Empty messages array (expected 0)
+- Test 3: Null session (expected 0)
+- Test 4: User messages only (expected 0)
+- Test 5: Mixed messages with assistant messages with/without usage (expected 65)
+- Removed all currentMessageTokens references from existing tests
+- Updated updateMetadata test to reflect simplified implementation
+- Added missing agent field to test session objects
 
 ## Acceptance Criteria
 

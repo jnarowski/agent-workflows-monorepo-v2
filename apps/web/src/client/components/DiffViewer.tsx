@@ -54,6 +54,93 @@ function detectLanguage(filePath?: string): string {
 }
 
 /**
+ * Extract only relevant context lines from a diff
+ * Shows 2 lines before the first change and 2 lines after the last change
+ * Trims excess unchanged lines in the middle
+ *
+ * Note: diffLines() groups consecutive unchanged lines into a single Change object,
+ * so we need to split those grouped changes to extract only the requested context lines.
+ *
+ * @param changes - Full diff output from diffLines()
+ * @param contextLines - Number of context lines to show before/after changes (default: 2)
+ * @returns Trimmed diff with only relevant context
+ */
+function extractDiffWithContext(
+  changes: Change[],
+  contextLines: number = 2
+): Change[] {
+  if (changes.length === 0) return changes;
+
+  // Find indices of first and last changed blocks
+  let firstChangeIndex = -1;
+  let lastChangeIndex = -1;
+
+  for (let i = 0; i < changes.length; i++) {
+    if (changes[i].added || changes[i].removed) {
+      if (firstChangeIndex === -1) firstChangeIndex = i;
+      lastChangeIndex = i;
+    }
+  }
+
+  // If no changes found, return all (shouldn't happen in practice)
+  if (firstChangeIndex === -1) return changes;
+
+  const result: Change[] = [];
+
+  // Process the change block before the first change
+  if (firstChangeIndex > 0) {
+    const beforeBlock = changes[firstChangeIndex - 1];
+    const lines = beforeBlock.value.split("\n");
+    // Remove the trailing empty string from split if present
+    if (lines[lines.length - 1] === "") lines.pop();
+
+    // Take only the last N lines (context before the change)
+    const contextStart = Math.max(0, lines.length - contextLines);
+    const contextLines_before = lines.slice(contextStart);
+
+    if (contextLines_before.length > 0) {
+      result.push({
+        value: contextLines_before.join("\n") + "\n",
+        added: false,
+        removed: false,
+      });
+    }
+  }
+
+  // Add all the change blocks (and any unchanged blocks between them)
+  for (let i = firstChangeIndex; i <= lastChangeIndex; i++) {
+    result.push(changes[i]);
+  }
+
+  // Process the change block after the last change
+  if (lastChangeIndex < changes.length - 1) {
+    const afterBlock = changes[lastChangeIndex + 1];
+    const lines = afterBlock.value.split("\n");
+    // Remove the trailing empty string from split if present
+    if (lines[lines.length - 1] === "") lines.pop();
+
+    // Take only the first N lines (context after the change)
+    const contextLines_after = lines.slice(0, contextLines);
+
+    if (contextLines_after.length > 0) {
+      result.push({
+        value:
+          contextLines_after.join("\n") +
+          (lines.length > contextLines
+            ? "\n"
+            : afterBlock.value.endsWith("\n")
+              ? "\n"
+              : ""),
+        added: false,
+        removed: false,
+      });
+    }
+  }
+
+  return result;
+}
+
+/**
  * Parse git diff format into line changes
  */
 function parseGitDiff(diffString: string): Change[] {
@@ -157,6 +244,9 @@ export function DiffViewer({
           return;
         }
 
+        // Extract only relevant context (2 lines before/after changes)
+        changes = extractDiffWithContext(changes, 2);
+
         const htmlLines: string[] = [];
 
         for (const part of changes) {
@@ -221,6 +311,9 @@ export function DiffViewer({
           } else if (oldString !== undefined && newString !== undefined) {
             fallbackChanges = diffLines(oldString, newString);
           }
+
+          // Extract context for fallback too
+          fallbackChanges = extractDiffWithContext(fallbackChanges, 2);
 
           const plainLines = fallbackChanges
             .map((part) => {

@@ -210,25 +210,6 @@ async function handleSessionEvent(
           return;
         }
 
-        // After message completes, update session metadata
-        let metadata = null;
-        try {
-          const jsonlPath = getSessionFilePath(
-            sessionData.projectPath,
-            sessionId
-          );
-          metadata = await parseJSONLFile(jsonlPath);
-
-          await updateSessionMetadata(sessionId, metadata);
-        } catch (metadataErr: unknown) {
-          // JSONL file might not exist yet for new sessions or parsing failed
-          // Log but don't throw - we don't want to fail message completion
-          fastify.log.debug(
-            { err: metadataErr, sessionId },
-            "Could not update session metadata (file may not exist yet)"
-          );
-        }
-
         // ============= SESSION NAME GENERATION (COMMENTED OUT) =============
         // TODO: Uncomment this block to enable AI-generated session names
         //
@@ -295,6 +276,8 @@ async function handleSessionEvent(
               usage = {
                 input_tokens: event.usage.input_tokens || 0,
                 output_tokens: event.usage.output_tokens || 0,
+                cache_creation_input_tokens: event.usage.cache_creation_input_tokens || 0,
+                cache_read_input_tokens: event.usage.cache_read_input_tokens || 0,
               };
               fastify.log.info({ usage, sessionId }, "Found usage in event.usage");
               break;
@@ -304,6 +287,8 @@ async function handleSessionEvent(
               usage = {
                 input_tokens: event.message.usage.input_tokens || 0,
                 output_tokens: event.message.usage.output_tokens || 0,
+                cache_creation_input_tokens: event.message.usage.cache_creation_input_tokens || 0,
+                cache_read_input_tokens: event.message.usage.cache_read_input_tokens || 0,
               };
               fastify.log.info({ usage, sessionId }, "Found usage in event.message.usage");
               break;
@@ -327,14 +312,9 @@ async function handleSessionEvent(
           }
         }
 
-        // Send completion event with parsed events and usage data
+        // Send completion event with usage data
         sendMessage(socket, `session.${sessionId}.message_complete`, {
-          metadata: {
-            ...metadata,
-            usage,
-          },
-          response,
-          events: response.events, // Parsed events from CLI for rich UI
+          usage,
         });
       } catch (err: unknown) {
         fastify.log.error({ err, sessionId }, "Agent CLI SDK error");

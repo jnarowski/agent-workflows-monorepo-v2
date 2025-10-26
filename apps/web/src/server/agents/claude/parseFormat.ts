@@ -28,11 +28,18 @@ export function parseFormat(jsonlLine: string): SessionMessage | null {
       content = [];
     }
 
-    // Extract metadata (usage, model, etc.)
+    // Extract usage data as direct property (for token counting)
+    // Usage can be at entry.usage OR entry.message.usage depending on format
+    const usageData = entry.usage || entry.message?.usage;
+    const usage = usageData ? {
+      input_tokens: usageData.input_tokens,
+      output_tokens: usageData.output_tokens,
+      cache_creation_input_tokens: usageData.cache_creation_input_tokens,
+      cache_read_input_tokens: usageData.cache_read_input_tokens,
+    } : undefined;
+
+    // Extract other metadata (model, etc.)
     const metadata: Record<string, unknown> = {};
-    if (entry.usage) {
-      metadata.usage = entry.usage;
-    }
     if (entry.model) {
       metadata.model = entry.model;
     }
@@ -43,6 +50,7 @@ export function parseFormat(jsonlLine: string): SessionMessage | null {
       content: content as ContentBlock[],
       timestamp: new Date(entry.timestamp || Date.now()).getTime(),
       metadata,
+      usage,
     };
   } catch (error) {
     // Skip malformed lines

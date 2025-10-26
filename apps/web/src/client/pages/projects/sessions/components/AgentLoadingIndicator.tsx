@@ -50,12 +50,32 @@ export function AgentLoadingIndicator({
   return (
     <div className="flex items-center gap-2 text-sm">
       <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
-      <span className="text-orange-600 dark:text-orange-400 font-medium">
-        {displayedText}
-        {displayedText.length < loadingPhrase.length && (
-          <span className="inline-block w-[2px] h-4 bg-orange-500 ml-0.5 animate-[blink_1s_step-end_infinite]" />
-        )}
-        {displayedText.length === loadingPhrase.length && "..."}
+      <span className="relative text-orange-600 dark:text-orange-400 font-medium overflow-hidden">
+        <span className="relative inline-block">
+          {displayedText}
+          {displayedText.length < loadingPhrase.length && (
+            <span className="inline-block w-[2px] h-4 bg-orange-500 ml-0.5 animate-[blink_1s_step-end_infinite]" />
+          )}
+          {displayedText.length === loadingPhrase.length && "..."}
+          {/* Flashlight shine effect */}
+          <span
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none animate-[shine_2.5s_linear_infinite]"
+            style={{
+              width: "30%",
+              transform: "skewX(-20deg)",
+            }}
+          />
+        </span>
+        <style>{`
+          @keyframes shine {
+            0% {
+              left: -30%;
+            }
+            100% {
+              left: 100%;
+            }
+          }
+        `}</style>
       </span>
     </div>
   );

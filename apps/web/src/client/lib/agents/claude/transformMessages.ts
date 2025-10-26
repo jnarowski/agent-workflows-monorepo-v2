@@ -25,20 +25,13 @@ function shouldFilterMessage(message: SessionMessage): boolean {
 /**
  * Transform raw loaded messages to typed SessionMessage format
  * Filters out system messages (commands, reminders, warmup, etc.) from JSONL files
- * @param raw - Raw messages from API
+ * Backend parseFormat already handles the transformation, we just filter and type-cast
+ * @param raw - Raw messages from API (already typed by backend)
  * @returns Typed SessionMessage array with system messages filtered out
  */
 export function transformMessages(raw: unknown[]): SessionMessage[] {
-  const messages = raw.map((msg: unknown) => {
-    const message = msg as Record<string, unknown>;
-    return {
-      id: message.id as string,
-      role: message.role as 'user' | 'assistant',
-      content: message.content as ContentBlock[],
-      timestamp: message.timestamp as number,
-      metadata: message.metadata as Record<string, unknown> | undefined,
-    };
-  });
+  // Backend already transformed to correct shape, just need to type-cast and filter
+  const messages = raw as SessionMessage[];
 
   // Filter out system messages
   return messages.filter((message) => !shouldFilterMessage(message));

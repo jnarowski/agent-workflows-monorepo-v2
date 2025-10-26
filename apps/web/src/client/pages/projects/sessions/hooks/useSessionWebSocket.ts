@@ -75,15 +75,49 @@ export function useSessionWebSocket({
   const handleMessageComplete = useCallback(
     (data: SessionMessageCompleteData) => {
       if (import.meta.env.DEV) {
-        console.log("[useSessionWebSocket] Message complete");
+        console.log("[useSessionWebSocket] Message complete", data);
       }
 
-      // Finalize the message in store
-      useSessionStore.getState().finalizeMessage(sessionIdRef.current);
+      // Get current session and messages
+      const store = useSessionStore.getState();
+      const session = store.session;
 
-      // Update metadata if provided
+      if (!session?.messages.length) {
+        console.warn("[useSessionWebSocket] No messages to finalize");
+        return;
+      }
+
+      // If usage data is provided, attach it to the last assistant message
+      if (data.usage) {
+        const messages = [...session.messages];
+        const lastMessageIndex = messages.length - 1;
+        const lastMessage = messages[lastMessageIndex];
+
+        if (lastMessage.role === "assistant") {
+          // Create updated message with usage data
+          messages[lastMessageIndex] = {
+            ...lastMessage,
+            usage: data.usage,
+            isStreaming: false,
+          };
+
+          // Update store with new messages array
+          useSessionStore.setState({
+            session: {
+              ...session,
+              messages,
+              isStreaming: false,
+            },
+          });
+        }
+      } else {
+        // No usage data, just finalize the message
+        store.finalizeMessage(sessionIdRef.current);
+      }
+
+      // Update metadata if provided (for other fields like model, stop_reason)
       if (data.metadata) {
-        useSessionStore.getState().updateMetadata(data.metadata);
+        store.updateMetadata(data.metadata);
       }
 
       // Invalidate sessions query to update sidebar with new metadata

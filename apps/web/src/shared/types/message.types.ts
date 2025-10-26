@@ -16,8 +16,21 @@ export interface SessionMessage {
   role: 'user' | 'assistant';
   content: ContentBlock[];
   timestamp: number;
-  /** Agent-specific metadata (usage, model, etc.) */
+  /** Agent-specific metadata (model, etc.) */
   metadata?: Record<string, unknown>;
+  /** Token usage data for assistant messages */
+  usage?: {
+    input_tokens?: number;
+    output_tokens?: number;
+    cache_creation_input_tokens?: number;
+    cache_read_input_tokens?: number;
+  };
+  /** Images attached to the message */
+  images?: string[];
+  /** Whether the message is currently streaming */
+  isStreaming?: boolean;
+  /** Whether the message represents an error */
+  isError?: boolean;
 }
 
 /**

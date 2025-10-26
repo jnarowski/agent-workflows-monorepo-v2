@@ -59,7 +59,6 @@ interface ChatPromptInputProps {
   disabled?: boolean;
   isStreaming?: boolean;
   totalTokens?: number; // Total session tokens
-  currentMessageTokens?: number; // Tokens for currently streaming message
 }
 
 export interface ChatPromptInputHandle {
@@ -77,7 +76,6 @@ const ChatPromptInputInner = forwardRef<
       disabled = false,
       isStreaming: externalIsStreaming = false,
       totalTokens,
-      currentMessageTokens,
     },
     ref
   ) => {
@@ -385,16 +383,7 @@ const ChatPromptInputInner = forwardRef<
               {/* Token count display */}
               {totalTokens !== undefined && (
                 <div className="text-xs text-muted-foreground">
-                  <span>
-                    {totalTokens.toLocaleString()}
-                    {currentMessageTokens && currentMessageTokens > 0 ? (
-                      <span className="text-primary">
-                        {" "}
-                        (+{currentMessageTokens.toLocaleString()})
-                      </span>
-                    ) : null}{" "}
-                    tokens
-                  </span>
+                  <span>{totalTokens.toLocaleString()} tokens</span>
                 </div>
               )}
               <PromptInputSubmit
