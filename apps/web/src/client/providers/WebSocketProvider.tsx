@@ -79,9 +79,6 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
                      (isDev ? 'localhost:3456' : window.location.host);
       const wsUrl = `${wsProtocol}//${wsHost}/ws?token=${token}`;
 
-      console.log('VITE_WS_HOST', import.meta.env.VITE_WS_HOST);
-      console.log('wsUrl', wsUrl);
-
       if (import.meta.env.DEV) {
         console.log('[WebSocket] Environment:', { isDev, wsHost, protocol: wsProtocol, override: import.meta.env.VITE_WS_HOST });
         console.log('[WebSocket] Connecting to', wsUrl.replace(token, '***'));
