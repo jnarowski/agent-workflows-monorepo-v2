@@ -7,9 +7,9 @@ import type {
   StreamEvent,
   TokenUsage,
   ModelUsage,
-} from '../shared/types';
-import { parseJSONL, extractJSON, safeJSONParse } from '../shared/json-parser';
-import { ParseError } from '../shared/errors';
+} from '../../utils/types';
+import { parseJSONL, extractJSON, safeJSONParse } from '../../utils/json-parser';
+import { ParseError } from '../../utils/errors';
 
 /**
  * Parse Claude stream output into ExecutionResponse

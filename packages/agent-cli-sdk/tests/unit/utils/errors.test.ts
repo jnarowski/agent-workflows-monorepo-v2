@@ -12,7 +12,7 @@ import {
   TimeoutError,
   ParseError,
   SessionError,
-} from '../../../src/shared/errors';
+} from '../../../src/utils/errors';
 
 describe('AgentSDKError', () => {
   it('should create error with message', () => {

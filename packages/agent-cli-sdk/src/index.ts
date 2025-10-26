@@ -4,39 +4,39 @@
  */
 
 // Adapters
-export { ClaudeAdapter } from './claude';
-export { CodexAdapter } from './codex';
-export { CursorAdapter } from './cursor';
-export { GeminiAdapter } from './gemini';
+export { ClaudeAdapter } from './adapters/claude';
+export { CodexAdapter } from './adapters/codex';
+export { CursorAdapter } from './adapters/cursor';
+export { GeminiAdapter } from './adapters/gemini';
 
 // Import adapters for use in getAdapter helper
-import { ClaudeAdapter } from './claude';
-import { CodexAdapter } from './codex';
-import { CursorAdapter } from './cursor';
-import { GeminiAdapter } from './gemini';
+import { ClaudeAdapter } from './adapters/claude';
+import { CodexAdapter } from './adapters/codex';
+import { CursorAdapter } from './adapters/cursor';
+import { GeminiAdapter } from './adapters/gemini';
 
 // Adapter types
 export type {
   ClaudeOptions,
   ClaudeConfig,
   ClaudeStreamEvent,
-} from './claude';
+} from './adapters/claude';
 
 export type {
   CodexOptions,
   CodexConfig,
   CodexStreamEvent,
-} from './codex';
+} from './adapters/codex';
 
 export type {
   CursorConfig,
   CursorOptions,
-} from './cursor';
+} from './adapters/cursor';
 
 export type {
   GeminiConfig,
   GeminiOptions,
-} from './gemini';
+} from './adapters/gemini';
 
 // Shared types
 export type {
@@ -48,7 +48,7 @@ export type {
   ModelUsage,
   ActionLog,
   ValidationResult,
-} from './shared/types';
+} from './utils/types';
 
 // Errors
 export {
@@ -60,14 +60,14 @@ export {
   TimeoutError,
   ParseError,
   SessionError,
-} from './shared/errors';
+} from './utils/errors';
 
 // JSON utilities
 export {
   extractJSON,
   parseJSONL,
   safeJSONParse,
-} from './shared/json-parser';
+} from './utils/json-parser';
 
 // Claude event types and guards
 export type {
@@ -86,14 +86,14 @@ export type {
   UserMessageEvent,
   AssistantMessageData,
   AssistantMessageEvent,
-} from './claude/events';
+} from './adapters/claude/events';
 
 export {
   isClaudeEvent,
   isFileHistorySnapshotEvent,
   isUserMessageEvent,
   isAssistantMessageEvent,
-} from './claude/events';
+} from './adapters/claude/events';
 
 // Codex event types and guards
 export type {
@@ -118,7 +118,7 @@ export type {
   UsageEvent,
   CompletionEventData,
   CompletionEvent,
-} from './codex/events';
+} from './adapters/codex/events';
 
 export {
   isCodexEvent,
@@ -128,7 +128,7 @@ export {
   isToolStartedEvent,
   isFileWrittenEvent,
   isFileModifiedEvent,
-} from './codex/events';
+} from './adapters/codex/events';
 
 /**
  * Helper function to get an adapter instance by name
@@ -138,20 +138,20 @@ export {
  */
 export function getAdapter(
   agent: 'claude',
-  config?: import('./claude').ClaudeConfig
-): import('./claude').ClaudeAdapter;
+  config?: import('./adapters/claude').ClaudeConfig
+): import('./adapters/claude').ClaudeAdapter;
 export function getAdapter(
   agent: 'codex',
-  config?: import('./codex').CodexConfig
-): import('./codex').CodexAdapter;
+  config?: import('./adapters/codex').CodexConfig
+): import('./adapters/codex').CodexAdapter;
 export function getAdapter(
   agent: 'cursor',
-  config?: import('./cursor').CursorConfig
-): import('./cursor').CursorAdapter;
+  config?: import('./adapters/cursor').CursorConfig
+): import('./adapters/cursor').CursorAdapter;
 export function getAdapter(
   agent: 'gemini',
-  config?: import('./gemini').GeminiConfig
-): import('./gemini').GeminiAdapter;
+  config?: import('./adapters/gemini').GeminiConfig
+): import('./adapters/gemini').GeminiAdapter;
 export function getAdapter(
   agent: 'claude' | 'codex' | 'cursor' | 'gemini',
   config?: unknown
@@ -159,19 +159,19 @@ export function getAdapter(
   switch (agent) {
     case 'claude':
       return new ClaudeAdapter(
-        config as import('./claude').ClaudeConfig | undefined
+        config as import('./adapters/claude').ClaudeConfig | undefined
       );
     case 'codex':
       return new CodexAdapter(
-        config as import('./codex').CodexConfig | undefined
+        config as import('./adapters/codex').CodexConfig | undefined
       );
     case 'cursor':
       return new CursorAdapter(
-        config as import('./cursor').CursorConfig | undefined
+        config as import('./adapters/cursor').CursorConfig | undefined
       );
     case 'gemini':
       return new GeminiAdapter(
-        config as import('./gemini').GeminiConfig | undefined
+        config as import('./adapters/gemini').GeminiConfig | undefined
       );
     default: {
       const exhaustiveCheck: never = agent;

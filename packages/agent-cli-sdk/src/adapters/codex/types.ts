@@ -3,7 +3,7 @@
  * Based on Codex CLI 0.46.0
  */
 
-import type { ExecutionOptions } from '../shared/types';
+import type { ExecutionOptions } from '../../utils/types';
 
 /**
  * Sandbox modes for Codex execution

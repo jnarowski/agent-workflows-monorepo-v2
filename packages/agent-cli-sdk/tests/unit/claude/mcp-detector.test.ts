@@ -7,7 +7,7 @@ import {
   getMCPServerConfig,
   validateMCPServer,
   type MCPServer,
-} from "../../../src/claude/mcp-detector";
+} from "../../../src/adapters/claude/mcp-detector";
 
 // Mock fs module
 vi.mock("fs", () => ({

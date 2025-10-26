@@ -10,7 +10,7 @@ import {
   getBase64Size,
   validateImageSize,
   type ImageData,
-} from "../../../src/claude/image-handler";
+} from "../../../src/adapters/claude/image-handler";
 
 // Mock fs module
 vi.mock("fs", () => ({

@@ -1,5 +1,5 @@
-import type { ExecutionResponse, StreamEvent, TokenUsage } from "../shared/types";
-import { extractJSON } from "../shared/json-parser";
+import type { ExecutionResponse, StreamEvent, TokenUsage } from "../../utils/types";
+import { extractJSON } from "../../utils/json-parser";
 
 /**
  * Parse Codex CLI output

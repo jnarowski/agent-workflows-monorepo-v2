@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parseClaudeOutput } from '../../../src/claude/parser';
-import { ParseError } from '../../../src/shared/errors';
+import { parseClaudeOutput } from '../../../src/adapters/claude/parser';
+import { ParseError } from '../../../src/utils/errors';
 import { z } from 'zod';
 
 describe('parseClaudeOutput', () => {

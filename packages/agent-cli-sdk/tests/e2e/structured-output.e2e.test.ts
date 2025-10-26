@@ -13,7 +13,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { z } from "zod";
 import { ClaudeAdapter } from "../../src/index";
-import { detectAndValidateClaudeCLI } from "../../src/claude/cli-detector";
+import { detectAndValidateClaudeCLI } from "../../src/adapters/claude/cli-detector";
 
 const SHOULD_RUN = process.env.RUN_E2E_TESTS === "true";
 const describeE2E = SHOULD_RUN ? describe : describe.skip;

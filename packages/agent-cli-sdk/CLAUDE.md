@@ -58,19 +58,20 @@ This is a **TypeScript SDK for orchestrating AI-powered CLI tools** (Claude Code
 
 ```
 src/
-├── claude/              # Claude Code adapter
-│   ├── index.ts         # ClaudeAdapter class
-│   ├── types.ts         # Config & options types
-│   ├── events.ts        # Event types & type guards
-│   ├── cli-args.ts      # CLI argument builder
-│   ├── cli-detector.ts  # Auto-detect CLI path
-│   ├── parser.ts        # Parse JSONL output into ExecutionResponse
-│   ├── image-handler.ts # Image file handling
-│   └── mcp-detector.ts  # MCP server detection
-├── codex/               # OpenAI Codex adapter (similar structure)
-├── cursor/              # Cursor adapter (stub)
-├── gemini/              # Gemini adapter (stub)
-├── shared/              # Shared utilities
+├── adapters/            # All adapter implementations
+│   ├── claude/          # Claude Code adapter
+│   │   ├── index.ts         # ClaudeAdapter class
+│   │   ├── types.ts         # Config & options types
+│   │   ├── events.ts        # Event types & type guards
+│   │   ├── cli-args.ts      # CLI argument builder
+│   │   ├── cli-detector.ts  # Auto-detect CLI path
+│   │   ├── parser.ts        # Parse JSONL output into ExecutionResponse
+│   │   ├── image-handler.ts # Image file handling
+│   │   └── mcp-detector.ts  # MCP server detection
+│   ├── codex/           # OpenAI Codex adapter (similar structure)
+│   ├── cursor/          # Cursor adapter (stub)
+│   └── gemini/          # Gemini adapter (stub)
+├── utils/               # Shared utilities
 │   ├── types.ts         # Base types (ExecutionResponse, StreamEvent, etc.)
 │   ├── errors.ts        # Error classes (ValidationError, CLINotFoundError, etc.)
 │   ├── spawn.ts         # Cross-platform process spawning with cross-spawn
@@ -85,7 +86,7 @@ Each adapter follows the same pattern:
 
 1. **Construction** - Auto-detect CLI path or use provided `cliPath`
 2. **Argument Building** - `buildClaudeArgs()` / `buildCodexArgs()` translate options to CLI flags
-3. **Process Spawning** - `spawnProcess()` from `shared/spawn.ts` handles execution
+3. **Process Spawning** - `spawnProcess()` from `utils/spawn.ts` handles execution
 4. **JSONL Streaming** - Parse stdout line-by-line into `StreamEvent[]`
 5. **Event Emission** - Call `onEvent()` and `onOutput()` callbacks in real-time
 6. **Response Parsing** - `parseClaudeOutput()` / `parseCodexOutput()` extract final output, session ID, token usage

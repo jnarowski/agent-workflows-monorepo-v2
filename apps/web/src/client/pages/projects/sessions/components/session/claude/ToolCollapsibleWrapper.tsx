@@ -43,8 +43,10 @@ export function ToolCollapsibleWrapper({
           variant="ghost"
           className="w-full justify-start px-0 py-1.5 hover:bg-transparent h-auto"
         >
-          <div className="flex items-center gap-2.5 w-full min-w-0">
-            <ToolDot color={dotColor} />
+          <div className="flex items-start gap-2.5 w-full min-w-0">
+            <div className="flex items-center h-5">
+              <ToolDot color={dotColor} />
+            </div>
             <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
               <div className="flex items-center gap-2 w-full min-w-0">
                 <span className="text-sm font-semibold">{toolName}</span>

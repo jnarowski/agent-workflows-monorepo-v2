@@ -5,7 +5,7 @@
  * Implementation coming soon.
  */
 
-import type { ExecutionResponse } from '../shared/types';
+import type { ExecutionResponse } from '../../utils/types';
 
 export interface CursorConfig {
   cliPath?: string;

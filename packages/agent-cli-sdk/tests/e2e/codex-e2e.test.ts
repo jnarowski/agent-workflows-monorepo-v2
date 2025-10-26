@@ -12,7 +12,7 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { CodexAdapter } from "../../src/index";
-import { isCodexCLIInstalled } from "../../src/codex/cli-detector";
+import { isCodexCLIInstalled } from "../../src/adapters/codex/cli-detector";
 
 const SHOULD_RUN = process.env.RUN_E2E_TESTS === "true";
 const describeE2E = SHOULD_RUN ? describe : describe.skip;

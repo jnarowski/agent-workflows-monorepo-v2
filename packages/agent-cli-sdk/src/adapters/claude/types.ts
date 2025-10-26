@@ -2,7 +2,7 @@
  * Claude-specific types
  */
 
-import type { ExecutionOptions } from '../shared/types';
+import type { ExecutionOptions } from '../../utils/types';
 
 /**
  * Image input for Claude

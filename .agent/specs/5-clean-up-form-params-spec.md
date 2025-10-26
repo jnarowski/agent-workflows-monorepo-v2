@@ -26,7 +26,7 @@ Remove redundant permission mode storage from `SessionData` and keep only `form.
 
 ### New Files
 
-None (we're deleting a file)
+- `apps/web/src/client/pages/projects/sessions/components/ChatPromptInput.test.tsx` - Component test for ChatPromptInput behavior
 
 ### Files to Delete
 
@@ -187,10 +187,51 @@ Delete obsolete files, update tests, verify all references are updated, and ensu
         - Update all `currentSessionId` → `sessionId`
         - Update all `promptForm` → `form`
         - Remove tests for deleted permission mode methods
-- [ ] 5.2 Delete sessionConfig.ts
+- [ ] 5.2 Create ChatPromptInput.test.tsx
+        - File: `apps/web/src/client/pages/projects/sessions/components/ChatPromptInput.test.tsx`
+        - Test behavior from user perspective (minimal mocking)
+        - Test permission mode selection and persistence
+        - Test form submission with correct permission mode
+        - Stub WebSocket/onSubmit to verify params without actual network calls
+        - Test cases:
+          * User selects permission mode → store updates
+          * User types message and submits → onSubmit called with correct message
+          * Permission mode persists in store after submission
+          * Keyboard shortcuts work (Shift+Tab to cycle modes)
+        - Use React Testing Library, render component with real store
+        - Mock only the onSubmit handler to capture params
+        - Example structure:
+          ```typescript
+          import { render, screen, fireEvent } from '@testing-library/react';
+          import { useSessionStore } from '../stores/sessionStore';
+
+          describe('ChatPromptInput', () => {
+            it('submits with correct permission mode', () => {
+              const onSubmit = vi.fn();
+              // Set initial permission mode
+              useSessionStore.setState({ form: { permissionMode: 'plan' } });
+
+              render(<ChatPromptInput onSubmit={onSubmit} />);
+
+              // User types message
+              const textarea = screen.getByRole('textbox');
+              fireEvent.change(textarea, { target: { value: 'test message' } });
+
+              // User submits
+              fireEvent.submit(textarea.closest('form'));
+
+              // Verify onSubmit called with message
+              expect(onSubmit).toHaveBeenCalledWith('test message', undefined);
+
+              // Verify permission mode still 'plan' in store
+              expect(useSessionStore.getState().form.permissionMode).toBe('plan');
+            });
+          });
+          ```
+- [ ] 5.3 Delete sessionConfig.ts
         - File: `apps/web/src/client/pages/projects/sessions/utils/sessionConfig.ts`
         - Delete this entire file
-- [ ] 5.3 Update useSessionWebSocket if needed
+- [ ] 5.4 Update useSessionWebSocket if needed
         - File: `apps/web/src/client/pages/projects/sessions/hooks/useSessionWebSocket.ts`
         - Check for any references to `currentSession` or `promptForm` and update
 
@@ -234,6 +275,7 @@ Delete obsolete files, update tests, verify all references are updated, and ensu
 - [ ] Permission mode persists across session creation
 - [ ] ChatPromptInput reads directly from store, no local state syncing
 - [ ] WebSocket messages include correct permission mode from `form.permissionMode`
+- [ ] Component test for ChatPromptInput covers key behaviors
 - [ ] No type errors or lint errors
 - [ ] All existing tests pass (after updates)
 

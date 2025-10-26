@@ -83,41 +83,50 @@ Update test files and documentation to reflect the new structure. Run full test 
 ### 1: Create Directory Structure
 
 <!-- prettier-ignore -->
-- [ ] Create adapters directory
+- [x] Create adapters directory
         - `mkdir -p packages/agent-cli-sdk/src/adapters`
-- [ ] Create utils directory
+- [x] Create utils directory
         - `mkdir -p packages/agent-cli-sdk/src/utils`
 
 #### Completion Notes
 
+- Created `src/adapters/` directory for all adapter implementations
+- Created `src/utils/` directory for shared utilities
+
 ### 2: Move Adapter Folders
 
 <!-- prettier-ignore -->
-- [ ] Move claude adapter
+- [x] Move claude adapter
         - `mv packages/agent-cli-sdk/src/claude packages/agent-cli-sdk/src/adapters/`
-- [ ] Move codex adapter
+- [x] Move codex adapter
         - `mv packages/agent-cli-sdk/src/codex packages/agent-cli-sdk/src/adapters/`
-- [ ] Move cursor adapter
+- [x] Move cursor adapter
         - `mv packages/agent-cli-sdk/src/cursor packages/agent-cli-sdk/src/adapters/`
-- [ ] Move gemini adapter
+- [x] Move gemini adapter
         - `mv packages/agent-cli-sdk/src/gemini packages/agent-cli-sdk/src/adapters/`
 
 #### Completion Notes
 
+- Moved all 4 adapter implementations (claude, codex, cursor, gemini) to `src/adapters/`
+- All adapter files and subdirectories preserved intact
+
 ### 3: Move Shared Utilities
 
 <!-- prettier-ignore -->
-- [ ] Move shared files to utils
+- [x] Move shared files to utils
         - `mv packages/agent-cli-sdk/src/shared/* packages/agent-cli-sdk/src/utils/`
-- [ ] Remove old shared directory
+- [x] Remove old shared directory
         - `rmdir packages/agent-cli-sdk/src/shared`
 
 #### Completion Notes
 
+- Moved all utility files from `src/shared/` to `src/utils/`
+- Removed empty `src/shared/` directory
+
 ### 4: Update Main Index Exports
 
 <!-- prettier-ignore -->
-- [ ] Update adapter imports in src/index.ts
+- [x] Update adapter imports in src/index.ts
         - Change `from './claude'` → `from './adapters/claude'`
         - Change `from './codex'` → `from './adapters/codex'`
         - Change `from './cursor'` → `from './adapters/cursor'`
@@ -126,99 +135,123 @@ Update test files and documentation to reflect the new structure. Run full test 
 
 #### Completion Notes
 
+- Updated all adapter imports and exports in main index.ts
+- Changed all `./shared/` references to `./utils/`
+- Updated event type imports from adapter subdirectories
+- Updated getAdapter() function type annotations
+
 ### 5: Update Claude Adapter Imports
 
 <!-- prettier-ignore -->
-- [ ] Update claude/index.ts imports
+- [x] Update claude/index.ts imports
         - Change all `../shared/` → `../../utils/`
         - File: `packages/agent-cli-sdk/src/adapters/claude/index.ts`
-- [ ] Update claude/parser.ts imports
+- [x] Update claude/parser.ts imports
         - Change all `../shared/` → `../../utils/`
         - File: `packages/agent-cli-sdk/src/adapters/claude/parser.ts`
-- [ ] Update claude/types.ts imports
+- [x] Update claude/types.ts imports
         - Change all `../shared/` → `../../utils/`
         - File: `packages/agent-cli-sdk/src/adapters/claude/types.ts`
 
 #### Completion Notes
 
+- Updated all 3 Claude adapter files to use `../../utils/` instead of `../shared/`
+- Changed imports for types, spawn, logging, errors, and json-parser utilities
+
 ### 6: Update Codex Adapter Imports
 
 <!-- prettier-ignore -->
-- [ ] Update codex/index.ts imports
+- [x] Update codex/index.ts imports
         - Change all `../shared/` → `../../utils/`
         - File: `packages/agent-cli-sdk/src/adapters/codex/index.ts`
-- [ ] Update codex/parser.ts imports
+- [x] Update codex/parser.ts imports
         - Change all `../shared/` → `../../utils/`
         - File: `packages/agent-cli-sdk/src/adapters/codex/parser.ts`
-- [ ] Update codex/types.ts imports
+- [x] Update codex/types.ts imports
         - Change all `../shared/` → `../../utils/`
         - File: `packages/agent-cli-sdk/src/adapters/codex/types.ts`
 
 #### Completion Notes
 
+- Updated all 3 Codex adapter files to use `../../utils/` instead of `../shared/`
+- Changed imports for types, spawn, logging, errors, and json-parser utilities
+
 ### 7: Update Cursor and Gemini Adapter Imports
 
 <!-- prettier-ignore -->
-- [ ] Update cursor/index.ts imports
+- [x] Update cursor/index.ts imports
         - Change all `../shared/` → `../../utils/`
         - File: `packages/agent-cli-sdk/src/adapters/cursor/index.ts`
-- [ ] Update gemini/index.ts imports
+- [x] Update gemini/index.ts imports
         - Change all `../shared/` → `../../utils/`
         - File: `packages/agent-cli-sdk/src/adapters/gemini/index.ts`
 
 #### Completion Notes
 
+- Updated Cursor and Gemini stub adapters to use `../../utils/types`
+- Both adapters only import ExecutionResponse type
+
 ### 8: Update Unit Test Imports
 
 <!-- prettier-ignore -->
-- [ ] Update claude parser test
+- [x] Update claude parser test
         - Change `../../../src/claude/` → `../../../src/adapters/claude/`
         - Change `../../../src/shared/` → `../../../src/utils/`
         - File: `packages/agent-cli-sdk/tests/unit/claude/parser.test.ts`
-- [ ] Update claude image-handler test
+- [x] Update claude image-handler test
         - Change `../../../src/claude/` → `../../../src/adapters/claude/`
         - File: `packages/agent-cli-sdk/tests/unit/claude/image-handler.test.ts`
-- [ ] Update claude mcp-detector test
+- [x] Update claude mcp-detector test
         - Change `../../../src/claude/` → `../../../src/adapters/claude/`
         - File: `packages/agent-cli-sdk/tests/unit/claude/mcp-detector.test.ts`
-- [ ] Rename test directory
+- [x] Rename test directory
         - `mv packages/agent-cli-sdk/tests/unit/shared packages/agent-cli-sdk/tests/unit/utils`
-- [ ] Update errors test
+- [x] Update errors test
         - Change `../../../src/shared/` → `../../../src/utils/`
         - File: `packages/agent-cli-sdk/tests/unit/utils/errors.test.ts`
-- [ ] Update json-parser test
+- [x] Update json-parser test
         - Change `../../../src/shared/` → `../../../src/utils/`
         - File: `packages/agent-cli-sdk/tests/unit/utils/json-parser.test.ts`
-- [ ] Update spawn test
+- [x] Update spawn test
         - Change `../../../src/shared/` → `../../../src/utils/`
         - File: `packages/agent-cli-sdk/tests/unit/utils/spawn.test.ts`
 
 #### Completion Notes
 
+- Renamed test directory from `tests/unit/shared` to `tests/unit/utils`
+- Updated all Claude unit test imports to use `src/adapters/claude/`
+- Updated all utils test imports to use `src/utils/`
+
 ### 9: Update E2E Test Imports
 
 <!-- prettier-ignore -->
-- [ ] Update claude e2e test
+- [x] Update claude e2e test
         - Change `../../src/claude/cli-detector` → `../../src/adapters/claude/cli-detector`
         - File: `packages/agent-cli-sdk/tests/e2e/claude-e2e.test.ts`
-- [ ] Update codex e2e test (if it imports from src)
+- [x] Update codex e2e test (if it imports from src)
         - Check and update any direct adapter imports
         - File: `packages/agent-cli-sdk/tests/e2e/codex-e2e.test.ts`
-- [ ] Update structured-output e2e test (if it imports from src)
+- [x] Update structured-output e2e test (if it imports from src)
         - Check and update any direct adapter imports
         - File: `packages/agent-cli-sdk/tests/e2e/structured-output.e2e.test.ts`
 
 #### Completion Notes
 
+- Updated all 3 E2E test files to use `src/adapters/` paths
+- Changed cli-detector imports for both Claude and Codex tests
+
 ### 10: Update Documentation
 
 <!-- prettier-ignore -->
-- [ ] Update CLAUDE.md directory structure
+- [x] Update CLAUDE.md directory structure
         - Update the "Directory Structure" section in Architecture
         - Change structure diagram to show `adapters/` and `utils/` folders
         - File: `packages/agent-cli-sdk/CLAUDE.md`
 
 #### Completion Notes
+
+- Updated directory structure diagram to show new `src/adapters/` and `src/utils/` organization
+- Updated reference to `shared/spawn.ts` to `utils/spawn.ts` in Adapter Lifecycle section
 
 ## Acceptance Criteria
 

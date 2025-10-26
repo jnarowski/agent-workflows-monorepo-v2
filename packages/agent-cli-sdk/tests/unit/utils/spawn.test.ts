@@ -4,8 +4,8 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { EventEmitter } from 'node:events';
-import { spawnProcess } from '../../../src/shared/spawn';
-import { TimeoutError, ExecutionError } from '../../../src/shared/errors';
+import { spawnProcess } from '../../../src/utils/spawn';
+import { TimeoutError, ExecutionError } from '../../../src/utils/errors';
 
 // Mock cross-spawn
 vi.mock('cross-spawn', () => ({

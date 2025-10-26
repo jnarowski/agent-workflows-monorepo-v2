@@ -2,10 +2,10 @@
  * Codex CLI Adapter
  */
 
-import type { ExecutionResponse, StreamEvent } from '../shared/types';
-import { spawnProcess } from '../shared/spawn';
-import { writeLog } from '../shared/logging';
-import { ValidationError, CLINotFoundError } from '../shared/errors';
+import type { ExecutionResponse, StreamEvent } from '../../utils/types';
+import { spawnProcess } from '../../utils/spawn';
+import { writeLog } from '../../utils/logging';
+import { ValidationError, CLINotFoundError } from '../../utils/errors';
 import { detectCodexCLI } from './cli-detector';
 import { buildCodexArgs } from './cli-args';
 import { parseCodexOutput } from './parser';
