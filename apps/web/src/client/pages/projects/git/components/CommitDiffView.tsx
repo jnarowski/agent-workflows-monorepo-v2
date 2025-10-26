@@ -9,15 +9,15 @@ import { Calendar, User, Hash } from 'lucide-react';
 import { DiffViewer } from '@/client/components/DiffViewer';
 
 interface CommitDiffViewProps {
-  projectId: string | undefined;
+  path: string | undefined;
   commitHash: string;
 }
 
 export function CommitDiffView({
-  projectId,
+  path,
   commitHash,
 }: CommitDiffViewProps) {
-  const { data: commitDiff, isLoading } = useCommitDiff(projectId, commitHash);
+  const { data: commitDiff, isLoading } = useCommitDiff(path, commitHash);
 
   if (isLoading) {
     return (

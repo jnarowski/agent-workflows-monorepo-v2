@@ -10,20 +10,20 @@ import { GitBranch, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/client/components/ui/skeleton';
 
 interface HistoryViewProps {
-  projectId: string | undefined;
+  path: string | undefined;
   expandedCommits: Set<string>;
   onToggleExpand: (commitHash: string) => void;
 }
 
 export function HistoryView({
-  projectId,
+  path,
   expandedCommits,
   onToggleExpand,
 }: HistoryViewProps) {
   const [limit] = useState(100);
   const [offset, setOffset] = useState(0);
 
-  const { data: commits, isLoading, isError } = useCommitHistory(projectId, limit, offset);
+  const { data: commits, isLoading, isError } = useCommitHistory(path, limit, offset);
 
   const hasMore = commits && commits.length === limit;
 
@@ -83,7 +83,7 @@ export function HistoryView({
             key={commit.hash}
             commit={commit}
             expanded={expandedCommits.has(commit.hash)}
-            projectId={projectId}
+            path={path}
             onToggleExpand={() => onToggleExpand(commit.hash)}
           />
         ))}

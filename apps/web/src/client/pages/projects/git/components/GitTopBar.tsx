@@ -19,7 +19,7 @@ import { CreatePullRequestDialog } from './CreatePullRequestDialog';
 import type { GitBranch as GitBranchType } from '@/shared/types/git.types';
 
 interface GitTopBarProps {
-  projectId: string | undefined;
+  path: string | undefined;
   currentBranch: string | undefined;
   branches: GitBranchType[] | undefined;
   ahead: number;
@@ -32,7 +32,7 @@ interface GitTopBarProps {
 }
 
 export function GitTopBar({
-  projectId,
+  path,
   currentBranch,
   branches,
   ahead,
@@ -158,7 +158,7 @@ export function GitTopBar({
       <CreatePullRequestDialog
         open={createPrOpen}
         onOpenChange={setCreatePrOpen}
-        projectId={projectId}
+        path={path}
         currentBranch={currentBranch}
       />
     </div>

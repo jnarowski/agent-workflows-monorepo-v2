@@ -1,361 +1,272 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { NotFoundError } from '@/server/utils/error';
 import { buildSuccessResponse } from '@/server/utils/response';
-import { getProjectById } from '@/server/services/project';
 import * as gitService from '@/server/services/git.service';
 import * as gitSchemas from '@/server/schemas/git';
 
 export async function gitRoutes(fastify: FastifyInstance) {
-  // GET /api/projects/:id/git/status - Get git status
-  fastify.get<{
-    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
+  // POST /api/git/status - Get git status
+  fastify.post<{
+    Body: z.infer<typeof gitSchemas.gitStatusBodySchema>;
   }>(
-    '/api/projects/:id/git/status',
+    '/api/git/status',
     {
       schema: {
-        params: gitSchemas.gitProjectParamsSchema,
+        body: gitSchemas.gitStatusBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id } = request.params;
+      const { path } = request.body;
 
-      const project = await getProjectById(id);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
-
-      const status = await gitService.getGitStatus(project.path, fastify.log);
+      const status = await gitService.getGitStatus(path);
       return reply.send(buildSuccessResponse(status));
     }
   );
 
-  // GET /api/projects/:id/git/branches - Get all branches
-  fastify.get<{
-    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
+  // POST /api/git/branches - Get all branches
+  fastify.post<{
+    Body: z.infer<typeof gitSchemas.gitBranchesBodySchema>;
   }>(
-    '/api/projects/:id/git/branches',
+    '/api/git/branches',
     {
       schema: {
-        params: gitSchemas.gitProjectParamsSchema,
+        body: gitSchemas.gitBranchesBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id } = request.params;
+      const { path } = request.body;
 
-      const project = await getProjectById(id);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
-
-      const branches = await gitService.getBranches(project.path, fastify.log);
+      const branches = await gitService.getBranches(path);
       return reply.send(buildSuccessResponse(branches));
     }
   );
 
-  // POST /api/projects/:id/git/branch - Create and switch to new branch
+  // POST /api/git/branch - Create and switch to new branch
   fastify.post<{
-    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
     Body: z.infer<typeof gitSchemas.gitBranchBodySchema>;
   }>(
-    '/api/projects/:id/git/branch',
+    '/api/git/branch',
     {
       schema: {
-        params: gitSchemas.gitProjectParamsSchema,
         body: gitSchemas.gitBranchBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id } = request.params;
-      const { name, from } = request.body;
-      const userId = request.user!.id;
+      const { path, name, from } = request.body;
 
-      const project = await getProjectById(id, userId);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
-
-      const branch = await gitService.createAndSwitchBranch(project.path, name, from, fastify.log);
+      const branch = await gitService.createAndSwitchBranch(path, name, from);
       return reply.code(201).send(buildSuccessResponse(branch));
     }
   );
 
-  // POST /api/projects/:id/git/branch/switch - Switch to existing branch
+  // POST /api/git/branch/switch - Switch to existing branch
   fastify.post<{
-    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
     Body: z.infer<typeof gitSchemas.gitSwitchBranchBodySchema>;
   }>(
-    '/api/projects/:id/git/branch/switch',
+    '/api/git/branch/switch',
     {
       schema: {
-        params: gitSchemas.gitProjectParamsSchema,
         body: gitSchemas.gitSwitchBranchBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id } = request.params;
-      const { name } = request.body;
-      const userId = request.user!.id;
+      const { path, name } = request.body;
 
-      const project = await getProjectById(id, userId);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
-
-      const branch = await gitService.switchBranch(project.path, name, fastify.log);
+      const branch = await gitService.switchBranch(path, name);
       return reply.send(buildSuccessResponse(branch));
     }
   );
 
-  // POST /api/projects/:id/git/stage - Stage files
+  // POST /api/git/stage - Stage files
   fastify.post<{
-    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
     Body: z.infer<typeof gitSchemas.gitStageFilesBodySchema>;
   }>(
-    '/api/projects/:id/git/stage',
+    '/api/git/stage',
     {
       schema: {
-        params: gitSchemas.gitProjectParamsSchema,
         body: gitSchemas.gitStageFilesBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id } = request.params;
-      const { files } = request.body;
-      const userId = request.user!.id;
+      const { path, files } = request.body;
 
-      const project = await getProjectById(id, userId);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
-
-      await gitService.stageFiles(project.path, files, fastify.log);
+      await gitService.stageFiles(path, files);
       return reply.send(buildSuccessResponse({ success: true }));
     }
   );
 
-  // POST /api/projects/:id/git/unstage - Unstage files
+  // POST /api/git/unstage - Unstage files
   fastify.post<{
-    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
     Body: z.infer<typeof gitSchemas.gitStageFilesBodySchema>;
   }>(
-    '/api/projects/:id/git/unstage',
+    '/api/git/unstage',
     {
       schema: {
-        params: gitSchemas.gitProjectParamsSchema,
         body: gitSchemas.gitStageFilesBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id } = request.params;
-      const { files } = request.body;
-      const userId = request.user!.id;
+      const { path, files } = request.body;
 
-      const project = await getProjectById(id, userId);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
-
-      await gitService.unstageFiles(project.path, files, fastify.log);
+      await gitService.unstageFiles(path, files);
       return reply.send(buildSuccessResponse({ success: true }));
     }
   );
 
-  // POST /api/projects/:id/git/commit - Commit changes
+  // POST /api/git/commit - Commit changes
   fastify.post<{
-    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
     Body: z.infer<typeof gitSchemas.gitCommitBodySchema>;
   }>(
-    '/api/projects/:id/git/commit',
+    '/api/git/commit',
     {
       schema: {
-        params: gitSchemas.gitProjectParamsSchema,
         body: gitSchemas.gitCommitBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id } = request.params;
-      const { message, files } = request.body;
-      const userId = request.user!.id;
+      const { path, message, files } = request.body;
 
-      const project = await getProjectById(id, userId);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
-
-      const hash = await gitService.commitChanges(project.path, message, files, fastify.log);
+      const hash = await gitService.commitChanges(path, message, files);
       return reply.code(201).send(buildSuccessResponse({ hash }));
     }
   );
 
-  // POST /api/projects/:id/git/push - Push to remote
+  // POST /api/git/push - Push to remote
   fastify.post<{
-    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
     Body: z.infer<typeof gitSchemas.gitPushBodySchema>;
   }>(
-    '/api/projects/:id/git/push',
+    '/api/git/push',
     {
       schema: {
-        params: gitSchemas.gitProjectParamsSchema,
         body: gitSchemas.gitPushBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id } = request.params;
-      const { branch, remote } = request.body;
-      const userId = request.user!.id;
+      const { path, branch, remote } = request.body;
 
-      const project = await getProjectById(id, userId);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
-
-      await gitService.pushToRemote(project.path, branch, remote, fastify.log);
+      await gitService.pushToRemote(path, branch, remote);
       return reply.send(buildSuccessResponse({ success: true }));
     }
   );
 
-  // POST /api/projects/:id/git/fetch - Fetch from remote
+  // POST /api/git/fetch - Fetch from remote
   fastify.post<{
-    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
     Body: z.infer<typeof gitSchemas.gitFetchBodySchema>;
   }>(
-    '/api/projects/:id/git/fetch',
+    '/api/git/fetch',
     {
       schema: {
-        params: gitSchemas.gitProjectParamsSchema,
         body: gitSchemas.gitFetchBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id } = request.params;
-      const { remote } = request.body;
-      const userId = request.user!.id;
+      const { path, remote } = request.body;
 
-      const project = await getProjectById(id, userId);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
-
-      await gitService.fetchFromRemote(project.path, remote, fastify.log);
+      await gitService.fetchFromRemote(path, remote);
       return reply.send(buildSuccessResponse({ success: true }));
     }
   );
 
-  // GET /api/projects/:id/git/diff - Get file diff
-  fastify.get<{
-    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
-    Querystring: z.infer<typeof gitSchemas.gitFilePathQuerySchema>;
+  // POST /api/git/pull - Pull from remote
+  fastify.post<{
+    Body: z.infer<typeof gitSchemas.gitPullBodySchema>;
   }>(
-    '/api/projects/:id/git/diff',
+    '/api/git/pull',
     {
       schema: {
-        params: gitSchemas.gitProjectParamsSchema,
-        querystring: gitSchemas.gitFilePathQuerySchema,
+        body: gitSchemas.gitPullBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id } = request.params;
-      const { path } = request.query;
-      const userId = request.user!.id;
+      const { path, remote, branch } = request.body;
 
-      const project = await getProjectById(id, userId);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
+      await gitService.pullFromRemote(path, remote, branch);
+      return reply.send(buildSuccessResponse({ success: true }));
+    }
+  );
 
-      const diff = await gitService.getFileDiff(project.path, path, fastify.log);
+  // POST /api/git/diff - Get file diff
+  fastify.post<{
+    Body: z.infer<typeof gitSchemas.gitDiffBodySchema>;
+  }>(
+    '/api/git/diff',
+    {
+      schema: {
+        body: gitSchemas.gitDiffBodySchema,
+      },
+      preHandler: fastify.authenticate,
+    },
+    async (request, reply) => {
+      const { path, filepath } = request.body;
+
+      const diff = await gitService.getFileDiff(path, filepath);
       return reply.send(buildSuccessResponse({ diff }));
     }
   );
 
-  // GET /api/projects/:id/git/history - Get commit history
-  fastify.get<{
-    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
-    Querystring: z.infer<typeof gitSchemas.gitHistoryQuerySchema>;
+  // POST /api/git/history - Get commit history
+  fastify.post<{
+    Body: z.infer<typeof gitSchemas.gitHistoryBodySchema>;
   }>(
-    '/api/projects/:id/git/history',
+    '/api/git/history',
     {
       schema: {
-        params: gitSchemas.gitProjectParamsSchema,
-        querystring: gitSchemas.gitHistoryQuerySchema,
+        body: gitSchemas.gitHistoryBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id } = request.params;
-      const { limit, offset } = request.query;
-      const userId = request.user!.id;
+      const { path, limit, offset } = request.body;
 
-      const project = await getProjectById(id, userId);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
-
-      const commits = await gitService.getCommitHistory(project.path, limit, offset, fastify.log);
+      const commits = await gitService.getCommitHistory(path, limit, offset);
       return reply.send(buildSuccessResponse(commits));
     }
   );
 
-  // GET /api/projects/:id/git/commit/:hash - Get commit diff
-  fastify.get<{
-    Params: z.infer<typeof gitSchemas.gitCommitParamsSchema>;
+  // POST /api/git/commit-diff - Get commit diff
+  fastify.post<{
+    Body: z.infer<typeof gitSchemas.gitCommitDiffBodySchema>;
   }>(
-    '/api/projects/:id/git/commit/:hash',
+    '/api/git/commit-diff',
     {
       schema: {
-        params: gitSchemas.gitCommitParamsSchema,
+        body: gitSchemas.gitCommitDiffBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id, hash } = request.params;
-      const userId = request.user!.id;
+      const { path, commitHash } = request.body;
 
-      const project = await getProjectById(id, userId);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
-
-      const commitDiff = await gitService.getCommitDiff(project.path, hash, fastify.log);
+      const commitDiff = await gitService.getCommitDiff(path, commitHash);
       return reply.send(buildSuccessResponse(commitDiff));
     }
   );
 
-  // GET /api/projects/:id/git/pr-data - Get PR pre-fill data
-  fastify.get<{
-    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
-    Querystring: z.infer<typeof gitSchemas.gitPrDataQuerySchema>;
+  // POST /api/git/pr-data - Get PR pre-fill data
+  fastify.post<{
+    Body: z.infer<typeof gitSchemas.gitPrDataBodySchema>;
   }>(
-    '/api/projects/:id/git/pr-data',
+    '/api/git/pr-data',
     {
       schema: {
-        params: gitSchemas.gitProjectParamsSchema,
-        querystring: gitSchemas.gitPrDataQuerySchema,
+        body: gitSchemas.gitPrDataBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id } = request.params;
-      const { base } = request.query;
-      const userId = request.user!.id;
+      const { path, baseBranch } = request.body;
 
-      const project = await getProjectById(id, userId);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
-
-      const commits = await gitService.getCommitsSinceBase(project.path, base, fastify.log);
+      const commits = await gitService.getCommitsSinceBase(path, baseBranch);
 
       // Construct PR title from most recent commit
       const title = commits.length > 0 ? commits[0].message : 'New Pull Request';
@@ -369,71 +280,181 @@ export async function gitRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /api/projects/:id/git/pr - Create pull request
+  // POST /api/git/pr - Create pull request
   fastify.post<{
-    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
     Body: z.infer<typeof gitSchemas.gitCreatePrBodySchema>;
   }>(
-    '/api/projects/:id/git/pr',
+    '/api/git/pr',
     {
       schema: {
-        params: gitSchemas.gitProjectParamsSchema,
         body: gitSchemas.gitCreatePrBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id } = request.params;
-      const { title, description, baseBranch } = request.body;
-      const userId = request.user!.id;
-
-      const project = await getProjectById(id, userId);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
+      const { path, title, description, baseBranch } = request.body;
 
       const prResult = await gitService.createPullRequest(
-        project.path,
+        path,
         title,
         description,
-        baseBranch,
-        fastify.log
+        baseBranch
       );
 
       return reply.send(buildSuccessResponse(prResult));
     }
   );
 
-  // POST /api/projects/:id/git/generate-commit-message - Generate AI commit message
+  // POST /api/git/generate-commit-message - Generate AI commit message
   fastify.post<{
-    Params: z.infer<typeof gitSchemas.gitProjectParamsSchema>;
     Body: z.infer<typeof gitSchemas.gitGenerateCommitMessageBodySchema>;
   }>(
-    '/api/projects/:id/git/generate-commit-message',
+    '/api/git/generate-commit-message',
     {
       schema: {
-        params: gitSchemas.gitProjectParamsSchema,
         body: gitSchemas.gitGenerateCommitMessageBodySchema,
       },
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const { id } = request.params;
-      const { files } = request.body;
-      const userId = request.user!.id;
+      const { path, files } = request.body;
 
-      const project = await getProjectById(id, userId);
-      if (!project) {
-        throw new NotFoundError('Project not found');
-      }
-
-      const message = await gitService.generateCommitMessage(
-        project.path,
-        files,
-        fastify.log
-      );
+      const message = await gitService.generateCommitMessage(path, files);
 
       return reply.send(buildSuccessResponse({ message }));
+    }
+  );
+
+  // POST /api/git/merge - Merge branches
+  fastify.post<{
+    Body: z.infer<typeof gitSchemas.gitMergeBodySchema>;
+  }>(
+    '/api/git/merge',
+    {
+      schema: {
+        body: gitSchemas.gitMergeBodySchema,
+      },
+      preHandler: fastify.authenticate,
+    },
+    async (request, reply) => {
+      const { path, sourceBranch, noFf } = request.body;
+
+      const result = await gitService.mergeBranch(path, sourceBranch, { noFf });
+      return reply.send(buildSuccessResponse(result));
+    }
+  );
+
+  // POST /api/git/stash/save - Save stash
+  fastify.post<{
+    Body: z.infer<typeof gitSchemas.gitStashSaveBodySchema>;
+  }>(
+    '/api/git/stash/save',
+    {
+      schema: {
+        body: gitSchemas.gitStashSaveBodySchema,
+      },
+      preHandler: fastify.authenticate,
+    },
+    async (request, reply) => {
+      const { path, message } = request.body;
+
+      await gitService.stashSave(path, message);
+      return reply.send(buildSuccessResponse({ success: true }));
+    }
+  );
+
+  // POST /api/git/stash/pop - Pop stash
+  fastify.post<{
+    Body: z.infer<typeof gitSchemas.gitStashPopBodySchema>;
+  }>(
+    '/api/git/stash/pop',
+    {
+      schema: {
+        body: gitSchemas.gitStashPopBodySchema,
+      },
+      preHandler: fastify.authenticate,
+    },
+    async (request, reply) => {
+      const { path, index } = request.body;
+
+      await gitService.stashPop(path, index);
+      return reply.send(buildSuccessResponse({ success: true }));
+    }
+  );
+
+  // POST /api/git/stash/list - List stashes
+  fastify.post<{
+    Body: z.infer<typeof gitSchemas.gitStashListBodySchema>;
+  }>(
+    '/api/git/stash/list',
+    {
+      schema: {
+        body: gitSchemas.gitStashListBodySchema,
+      },
+      preHandler: fastify.authenticate,
+    },
+    async (request, reply) => {
+      const { path } = request.body;
+
+      const stashes = await gitService.stashList(path);
+      return reply.send(buildSuccessResponse(stashes));
+    }
+  );
+
+  // POST /api/git/stash/apply - Apply stash
+  fastify.post<{
+    Body: z.infer<typeof gitSchemas.gitStashApplyBodySchema>;
+  }>(
+    '/api/git/stash/apply',
+    {
+      schema: {
+        body: gitSchemas.gitStashApplyBodySchema,
+      },
+      preHandler: fastify.authenticate,
+    },
+    async (request, reply) => {
+      const { path, index } = request.body;
+
+      await gitService.stashApply(path, index);
+      return reply.send(buildSuccessResponse({ success: true }));
+    }
+  );
+
+  // POST /api/git/reset - Reset to commit
+  fastify.post<{
+    Body: z.infer<typeof gitSchemas.gitResetBodySchema>;
+  }>(
+    '/api/git/reset',
+    {
+      schema: {
+        body: gitSchemas.gitResetBodySchema,
+      },
+      preHandler: fastify.authenticate,
+    },
+    async (request, reply) => {
+      const { path, commitHash, mode } = request.body;
+
+      await gitService.resetToCommit(path, commitHash, mode);
+      return reply.send(buildSuccessResponse({ success: true }));
+    }
+  );
+
+  // POST /api/git/discard - Discard changes
+  fastify.post<{
+    Body: z.infer<typeof gitSchemas.gitDiscardBodySchema>;
+  }>(
+    '/api/git/discard',
+    {
+      schema: {
+        body: gitSchemas.gitDiscardBodySchema,
+      },
+      preHandler: fastify.authenticate,
+    },
+    async (request, reply) => {
+      const { path, files } = request.body;
+
+      await gitService.discardChanges(path, files);
+      return reply.send(buildSuccessResponse({ success: true }));
     }
   );
 }

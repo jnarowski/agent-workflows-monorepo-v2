@@ -1,5 +1,4 @@
 import simpleGit from 'simple-git';
-import type { FastifyBaseLogger } from 'fastify';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { formatDistanceToNow } from 'date-fns';
@@ -12,18 +11,22 @@ import type {
   GitCommit,
   GitCommitDiff,
   PrResult,
+  GitStashEntry,
+  GitResetMode,
+  GitMergeResult,
 } from '@/shared/types/git.types';
 
 const execAsync = promisify(exec);
+
+// ============================================================================
+// Repository Info
+// ============================================================================
 
 /**
  * Get the current git branch for a project directory
  * Returns the branch name or null if not a git repository
  */
-export async function getCurrentBranch(
-  projectPath: string,
-  logger?: FastifyBaseLogger
-): Promise<string | null> {
+export async function getCurrentBranch(projectPath: string): Promise<string | null> {
   try {
     const git = simpleGit(projectPath);
 
@@ -37,8 +40,7 @@ export async function getCurrentBranch(
     const branch = await git.branch();
     return branch.current || null;
   } catch (error) {
-    // Log error but don't throw - gracefully handle non-git directories
-    logger?.debug({ error, projectPath }, 'Failed to get git branch');
+    // Gracefully handle non-git directories
     return null;
   }
 }
@@ -46,10 +48,7 @@ export async function getCurrentBranch(
 /**
  * Get the full git status including files, branch, and ahead/behind counts
  */
-export async function getGitStatus(
-  projectPath: string,
-  logger?: FastifyBaseLogger
-): Promise<GitStatus> {
+export async function getGitStatus(projectPath: string): Promise<GitStatus> {
   try {
     const git = simpleGit(projectPath);
 
@@ -135,18 +134,18 @@ export async function getGitStatus(
       isRepo: true,
     };
   } catch (error) {
-    logger?.error({ error, projectPath }, 'Failed to get git status');
     throw error;
   }
 }
 
+// ============================================================================
+// Branch Operations
+// ============================================================================
+
 /**
  * Get all branches in the repository
  */
-export async function getBranches(
-  projectPath: string,
-  logger?: FastifyBaseLogger
-): Promise<GitBranch[]> {
+export async function getBranches(projectPath: string): Promise<GitBranch[]> {
   try {
     const git = simpleGit(projectPath);
     const branchSummary = await git.branch();
@@ -161,7 +160,6 @@ export async function getBranches(
 
     return branches;
   } catch (error) {
-    logger?.error({ error, projectPath }, 'Failed to get branches');
     throw error;
   }
 }
@@ -172,8 +170,7 @@ export async function getBranches(
 export async function createAndSwitchBranch(
   projectPath: string,
   branchName: string,
-  from?: string,
-  logger?: FastifyBaseLogger
+  from?: string
 ): Promise<GitBranch> {
   try {
     // Validate branch name
@@ -195,7 +192,6 @@ export async function createAndSwitchBranch(
       current: true,
     };
   } catch (error) {
-    logger?.error({ error, projectPath, branchName }, 'Failed to create and switch branch');
     throw error;
   }
 }
@@ -203,11 +199,7 @@ export async function createAndSwitchBranch(
 /**
  * Switch to an existing branch
  */
-export async function switchBranch(
-  projectPath: string,
-  branchName: string,
-  logger?: FastifyBaseLogger
-): Promise<GitBranch> {
+export async function switchBranch(projectPath: string, branchName: string): Promise<GitBranch> {
   try {
     const git = simpleGit(projectPath);
     await git.checkout(branchName);
@@ -217,24 +209,22 @@ export async function switchBranch(
       current: true,
     };
   } catch (error) {
-    logger?.error({ error, projectPath, branchName }, 'Failed to switch branch');
     throw error;
   }
 }
 
+// ============================================================================
+// Staging & Commits
+// ============================================================================
+
 /**
  * Stage files for commit
  */
-export async function stageFiles(
-  projectPath: string,
-  files: string[],
-  logger?: FastifyBaseLogger
-): Promise<void> {
+export async function stageFiles(projectPath: string, files: string[]): Promise<void> {
   try {
     const git = simpleGit(projectPath);
     await git.add(files);
   } catch (error) {
-    logger?.error({ error, projectPath, files }, 'Failed to stage files');
     throw error;
   }
 }
@@ -242,16 +232,11 @@ export async function stageFiles(
 /**
  * Unstage files
  */
-export async function unstageFiles(
-  projectPath: string,
-  files: string[],
-  logger?: FastifyBaseLogger
-): Promise<void> {
+export async function unstageFiles(projectPath: string, files: string[]): Promise<void> {
   try {
     const git = simpleGit(projectPath);
     await git.reset(['HEAD', ...files]);
   } catch (error) {
-    logger?.error({ error, projectPath, files }, 'Failed to unstage files');
     throw error;
   }
 }
@@ -262,8 +247,7 @@ export async function unstageFiles(
 export async function commitChanges(
   projectPath: string,
   message: string,
-  files: string[],
-  logger?: FastifyBaseLogger
+  files: string[]
 ): Promise<string> {
   try {
     const git = simpleGit(projectPath);
@@ -276,10 +260,13 @@ export async function commitChanges(
 
     return result.commit;
   } catch (error) {
-    logger?.error({ error, projectPath, message }, 'Failed to commit changes');
     throw error;
   }
 }
+
+// ============================================================================
+// Remote Operations
+// ============================================================================
 
 /**
  * Push changes to remote repository
@@ -287,15 +274,12 @@ export async function commitChanges(
 export async function pushToRemote(
   projectPath: string,
   branch: string,
-  remote: string = 'origin',
-  logger?: FastifyBaseLogger
+  remote: string = 'origin'
 ): Promise<void> {
   try {
     const git = simpleGit(projectPath);
     await git.push(remote, branch, ['--set-upstream']);
-    logger?.info({ remote, branch }, 'Pushed to remote');
   } catch (error) {
-    logger?.error({ error, projectPath, branch, remote }, 'Failed to push to remote');
     throw error;
   }
 }
@@ -303,36 +287,45 @@ export async function pushToRemote(
 /**
  * Fetch changes from remote repository
  */
-export async function fetchFromRemote(
-  projectPath: string,
-  remote: string = 'origin',
-  logger?: FastifyBaseLogger
-): Promise<void> {
+export async function fetchFromRemote(projectPath: string, remote: string = 'origin'): Promise<void> {
   try {
     const git = simpleGit(projectPath);
     await git.fetch(remote);
-    logger?.info({ remote }, 'Fetched from remote');
   } catch (error) {
-    logger?.error({ error, projectPath, remote }, 'Failed to fetch from remote');
     throw error;
   }
 }
 
 /**
+ * Pull changes from remote repository
+ */
+export async function pullFromRemote(
+  projectPath: string,
+  remote?: string,
+  branch?: string
+): Promise<void> {
+  try {
+    const git = simpleGit(projectPath);
+    await git.pull(remote, branch);
+  } catch (error) {
+    throw error;
+  }
+}
+
+// ============================================================================
+// History & Diffs
+// ============================================================================
+
+/**
  * Get diff for a specific file
  */
-export async function getFileDiff(
-  projectPath: string,
-  filepath: string,
-  logger?: FastifyBaseLogger
-): Promise<string> {
+export async function getFileDiff(projectPath: string, filepath: string): Promise<string> {
   try {
     const git = simpleGit(projectPath);
     // Use --text to force git to treat all files as text (prevents "Binary files differ" message)
     const diff = await git.diff(['--text', '--', filepath]);
     return diff;
   } catch (error) {
-    logger?.error({ error, projectPath, filepath }, 'Failed to get file diff');
     throw error;
   }
 }
@@ -343,8 +336,7 @@ export async function getFileDiff(
 export async function getCommitHistory(
   projectPath: string,
   limit: number = 100,
-  offset: number = 0,
-  logger?: FastifyBaseLogger
+  offset: number = 0
 ): Promise<GitCommit[]> {
   try {
     const git = simpleGit(projectPath);
@@ -368,7 +360,6 @@ export async function getCommitHistory(
 
     return commits;
   } catch (error) {
-    logger?.error({ error, projectPath, limit, offset }, 'Failed to get commit history');
     throw error;
   }
 }
@@ -376,11 +367,7 @@ export async function getCommitHistory(
 /**
  * Get detailed diff for a specific commit
  */
-export async function getCommitDiff(
-  projectPath: string,
-  commitHash: string,
-  logger?: FastifyBaseLogger
-): Promise<GitCommitDiff> {
+export async function getCommitDiff(projectPath: string, commitHash: string): Promise<GitCommitDiff> {
   try {
     const git = simpleGit(projectPath);
 
@@ -416,7 +403,6 @@ export async function getCommitDiff(
       diff,
     };
   } catch (error) {
-    logger?.error({ error, projectPath, commitHash }, 'Failed to get commit diff');
     throw error;
   }
 }
@@ -426,8 +412,7 @@ export async function getCommitDiff(
  */
 export async function getCommitsSinceBase(
   projectPath: string,
-  baseBranch: string = 'main',
-  logger?: FastifyBaseLogger
+  baseBranch: string = 'main'
 ): Promise<GitCommit[]> {
   try {
     const git = simpleGit(projectPath);
@@ -448,24 +433,162 @@ export async function getCommitsSinceBase(
 
     return commits;
   } catch (error) {
-    logger?.error({ error, projectPath, baseBranch }, 'Failed to get commits since base');
+    throw error;
+  }
+}
+
+// ============================================================================
+// Advanced Operations
+// ============================================================================
+
+/**
+ * Merge a branch into the current branch
+ */
+export async function mergeBranch(
+  projectPath: string,
+  sourceBranch: string,
+  options?: { noFf?: boolean }
+): Promise<GitMergeResult> {
+  try {
+    const git = simpleGit(projectPath);
+    const mergeOptions = [];
+
+    if (options?.noFf) {
+      mergeOptions.push('--no-ff');
+    }
+
+    await git.merge([sourceBranch, ...mergeOptions]);
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+
+    // Check if it's a merge conflict
+    if (err.message.includes('CONFLICT') || err.message.includes('conflict')) {
+      // Try to extract conflicted files
+      const git = simpleGit(projectPath);
+      const status = await git.status();
+      const conflicts = status.conflicted || [];
+
+      return {
+        success: false,
+        conflicts,
+      };
+    }
+
     throw error;
   }
 }
 
 /**
+ * Save current changes to stash
+ */
+export async function stashSave(projectPath: string, message?: string): Promise<void> {
+  try {
+    const git = simpleGit(projectPath);
+    const args = ['push'];
+    if (message) {
+      args.push('-m', message);
+    }
+    await git.stash(args);
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Pop the most recent stash
+ */
+export async function stashPop(projectPath: string, index?: number): Promise<void> {
+  try {
+    const git = simpleGit(projectPath);
+    const args = ['pop'];
+    if (index !== undefined) {
+      args.push(`stash@{${index}}`);
+    }
+    await git.stash(args);
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * List all stashes
+ */
+export async function stashList(projectPath: string): Promise<GitStashEntry[]> {
+  try {
+    const git = simpleGit(projectPath);
+    const result = await git.stashList();
+
+    return result.all.map((stash, index) => ({
+      index,
+      message: stash.message,
+      date: stash.date,
+    }));
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Apply a stash without removing it
+ */
+export async function stashApply(projectPath: string, index?: number): Promise<void> {
+  try {
+    const git = simpleGit(projectPath);
+    const args = ['apply'];
+    if (index !== undefined) {
+      args.push(`stash@{${index}}`);
+    }
+    await git.stash(args);
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Reset to a specific commit with mode (soft, mixed, hard)
+ */
+export async function resetToCommit(
+  projectPath: string,
+  commitHash: string,
+  mode: GitResetMode
+): Promise<void> {
+  try {
+    const git = simpleGit(projectPath);
+    const modeFlag = `--${mode}`;
+    await git.reset([modeFlag, commitHash]);
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Discard changes for specific files
+ */
+export async function discardChanges(projectPath: string, files: string[]): Promise<void> {
+  try {
+    const git = simpleGit(projectPath);
+    await git.checkout(['--', ...files]);
+  } catch (error) {
+    throw error;
+  }
+}
+
+// ============================================================================
+// GitHub Integration
+// ============================================================================
+
+/**
  * Check if GitHub CLI is available and authenticated
  */
-export async function checkGhCliAvailable(
-  projectPath: string,
-  logger?: FastifyBaseLogger
-): Promise<boolean> {
+export async function checkGhCliAvailable(projectPath: string): Promise<boolean> {
   try {
     await execAsync('gh auth status', { cwd: projectPath });
-    logger?.info('GitHub CLI is available and authenticated');
     return true;
   } catch (error) {
-    logger?.debug('GitHub CLI not available or not authenticated');
     return false;
   }
 }
@@ -477,14 +600,13 @@ export async function createPullRequest(
   projectPath: string,
   title: string,
   description: string,
-  baseBranch: string = 'main',
-  logger?: FastifyBaseLogger
+  baseBranch: string = 'main'
 ): Promise<PrResult> {
   try {
     const git = simpleGit(projectPath);
 
     // Check gh CLI availability
-    const ghAvailable = await checkGhCliAvailable(projectPath, logger);
+    const ghAvailable = await checkGhCliAvailable(projectPath);
 
     if (ghAvailable) {
       // Try using gh CLI
@@ -498,14 +620,13 @@ export async function createPullRequest(
         const urlMatch = stdout.match(/https:\/\/github\.com\/[^\s]+/);
         const prUrl = urlMatch ? urlMatch[0] : undefined;
 
-        logger?.info({ prUrl }, 'Pull request created via gh CLI');
         return {
           success: true,
           useGhCli: true,
           prUrl,
         };
       } catch (error) {
-        logger?.warn({ error }, 'Failed to create PR via gh CLI, falling back to web URL');
+        // Fall through to web URL method
       }
     }
 
@@ -540,7 +661,6 @@ export async function createPullRequest(
 
     const compareUrl = `https://github.com/${repoPath}/compare/${baseBranch}...${currentBranch}?expand=1&title=${encodeURIComponent(title)}&body=${encodeURIComponent(description)}`;
 
-    logger?.info({ compareUrl }, 'Generated GitHub compare URL for PR creation');
     return {
       success: true,
       useGhCli: false,
@@ -548,7 +668,6 @@ export async function createPullRequest(
     };
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
-    logger?.error({ error: err, projectPath }, 'Failed to create pull request');
     return {
       success: false,
       useGhCli: false,
@@ -561,11 +680,7 @@ export async function createPullRequest(
  * Generate an AI-powered commit message based on staged file diffs
  * Requires ANTHROPIC_API_KEY environment variable to be set
  */
-export async function generateCommitMessage(
-  projectPath: string,
-  files: string[],
-  logger?: FastifyBaseLogger
-): Promise<string> {
+export async function generateCommitMessage(projectPath: string, files: string[]): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
   if (!apiKey) {
@@ -585,7 +700,6 @@ export async function generateCommitMessage(
         const diff = await git.diff(['--cached', '--text', '--', file]);
         return { file, diff };
       } catch (error) {
-        logger?.warn({ error, file }, 'Failed to get diff for file');
         return { file, diff: '' };
       }
     });
@@ -634,12 +748,9 @@ Your response must be ONLY the commit message, nothing else.`,
     // Clean up the generated message
     const message = result.text.trim().replace(/['"]/g, '');
 
-    logger?.info({ filesCount: files.length, message }, 'Generated commit message');
-
     return message || 'Update files';
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
-    logger?.error({ error: err, projectPath, filesCount: files.length }, 'Failed to generate commit message');
     throw err;
   }
 }

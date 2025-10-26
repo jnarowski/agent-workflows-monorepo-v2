@@ -54,3 +54,23 @@ export interface PrResult {
   useGhCli: boolean;
   error?: string;
 }
+
+// Git stash types
+export interface GitStashEntry {
+  index: number;
+  message: string;
+  date: string;
+}
+
+// Git reset modes
+export type GitResetMode = 'soft' | 'mixed' | 'hard';
+
+// Git merge options
+export interface GitMergeOptions {
+  noFf?: boolean;
+}
+
+export interface GitMergeResult {
+  success: boolean;
+  conflicts?: string[];
+}

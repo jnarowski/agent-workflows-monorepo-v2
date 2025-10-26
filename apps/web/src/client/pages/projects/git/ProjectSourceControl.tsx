@@ -25,15 +25,20 @@ import {
   usePush,
   useFetch,
 } from "./hooks/useGitOperations";
+import { useProject } from "../hooks/useProjects";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function ProjectSourceControl() {
   const { id: projectId } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
 
+  // Fetch project to get path
+  const { data: project } = useProject(projectId!);
+  const projectPath = project?.path;
+
   // Fetch git status and branches
-  const { data: gitStatus } = useGitStatus(projectId);
-  const { data: branches } = useBranches(projectId);
+  const { data: gitStatus } = useGitStatus(projectPath);
+  const { data: branches } = useBranches(projectPath);
 
   // Mutations
   const createBranchMutation = useCreateBranch();
@@ -93,18 +98,18 @@ export default function ProjectSourceControl() {
   };
 
   const handleCommit = async () => {
-    if (!projectId || selectedFiles.size === 0 || !commitMessage.trim()) return;
+    if (!projectPath || selectedFiles.size === 0 || !commitMessage.trim()) return;
 
     try {
       // Stage selected files first
       await stageFilesMutation.mutateAsync({
-        projectId,
+        path: projectPath,
         files: Array.from(selectedFiles),
       });
 
       // Then commit
       await commitMutation.mutateAsync({
-        projectId,
+        path: projectPath,
         message: commitMessage,
         files: Array.from(selectedFiles),
       });
@@ -134,30 +139,30 @@ export default function ProjectSourceControl() {
 
   // GitTopBar callbacks
   const handleSwitchBranch = async (branchName: string) => {
-    if (!projectId) return;
-    await switchBranchMutation.mutateAsync({ projectId, name: branchName });
+    if (!projectPath) return;
+    await switchBranchMutation.mutateAsync({ path: projectPath, name: branchName });
   };
 
   const handleCreateBranch = async (name: string, from?: string) => {
-    if (!projectId) return;
-    await createBranchMutation.mutateAsync({ projectId, name, from });
+    if (!projectPath) return;
+    await createBranchMutation.mutateAsync({ path: projectPath, name, from });
   };
 
   const handlePush = async () => {
-    if (!projectId || !gitStatus?.branch) return;
+    if (!projectPath || !gitStatus?.branch) return;
     await pushMutation.mutateAsync({
-      projectId,
+      path: projectPath,
       branch: gitStatus.branch,
     });
   };
 
   const handleFetch = async () => {
-    if (!projectId) return;
-    await fetchMutation.mutateAsync({ projectId });
+    if (!projectPath) return;
+    await fetchMutation.mutateAsync({ path: projectPath });
   };
 
   const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ["git", "status", projectId] });
+    queryClient.invalidateQueries({ queryKey: ["git", "status", projectPath] });
   };
 
   // Show not a git repo message if needed
@@ -180,7 +185,7 @@ export default function ProjectSourceControl() {
     <div className="h-full flex flex-col">
       {/* Top bar with branch selector and actions */}
       <GitTopBar
-        projectId={projectId}
+        path={projectPath}
         currentBranch={gitStatus?.branch}
         branches={branches}
         ahead={gitStatus?.ahead ?? 0}
@@ -208,7 +213,7 @@ export default function ProjectSourceControl() {
         <div className="flex-1 overflow-hidden">
           <TabsContent value="changes" className="h-full mt-0">
             <ChangesView
-              projectId={projectId}
+              path={projectPath}
               files={gitStatus?.files}
               selectedFiles={selectedFiles}
               expandedFiles={expandedFiles}
@@ -225,7 +230,7 @@ export default function ProjectSourceControl() {
 
           <TabsContent value="history" className="h-full mt-0">
             <HistoryView
-              projectId={projectId}
+              path={projectPath}
               expandedCommits={expandedCommits}
               onToggleExpand={handleToggleCommitExpand}
             />

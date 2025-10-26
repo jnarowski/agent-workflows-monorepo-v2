@@ -15,7 +15,7 @@ interface FileChangeItemProps {
   file: GitFileStatus;
   selected: boolean;
   expanded: boolean;
-  projectId: string | undefined;
+  path: string | undefined;
   onToggle: () => void;
   onToggleExpand: () => void;
 }
@@ -24,12 +24,12 @@ export function FileChangeItem({
   file,
   selected,
   expanded,
-  projectId,
+  path,
   onToggle,
   onToggleExpand,
 }: FileChangeItemProps) {
   // Fetch diff when expanded
-  const { data: diff, isLoading } = useFileDiff(projectId, expanded ? file.path : null);
+  const { data: diff, isLoading } = useFileDiff(path, expanded ? file.path : null);
 
   // Get status badge color
   const getStatusColor = (status: string) => {

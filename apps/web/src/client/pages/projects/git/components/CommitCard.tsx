@@ -11,14 +11,14 @@ import type { GitCommit } from '@/shared/types/git.types';
 interface CommitCardProps {
   commit: GitCommit;
   expanded: boolean;
-  projectId: string | undefined;
+  path: string | undefined;
   onToggleExpand: () => void;
 }
 
 export function CommitCard({
   commit,
   expanded,
-  projectId,
+  path,
   onToggleExpand,
 }: CommitCardProps) {
   // Truncate long commit messages for display
@@ -58,7 +58,7 @@ export function CommitCard({
           {expanded && (
             <div className="border-t">
               <CommitDiffView
-                projectId={projectId}
+                path={path}
                 commitHash={commit.hash}
               />
             </div>

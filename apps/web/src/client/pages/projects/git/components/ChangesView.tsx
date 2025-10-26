@@ -17,7 +17,7 @@ import { useMemo } from 'react';
 import { toast } from 'sonner';
 
 interface ChangesViewProps {
-  projectId: string | undefined;
+  path: string | undefined;
   files: GitFileStatus[] | undefined;
   selectedFiles: Set<string>;
   expandedFiles: Set<string>;
@@ -33,13 +33,13 @@ interface ChangesViewProps {
 
 // Diff content component for expanded rows
 function DiffContent({
-  projectId,
+  path,
   file,
 }: {
-  projectId: string | undefined;
+  path: string | undefined;
   file: GitFileStatus;
 }) {
-  const { data: diff, isLoading } = useFileDiff(projectId, file.path);
+  const { data: diff, isLoading } = useFileDiff(path, file.path);
 
   if (isLoading) {
     return (
@@ -80,7 +80,7 @@ function DiffContent({
 }
 
 export function ChangesView({
-  projectId,
+  path,
   files,
   selectedFiles,
   expandedFiles,
@@ -111,14 +111,14 @@ export function ChangesView({
 
   // Handle AI commit message generation
   const handleGenerateCommitMessage = async () => {
-    if (!projectId || selectedFiles.size === 0) {
+    if (!path || selectedFiles.size === 0) {
       return;
     }
 
     const filesArray = Array.from(selectedFiles);
 
     generateCommitMessage.mutate(
-      { projectId, files: filesArray },
+      { path, files: filesArray },
       {
         onSuccess: (message) => {
           onCommitMessageChange(message);
@@ -209,7 +209,7 @@ export function ChangesView({
           data={files}
           getRowId={(row) => row.path}
           renderExpandedRow={(row: Row<GitFileStatus>) => (
-            <DiffContent projectId={projectId} file={row.original} />
+            <DiffContent path={path} file={row.original} />
           )}
         />
       </div>

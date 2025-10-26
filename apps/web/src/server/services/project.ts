@@ -6,17 +6,12 @@ import type {
   UpdateProjectInput,
 } from "@/server/schemas/project";
 import type { Project } from "@/shared/types/project.types";
-import { getCurrentBranch } from "@/server/services/git.service";
 
 /**
  * Transform Prisma project to API project format
  * @param prismaProject - Raw project from Prisma
- * @param currentBranch - Optional git branch name
  */
-function transformProject(
-  prismaProject: any,
-  currentBranch?: string | null
-): Project {
+function transformProject(prismaProject: any): Project {
   return {
     id: prismaProject.id,
     name: prismaProject.name,
@@ -25,7 +20,6 @@ function transformProject(
     is_starred: prismaProject.is_starred,
     created_at: prismaProject.created_at,
     updated_at: prismaProject.updated_at,
-    ...(currentBranch !== null && { currentBranch }),
   };
 }
 
@@ -40,15 +34,7 @@ export async function getAllProjects(): Promise<Project[]> {
     },
   });
 
-  // Fetch git branch for each project
-  const projectsWithBranch = await Promise.all(
-    projects.map(async (p) => {
-      const branch = await getCurrentBranch(p.path);
-      return transformProject(p, branch);
-    })
-  );
-
-  return projectsWithBranch;
+  return projects.map(transformProject);
 }
 
 /**
@@ -57,26 +43,15 @@ export async function getAllProjects(): Promise<Project[]> {
  * @returns Project or null if not found
  */
 export async function getProjectById(id: string): Promise<Project | null> {
-  console.log("🔍 [getProjectById] Called for ID:", id);
   const project = await prisma.project.findUnique({
     where: { id },
   });
 
   if (!project) {
-    console.log("❌ [getProjectById] Project not found");
     return null;
   }
 
-  console.log("📁 [getProjectById] Fetching branch for:", project.path);
-  // Fetch git branch
-  const branch = await getCurrentBranch(project.path);
-  console.log("✅ [getProjectById] Branch result:", branch);
-  const result = transformProject(project, branch);
-  console.log(
-    "📦 [getProjectById] Returning project with branch:",
-    result.currentBranch
-  );
-  return result;
+  return transformProject(project);
 }
 
 /**

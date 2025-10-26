@@ -4,6 +4,7 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { CodeBlock } from "../../CodeBlock";
 
 interface TextBlockProps {
   text: string;
@@ -17,7 +18,7 @@ export function TextBlock({ text, className = "" }: TextBlockProps) {
       <div className="h-2 w-2 rounded-full bg-gray-500 shrink-0 mt-1.5" />
 
       {/* Text content */}
-      <div className="prose prose-sm dark:prose-invert max-w-none prose-hr:my-2 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-headings:mb-2 prose-headings:mt-3 prose-p:first:mt-0 prose-p:last:mb-0 flex-1 min-w-0"
+      <div className="prose prose-sm dark:prose-invert max-w-none prose-hr:my-2 prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-headings:mb-2 prose-headings:mt-3 prose-p:first:mt-0 prose-p:last:mb-0 prose-pre:my-0 flex-1 min-w-0"
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
@@ -65,7 +66,7 @@ export function TextBlock({ text, className = "" }: TextBlockProps) {
               </h6>
             );
           },
-          // Custom code inline rendering
+          // Custom code rendering with syntax highlighting
           code({ className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || "");
             const isInline = !match;
@@ -81,12 +82,11 @@ export function TextBlock({ text, className = "" }: TextBlockProps) {
               );
             }
 
-            // Block code will be handled by parent component or CodeBlock
-            return (
-              <code className={className} {...props}>
-                {children}
-              </code>
-            );
+            // Block code with syntax highlighting
+            const language = match[1] || "text";
+            const code = String(children).replace(/\n$/, "");
+
+            return <CodeBlock code={code} language={language} showHeader={false} />;
           },
           // Custom link rendering
           a({ href, children, ...props }) {

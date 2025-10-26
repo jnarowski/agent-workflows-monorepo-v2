@@ -31,14 +31,14 @@ import { usePrData, useCreatePr } from '../hooks/useGitOperations';
 interface CreatePullRequestDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  projectId: string | undefined;
+  path: string | undefined;
   currentBranch: string | undefined;
 }
 
 export function CreatePullRequestDialog({
   open,
   onOpenChange,
-  projectId,
+  path,
   currentBranch,
 }: CreatePullRequestDialogProps) {
   const [title, setTitle] = useState('');
@@ -46,7 +46,7 @@ export function CreatePullRequestDialog({
   const [baseBranch, setBaseBranch] = useState('main');
 
   // Fetch PR pre-fill data when dialog opens
-  const { data: prData, isLoading } = usePrData(projectId, baseBranch, open);
+  const { data: prData, isLoading } = usePrData(path, baseBranch, open);
 
   // Create PR mutation
   const createPrMutation = useCreatePr();
@@ -60,11 +60,11 @@ export function CreatePullRequestDialog({
   }, [prData]);
 
   const handleCreate = async () => {
-    if (!projectId || !title.trim()) return;
+    if (!path || !title.trim()) return;
 
     try {
       await createPrMutation.mutateAsync({
-        projectId,
+        path,
         title,
         description,
         baseBranch,

@@ -15,6 +15,7 @@ interface CodeBlockProps {
   language: string;
   showLineNumbers?: boolean;
   collapsedByDefault?: boolean;
+  showHeader?: boolean;
   className?: string;
 }
 
@@ -25,6 +26,7 @@ export function CodeBlock({
   language,
   showLineNumbers = false,
   collapsedByDefault = false,
+  showHeader = true,
   className = ''
 }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
@@ -45,43 +47,45 @@ export function CodeBlock({
   const content = (
     <div className={`rounded-lg border bg-muted/50 overflow-hidden ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/30">
-        <div className="flex items-center gap-2">
-          {shouldCollapse && (
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-              </Button>
-            </CollapsibleTrigger>
-          )}
-          <Badge variant="secondary" className="text-xs font-mono">
-            {getLanguageDisplayName(language)}
-          </Badge>
-          {lineCount > 1 && (
-            <span className="text-xs text-muted-foreground">
-              {lineCount} lines
-            </span>
-          )}
+      {showHeader && (
+        <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/30">
+          <div className="flex items-center gap-2">
+            {shouldCollapse && (
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                  {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </Button>
+              </CollapsibleTrigger>
+            )}
+            <Badge variant="secondary" className="text-xs font-mono">
+              {getLanguageDisplayName(language)}
+            </Badge>
+            {lineCount > 1 && (
+              <span className="text-xs text-muted-foreground">
+                {lineCount} lines
+              </span>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 text-xs"
+            onClick={handleCopy}
+          >
+            {copied ? (
+              <>
+                <Check className="h-3 w-3 mr-1" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="h-3 w-3 mr-1" />
+                Copy
+              </>
+            )}
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 px-2 text-xs"
-          onClick={handleCopy}
-        >
-          {copied ? (
-            <>
-              <Check className="h-3 w-3 mr-1" />
-              Copied
-            </>
-          ) : (
-            <>
-              <Copy className="h-3 w-3 mr-1" />
-              Copy
-            </>
-          )}
-        </Button>
-      </div>
+      )}
 
       {/* Code content */}
       <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
