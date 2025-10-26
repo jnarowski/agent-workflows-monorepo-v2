@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactNode, Children, isValidElement } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from "@/client/components/ui/button";
 
@@ -29,13 +29,13 @@ interface BranchProps {
 export const Branch = ({ children, defaultBranch = 0 }: BranchProps) => {
   const [currentBranch, setCurrentBranch] = useState(defaultBranch);
 
-  const childrenArray = React.Children.toArray(children);
+  const childrenArray = Children.toArray(children);
   const branchMessages = childrenArray.find(
-    (child) => React.isValidElement(child) && child.type === BranchMessages
+    (child) => isValidElement(child) && child.type === BranchMessages
   );
 
-  const totalBranches = branchMessages && React.isValidElement<BranchMessagesProps>(branchMessages)
-    ? React.Children.count(branchMessages.props.children)
+  const totalBranches = branchMessages && isValidElement<BranchMessagesProps>(branchMessages)
+    ? Children.count(branchMessages.props.children)
     : 0;
 
   const goToNext = () => {
@@ -61,7 +61,7 @@ interface BranchMessagesProps {
 
 export const BranchMessages = ({ children }: BranchMessagesProps) => {
   const { currentBranch } = useBranchContext();
-  const childrenArray = React.Children.toArray(children);
+  const childrenArray = Children.toArray(children);
 
   return <>{childrenArray[currentBranch]}</>;
 };

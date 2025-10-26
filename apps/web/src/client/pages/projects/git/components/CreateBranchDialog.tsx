@@ -3,10 +3,9 @@
  * Validates branch name and provides feedback
  */
 
-import { useState } from 'react';
+import { useDialogForm } from '@/client/hooks/useDialogForm';
+import { BaseDialog } from '@/client/components/BaseDialog';
 import {
-  Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
@@ -14,8 +13,10 @@ import {
 } from '@/client/components/ui/dialog';
 import { Input } from '@/client/components/ui/input';
 import { Button } from '@/client/components/ui/button';
+import { LoadingButton } from '@/client/components/ui/loading-button';
 import { Label } from '@/client/components/ui/label';
 import { Alert, AlertDescription } from '@/client/components/ui/alert';
+import { ErrorAlert } from '@/client/components/ui/error-alert';
 import { AlertCircle } from 'lucide-react';
 
 interface CreateBranchDialogProps {
@@ -25,15 +26,30 @@ interface CreateBranchDialogProps {
   onCreateBranch: (name: string, from?: string) => Promise<void>;
 }
 
+interface BranchFormValues {
+  branchName: string;
+}
+
 export function CreateBranchDialog({
   open,
   onOpenChange,
   currentBranch,
   onCreateBranch,
 }: CreateBranchDialogProps) {
-  const [branchName, setBranchName] = useState('');
-  const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    values,
+    setValues,
+    error,
+    isSubmitting,
+    handleSubmit,
+    reset,
+  } = useDialogForm<BranchFormValues>({
+    initialValues: { branchName: '' },
+    onSubmit: async (formValues) => {
+      await onCreateBranch(formValues.branchName, currentBranch);
+      onOpenChange(false);
+    },
+  });
 
   // Validate branch name (no spaces, only alphanumeric, dash, underscore)
   const validateBranchName = (name: string): boolean => {
@@ -43,96 +59,67 @@ export function CreateBranchDialog({
     return validPattern.test(name);
   };
 
-  const isValid = validateBranchName(branchName);
-
-  const handleCreate = async () => {
-    if (!isValid) return;
-
-    setError(null);
-    setIsCreating(true);
-
-    try {
-      await onCreateBranch(branchName, currentBranch);
-      // Reset form on success
-      setBranchName('');
-      onOpenChange(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create branch');
-    } finally {
-      setIsCreating(false);
-    }
-  };
-
-  const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen) {
-      // Reset form when closing
-      setBranchName('');
-      setError(null);
-    }
-    onOpenChange(newOpen);
-  };
+  const isValid = validateBranchName(values.branchName);
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Create New Branch</DialogTitle>
-          <DialogDescription>
-            Create a new branch from <span className="font-mono font-semibold">{currentBranch}</span>
-          </DialogDescription>
-        </DialogHeader>
+    <BaseDialog open={open} onOpenChange={onOpenChange} onClose={reset}>
+      <DialogHeader>
+        <DialogTitle>Create New Branch</DialogTitle>
+        <DialogDescription>
+          Create a new branch from <span className="font-mono font-semibold">{currentBranch}</span>
+        </DialogDescription>
+      </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="branch-name">Branch Name</Label>
-            <Input
-              id="branch-name"
-              placeholder="feature/my-new-feature"
-              value={branchName}
-              onChange={(e) => setBranchName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && isValid && !isCreating) {
-                  handleCreate();
-                }
-              }}
-              disabled={isCreating}
-              autoFocus
-            />
-            {branchName && !isValid && (
-              <p className="text-sm text-destructive">
-                Branch name can only contain letters, numbers, dashes, underscores, and forward slashes
-              </p>
-            )}
-          </div>
-
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              The new branch will be created from the current branch and you will automatically switch to it.
-            </AlertDescription>
-          </Alert>
-
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+      <div className="space-y-4 py-4">
+        <div className="space-y-2">
+          <Label htmlFor="branch-name">Branch Name</Label>
+          <Input
+            id="branch-name"
+            placeholder="feature/my-new-feature"
+            value={values.branchName}
+            onChange={(e) => setValues({ branchName: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && isValid && !isSubmitting) {
+                handleSubmit();
+              }
+            }}
+            disabled={isSubmitting}
+            autoFocus
+          />
+          {values.branchName && !isValid && (
+            <p className="text-sm text-destructive">
+              Branch name can only contain letters, numbers, dashes, underscores, and forward slashes
+            </p>
           )}
         </div>
 
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => handleOpenChange(false)}
-            disabled={isCreating}
-          >
-            Cancel
-          </Button>
-          <Button onClick={handleCreate} disabled={!isValid || isCreating}>
-            {isCreating ? 'Creating...' : 'Create Branch'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            The new branch will be created from the current branch and you will automatically switch to it.
+          </AlertDescription>
+        </Alert>
+
+        <ErrorAlert error={error} />
+      </div>
+
+      <DialogFooter>
+        <Button
+          variant="outline"
+          onClick={() => onOpenChange(false)}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </Button>
+        <LoadingButton
+          onClick={handleSubmit}
+          disabled={!isValid}
+          isLoading={isSubmitting}
+          loadingText="Creating..."
+        >
+          Create Branch
+        </LoadingButton>
+      </DialogFooter>
+    </BaseDialog>
   );
 }

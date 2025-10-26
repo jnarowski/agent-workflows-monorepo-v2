@@ -18,6 +18,22 @@ import type {
 } from '@/shared/types/git.types';
 import { toast } from 'sonner';
 
+// Query keys factory - centralized key management
+export const gitKeys = {
+  all: ['git'] as const,
+  status: (path: string) => [...gitKeys.all, 'status', path] as const,
+  branches: (path: string) => [...gitKeys.all, 'branches', path] as const,
+  diff: (path: string, filepath: string | null) =>
+    [...gitKeys.all, 'diff', path, filepath] as const,
+  history: (path: string, limit: number, offset: number) =>
+    [...gitKeys.all, 'history', path, limit, offset] as const,
+  commit: (path: string, commitHash: string | null) =>
+    [...gitKeys.all, 'commit', path, commitHash] as const,
+  prData: (path: string, baseBranch: string) =>
+    [...gitKeys.all, 'pr-data', path, baseBranch] as const,
+  stashList: (path: string) => [...gitKeys.all, 'stash', 'list', path] as const,
+};
+
 // Query hooks
 
 /**
@@ -26,7 +42,7 @@ import { toast } from 'sonner';
  */
 export function useGitStatus(path: string | undefined) {
   return useQuery({
-    queryKey: ['git', 'status', path],
+    queryKey: path ? gitKeys.status(path) : ['git', 'status'],
     queryFn: async () => {
       const response = await api.post<{ data: GitStatus }>(
         '/api/git/status',
@@ -44,7 +60,7 @@ export function useGitStatus(path: string | undefined) {
  */
 export function useBranches(path: string | undefined) {
   return useQuery({
-    queryKey: ['git', 'branches', path],
+    queryKey: path ? gitKeys.branches(path) : ['git', 'branches'],
     queryFn: async () => {
       const response = await api.post<{ data: GitBranch[] }>(
         '/api/git/branches',
@@ -61,7 +77,7 @@ export function useBranches(path: string | undefined) {
  */
 export function useFileDiff(path: string | undefined, filepath: string | null) {
   return useQuery({
-    queryKey: ['git', 'diff', path, filepath],
+    queryKey: path ? gitKeys.diff(path, filepath) : ['git', 'diff'],
     queryFn: async () => {
       const response = await api.post<{ data: { diff: string } }>(
         '/api/git/diff',
@@ -82,7 +98,7 @@ export function useCommitHistory(
   offset: number = 0
 ) {
   return useQuery({
-    queryKey: ['git', 'history', path, limit, offset],
+    queryKey: path ? gitKeys.history(path, limit, offset) : ['git', 'history'],
     queryFn: async () => {
       const response = await api.post<{ data: GitCommit[] }>(
         '/api/git/history',
@@ -99,7 +115,7 @@ export function useCommitHistory(
  */
 export function useCommitDiff(path: string | undefined, commitHash: string | null) {
   return useQuery({
-    queryKey: ['git', 'commit', path, commitHash],
+    queryKey: path ? gitKeys.commit(path, commitHash) : ['git', 'commit'],
     queryFn: async () => {
       const response = await api.post<{ data: GitCommitDiff }>(
         '/api/git/commit-diff',
@@ -120,7 +136,7 @@ export function usePrData(
   enabled: boolean = false
 ) {
   return useQuery({
-    queryKey: ['git', 'pr-data', path, baseBranch],
+    queryKey: path ? gitKeys.prData(path, baseBranch) : ['git', 'pr-data'],
     queryFn: async () => {
       const response = await api.post<{ data: PrData }>(
         '/api/git/pr-data',
@@ -137,7 +153,7 @@ export function usePrData(
  */
 export function useStashList(path: string | undefined) {
   return useQuery({
-    queryKey: ['git', 'stash', 'list', path],
+    queryKey: path ? gitKeys.stashList(path) : ['git', 'stash', 'list'],
     queryFn: async () => {
       const response = await api.post<{ data: GitStashEntry[] }>(
         '/api/git/stash/list',
@@ -174,8 +190,8 @@ export function useCreateBranch() {
       return response.data;
     },
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['git', 'branches', variables.path] });
-      queryClient.invalidateQueries({ queryKey: ['git', 'status', variables.path] });
+      queryClient.invalidateQueries({ queryKey: gitKeys.branches(variables.path) });
+      queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
       toast.success(`Branch created: ${data.name}`);
     },
     onError: (error: Error) => {
@@ -199,8 +215,8 @@ export function useSwitchBranch() {
       return response.data;
     },
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['git', 'branches', variables.path] });
-      queryClient.invalidateQueries({ queryKey: ['git', 'status', variables.path] });
+      queryClient.invalidateQueries({ queryKey: gitKeys.branches(variables.path) });
+      queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
       toast.success(`Switched to branch: ${data.name}`);
     },
     onError: (error: Error) => {
@@ -220,7 +236,7 @@ export function useStageFiles() {
       await api.post('/api/git/stage', { path, files });
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['git', 'status', variables.path] });
+      queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
     },
     onError: (error: Error) => {
       toast.error(`Failed to stage files: ${error.message}`);
@@ -239,7 +255,7 @@ export function useUnstageFiles() {
       await api.post('/api/git/unstage', { path, files });
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['git', 'status', variables.path] });
+      queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
     },
     onError: (error: Error) => {
       toast.error(`Failed to unstage files: ${error.message}`);
@@ -270,8 +286,8 @@ export function useCommit() {
       return response.data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['git', 'status', variables.path] });
-      queryClient.invalidateQueries({ queryKey: ['git', 'history', variables.path] });
+      queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
+      queryClient.invalidateQueries({ queryKey: gitKeys.all });
       toast.success('Committed successfully');
     },
     onError: (error: Error) => {
@@ -299,7 +315,7 @@ export function usePush() {
       await api.post('/api/git/push', { path, branch, remote });
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['git', 'status', variables.path] });
+      queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
       toast.success('Pushed to remote');
     },
     onError: (error: Error) => {
@@ -325,8 +341,8 @@ export function useFetch() {
       await api.post('/api/git/fetch', { path, remote });
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['git', 'status', variables.path] });
-      queryClient.invalidateQueries({ queryKey: ['git', 'history', variables.path] });
+      queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
+      queryClient.invalidateQueries({ queryKey: gitKeys.all });
       toast.success('Fetched from remote');
     },
     onError: (error: Error) => {
@@ -408,8 +424,8 @@ export function usePull() {
       await api.post('/api/git/pull', { path, remote, branch });
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['git', 'status', variables.path] });
-      queryClient.invalidateQueries({ queryKey: ['git', 'history', variables.path] });
+      queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
+      queryClient.invalidateQueries({ queryKey: gitKeys.all });
       toast.success('Pulled from remote');
     },
     onError: (error: Error) => {
@@ -441,9 +457,9 @@ export function useMerge() {
       return response.data;
     },
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['git', 'status', variables.path] });
-      queryClient.invalidateQueries({ queryKey: ['git', 'history', variables.path] });
-      queryClient.invalidateQueries({ queryKey: ['git', 'branches', variables.path] });
+      queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
+      queryClient.invalidateQueries({ queryKey: gitKeys.branches(variables.path) });
+      queryClient.invalidateQueries({ queryKey: gitKeys.all });
 
       if (data.success) {
         toast.success('Merged successfully');
@@ -474,8 +490,8 @@ export function useStashSave() {
       await api.post('/api/git/stash/save', { path, message });
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['git', 'status', variables.path] });
-      queryClient.invalidateQueries({ queryKey: ['git', 'stash', 'list', variables.path] });
+      queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
+      queryClient.invalidateQueries({ queryKey: gitKeys.stashList(variables.path) });
       toast.success('Changes stashed');
     },
     onError: (error: Error) => {
@@ -501,8 +517,8 @@ export function useStashPop() {
       await api.post('/api/git/stash/pop', { path, index });
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['git', 'status', variables.path] });
-      queryClient.invalidateQueries({ queryKey: ['git', 'stash', 'list', variables.path] });
+      queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
+      queryClient.invalidateQueries({ queryKey: gitKeys.stashList(variables.path) });
       toast.success('Stash applied and removed');
     },
     onError: (error: Error) => {
@@ -528,7 +544,7 @@ export function useStashApply() {
       await api.post('/api/git/stash/apply', { path, index });
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['git', 'status', variables.path] });
+      queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
       toast.success('Stash applied');
     },
     onError: (error: Error) => {
@@ -556,8 +572,8 @@ export function useReset() {
       await api.post('/api/git/reset', { path, commitHash, mode });
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['git', 'status', variables.path] });
-      queryClient.invalidateQueries({ queryKey: ['git', 'history', variables.path] });
+      queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
+      queryClient.invalidateQueries({ queryKey: gitKeys.all });
       toast.success(`Reset to commit (${variables.mode})`);
     },
     onError: (error: Error) => {
@@ -583,7 +599,7 @@ export function useDiscardChanges() {
       await api.post('/api/git/discard', { path, files });
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['git', 'status', variables.path] });
+      queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
       toast.success('Changes discarded');
     },
     onError: (error: Error) => {

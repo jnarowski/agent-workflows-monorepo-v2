@@ -12,9 +12,9 @@ import {
   DialogTitle,
 } from "@/client/components/ui/dialog";
 import { Button } from "@/client/components/ui/button";
+import { LoadingButton } from "@/client/components/ui/loading-button";
 import { Input } from "@/client/components/ui/input";
 import { Label } from "@/client/components/ui/label";
-import { Loader2 } from "lucide-react";
 import type { Project } from "@/shared/types/project.types";
 
 // Form validation schema
@@ -184,10 +184,13 @@ export function ProjectDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <LoadingButton
+              type="submit"
+              isLoading={isLoading}
+              loadingText={isEditMode ? "Updating..." : "Creating..."}
+            >
               {isEditMode ? "Update" : "Create"}
-            </Button>
+            </LoadingButton>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -64,9 +64,7 @@ export function DeleteProjectDialog({
             disabled={deleteMutation.isPending}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {deleteMutation.isPending && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
+            {deleteMutation.isPending && <Loader2 className="animate-spin" />}
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>

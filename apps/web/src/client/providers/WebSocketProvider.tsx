@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { WebSocketEventBus } from '@/client/lib/WebSocketEventBus';
 import { ReadyState, type WebSocketMessage } from '@/shared/types/websocket';
 import { useAuthStore } from '@/client/stores/authStore';
@@ -8,7 +8,7 @@ import { WebSocketContext, type WebSocketContextValue } from '@/client/contexts/
  * WebSocketProvider Props
  */
 export interface WebSocketProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 /**

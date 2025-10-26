@@ -3,10 +3,10 @@
  * Pre-fills title and description from commits
  */
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useDialogForm } from '@/client/hooks/useDialogForm';
+import { BaseDialog } from '@/client/components/BaseDialog';
 import {
-  Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
@@ -15,6 +15,7 @@ import {
 import { Input } from '@/client/components/ui/input';
 import { Textarea } from '@/client/components/ui/textarea';
 import { Button } from '@/client/components/ui/button';
+import { LoadingButton } from '@/client/components/ui/loading-button';
 import { Label } from '@/client/components/ui/label';
 import {
   Select,
@@ -24,7 +25,8 @@ import {
   SelectValue,
 } from '@/client/components/ui/select';
 import { Alert, AlertDescription } from '@/client/components/ui/alert';
-import { AlertCircle, Info } from 'lucide-react';
+import { ErrorAlert } from '@/client/components/ui/error-alert';
+import { Info } from 'lucide-react';
 import { Skeleton } from '@/client/components/ui/skeleton';
 import { usePrData, useCreatePr } from '../hooks/useGitOperations';
 
@@ -35,18 +37,45 @@ interface CreatePullRequestDialogProps {
   currentBranch: string | undefined;
 }
 
+interface PrFormValues {
+  title: string;
+  description: string;
+  baseBranch: string;
+}
+
 export function CreatePullRequestDialog({
   open,
   onOpenChange,
   path,
   currentBranch,
 }: CreatePullRequestDialogProps) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [baseBranch, setBaseBranch] = useState('main');
+  const {
+    values,
+    setValues,
+    error,
+    isSubmitting,
+    handleSubmit,
+    reset,
+  } = useDialogForm<PrFormValues>({
+    initialValues: {
+      title: '',
+      description: '',
+      baseBranch: 'main',
+    },
+    onSubmit: async (formValues) => {
+      if (!path) return;
+      await createPrMutation.mutateAsync({
+        path,
+        title: formValues.title,
+        description: formValues.description,
+        baseBranch: formValues.baseBranch,
+      });
+      onOpenChange(false);
+    },
+  });
 
   // Fetch PR pre-fill data when dialog opens
-  const { data: prData, isLoading } = usePrData(path, baseBranch, open);
+  const { data: prData, isLoading } = usePrData(path, values.baseBranch, open);
 
   // Create PR mutation
   const createPrMutation = useCreatePr();
@@ -54,137 +83,112 @@ export function CreatePullRequestDialog({
   // Pre-fill form when prData loads
   useEffect(() => {
     if (prData) {
-      setTitle(prData.title);
-      setDescription(prData.description);
+      setValues({
+        ...values,
+        title: prData.title,
+        description: prData.description,
+      });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prData]);
 
-  const handleCreate = async () => {
-    if (!path || !title.trim()) return;
-
-    try {
-      await createPrMutation.mutateAsync({
-        path,
-        title,
-        description,
-        baseBranch,
-      });
-      onOpenChange(false);
-    } catch (error) {
-      // Error is handled by the mutation's onError
-    }
-  };
-
-  const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen) {
-      // Reset form when closing
-      setTitle('');
-      setDescription('');
-      setBaseBranch('main');
-    }
-    onOpenChange(newOpen);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Create Pull Request</DialogTitle>
-          <DialogDescription>
-            Create a pull request from{' '}
-            <span className="font-mono font-semibold">{currentBranch}</span> to{' '}
-            <span className="font-mono font-semibold">{baseBranch}</span>
-          </DialogDescription>
-        </DialogHeader>
+    <BaseDialog open={open} onOpenChange={onOpenChange} onClose={reset}>
+      <DialogHeader>
+        <DialogTitle>Create Pull Request</DialogTitle>
+        <DialogDescription>
+          Create a pull request from{' '}
+          <span className="font-mono font-semibold">{currentBranch}</span> to{' '}
+          <span className="font-mono font-semibold">{values.baseBranch}</span>
+        </DialogDescription>
+      </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* Base Branch Selection */}
-          <div className="space-y-2">
-            <Label htmlFor="base-branch">Base Branch</Label>
-            <Select value={baseBranch} onValueChange={setBaseBranch}>
-              <SelectTrigger id="base-branch">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="main">main</SelectItem>
-                <SelectItem value="master">master</SelectItem>
-                <SelectItem value="develop">develop</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      <div className="space-y-4 py-4">
+        {/* Base Branch Selection */}
+        <div className="space-y-2">
+          <Label htmlFor="base-branch">Base Branch</Label>
+          <Select
+            value={values.baseBranch}
+            onValueChange={(newBranch) =>
+              setValues({ ...values, baseBranch: newBranch })
+            }
+          >
+            <SelectTrigger id="base-branch">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="main">main</SelectItem>
+              <SelectItem value="master">master</SelectItem>
+              <SelectItem value="develop">develop</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-          {/* Title */}
-          <div className="space-y-2">
-            <Label htmlFor="pr-title">Title</Label>
-            {isLoading ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <Input
-                id="pr-title"
-                placeholder="Pull request title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                disabled={createPrMutation.isPending}
-              />
-            )}
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="pr-description">Description</Label>
-            {isLoading ? (
-              <Skeleton className="h-40 w-full" />
-            ) : (
-              <Textarea
-                id="pr-description"
-                placeholder="Pull request description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={8}
-                disabled={createPrMutation.isPending}
-                className="font-mono text-sm"
-              />
-            )}
-          </div>
-
-          {/* Info Alert */}
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              This will attempt to create the PR using GitHub CLI (gh). If not available, it will open
-              the GitHub compare page in your browser.
-            </AlertDescription>
-          </Alert>
-
-          {/* Error Display */}
-          {createPrMutation.isError && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {createPrMutation.error instanceof Error
-                  ? createPrMutation.error.message
-                  : 'Failed to create pull request'}
-              </AlertDescription>
-            </Alert>
+        {/* Title */}
+        <div className="space-y-2">
+          <Label htmlFor="pr-title">Title</Label>
+          {isLoading ? (
+            <Skeleton className="h-10 w-full" />
+          ) : (
+            <Input
+              id="pr-title"
+              placeholder="Pull request title"
+              value={values.title}
+              onChange={(e) => setValues({ ...values, title: e.target.value })}
+              disabled={isSubmitting}
+            />
           )}
         </div>
 
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => handleOpenChange(false)}
-            disabled={createPrMutation.isPending}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleCreate}
-            disabled={!title.trim() || createPrMutation.isPending || isLoading}
-          >
-            {createPrMutation.isPending ? 'Creating...' : 'Create Pull Request'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        {/* Description */}
+        <div className="space-y-2">
+          <Label htmlFor="pr-description">Description</Label>
+          {isLoading ? (
+            <Skeleton className="h-40 w-full" />
+          ) : (
+            <Textarea
+              id="pr-description"
+              placeholder="Pull request description"
+              value={values.description}
+              onChange={(e) =>
+                setValues({ ...values, description: e.target.value })
+              }
+              rows={8}
+              disabled={isSubmitting}
+              className="font-mono text-sm"
+            />
+          )}
+        </div>
+
+        {/* Info Alert */}
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            This will attempt to create the PR using GitHub CLI (gh). If not available, it will open
+            the GitHub compare page in your browser.
+          </AlertDescription>
+        </Alert>
+
+        <ErrorAlert error={error} />
+      </div>
+
+      <DialogFooter>
+        <Button
+          variant="outline"
+          onClick={() => onOpenChange(false)}
+          disabled={isSubmitting}
+        >
+          Cancel
+        </Button>
+        <LoadingButton
+          onClick={handleSubmit}
+          disabled={!values.title.trim() || isLoading}
+          isLoading={isSubmitting}
+          loadingText="Creating..."
+        >
+          Create Pull Request
+        </LoadingButton>
+      </DialogFooter>
+    </BaseDialog>
   );
 }

@@ -62,10 +62,12 @@ export function ToolCollapsibleWrapper({
         </Button>
       </CollapsibleTrigger>
 
+      <div className="pl-5 pt-2 pb-3">{children}</div>
+
       {/* Content */}
-      <CollapsibleContent>
+      {/* <CollapsibleContent>
         <div className="pl-5 pt-2 pb-3">{children}</div>
-      </CollapsibleContent>
+      </CollapsibleContent> */}
     </Collapsible>
   );
 }
