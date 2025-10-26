@@ -6,8 +6,6 @@ import { prisma } from "@/shared/prisma";
 import fs from "fs/promises";
 import path from "path";
 import { JWTPayload } from "@/server/utils/auth";
-import { getSessionFilePath } from "@/server/utils/path";
-import { parseJSONLFile, updateSessionMetadata } from "@/server/services/agentSession";
 // import { generateSessionName } from "@/server/utils/generateSessionName";
 import type {
   WebSocketMessage,
@@ -167,8 +165,8 @@ async function handleSessionEvent(
           messageData.message,
           {
             sessionId,
-            resume: !!session.claudeSessionId, // Resume existing session
-            images: imagePaths.length > 0 ? imagePaths : undefined,
+            resume: !!(session.metadata as any)?.claudeSessionId, // Resume existing session
+            images: imagePaths.length > 0 ? (imagePaths as any) : undefined,
             onOutput: (outputData: unknown) => {
               // Stream output back to client with flat event name
               sendMessage(socket, `session.${sessionId}.stream_output`, {
@@ -260,7 +258,7 @@ async function handleSessionEvent(
 
           // Find the last assistant message with usage data
           for (let i = events.length - 1; i >= 0; i--) {
-            const event = events[i];
+            const event = events[i] as any; // Using any for legacy event format compatibility
 
             // Log each event type we're checking
             fastify.log.debug({

@@ -24,13 +24,22 @@ export type WorkflowStateData = {
 /**
  * Import types from @repo/agent-cli-sdk for use in type aliases
  */
-import type { ExecutionResponse, AIAdapter } from '@repo/agent-cli-sdk';
+import type { ExecutionResponse } from '@repo/agent-cli-sdk';
 
 /**
  * Re-export types from @sourceborn/agent-cli-sdk for convenience
  * This ensures type compatibility throughout the library
  */
-export type { ExecutionResponse, AIAdapter };
+export type { ExecutionResponse };
+
+/**
+ * Interface representing any AI adapter (Claude, Codex, etc.)
+ * All adapters must have an execute method that returns ExecutionResponse
+ */
+export interface AIAdapter {
+  execute<T = string>(prompt: string, options?: Record<string, unknown>): Promise<ExecutionResponse<T>>;
+  [key: string]: unknown;
+}
 
 /**
  * Type aliases for backward compatibility and clearer API naming

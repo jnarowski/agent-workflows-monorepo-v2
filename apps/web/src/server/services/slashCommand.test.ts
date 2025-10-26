@@ -22,6 +22,7 @@ describe('slash-command.service', () => {
       path: testProjectPath,
       name: 'Test Project',
       is_hidden: false,
+        is_starred: false,
       created_at: new Date(),
       updated_at: new Date(),
     });

@@ -1,12 +1,10 @@
 #!/usr/bin/env tsx
 // Load environment variables from .env file in monorepo root
 import { config } from 'dotenv';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
 
 const __filename_temp = fileURLToPath(import.meta.url);
 const __dirname_temp = dirname(__filename_temp);
-config({ path: join(__dirname_temp, '../../../../.env') });
+config({ path: join(__dirname_temp, '../../.env') });
 
 import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
@@ -269,6 +267,10 @@ export async function createServer() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const PORT = parseInt(process.env.PORT || '3456');
   const HOST = process.env.HOST || '127.0.0.1';
+  console.log('PORT', PORT);
+  console.log('HOSTSSSS', HOST);
+  console.log('process.env.PORTSSSS', process.env.PORT);
+  console.log('process.env.HOSTSSSS', process.env.HOST);
 
   const server = await createServer();
 

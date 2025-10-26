@@ -5,11 +5,14 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '');
+  // Load env from apps/web directory (where .env file is located)
+  const envDir = path.resolve(__dirname, './');
+  const env = loadEnv(mode, envDir, '');
   const serverPort = parseInt(env.PORT) || 3456;
   const vitePort = parseInt(env.VITE_PORT) || 5173;
 
   return {
+    envDir: envDir, // Tell Vite where to find .env files
     root: 'src/client',
     publicDir: path.resolve(__dirname, './public'),
     plugins: [react(), tailwindcss()],

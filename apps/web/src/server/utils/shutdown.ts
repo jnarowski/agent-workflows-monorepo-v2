@@ -38,10 +38,7 @@ export async function setupGracefulShutdown(
 
         for (const [sessionId, sessionData] of activeSessions.entries()) {
           try {
-            // Close WebSocket connection
-            if (sessionData.socket && sessionData.socket.readyState === 1) { // OPEN state
-              sessionData.socket.close(1001, 'Server shutting down');
-            }
+            // Note: WebSocket connections are managed separately and will be closed automatically
 
             // Cleanup temp image directory if it exists
             if (sessionData.tempImageDir) {

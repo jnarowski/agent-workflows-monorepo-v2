@@ -58,6 +58,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       if (import.meta.env.DEV) {
         console.log('[WebSocket] No auth token, skipping connection');
       }
+      
       return;
     }
 
@@ -71,11 +72,18 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       // In development, Vite runs on :5173 but backend is on :3456
       const isDev = import.meta.env.DEV;
-      const wsHost = isDev ? 'localhost:3456' : window.location.host;
+
+      // Allow override via VITE_WS_HOST for VPN/remote access
+      // Examples: "10.0.1.100:3456", "vpn.example.com:3456"
+      const wsHost = import.meta.env.VITE_WS_HOST ||
+                     (isDev ? 'localhost:3456' : window.location.host);
       const wsUrl = `${wsProtocol}//${wsHost}/ws?token=${token}`;
 
+      console.log('VITE_WS_HOST', import.meta.env.VITE_WS_HOST);
+      console.log('wsUrl', wsUrl);
+
       if (import.meta.env.DEV) {
-        console.log('[WebSocket] Environment:', { isDev, wsHost, protocol: wsProtocol });
+        console.log('[WebSocket] Environment:', { isDev, wsHost, protocol: wsProtocol, override: import.meta.env.VITE_WS_HOST });
         console.log('[WebSocket] Connecting to', wsUrl.replace(token, '***'));
       }
 
