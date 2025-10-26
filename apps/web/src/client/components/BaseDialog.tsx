@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, ComponentProps } from 'react';
 import { Dialog, DialogContent } from '@/client/components/ui/dialog';
 
 export interface BaseDialogProps {
@@ -6,17 +6,20 @@ export interface BaseDialogProps {
   onOpenChange: (open: boolean) => void;
   onClose?: () => void;
   children: ReactNode;
+  contentProps?: Omit<ComponentProps<typeof DialogContent>, 'children'>;
 }
 
 /**
  * Base dialog wrapper with automatic cleanup on close
  * Calls onClose callback when dialog is closed
+ * Supports passing props to DialogContent via contentProps
  */
 export function BaseDialog({
   open,
   onOpenChange,
   onClose,
   children,
+  contentProps,
 }: BaseDialogProps) {
   const handleOpenChange = (newOpen: boolean) => {
     onOpenChange(newOpen);
@@ -29,7 +32,7 @@ export function BaseDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>{children}</DialogContent>
+      <DialogContent {...contentProps}>{children}</DialogContent>
     </Dialog>
   );
 }

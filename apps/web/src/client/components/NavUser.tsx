@@ -21,6 +21,26 @@ import {
 } from "@/client/components/ui/sidebar";
 import { ThemeToggle } from "@/client/components/ThemeToggle";
 
+/**
+ * Get the first two initials from a user's name or username
+ * @param name - The user's full name or username
+ * @returns Two uppercase initials (e.g., "JD" for "John Doe", "JN" for "jnarowski")
+ */
+function getInitials(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return "??";
+
+  const parts = trimmed.split(/\s+/);
+
+  if (parts.length === 1) {
+    // Single name - take first two characters
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  // Multiple names - take first character of first two parts
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+
 export function NavUser({
   user,
   onLogout,
@@ -33,6 +53,7 @@ export function NavUser({
   onLogout?: () => void;
 }) {
   const { isMobile } = useSidebar();
+  const initials = getInitials(user.name);
 
   return (
     <SidebarMenu>
@@ -45,7 +66,7 @@ export function NavUser({
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -64,7 +85,7 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>

@@ -39,7 +39,7 @@ export async function getCurrentBranch(projectPath: string): Promise<string | nu
     // Get current branch
     const branch = await git.branch();
     return branch.current || null;
-  } catch (error) {
+  } catch {
     // Gracefully handle non-git directories
     return null;
   }
@@ -49,93 +49,89 @@ export async function getCurrentBranch(projectPath: string): Promise<string | nu
  * Get the full git status including files, branch, and ahead/behind counts
  */
 export async function getGitStatus(projectPath: string): Promise<GitStatus> {
-  try {
-    const git = simpleGit(projectPath);
+  const git = simpleGit(projectPath);
 
-    // Check if directory is a git repository
-    const isRepo = await git.checkIsRepo();
-    if (!isRepo) {
-      return {
-        branch: '',
-        files: [],
-        ahead: 0,
-        behind: 0,
-        isRepo: false,
-      };
-    }
+  // Check if directory is a git repository
+  const isRepo = await git.checkIsRepo();
+  if (!isRepo) {
+    return {
+      branch: '',
+      files: [],
+      ahead: 0,
+      behind: 0,
+      isRepo: false,
+    };
+  }
 
-    // Get status
-    const status = await git.status();
+  // Get status
+  const status = await git.status();
 
-    // Map files to GitFileStatus format
-    const files: GitFileStatus[] = [];
+  // Map files to GitFileStatus format
+  const files: GitFileStatus[] = [];
 
-    // Staged files
-    for (const file of status.staged) {
+  // Staged files
+  for (const file of status.staged) {
+    files.push({
+      path: file,
+      status: 'M',
+      staged: true,
+    });
+  }
+
+  // Modified files (unstaged)
+  for (const file of status.modified) {
+    if (!status.staged.includes(file)) {
       files.push({
         path: file,
         status: 'M',
-        staged: true,
-      });
-    }
-
-    // Modified files (unstaged)
-    for (const file of status.modified) {
-      if (!status.staged.includes(file)) {
-        files.push({
-          path: file,
-          status: 'M',
-          staged: false,
-        });
-      }
-    }
-
-    // Created files (new staged files)
-    for (const file of status.created) {
-      files.push({
-        path: file,
-        status: 'A',
-        staged: true,
-      });
-    }
-
-    // Deleted files
-    for (const file of status.deleted) {
-      files.push({
-        path: file,
-        status: 'D',
-        staged: status.staged.includes(file),
-      });
-    }
-
-    // Untracked files
-    for (const file of status.not_added) {
-      files.push({
-        path: file,
-        status: '??',
         staged: false,
       });
     }
-
-    // Renamed files
-    for (const file of status.renamed) {
-      files.push({
-        path: file.to || file.from,
-        status: 'R',
-        staged: true,
-      });
-    }
-
-    return {
-      branch: status.current || '',
-      files,
-      ahead: status.ahead,
-      behind: status.behind,
-      isRepo: true,
-    };
-  } catch (error) {
-    throw error;
   }
+
+  // Created files (new staged files)
+  for (const file of status.created) {
+    files.push({
+      path: file,
+      status: 'A',
+      staged: true,
+    });
+  }
+
+  // Deleted files
+  for (const file of status.deleted) {
+    files.push({
+      path: file,
+      status: 'D',
+      staged: status.staged.includes(file),
+    });
+  }
+
+  // Untracked files
+  for (const file of status.not_added) {
+    files.push({
+      path: file,
+      status: '??',
+      staged: false,
+    });
+  }
+
+  // Renamed files
+  for (const file of status.renamed) {
+    files.push({
+      path: file.to || file.from,
+      status: 'R',
+      staged: true,
+    });
+  }
+
+  return {
+    branch: status.current || '',
+    files,
+    ahead: status.ahead,
+    behind: status.behind,
+    isRepo: true,
+  };
 }
 
 // ============================================================================
@@ -146,22 +142,18 @@ export async function getGitStatus(projectPath: string): Promise<GitStatus> {
  * Get all branches in the repository
  */
 export async function getBranches(projectPath: string): Promise<GitBranch[]> {
-  try {
-    const git = simpleGit(projectPath);
-    const branchSummary = await git.branch();
+  const git = simpleGit(projectPath);
+  const branchSummary = await git.branch();
 
-    const branches: GitBranch[] = Object.keys(branchSummary.branches).map((name) => ({
-      name,
-      current: name === branchSummary.current,
-    }));
+  const branches: GitBranch[] = Object.keys(branchSummary.branches).map((name) => ({
+    name,
+    current: name === branchSummary.current,
+  }));
 
-    // Sort alphabetically
-    branches.sort((a, b) => a.name.localeCompare(b.name));
+  // Sort alphabetically
+  branches.sort((a, b) => a.name.localeCompare(b.name));
 
-    return branches;
-  } catch (error) {
-    throw error;
-  }
+  return branches;
 }
 
 /**
@@ -172,45 +164,37 @@ export async function createAndSwitchBranch(
   branchName: string,
   from?: string
 ): Promise<GitBranch> {
-  try {
-    // Validate branch name
-    if (!/^[a-zA-Z0-9_\/-]+$/.test(branchName)) {
-      throw new Error('Invalid branch name. Only alphanumeric, dash, underscore, and slash allowed.');
-    }
-
-    const git = simpleGit(projectPath);
-
-    // If from branch is specified, checkout from that branch first
-    if (from) {
-      await git.checkout(from);
-    }
-
-    await git.checkoutLocalBranch(branchName);
-
-    return {
-      name: branchName,
-      current: true,
-    };
-  } catch (error) {
-    throw error;
+  // Validate branch name
+  if (!/^[a-zA-Z0-9_/-]+$/.test(branchName)) {
+    throw new Error('Invalid branch name. Only alphanumeric, dash, underscore, and slash allowed.');
   }
+
+  const git = simpleGit(projectPath);
+
+  // If from branch is specified, checkout from that branch first
+  if (from) {
+    await git.checkout(from);
+  }
+
+  await git.checkoutLocalBranch(branchName);
+
+  return {
+    name: branchName,
+    current: true,
+  };
 }
 
 /**
  * Switch to an existing branch
  */
 export async function switchBranch(projectPath: string, branchName: string): Promise<GitBranch> {
-  try {
-    const git = simpleGit(projectPath);
-    await git.checkout(branchName);
+  const git = simpleGit(projectPath);
+  await git.checkout(branchName);
 
-    return {
-      name: branchName,
-      current: true,
-    };
-  } catch (error) {
-    throw error;
-  }
+  return {
+    name: branchName,
+    current: true,
+  };
 }
 
 // ============================================================================
@@ -221,24 +205,16 @@ export async function switchBranch(projectPath: string, branchName: string): Pro
  * Stage files for commit
  */
 export async function stageFiles(projectPath: string, files: string[]): Promise<void> {
-  try {
-    const git = simpleGit(projectPath);
-    await git.add(files);
-  } catch (error) {
-    throw error;
-  }
+  const git = simpleGit(projectPath);
+  await git.add(files);
 }
 
 /**
  * Unstage files
  */
 export async function unstageFiles(projectPath: string, files: string[]): Promise<void> {
-  try {
-    const git = simpleGit(projectPath);
-    await git.reset(['HEAD', ...files]);
-  } catch (error) {
-    throw error;
-  }
+  const git = simpleGit(projectPath);
+  await git.reset(['HEAD', ...files]);
 }
 
 /**
@@ -249,19 +225,15 @@ export async function commitChanges(
   message: string,
   files: string[]
 ): Promise<string> {
-  try {
-    const git = simpleGit(projectPath);
+  const git = simpleGit(projectPath);
 
-    // Stage files first
-    await git.add(files);
+  // Stage files first
+  await git.add(files);
 
-    // Commit
-    const result = await git.commit(message);
+  // Commit
+  const result = await git.commit(message);
 
-    return result.commit;
-  } catch (error) {
-    throw error;
-  }
+  return result.commit;
 }
 
 // ============================================================================
@@ -276,24 +248,16 @@ export async function pushToRemote(
   branch: string,
   remote: string = 'origin'
 ): Promise<void> {
-  try {
-    const git = simpleGit(projectPath);
-    await git.push(remote, branch, ['--set-upstream']);
-  } catch (error) {
-    throw error;
-  }
+  const git = simpleGit(projectPath);
+  await git.push(remote, branch, ['--set-upstream']);
 }
 
 /**
  * Fetch changes from remote repository
  */
 export async function fetchFromRemote(projectPath: string, remote: string = 'origin'): Promise<void> {
-  try {
-    const git = simpleGit(projectPath);
-    await git.fetch(remote);
-  } catch (error) {
-    throw error;
-  }
+  const git = simpleGit(projectPath);
+  await git.fetch(remote);
 }
 
 /**
@@ -304,12 +268,8 @@ export async function pullFromRemote(
   remote?: string,
   branch?: string
 ): Promise<void> {
-  try {
-    const git = simpleGit(projectPath);
-    await git.pull(remote, branch);
-  } catch (error) {
-    throw error;
-  }
+  const git = simpleGit(projectPath);
+  await git.pull(remote, branch);
 }
 
 // ============================================================================
@@ -320,14 +280,10 @@ export async function pullFromRemote(
  * Get diff for a specific file
  */
 export async function getFileDiff(projectPath: string, filepath: string): Promise<string> {
-  try {
-    const git = simpleGit(projectPath);
-    // Use --text to force git to treat all files as text (prevents "Binary files differ" message)
-    const diff = await git.diff(['--text', '--', filepath]);
-    return diff;
-  } catch (error) {
-    throw error;
-  }
+  const git = simpleGit(projectPath);
+  // Use --text to force git to treat all files as text (prevents "Binary files differ" message)
+  const diff = await git.diff(['--text', '--', filepath]);
+  return diff;
 }
 
 /**
@@ -338,73 +294,65 @@ export async function getCommitHistory(
   limit: number = 100,
   offset: number = 0
 ): Promise<GitCommit[]> {
-  try {
-    const git = simpleGit(projectPath);
-    const log = await git.log({
-      maxCount: limit,
-      from: offset > 0 ? `HEAD~${offset}` : undefined,
-    });
+  const git = simpleGit(projectPath);
+  const log = await git.log({
+    maxCount: limit,
+    from: offset > 0 ? `HEAD~${offset}` : undefined,
+  });
 
-    const commits: GitCommit[] = log.all.map((commit) => {
-      const date = new Date(commit.date);
-      return {
-        hash: commit.hash,
-        shortHash: commit.hash.substring(0, 7),
-        message: commit.message,
-        author: commit.author_name,
-        email: commit.author_email,
-        date: date.toISOString(),
-        relativeDate: formatDistanceToNow(date, { addSuffix: true }),
-      };
-    });
+  const commits: GitCommit[] = log.all.map((commit) => {
+    const date = new Date(commit.date);
+    return {
+      hash: commit.hash,
+      shortHash: commit.hash.substring(0, 7),
+      message: commit.message,
+      author: commit.author_name,
+      email: commit.author_email,
+      date: date.toISOString(),
+      relativeDate: formatDistanceToNow(date, { addSuffix: true }),
+    };
+  });
 
-    return commits;
-  } catch (error) {
-    throw error;
-  }
+  return commits;
 }
 
 /**
  * Get detailed diff for a specific commit
  */
 export async function getCommitDiff(projectPath: string, commitHash: string): Promise<GitCommitDiff> {
-  try {
-    const git = simpleGit(projectPath);
+  const git = simpleGit(projectPath);
 
-    // Get commit details
-    const commits = await git.log({ maxCount: 1, from: commitHash });
-    const commit = commits.all[0];
+  // Get commit details
+  const commits = await git.log({ maxCount: 1, from: commitHash });
+  const commit = commits.all[0];
 
-    if (!commit) {
-      throw new Error('Commit not found');
-    }
-
-    // Get full diff
-    const diff = await git.diff([`${commitHash}^`, commitHash]);
-
-    // Get stats using show
-    const showOutput = await git.show([commitHash, '--stat', '--format=']);
-
-    // Parse stats from show output
-    const statsMatch = showOutput.match(/(\d+) files? changed(?:, (\d+) insertions?\(\+\))?(?:, (\d+) deletions?\(-\))?/);
-    const filesChanged = statsMatch ? parseInt(statsMatch[1], 10) : 0;
-    const insertions = statsMatch && statsMatch[2] ? parseInt(statsMatch[2], 10) : 0;
-    const deletions = statsMatch && statsMatch[3] ? parseInt(statsMatch[3], 10) : 0;
-
-    return {
-      hash: commit.hash,
-      message: commit.message,
-      author: commit.author_name,
-      email: commit.author_email,
-      date: new Date(commit.date).toISOString(),
-      filesChanged,
-      insertions,
-      deletions,
-      diff,
-    };
-  } catch (error) {
-    throw error;
+  if (!commit) {
+    throw new Error('Commit not found');
   }
+
+  // Get full diff
+  const diff = await git.diff([`${commitHash}^`, commitHash]);
+
+  // Get stats using show
+  const showOutput = await git.show([commitHash, '--stat', '--format=']);
+
+  // Parse stats from show output
+  const statsMatch = showOutput.match(/(\d+) files? changed(?:, (\d+) insertions?\(\+\))?(?:, (\d+) deletions?\(-\))?/);
+  const filesChanged = statsMatch ? parseInt(statsMatch[1], 10) : 0;
+  const insertions = statsMatch && statsMatch[2] ? parseInt(statsMatch[2], 10) : 0;
+  const deletions = statsMatch && statsMatch[3] ? parseInt(statsMatch[3], 10) : 0;
+
+  return {
+    hash: commit.hash,
+    message: commit.message,
+    author: commit.author_name,
+    email: commit.author_email,
+    date: new Date(commit.date).toISOString(),
+    filesChanged,
+    insertions,
+    deletions,
+    diff,
+  };
 }
 
 /**
@@ -414,27 +362,23 @@ export async function getCommitsSinceBase(
   projectPath: string,
   baseBranch: string = 'main'
 ): Promise<GitCommit[]> {
-  try {
-    const git = simpleGit(projectPath);
-    const log = await git.log([`${baseBranch}..HEAD`]);
+  const git = simpleGit(projectPath);
+  const log = await git.log([`${baseBranch}..HEAD`]);
 
-    const commits: GitCommit[] = log.all.map((commit) => {
-      const date = new Date(commit.date);
-      return {
-        hash: commit.hash,
-        shortHash: commit.hash.substring(0, 7),
-        message: commit.message,
-        author: commit.author_name,
-        email: commit.author_email,
-        date: date.toISOString(),
-        relativeDate: formatDistanceToNow(date, { addSuffix: true }),
-      };
-    });
+  const commits: GitCommit[] = log.all.map((commit) => {
+    const date = new Date(commit.date);
+    return {
+      hash: commit.hash,
+      shortHash: commit.hash.substring(0, 7),
+      message: commit.message,
+      author: commit.author_name,
+      email: commit.author_email,
+      date: date.toISOString(),
+      relativeDate: formatDistanceToNow(date, { addSuffix: true }),
+    };
+  });
 
-    return commits;
-  } catch (error) {
-    throw error;
-  }
+  return commits;
 }
 
 // ============================================================================
@@ -486,66 +430,50 @@ export async function mergeBranch(
  * Save current changes to stash
  */
 export async function stashSave(projectPath: string, message?: string): Promise<void> {
-  try {
-    const git = simpleGit(projectPath);
-    const args = ['push'];
-    if (message) {
-      args.push('-m', message);
-    }
-    await git.stash(args);
-  } catch (error) {
-    throw error;
+  const git = simpleGit(projectPath);
+  const args = ['push'];
+  if (message) {
+    args.push('-m', message);
   }
+  await git.stash(args);
 }
 
 /**
  * Pop the most recent stash
  */
 export async function stashPop(projectPath: string, index?: number): Promise<void> {
-  try {
-    const git = simpleGit(projectPath);
-    const args = ['pop'];
-    if (index !== undefined) {
-      args.push(`stash@{${index}}`);
-    }
-    await git.stash(args);
-  } catch (error) {
-    throw error;
+  const git = simpleGit(projectPath);
+  const args = ['pop'];
+  if (index !== undefined) {
+    args.push(`stash@{${index}}`);
   }
+  await git.stash(args);
 }
 
 /**
  * List all stashes
  */
 export async function stashList(projectPath: string): Promise<GitStashEntry[]> {
-  try {
-    const git = simpleGit(projectPath);
-    const result = await git.stashList();
+  const git = simpleGit(projectPath);
+  const result = await git.stashList();
 
-    return result.all.map((stash, index) => ({
-      index,
-      message: stash.message,
-      date: stash.date,
-    }));
-  } catch (error) {
-    throw error;
-  }
+  return result.all.map((stash, index) => ({
+    index,
+    message: stash.message,
+    date: stash.date,
+  }));
 }
 
 /**
  * Apply a stash without removing it
  */
 export async function stashApply(projectPath: string, index?: number): Promise<void> {
-  try {
-    const git = simpleGit(projectPath);
-    const args = ['apply'];
-    if (index !== undefined) {
-      args.push(`stash@{${index}}`);
-    }
-    await git.stash(args);
-  } catch (error) {
-    throw error;
+  const git = simpleGit(projectPath);
+  const args = ['apply'];
+  if (index !== undefined) {
+    args.push(`stash@{${index}}`);
   }
+  await git.stash(args);
 }
 
 /**
@@ -556,25 +484,17 @@ export async function resetToCommit(
   commitHash: string,
   mode: GitResetMode
 ): Promise<void> {
-  try {
-    const git = simpleGit(projectPath);
-    const modeFlag = `--${mode}`;
-    await git.reset([modeFlag, commitHash]);
-  } catch (error) {
-    throw error;
-  }
+  const git = simpleGit(projectPath);
+  const modeFlag = `--${mode}`;
+  await git.reset([modeFlag, commitHash]);
 }
 
 /**
  * Discard changes for specific files
  */
 export async function discardChanges(projectPath: string, files: string[]): Promise<void> {
-  try {
-    const git = simpleGit(projectPath);
-    await git.checkout(['--', ...files]);
-  } catch (error) {
-    throw error;
-  }
+  const git = simpleGit(projectPath);
+  await git.checkout(['--', ...files]);
 }
 
 // ============================================================================
@@ -588,7 +508,7 @@ export async function checkGhCliAvailable(projectPath: string): Promise<boolean>
   try {
     await execAsync('gh auth status', { cwd: projectPath });
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -625,7 +545,7 @@ export async function createPullRequest(
           useGhCli: true,
           prUrl,
         };
-      } catch (error) {
+      } catch {
         // Fall through to web URL method
       }
     }
@@ -699,7 +619,7 @@ export async function generateCommitMessage(projectPath: string, files: string[]
       try {
         const diff = await git.diff(['--cached', '--text', '--', file]);
         return { file, diff };
-      } catch (error) {
+      } catch {
         return { file, diff: '' };
       }
     });

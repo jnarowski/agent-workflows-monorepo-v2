@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, type MockedFunction } from 'vitest';
-import simpleGit, { type SimpleGit } from 'simple-git';
+import simpleGit, { type SimpleGit, type StatusResult, type BranchSummary, type LogResult } from 'simple-git';
 import {
   getGitStatus,
   getBranches,
@@ -63,8 +63,8 @@ describe('Git Service', () => {
         behind: 1,
       };
 
-      (mockGit.checkIsRepo as MockedFunction<any>).mockResolvedValue(true);
-      (mockGit.status as MockedFunction<any>).mockResolvedValue(mockStatus);
+      (mockGit.checkIsRepo as MockedFunction<() => Promise<boolean>>).mockResolvedValue(true);
+      (mockGit.status as MockedFunction<() => Promise<StatusResult>>).mockResolvedValue(mockStatus);
 
       const result = await getGitStatus('/test/path');
 
@@ -91,7 +91,7 @@ describe('Git Service', () => {
     });
 
     it('should handle non-repo gracefully', async () => {
-      (mockGit.checkIsRepo as MockedFunction<any>).mockResolvedValue(false);
+      (mockGit.checkIsRepo as MockedFunction<() => Promise<boolean>>).mockResolvedValue(false);
 
       const result = await getGitStatus('/test/path');
 
@@ -100,7 +100,7 @@ describe('Git Service', () => {
     });
 
     it('should handle errors and throw', async () => {
-      (mockGit.checkIsRepo as MockedFunction<any>).mockRejectedValue(new Error('Git error'));
+      (mockGit.checkIsRepo as MockedFunction<() => Promise<boolean>>).mockRejectedValue(new Error('Git error'));
 
       await expect(getGitStatus('/test/path')).rejects.toThrow('Git error');
     });
@@ -118,7 +118,7 @@ describe('Git Service', () => {
         },
       };
 
-      (mockGit.branch as MockedFunction<any>).mockResolvedValue(mockBranchSummary);
+      (mockGit.branch as MockedFunction<() => Promise<BranchSummary>>).mockResolvedValue(mockBranchSummary);
 
       const result = await getBranches('/test/path');
 
@@ -129,7 +129,7 @@ describe('Git Service', () => {
     });
 
     it('should handle errors', async () => {
-      (mockGit.branch as MockedFunction<any>).mockRejectedValue(new Error('Branch error'));
+      (mockGit.branch as MockedFunction<() => Promise<BranchSummary>>).mockRejectedValue(new Error('Branch error'));
 
       await expect(getBranches('/test/path')).rejects.toThrow('Branch error');
     });
@@ -137,7 +137,7 @@ describe('Git Service', () => {
 
   describe('createAndSwitchBranch', () => {
     it('should create and switch to new branch', async () => {
-      (mockGit.checkoutLocalBranch as MockedFunction<any>).mockResolvedValue({});
+      (mockGit.checkoutLocalBranch as MockedFunction<(name: string) => Promise<void>>).mockResolvedValue();
 
       const result = await createAndSwitchBranch('/test/path', 'feature/new');
 
@@ -146,8 +146,8 @@ describe('Git Service', () => {
     });
 
     it('should create branch from specific base', async () => {
-      (mockGit.checkout as MockedFunction<any>).mockResolvedValue({});
-      (mockGit.checkoutLocalBranch as MockedFunction<any>).mockResolvedValue({});
+      (mockGit.checkout as MockedFunction<(branch: string) => Promise<void>>).mockResolvedValue();
+      (mockGit.checkoutLocalBranch as MockedFunction<(name: string) => Promise<void>>).mockResolvedValue();
 
       const result = await createAndSwitchBranch('/test/path', 'feature/new', 'develop');
 
@@ -168,7 +168,7 @@ describe('Git Service', () => {
 
   describe('switchBranch', () => {
     it('should switch to existing branch', async () => {
-      (mockGit.checkout as MockedFunction<any>).mockResolvedValue({});
+      (mockGit.checkout as MockedFunction<(branch: string) => Promise<void>>).mockResolvedValue();
 
       const result = await switchBranch('/test/path', 'develop');
 
@@ -177,7 +177,7 @@ describe('Git Service', () => {
     });
 
     it('should handle checkout errors', async () => {
-      (mockGit.checkout as MockedFunction<any>).mockRejectedValue(
+      (mockGit.checkout as MockedFunction<(branch: string) => Promise<void>>).mockRejectedValue(
         new Error('Branch does not exist')
       );
 
@@ -189,7 +189,7 @@ describe('Git Service', () => {
 
   describe('stageFiles', () => {
     it('should stage multiple files', async () => {
-      (mockGit.add as MockedFunction<any>).mockResolvedValue({});
+      (mockGit.add as MockedFunction<(files: string[]) => Promise<void>>).mockResolvedValue();
 
       await stageFiles('/test/path', ['file1.txt', 'file2.txt']);
 
@@ -197,7 +197,7 @@ describe('Git Service', () => {
     });
 
     it('should handle staging errors', async () => {
-      (mockGit.add as MockedFunction<any>).mockRejectedValue(new Error('Stage error'));
+      (mockGit.add as MockedFunction<(files: string[]) => Promise<void>>).mockRejectedValue(new Error('Stage error'));
 
       await expect(stageFiles('/test/path', ['file1.txt'])).rejects.toThrow('Stage error');
     });
@@ -205,7 +205,7 @@ describe('Git Service', () => {
 
   describe('unstageFiles', () => {
     it('should unstage multiple files', async () => {
-      (mockGit.reset as MockedFunction<any>).mockResolvedValue({});
+      (mockGit.reset as MockedFunction<(args: string[]) => Promise<void>>).mockResolvedValue();
 
       await unstageFiles('/test/path', ['file1.txt', 'file2.txt']);
 
@@ -213,7 +213,7 @@ describe('Git Service', () => {
     });
 
     it('should handle unstaging errors', async () => {
-      (mockGit.reset as MockedFunction<any>).mockRejectedValue(new Error('Unstage error'));
+      (mockGit.reset as MockedFunction<(args: string[]) => Promise<void>>).mockRejectedValue(new Error('Unstage error'));
 
       await expect(unstageFiles('/test/path', ['file1.txt'])).rejects.toThrow('Unstage error');
     });
@@ -222,7 +222,7 @@ describe('Git Service', () => {
   describe('commitChanges', () => {
     it('should commit staged files', async () => {
       const mockCommitResult = { commit: 'abc123' };
-      (mockGit.commit as MockedFunction<any>).mockResolvedValue(mockCommitResult);
+      (mockGit.commit as MockedFunction<(message: string, files?: string[]) => Promise<{ commit: string }>>).mockResolvedValue(mockCommitResult);
 
       const result = await commitChanges('/test/path', 'Test commit', ['file1.txt']);
 
@@ -231,7 +231,7 @@ describe('Git Service', () => {
     });
 
     it('should handle commit errors', async () => {
-      (mockGit.commit as MockedFunction<any>).mockRejectedValue(new Error('Commit error'));
+      (mockGit.commit as MockedFunction<(message: string, files?: string[]) => Promise<{ commit: string }>>).mockRejectedValue(new Error('Commit error'));
 
       await expect(commitChanges('/test/path', 'Test', ['file1.txt'])).rejects.toThrow(
         'Commit error'
@@ -241,7 +241,7 @@ describe('Git Service', () => {
 
   describe('pushToRemote', () => {
     it('should push to remote with default origin', async () => {
-      (mockGit.push as MockedFunction<any>).mockResolvedValue({});
+      (mockGit.push as MockedFunction<(remote: string, branch: string) => Promise<void>>).mockResolvedValue();
 
       await pushToRemote('/test/path', 'main');
 
@@ -249,7 +249,7 @@ describe('Git Service', () => {
     });
 
     it('should push to custom remote', async () => {
-      (mockGit.push as MockedFunction<any>).mockResolvedValue({});
+      (mockGit.push as MockedFunction<(remote: string, branch: string) => Promise<void>>).mockResolvedValue();
 
       await pushToRemote('/test/path', 'main', 'upstream');
 
@@ -257,7 +257,7 @@ describe('Git Service', () => {
     });
 
     it('should handle push errors', async () => {
-      (mockGit.push as MockedFunction<any>).mockRejectedValue(new Error('Push rejected'));
+      (mockGit.push as MockedFunction<(remote: string, branch: string) => Promise<void>>).mockRejectedValue(new Error('Push rejected'));
 
       await expect(pushToRemote('/test/path', 'main')).rejects.toThrow('Push rejected');
     });
@@ -265,7 +265,7 @@ describe('Git Service', () => {
 
   describe('fetchFromRemote', () => {
     it('should fetch from default origin', async () => {
-      (mockGit.fetch as MockedFunction<any>).mockResolvedValue({});
+      (mockGit.fetch as MockedFunction<(remote: string) => Promise<void>>).mockResolvedValue();
 
       await fetchFromRemote('/test/path');
 
@@ -273,7 +273,7 @@ describe('Git Service', () => {
     });
 
     it('should fetch from custom remote', async () => {
-      (mockGit.fetch as MockedFunction<any>).mockResolvedValue({});
+      (mockGit.fetch as MockedFunction<(remote: string) => Promise<void>>).mockResolvedValue();
 
       await fetchFromRemote('/test/path', 'upstream');
 
@@ -281,7 +281,7 @@ describe('Git Service', () => {
     });
 
     it('should handle fetch errors', async () => {
-      (mockGit.fetch as MockedFunction<any>).mockRejectedValue(new Error('Fetch error'));
+      (mockGit.fetch as MockedFunction<(remote: string) => Promise<void>>).mockRejectedValue(new Error('Fetch error'));
 
       await expect(fetchFromRemote('/test/path')).rejects.toThrow('Fetch error');
     });
@@ -290,7 +290,7 @@ describe('Git Service', () => {
   describe('getFileDiff', () => {
     it('should return file diff', async () => {
       const mockDiff = '+++ added line\n--- removed line';
-      (mockGit.diff as MockedFunction<any>).mockResolvedValue(mockDiff);
+      (mockGit.diff as MockedFunction<(args: string[]) => Promise<string>>).mockResolvedValue(mockDiff);
 
       const result = await getFileDiff('/test/path', 'file1.txt');
 
@@ -299,7 +299,7 @@ describe('Git Service', () => {
     });
 
     it('should handle diff errors', async () => {
-      (mockGit.diff as MockedFunction<any>).mockRejectedValue(new Error('Diff error'));
+      (mockGit.diff as MockedFunction<(args: string[]) => Promise<string>>).mockRejectedValue(new Error('Diff error'));
 
       await expect(getFileDiff('/test/path', 'file1.txt')).rejects.toThrow('Diff error');
     });
@@ -318,7 +318,7 @@ describe('Git Service', () => {
           },
         ],
       };
-      (mockGit.log as MockedFunction<any>).mockResolvedValue(mockLog);
+      (mockGit.log as MockedFunction<(options: { maxCount?: number; from?: number }) => Promise<LogResult>>).mockResolvedValue(mockLog);
 
       const result = await getCommitHistory('/test/path');
 
@@ -332,7 +332,7 @@ describe('Git Service', () => {
 
     it('should handle custom limit and offset', async () => {
       const mockLog = { all: [] };
-      (mockGit.log as MockedFunction<any>).mockResolvedValue(mockLog);
+      (mockGit.log as MockedFunction<(options: { maxCount?: number; from?: number }) => Promise<LogResult>>).mockResolvedValue(mockLog);
 
       await getCommitHistory('/test/path', 50, 10);
 
@@ -342,7 +342,7 @@ describe('Git Service', () => {
 
   describe('checkGhCliAvailable', () => {
     it('should return true if gh CLI is available', async () => {
-      (mockGit.raw as MockedFunction<any>).mockResolvedValue('Logged in');
+      (mockGit.raw as MockedFunction<(args: string[]) => Promise<string>>).mockResolvedValue('Logged in');
 
       const result = await checkGhCliAvailable('/test/path');
 
@@ -350,7 +350,7 @@ describe('Git Service', () => {
     });
 
     it('should return false if gh CLI is not available', async () => {
-      (mockGit.raw as MockedFunction<any>).mockRejectedValue(new Error('Command not found'));
+      (mockGit.raw as MockedFunction<(args: string[]) => Promise<string>>).mockRejectedValue(new Error('Command not found'));
 
       const result = await checkGhCliAvailable('/test/path');
 
@@ -371,7 +371,7 @@ describe('Git Service', () => {
           },
         ],
       };
-      (mockGit.log as MockedFunction<any>).mockResolvedValue(mockLog);
+      (mockGit.log as MockedFunction<(args: string[]) => Promise<LogResult>>).mockResolvedValue(mockLog);
 
       const result = await getCommitsSinceBase('/test/path', 'main');
 

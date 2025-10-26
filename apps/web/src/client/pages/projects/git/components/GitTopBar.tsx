@@ -10,7 +10,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
   SelectSeparator,
 } from '@/client/components/ui/select';
 import { GitBranch, ArrowUpCircle, ArrowDownCircle, RefreshCw, GitPullRequest } from 'lucide-react';

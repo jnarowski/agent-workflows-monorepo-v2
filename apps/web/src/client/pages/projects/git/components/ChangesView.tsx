@@ -20,10 +20,8 @@ interface ChangesViewProps {
   path: string | undefined;
   files: GitFileStatus[] | undefined;
   selectedFiles: Set<string>;
-  expandedFiles: Set<string>;
   commitMessage: string;
   onToggleFile: (filepath: string) => void;
-  onToggleExpand: (filepath: string) => void;
   onSelectAll: () => void;
   onDeselectAll: () => void;
   onCommitMessageChange: (message: string) => void;
@@ -83,10 +81,8 @@ export function ChangesView({
   path,
   files,
   selectedFiles,
-  expandedFiles,
   commitMessage,
   onToggleFile,
-  onToggleExpand,
   onSelectAll,
   onDeselectAll,
   onCommitMessageChange,

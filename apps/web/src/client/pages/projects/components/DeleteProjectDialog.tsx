@@ -1,7 +1,6 @@
 import { useDeleteProject } from "@/client/pages/projects/hooks/useProjects";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -9,7 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/client/components/ui/alert-dialog";
-import { Loader2 } from "lucide-react";
+import { LoadingButton } from "@/client/components/ui/loading-button";
 import type { Project } from "@/shared/types/project.types";
 
 interface DeleteProjectDialogProps {
@@ -59,14 +58,14 @@ export function DeleteProjectDialog({
           <AlertDialogCancel disabled={deleteMutation.isPending}>
             Cancel
           </AlertDialogCancel>
-          <AlertDialogAction
+          <LoadingButton
             onClick={handleDelete}
-            disabled={deleteMutation.isPending}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            isLoading={deleteMutation.isPending}
+            loadingText="Deleting..."
+            variant="destructive"
           >
-            {deleteMutation.isPending && <Loader2 className="animate-spin" />}
             Delete
-          </AlertDialogAction>
+          </LoadingButton>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -20,7 +20,6 @@ import {
   useCreateBranch,
   useSwitchBranch,
   useStageFiles,
-  useUnstageFiles,
   useCommit,
   usePush,
   useFetch,
@@ -44,7 +43,6 @@ export default function ProjectSourceControl() {
   const createBranchMutation = useCreateBranch();
   const switchBranchMutation = useSwitchBranch();
   const stageFilesMutation = useStageFiles();
-  const unstageFilesMutation = useUnstageFiles();
   const commitMutation = useCommit();
   const pushMutation = usePush();
   const fetchMutation = useFetch();

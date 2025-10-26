@@ -13,6 +13,7 @@ import {
 } from "@/client/components/ui/dialog";
 import { Button } from "@/client/components/ui/button";
 import { LoadingButton } from "@/client/components/ui/loading-button";
+import { ErrorAlert } from "@/client/components/ui/error-alert";
 import { Input } from "@/client/components/ui/input";
 import { Label } from "@/client/components/ui/label";
 import type { Project } from "@/shared/types/project.types";
@@ -126,6 +127,7 @@ export function ProjectDialog({
   };
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
+  const mutationError = createMutation.error || updateMutation.error;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -140,6 +142,8 @@ export function ProjectDialog({
               : "Enter the full path to your project folder to create a new project."}
           </DialogDescription>
         </DialogHeader>
+
+        <ErrorAlert error={mutationError?.message} className="mx-6 mt-4" />
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">

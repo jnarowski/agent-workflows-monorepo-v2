@@ -43,15 +43,6 @@ export function ReadToolBlock({ input, result }: ReadToolBlockProps) {
       description={null}
       hasError={result?.is_error}
     >
-      {result && !result.is_error && (
-        <div className="border border-border rounded-md overflow-hidden">
-          <SyntaxHighlighter
-            code={result.content}
-            language={language}
-            showLineNumbers={false}
-          />
-        </div>
-      )}
       {result?.is_error && (
         <div className="text-sm text-red-500">{result.content}</div>
       )}

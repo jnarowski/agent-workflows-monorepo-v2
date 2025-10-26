@@ -111,7 +111,7 @@ export const createGitChangesColumns = (
   {
     id: 'expand',
     header: '',
-    cell: ({ isExpanded }: any) => (
+    cell: ({ isExpanded }: { isExpanded?: boolean }) => (
       <ChevronRight
         className={`h-4 w-4 text-muted-foreground transition-transform ${
           isExpanded ? 'rotate-90' : ''

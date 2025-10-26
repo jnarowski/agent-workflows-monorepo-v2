@@ -66,7 +66,7 @@ export function EditToolBlock({ input, result }: EditToolBlockProps) {
       <div className="pl-5 relative">
         <div
           className={`overflow-hidden rounded-lg ${
-            shouldTruncate && !isExpanded ? "max-h-80" : ""
+            shouldTruncate && !isExpanded ? "max-h-40" : ""
           }`}
         >
           <DiffViewer
@@ -76,11 +76,22 @@ export function EditToolBlock({ input, result }: EditToolBlockProps) {
           />
         </div>
 
+        {/* Fade gradient overlay */}
+        {shouldTruncate && !isExpanded && (
+          <div
+            className="absolute bottom-0 left-5 right-0 h-10 pointer-events-none rounded-b-lg"
+            style={{
+              background:
+                "linear-gradient(to top, #0d1117 0%, transparent 100%)",
+            }}
+          />
+        )}
+
         {/* Click to expand button */}
         {shouldTruncate && !isExpanded && (
-          <div className="absolute bottom-4 right-4">
+          <div className="absolute bottom-2 right-2">
             <button
-              className="text-xs text-muted-foreground bg-background px-3 py-1 rounded-md border border-border hover:bg-muted/50 cursor-pointer"
+              className="text-[10px] text-muted-foreground bg-background px-2 py-0.5 rounded border border-border hover:bg-muted/50 cursor-pointer"
               onClick={() => setIsExpanded(true)}
             >
               Click to expand

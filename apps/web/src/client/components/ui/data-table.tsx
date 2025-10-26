@@ -4,7 +4,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import type { ColumnDef, Row } from '@tanstack/react-table';
+import type { ColumnDef, Row, CellContext } from '@tanstack/react-table';
 
 import {
   Table,
@@ -103,7 +103,7 @@ export function DataTable<TData, TValue>({
                       {row.getVisibleCells().map((cell, cellIndex) => (
                         <TableCell
                           key={cell.id}
-                          onClick={(e) => {
+                          onClick={() => {
                             // Only toggle expansion if not clicking on the select column (first column)
                             if (cellIndex !== 0) {
                               toggleRowExpansion(rowId);
@@ -118,7 +118,7 @@ export function DataTable<TData, TValue>({
                               // Pass expansion state and toggle function
                               isExpanded,
                               toggleExpansion: () => toggleRowExpansion(rowId),
-                            } as any
+                            } as CellContext<TData, TValue> & { isExpanded: boolean; toggleExpansion: () => void }
                           )}
                         </TableCell>
                       ))}

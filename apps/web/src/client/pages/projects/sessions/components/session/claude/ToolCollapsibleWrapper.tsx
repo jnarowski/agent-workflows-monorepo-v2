@@ -7,7 +7,7 @@ import { useState, type ReactNode } from "react";
 import { Button } from "@/client/components/ui/button";
 import {
   Collapsible,
-  CollapsibleContent,
+  // CollapsibleContent,
   CollapsibleTrigger,
 } from "@/client/components/ui/collapsible";
 import { ToolDot } from "./components/ToolDot";
