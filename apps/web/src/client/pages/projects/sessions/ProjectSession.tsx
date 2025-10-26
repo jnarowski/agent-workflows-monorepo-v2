@@ -2,10 +2,16 @@ import { useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChatInterface } from "./components/ChatInterface";
-import { ChatPromptInput, type ChatPromptInputHandle } from "./components/ChatPromptInput";
+import {
+  ChatPromptInput,
+  type ChatPromptInputHandle,
+} from "./components/ChatPromptInput";
 import { useSessionWebSocket } from "./hooks/useSessionWebSocket";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
-import { useSessionStore, selectTotalTokens } from "@/client/pages/projects/sessions/stores/sessionStore";
+import {
+  useSessionStore,
+  selectTotalTokens,
+} from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation";
 import { useNavigationStore } from "@/client/stores/index";
 import { api } from "@/client/lib/api-client";
@@ -35,7 +41,11 @@ export default function ProjectSession() {
   const totalTokens = useSessionStore(selectTotalTokens);
 
   // App-wide WebSocket hook for sending messages during session creation
-  const { sendMessage: globalSendMessage, isConnected: globalIsConnected, reconnect } = useWebSocket();
+  const {
+    sendMessage: globalSendMessage,
+    isConnected: globalIsConnected,
+    reconnect,
+  } = useWebSocket();
 
   // WebSocket hook (subscribes to session events)
   const { isConnected, sendMessage: wsSendMessage } = useSessionWebSocket({
@@ -61,11 +71,13 @@ export default function ProjectSession() {
 
     // Check if we have a query parameter (indicates message already sent, skip loadSession)
     const searchParams = new URLSearchParams(location.search);
-    const queryParam = searchParams.get('query');
+    const queryParam = searchParams.get("query");
 
     if (queryParam) {
       if (import.meta.env.DEV) {
-        console.log("[ProjectSession] Query param detected - skipping loadSession");
+        console.log(
+          "[ProjectSession] Query param detected - skipping loadSession"
+        );
       }
       // Initialize session in store without fetching from server (only if not already initialized)
       if (currentSessionId !== sessionId) {
@@ -75,7 +87,7 @@ export default function ProjectSession() {
           sessionId: sessionId,
           session: {
             id: sessionId,
-            agent: 'claude', // Default to claude
+            agent: "claude", // Default to claude
             messages: [],
             isStreaming: false,
             metadata: null,
@@ -90,7 +102,10 @@ export default function ProjectSession() {
     // If this is a different session, handle the transition
     if (currentSessionId !== sessionId) {
       if (import.meta.env.DEV) {
-        console.log("[ProjectSession] Session changed:", { from: currentSessionId, to: sessionId });
+        console.log("[ProjectSession] Session changed:", {
+          from: currentSessionId,
+          to: sessionId,
+        });
       }
 
       // Clear previous session only if we're coming from a different session
@@ -101,14 +116,19 @@ export default function ProjectSession() {
       // Load session from server
       if (!session || session.id !== sessionId) {
         if (import.meta.env.DEV) {
-          console.log("[ProjectSession] Loading session from server:", sessionId);
+          console.log(
+            "[ProjectSession] Loading session from server:",
+            sessionId
+          );
         }
         loadSession(sessionId, projectId).catch((err) => {
           console.error("[ProjectSession] Error loading session:", err);
         });
       } else {
         if (import.meta.env.DEV) {
-          console.log("[ProjectSession] Session already in store, skipping load");
+          console.log(
+            "[ProjectSession] Session already in store, skipping load"
+          );
         }
       }
     }
@@ -138,11 +158,13 @@ export default function ProjectSession() {
     }
 
     const searchParams = new URLSearchParams(location.search);
-    const queryParam = searchParams.get('query');
+    const queryParam = searchParams.get("query");
 
     if (queryParam) {
       if (import.meta.env.DEV) {
-        console.log("[ProjectSession] Processing initial message from query parameter");
+        console.log(
+          "[ProjectSession] Processing initial message from query parameter"
+        );
       }
       initialMessageSentRef.current = true;
 
@@ -164,7 +186,10 @@ export default function ProjectSession() {
         // Remove query parameter from URL
         navigate(location.pathname, { replace: true });
       } catch (error) {
-        console.error("[ProjectSession] Error processing query parameter:", error);
+        console.error(
+          "[ProjectSession] Error processing query parameter:",
+          error
+        );
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -199,7 +224,9 @@ export default function ProjectSession() {
         );
 
         // Invalidate sessions query to update sidebar immediately
-        queryClient.invalidateQueries({ queryKey: sessionKeys.byProject(projectId) });
+        queryClient.invalidateQueries({
+          queryKey: sessionKeys.byProject(projectId),
+        });
 
         // Convert images to base64 if present
         const imagePaths = images ? await handleImageUpload(images) : undefined;
@@ -218,9 +245,12 @@ export default function ProjectSession() {
 
         // Navigate to the new session with query parameter
         // Query param signals: message already sent, just display it
-        navigate(`/projects/${projectId}/session/${newSession.id}?query=${encodeURIComponent(message)}`, {
-          replace: true,
-        });
+        navigate(
+          `/projects/${projectId}/session/${newSession.id}?query=${encodeURIComponent(message)}`,
+          {
+            replace: true,
+          }
+        );
       } catch (error) {
         console.error("[ProjectSession] Error creating session:", error);
       }
@@ -243,7 +273,8 @@ export default function ProjectSession() {
     setStreaming(true);
 
     // Count assistant messages to determine if we should resume
-    const assistantMessageCount = session?.messages.filter(m => m.role === 'assistant').length || 0;
+    const assistantMessageCount =
+      session?.messages.filter((m) => m.role === "assistant").length || 0;
     const shouldResume = assistantMessageCount > 0;
 
     // Get permission mode from form
@@ -295,8 +326,12 @@ export default function ProjectSession() {
 
   // Determine if input should be blocked
   // Count assistant messages
-  const assistantMessageCount = session?.messages.filter(m => m.role === 'assistant').length || 0;
-  const waitingForFirstResponse = sessionId && assistantMessageCount === 0 && (session?.messages.length || 0) > 0;
+  const assistantMessageCount =
+    session?.messages.filter((m) => m.role === "assistant").length || 0;
+  const waitingForFirstResponse =
+    sessionId &&
+    assistantMessageCount === 0 &&
+    (session?.messages.length || 0) > 0;
 
   const inputDisabled =
     !globalIsConnected || // Disable if global WebSocket not connected
@@ -322,7 +357,7 @@ export default function ProjectSession() {
         <ChatInterface
           projectId={projectId!}
           sessionId={sessionId || undefined}
-          agent={session?.agent || 'claude'}
+          agent={session?.agent || "claude"}
           messages={session?.messages || []}
           toolResults={toolResults}
           isLoading={session?.loadingState === "loading"}
@@ -332,7 +367,7 @@ export default function ProjectSession() {
       </div>
 
       {/* Fixed Input Container at Bottom */}
-      <div className="md:pb-4 pb-2 px-4">
+      <div className="md:pb-4 pb-2 md:px-4">
         <div className="mx-auto max-w-4xl">
           <ChatPromptInput
             ref={chatInputRef}
