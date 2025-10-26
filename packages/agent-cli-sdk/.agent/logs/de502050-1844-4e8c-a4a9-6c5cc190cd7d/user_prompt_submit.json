@@ -1,0 +1,18 @@
+[
+  {
+    "session_id": "de502050-1844-4e8c-a4a9-6c5cc190cd7d",
+    "transcript_path": "/Users/devbot/.claude/projects/-Users-devbot-Dev-sourceborn-agent-workflows-monorepo-v2/de502050-1844-4e8c-a4a9-6c5cc190cd7d.jsonl",
+    "cwd": "/Users/devbot/Dev/sourceborn/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "where is the server running?"
+  },
+  {
+    "session_id": "de502050-1844-4e8c-a4a9-6c5cc190cd7d",
+    "transcript_path": "/Users/devbot/.claude/projects/-Users-devbot-Dev-sourceborn-agent-workflows-monorepo-v2/de502050-1844-4e8c-a4a9-6c5cc190cd7d.jsonl",
+    "cwd": "/Users/devbot/Dev/sourceborn/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "can you kill the server?"
+  }
+]
