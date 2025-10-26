@@ -337,7 +337,14 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
 
 /**
  * Memoized selector to calculate total tokens from all assistant messages
- * Returns the sum of all token types: input, output, cache_creation, cache_read
+ *
+ * Token counting methodology:
+ * - input_tokens: Fresh input tokens (non-cached)
+ * - output_tokens: Model's generated response
+ *
+ * Note: Cache-related tokens (cache_creation_input_tokens, cache_read_input_tokens)
+ * are NOT counted here as they represent optimization metrics, not actual token usage.
+ * Only counting the "new" tokens actually processed.
  */
 export const selectTotalTokens = (state: SessionStore): number => {
   if (!state.session?.messages) return 0;
@@ -352,9 +359,8 @@ export const selectTotalTokens = (state: SessionStore): number => {
     return (
       total +
       (usage.input_tokens || 0) +
-      (usage.output_tokens || 0) +
-      (usage.cache_creation_input_tokens || 0) +
-      (usage.cache_read_input_tokens || 0)
+      (usage.output_tokens || 0)
+      // Note: NOT counting cache tokens - those are optimization metrics
     );
   }, 0);
 };

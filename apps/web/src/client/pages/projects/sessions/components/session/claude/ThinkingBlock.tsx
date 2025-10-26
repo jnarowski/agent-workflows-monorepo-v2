@@ -20,18 +20,16 @@ interface ThinkingBlockProps {
 export function ThinkingBlock({ thinking, className = '' }: ThinkingBlockProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Extract first sentence for description
-  const getFirstSentence = (text: string): string => {
-    // Match first sentence (ending with . ! or ?)
-    const match = text.match(/^[^.!?]+[.!?]/);
-    if (match) {
-      return match[0].trim();
+  // Extract first 10 words for description
+  const getDescription = (text: string): string => {
+    const words = text.trim().split(/\s+/);
+    if (words.length <= 10) {
+      return text;
     }
-    // Fallback to first 100 chars
-    return text.slice(0, 100) + (text.length > 100 ? '...' : '');
+    return words.slice(0, 10).join(' ') + '...';
   };
 
-  const description = getFirstSentence(thinking);
+  const description = getDescription(thinking);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className={className}>

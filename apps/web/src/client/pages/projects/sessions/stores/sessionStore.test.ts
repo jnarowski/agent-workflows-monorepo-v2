@@ -471,8 +471,11 @@ describe("SessionStore", () => {
       });
 
       const totalTokens = selectTotalTokens(useSessionStore.getState());
-      // (10 + 5 + 100 + 50) + (20 + 10 + 0 + 75) = 165 + 105 = 270
-      expect(totalTokens).toBe(270);
+      // Message 1: input(10) + output(5) = 15
+      // Message 2: input(20) + output(10) = 30
+      // Total: 15 + 30 = 45
+      // Note: Cache tokens NOT counted (optimization metrics only)
+      expect(totalTokens).toBe(45);
     });
 
     it("should return 0 for empty messages array", () => {
@@ -598,9 +601,11 @@ describe("SessionStore", () => {
       });
 
       const totalTokens = selectTotalTokens(useSessionStore.getState());
-      // Only count msg-2 (10+5+0+0=15) and msg-5 (20+10+5+15=50)
+      // Only count msg-2: input(10) + output(5) = 15
+      // And msg-5: input(20) + output(10) = 30
       // msg-4 has no usage data (still streaming)
-      expect(totalTokens).toBe(65); // 15 + 50
+      // Note: Cache tokens NOT counted (optimization metrics only)
+      expect(totalTokens).toBe(45); // 15 + 30
     });
   });
 });
