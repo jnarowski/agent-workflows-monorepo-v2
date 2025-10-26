@@ -12,9 +12,11 @@ describe("SessionStore", () => {
   beforeEach(() => {
     // Reset store before each test
     useSessionStore.setState({
-      currentSessionId: null,
-      currentSession: null,
-      defaultPermissionMode: "acceptEdits",
+      sessionId: null,
+      session: null,
+      form: {
+        permissionMode: "acceptEdits",
+      },
     });
 
     // Reset fetch mock
@@ -23,29 +25,29 @@ describe("SessionStore", () => {
 
   describe("Session Lifecycle", () => {
     it("should clear current session and reset to null state", () => {
-      const { clearCurrentSession } = useSessionStore.getState();
+      const { clearSession } = useSessionStore.getState();
 
       // Manually set a session first
       useSessionStore.setState({
-        currentSessionId: "test-session-id",
-        currentSession: {
+        sessionId: "test-session-id",
+        session: {
           id: "test-session-id",
           messages: [],
           isStreaming: false,
           metadata: null,
           loadingState: "idle",
           error: null,
-          permissionMode: "acceptEdits",
+          currentMessageTokens: 0,
         },
       });
 
-      expect(useSessionStore.getState().currentSessionId).toBe("test-session-id");
+      expect(useSessionStore.getState().sessionId).toBe("test-session-id");
 
-      clearCurrentSession();
+      clearSession();
 
       const state = useSessionStore.getState();
-      expect(state.currentSessionId).toBeNull();
-      expect(state.currentSession).toBeNull();
+      expect(state.sessionId).toBeNull();
+      expect(state.session).toBeNull();
     });
 
     it("should load session from API with messages data", async () => {
@@ -90,8 +92,8 @@ describe("SessionStore", () => {
       await loadSession(sessionId, projectId);
 
       const state = useSessionStore.getState();
-      expect(state.currentSessionId).toBe(sessionId);
-      expect(state.currentSession?.messages).toHaveLength(2);
+      expect(state.sessionId).toBe(sessionId);
+      expect(state.session?.messages).toHaveLength(2);
     });
 
     it("should handle 404 gracefully when loadSession gets 404", async () => {
@@ -123,9 +125,9 @@ describe("SessionStore", () => {
       await loadSession(sessionId, projectId);
 
       const state = useSessionStore.getState();
-      expect(state.currentSessionId).toBe(sessionId);
-      expect(state.currentSession?.messages).toHaveLength(0);
-      expect(state.currentSession?.loadingState).toBe("loaded");
+      expect(state.sessionId).toBe(sessionId);
+      expect(state.session?.messages).toHaveLength(0);
+      expect(state.session?.loadingState).toBe("loaded");
     });
   });
 
@@ -133,15 +135,15 @@ describe("SessionStore", () => {
     beforeEach(() => {
       // Manually set up a session for testing
       useSessionStore.setState({
-        currentSessionId: "test-session-id",
-        currentSession: {
+        sessionId: "test-session-id",
+        session: {
           id: "test-session-id",
           messages: [],
           isStreaming: false,
           metadata: null,
           loadingState: "idle",
           error: null,
-          permissionMode: "acceptEdits",
+          currentMessageTokens: 0,
         },
       });
     });
@@ -157,8 +159,8 @@ describe("SessionStore", () => {
       });
 
       const state = useSessionStore.getState();
-      expect(state.currentSession?.messages).toHaveLength(1);
-      expect(state.currentSession?.messages[0].role).toBe("user");
+      expect(state.session?.messages).toHaveLength(1);
+      expect(state.session?.messages[0].role).toBe("user");
     });
 
     it("should update streaming message by replacing content blocks", () => {
@@ -168,16 +170,16 @@ describe("SessionStore", () => {
       // First chunk
       updateStreamingMessage(messageId, [{ type: "text", text: "Hello" }]);
       let state = useSessionStore.getState();
-      expect(state.currentSession?.messages).toHaveLength(1);
-      expect(state.currentSession?.messages[0].role).toBe("assistant");
-      expect(state.currentSession?.messages[0].content).toHaveLength(1);
+      expect(state.session?.messages).toHaveLength(1);
+      expect(state.session?.messages[0].role).toBe("assistant");
+      expect(state.session?.messages[0].content).toHaveLength(1);
 
       // Second chunk - replaces content with same message ID (merging happens in WebSocket hook)
       updateStreamingMessage(messageId, [{ type: "text", text: " world" }]);
       state = useSessionStore.getState();
-      expect(state.currentSession?.messages).toHaveLength(1);
-      expect(state.currentSession?.messages[0].content).toHaveLength(1);
-      expect((state.currentSession?.messages[0].content[0] as { type: string; text: string }).text).toBe(" world");
+      expect(state.session?.messages).toHaveLength(1);
+      expect(state.session?.messages[0].content).toHaveLength(1);
+      expect((state.session?.messages[0].content[0] as { type: string; text: string }).text).toBe(" world");
     });
 
     it("should handle multiple text blocks during streaming", () => {
@@ -190,8 +192,8 @@ describe("SessionStore", () => {
       ]);
 
       const state = useSessionStore.getState();
-      expect(state.currentSession?.messages).toHaveLength(1);
-      expect(state.currentSession?.messages[0].content).toHaveLength(2);
+      expect(state.session?.messages).toHaveLength(1);
+      expect(state.session?.messages[0].content).toHaveLength(2);
     });
 
     it("should handle tool_use blocks in streaming content", () => {
@@ -205,9 +207,9 @@ describe("SessionStore", () => {
       ]);
 
       const state = useSessionStore.getState();
-      expect(state.currentSession?.messages[0].content).toHaveLength(2);
-      expect(state.currentSession?.messages[0].content[0].type).toBe("text");
-      expect(state.currentSession?.messages[0].content[1].type).toBe("tool_use");
+      expect(state.session?.messages[0].content).toHaveLength(2);
+      expect(state.session?.messages[0].content[0].type).toBe("text");
+      expect(state.session?.messages[0].content[1].type).toBe("tool_use");
     });
 
     it("should finalize message and clear streaming state", () => {
@@ -218,10 +220,10 @@ describe("SessionStore", () => {
       finalizeMessage(messageId);
 
       const state = useSessionStore.getState();
-      expect(state.currentSession?.isStreaming).toBe(false);
-      expect(state.currentSession?.messages).toHaveLength(1);
-      expect(state.currentSession?.messages[0].role).toBe("assistant");
-      expect(state.currentSession?.messages[0].isStreaming).toBe(false);
+      expect(state.session?.isStreaming).toBe(false);
+      expect(state.session?.messages).toHaveLength(1);
+      expect(state.session?.messages[0].role).toBe("assistant");
+      expect(state.session?.messages[0].isStreaming).toBe(false);
     });
 
     it("should handle empty content array in streaming update", () => {
@@ -232,7 +234,7 @@ describe("SessionStore", () => {
 
       const state = useSessionStore.getState();
       // Should create a message with empty content
-      expect(state.currentSession?.messages.length).toBeGreaterThanOrEqual(0);
+      expect(state.session?.messages.length).toBeGreaterThanOrEqual(0);
     });
 
     it("REGRESSION: should append multiple assistant messages during streaming, not replace them", () => {
@@ -245,9 +247,9 @@ describe("SessionStore", () => {
       ]);
 
       let state = useSessionStore.getState();
-      expect(state.currentSession?.messages).toHaveLength(1);
-      expect(state.currentSession?.messages[0].content).toHaveLength(2);
-      const firstContentBlock = state.currentSession?.messages[0].content[1];
+      expect(state.session?.messages).toHaveLength(1);
+      expect(state.session?.messages[0].content).toHaveLength(2);
+      const firstContentBlock = state.session?.messages[0].content[1];
       if (firstContentBlock && 'name' in firstContentBlock) {
         expect(firstContentBlock.name).toBe("Read");
       }
@@ -262,10 +264,10 @@ describe("SessionStore", () => {
       state = useSessionStore.getState();
 
       // EXPECTED BEHAVIOR (FIXED): 2 messages exist, both visible
-      expect(state.currentSession?.messages).toHaveLength(2);
-      const firstMsg = state.currentSession?.messages[0].content[1];
+      expect(state.session?.messages).toHaveLength(2);
+      const firstMsg = state.session?.messages[0].content[1];
       if (firstMsg && 'name' in firstMsg) expect(firstMsg.name).toBe("Read");
-      const secondMsg = state.currentSession?.messages[1].content[1];
+      const secondMsg = state.session?.messages[1].content[1];
       if (secondMsg && 'name' in secondMsg) expect(secondMsg.name).toBe("Glob");
     });
 
@@ -276,7 +278,7 @@ describe("SessionStore", () => {
       expect(() => finalizeMessage("")).not.toThrow();
 
       const state = useSessionStore.getState();
-      expect(state.currentSession?.isStreaming).toBe(false);
+      expect(state.session?.isStreaming).toBe(false);
     });
   });
 
@@ -284,15 +286,15 @@ describe("SessionStore", () => {
     beforeEach(() => {
       // Manually set up a session for testing
       useSessionStore.setState({
-        currentSessionId: "test-session-id",
-        currentSession: {
+        sessionId: "test-session-id",
+        session: {
           id: "test-session-id",
           messages: [],
           isStreaming: false,
           metadata: null,
           loadingState: "idle",
           error: null,
-          permissionMode: "acceptEdits",
+          currentMessageTokens: 0,
         },
       });
     });
@@ -301,30 +303,30 @@ describe("SessionStore", () => {
       const { setStreaming } = useSessionStore.getState();
 
       setStreaming(true);
-      expect(useSessionStore.getState().currentSession?.isStreaming).toBe(true);
+      expect(useSessionStore.getState().session?.isStreaming).toBe(true);
 
       setStreaming(false);
-      expect(useSessionStore.getState().currentSession?.isStreaming).toBe(false);
+      expect(useSessionStore.getState().session?.isStreaming).toBe(false);
     });
 
     it("should persist error state until cleared", () => {
       const { setError } = useSessionStore.getState();
 
       setError("Test error");
-      expect(useSessionStore.getState().currentSession?.error).toBe("Test error");
+      expect(useSessionStore.getState().session?.error).toBe("Test error");
 
       setError(null);
-      expect(useSessionStore.getState().currentSession?.error).toBeNull();
+      expect(useSessionStore.getState().session?.error).toBeNull();
     });
 
     it("should transition loading states correctly", () => {
       const { setLoadingState } = useSessionStore.getState();
 
       setLoadingState("loading");
-      expect(useSessionStore.getState().currentSession?.loadingState).toBe("loading");
+      expect(useSessionStore.getState().session?.loadingState).toBe("loading");
 
       setLoadingState("idle");
-      expect(useSessionStore.getState().currentSession?.loadingState).toBe("idle");
+      expect(useSessionStore.getState().session?.loadingState).toBe("idle");
     });
 
     it("should update metadata", () => {
@@ -339,7 +341,7 @@ describe("SessionStore", () => {
         usage: { input_tokens: 50, output_tokens: 50 },
       });
 
-      const metadata = useSessionStore.getState().currentSession?.metadata;
+      const metadata = useSessionStore.getState().session?.metadata;
       expect(metadata?.totalTokens).toBe(100); // 50 + 50 from usage
       expect(metadata?.messageCount).toBe(2);
       expect(metadata?.firstMessagePreview).toBe("Hello");
@@ -347,44 +349,22 @@ describe("SessionStore", () => {
   });
 
   describe("Permission Modes", () => {
-    it("should set and get default permission mode", () => {
-      const { setDefaultPermissionMode } = useSessionStore.getState();
-
-      setDefaultPermissionMode("plan");
-
-      const state = useSessionStore.getState();
-      expect(state.defaultPermissionMode).toBe("plan");
-    });
-
-    it("should set permission mode for current session", () => {
+    it("should set and get form permission mode", () => {
       const { setPermissionMode, getPermissionMode } = useSessionStore.getState();
 
-      // Manually set up a session for testing
-      useSessionStore.setState({
-        currentSessionId: "test-session-id",
-        currentSession: {
-          id: "test-session-id",
-          messages: [],
-          isStreaming: false,
-          metadata: null,
-          loadingState: "idle",
-          error: null,
-          permissionMode: "acceptEdits",
-        },
-      });
-
-      setPermissionMode("default");
-
-      expect(getPermissionMode()).toBe("default");
-      expect(useSessionStore.getState().currentSession?.permissionMode).toBe("default");
-    });
-
-    it("should return default permission mode when no session", () => {
-      const { getPermissionMode, setDefaultPermissionMode } = useSessionStore.getState();
-
-      setDefaultPermissionMode("plan");
+      setPermissionMode("plan");
 
       expect(getPermissionMode()).toBe("plan");
+      expect(useSessionStore.getState().form.permissionMode).toBe("plan");
+    });
+
+    it("should persist permission mode in form state", () => {
+      const { setPermissionMode } = useSessionStore.getState();
+
+      setPermissionMode("reject");
+
+      const state = useSessionStore.getState();
+      expect(state.form.permissionMode).toBe("reject");
     });
   });
 
@@ -392,15 +372,15 @@ describe("SessionStore", () => {
     beforeEach(() => {
       // Manually set up a session for testing
       useSessionStore.setState({
-        currentSessionId: "test-session-id",
-        currentSession: {
+        sessionId: "test-session-id",
+        session: {
           id: "test-session-id",
           messages: [],
           isStreaming: false,
           metadata: null,
           loadingState: "idle",
           error: null,
-          permissionMode: "acceptEdits",
+          currentMessageTokens: 0,
         },
       });
     });
@@ -429,7 +409,7 @@ describe("SessionStore", () => {
         timestamp: Date.now(),
       });
 
-      const messages = useSessionStore.getState().currentSession?.messages;
+      const messages = useSessionStore.getState().session?.messages;
       expect(messages).toHaveLength(3);
       expect((messages?.[0].content[0] as { type: string; text: string }).text).toBe("Message 1");
       expect((messages?.[1].content[0] as { type: string; text: string }).text).toBe("Response 1");

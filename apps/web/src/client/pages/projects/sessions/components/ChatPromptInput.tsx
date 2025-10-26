@@ -92,51 +92,16 @@ const ChatPromptInputInner = forwardRef<
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     // Get active project and session IDs from navigation store
-    const { activeProjectId, activeSessionId } = useNavigationStore();
+    const { activeProjectId } = useNavigationStore();
     const { project } = useActiveProject();
 
     // Session store for permission modes
-    const getPermissionMode = useSessionStore((s) => s.getPermissionMode);
-    const setSessionPermissionMode = useSessionStore(
-      (s) => s.setPermissionMode
-    );
-    const setPromptFormPermissionMode = useSessionStore(
-      (s) => s.setPromptFormPermissionMode
-    );
-    const promptFormPermissionMode = useSessionStore(
-      (s) => s.promptForm.permissionMode
-    );
-
-    // Initialize permission mode from store (current session or default)
-    const [permissionMode, setPermissionMode] = useState<ClaudePermissionMode>(
-      () => {
-        if (activeSessionId) {
-          return getPermissionMode();
-        }
-        return promptFormPermissionMode;
-      }
-    );
-
-    // Sync permission mode when session changes
-    useEffect(() => {
-      if (activeSessionId) {
-        const sessionMode = getPermissionMode();
-        setPermissionMode(sessionMode);
-      } else {
-        setPermissionMode(promptFormPermissionMode);
-      }
-    }, [activeSessionId, getPermissionMode, promptFormPermissionMode]);
+    const permissionMode = useSessionStore((s) => s.form.permissionMode);
+    const setPermissionMode = useSessionStore((s) => s.setPermissionMode);
 
     // Handle permission mode change
     const handlePermissionModeChange = (mode: ClaudePermissionMode) => {
       setPermissionMode(mode);
-      if (activeSessionId) {
-        // Update current session's permission mode
-        setSessionPermissionMode(mode);
-      } else {
-        // Update prompt form permission mode for new sessions
-        setPromptFormPermissionMode(mode);
-      }
     };
 
     // Cycle to next permission mode

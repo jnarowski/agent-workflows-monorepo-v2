@@ -49,8 +49,8 @@ export function useSessionWebSocket({
    */
   const handleStreamOutput = useCallback((data: SessionStreamOutputData) => {
     // Get current session to access agent type
-    const currentSession = useSessionStore.getState().currentSession;
-    if (!currentSession) {
+    const session = useSessionStore.getState().session;
+    if (!session) {
       if (import.meta.env.DEV) {
         console.warn("[useSessionWebSocket] No current session, skipping stream update");
       }
@@ -58,7 +58,7 @@ export function useSessionWebSocket({
     }
 
     // Get agent implementation and use its transform
-    const agent = getAgent(currentSession.agent);
+    const agent = getAgent(session.agent);
     const streamingMessage = agent.transformStreaming(data);
 
     // Only update if we have a valid streaming message - skip system/result events

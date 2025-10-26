@@ -27,7 +27,7 @@ export type LoadingState = "idle" | "loading" | "loaded" | "error";
  * Prompt input form state
  * Tracks the current state of the prompt input form
  */
-export interface PromptFormState {
+export interface FormState {
   permissionMode: ClaudePermissionMode;
 }
 
@@ -43,7 +43,6 @@ export interface SessionData {
   metadata: AgentSessionMetadata | null;
   loadingState: LoadingState;
   error: string | null;
-  permissionMode: ClaudePermissionMode;
   currentMessageTokens: number; // Tokens for the currently streaming message
 }
 
@@ -53,14 +52,13 @@ export interface SessionData {
  */
 export interface SessionStore {
   // State
-  currentSessionId: string | null;
-  currentSession: SessionData | null;
-  defaultPermissionMode: ClaudePermissionMode;
-  promptForm: PromptFormState;
+  sessionId: string | null;
+  session: SessionData | null;
+  form: FormState;
 
   // Session lifecycle actions
   loadSession: (sessionId: string, projectId: string) => Promise<void>;
-  clearCurrentSession: () => void;
+  clearSession: () => void;
 
   // Message actions
   addMessage: (message: SessionMessage) => void;
@@ -74,13 +72,8 @@ export interface SessionStore {
   setLoadingState: (state: LoadingState) => void;
 
   // Permission mode actions
-  setDefaultPermissionMode: (mode: ClaudePermissionMode) => void;
   setPermissionMode: (mode: ClaudePermissionMode) => void;
   getPermissionMode: () => ClaudePermissionMode;
-
-  // Prompt form actions
-  setPromptFormPermissionMode: (mode: ClaudePermissionMode) => void;
-  getPromptFormPermissionMode: () => ClaudePermissionMode;
 }
 
 /**
@@ -88,10 +81,9 @@ export interface SessionStore {
  */
 export const useSessionStore = create<SessionStore>((set, get) => ({
   // Initial state
-  currentSessionId: null,
-  currentSession: null,
-  defaultPermissionMode: "acceptEdits",
-  promptForm: {
+  sessionId: null,
+  session: null,
+  form: {
     permissionMode: "acceptEdits",
   },
 
@@ -114,8 +106,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
 
       // Set loading state with agent type and metadata
       set({
-        currentSessionId: sessionId,
-        currentSession: {
+        sessionId: sessionId,
+        session: {
           id: sessionId,
           agent: session.agent,
           messages: [],
@@ -123,7 +115,6 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
           metadata: session.metadata || null,
           loadingState: "loading",
           error: null,
-          permissionMode: get().defaultPermissionMode,
           currentMessageTokens: 0,
         },
       });
@@ -144,8 +135,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
             );
           }
           set((state) => ({
-            currentSession: state.currentSession
-              ? { ...state.currentSession, loadingState: "loaded" }
+            session: state.session
+              ? { ...state.session, loadingState: "loaded" }
               : null,
           }));
           return;
@@ -157,9 +148,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       const messages = agent.transformMessages(rawMessages);
 
       set((state) => ({
-        currentSession: state.currentSession
+        session: state.session
           ? {
-              ...state.currentSession,
+              ...state.session,
               messages,
               loadingState: "loaded",
             }
@@ -170,9 +161,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         error instanceof Error ? error.message : "Failed to load session";
       console.error(`[sessionStore] Error loading session:`, errorMessage);
       set((state) => ({
-        currentSession: state.currentSession
+        session: state.session
           ? {
-              ...state.currentSession,
+              ...state.session,
               loadingState: "error",
               error: errorMessage,
             }
@@ -183,27 +174,27 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   },
 
   // Clear current session
-  clearCurrentSession: () => {
+  clearSession: () => {
     set({
-      currentSessionId: null,
-      currentSession: null,
+      sessionId: null,
+      session: null,
     });
   },
 
   // Add a message to the current session
   addMessage: (message: SessionMessage) => {
     set((state) => {
-      if (!state.currentSession) return state;
+      if (!state.session) return state;
 
       return {
-        currentSession: {
-          ...state.currentSession,
-          messages: [...state.currentSession.messages, message],
+        session: {
+          ...state.session,
+          messages: [...state.session.messages, message],
           // Reset current message tokens when user sends a new message
           currentMessageTokens:
             message.role === "user"
               ? 0
-              : state.currentSession.currentMessageTokens,
+              : state.session.currentMessageTokens,
         },
       };
     });
@@ -213,11 +204,11 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   // Receives already-transformed ContentBlock[] from agent.transformStreaming()
   updateStreamingMessage: (messageId: string, contentBlocks: ContentBlock[]) => {
     set((state) => {
-      if (!state.currentSession) {
+      if (!state.session) {
         return state;
       }
 
-      const messages = state.currentSession.messages;
+      const messages = state.session.messages;
       const lastMessage = messages[messages.length - 1];
 
       // Check if last message has the same ID (update existing message)
@@ -230,8 +221,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       if (shouldUpdateLastMessage) {
         // Update existing streaming message with same ID immutably
         return {
-          currentSession: {
-            ...state.currentSession,
+          session: {
+            ...state.session,
             messages: [
               ...messages.slice(0, -1),
               {
@@ -245,8 +236,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       } else {
         // Create new streaming assistant message with the provided ID
         return {
-          currentSession: {
-            ...state.currentSession,
+          session: {
+            ...state.session,
             messages: [
               ...messages,
               {
@@ -267,17 +258,17 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   // Finalize the streaming message
   finalizeMessage: (messageId: string) => {
     set((state) => {
-      if (!state.currentSession) return state;
+      if (!state.session) return state;
 
-      const messages = state.currentSession.messages.map((msg) =>
+      const messages = state.session.messages.map((msg) =>
         msg.id === messageId || msg.isStreaming
           ? { ...msg, isStreaming: false }
           : msg
       );
 
       return {
-        currentSession: {
-          ...state.currentSession,
+        session: {
+          ...state.session,
           messages,
           isStreaming: false,
         },
@@ -288,8 +279,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   // Set streaming state
   setStreaming: (isStreaming: boolean) => {
     set((state) => ({
-      currentSession: state.currentSession
-        ? { ...state.currentSession, isStreaming }
+      session: state.session
+        ? { ...state.session, isStreaming }
         : null,
     }));
   },
@@ -301,11 +292,11 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     }
   ) => {
     set((state) => {
-      if (!state.currentSession) return state;
+      if (!state.session) return state;
 
       // Calculate current message tokens from usage data if provided
-      let currentMessageTokens = state.currentSession.currentMessageTokens;
-      let updatedTotalTokens = state.currentSession.metadata?.totalTokens || 0;
+      let currentMessageTokens = state.session.currentMessageTokens;
+      let updatedTotalTokens = state.session.metadata?.totalTokens || 0;
 
       if (metadata.usage) {
         const inputTokens = metadata.usage.input_tokens || 0;
@@ -317,10 +308,10 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       }
 
       return {
-        currentSession: {
-          ...state.currentSession,
+        session: {
+          ...state.session,
           metadata: {
-            ...(state.currentSession.metadata || {
+            ...(state.session.metadata || {
               totalTokens: 0,
               messageCount: 0,
               lastMessageAt: "",
@@ -338,8 +329,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   // Set error state
   setError: (error: string | null) => {
     set((state) => ({
-      currentSession: state.currentSession
-        ? { ...state.currentSession, error }
+      session: state.session
+        ? { ...state.session, error }
         : null,
     }));
   },
@@ -347,45 +338,25 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   // Set loading state
   setLoadingState: (loadingState: LoadingState) => {
     set((state) => ({
-      currentSession: state.currentSession
-        ? { ...state.currentSession, loadingState }
+      session: state.session
+        ? { ...state.session, loadingState }
         : null,
     }));
   },
 
-  // Set default permission mode
-  setDefaultPermissionMode: (mode: ClaudePermissionMode) => {
-    set({ defaultPermissionMode: mode });
-  },
-
-  // Set permission mode for current session
+  // Set permission mode in form
   setPermissionMode: (mode: ClaudePermissionMode) => {
     set((state) => ({
-      currentSession: state.currentSession
-        ? { ...state.currentSession, permissionMode: mode }
-        : null,
-    }));
-  },
-
-  // Get permission mode for current session
-  getPermissionMode: () => {
-    const state = get();
-    return state.currentSession?.permissionMode ?? state.defaultPermissionMode;
-  },
-
-  // Set permission mode in prompt form
-  setPromptFormPermissionMode: (mode: ClaudePermissionMode) => {
-    set((state) => ({
-      promptForm: {
-        ...state.promptForm,
+      form: {
+        ...state.form,
         permissionMode: mode,
       },
     }));
   },
 
-  // Get permission mode from prompt form
-  getPromptFormPermissionMode: () => {
+  // Get permission mode from form
+  getPermissionMode: () => {
     const state = get();
-    return state.promptForm.permissionMode;
+    return state.form.permissionMode;
   },
 }));

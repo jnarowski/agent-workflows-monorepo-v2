@@ -11,7 +11,6 @@ import { useNavigationStore } from "@/client/stores/index";
 import { api } from "@/client/lib/api-client";
 import type { ToolResultBlock } from "@/shared/types/message.types";
 import { sessionKeys } from "./hooks/useAgentSessions";
-import { encodeSessionConfig, decodeSessionConfig } from "./utils/sessionConfig";
 
 export default function ProjectSession() {
   const navigate = useNavigate();
@@ -27,13 +26,12 @@ export default function ProjectSession() {
   const sessionId = params.sessionId || null;
 
   // Get session from store
-  const session = useSessionStore((s) => s.currentSession);
-  const currentSessionId = useSessionStore((s) => s.currentSessionId);
+  const session = useSessionStore((s) => s.session);
+  const currentSessionId = useSessionStore((s) => s.sessionId);
   const loadSession = useSessionStore((s) => s.loadSession);
-  const clearCurrentSession = useSessionStore((s) => s.clearCurrentSession);
+  const clearSession = useSessionStore((s) => s.clearSession);
   const addMessage = useSessionStore((s) => s.addMessage);
   const setStreaming = useSessionStore((s) => s.setStreaming);
-  const defaultPermissionMode = useSessionStore((s) => s.defaultPermissionMode);
 
   // App-wide WebSocket hook for sending messages during session creation
   const { sendMessage: globalSendMessage, isConnected: globalIsConnected, reconnect } = useWebSocket();
@@ -56,34 +54,33 @@ export default function ProjectSession() {
     // Skip loading if no sessionId (we're on /session/new route)
     if (!sessionId || !projectId) {
       // Always clear session when navigating to /new
-      clearCurrentSession();
+      clearSession();
       return;
     }
 
-    // Check if we have a config parameter (indicates message already sent, skip loadSession)
+    // Check if we have a query parameter (indicates message already sent, skip loadSession)
     const searchParams = new URLSearchParams(location.search);
-    const configParam = searchParams.get('config');
-    const config = configParam ? decodeSessionConfig(configParam) : null;
+    const queryParam = searchParams.get('query');
 
-    if (config) {
+    if (queryParam) {
       if (import.meta.env.DEV) {
-        console.log("[ProjectSession] Config param detected - skipping loadSession", config);
+        console.log("[ProjectSession] Query param detected - skipping loadSession");
       }
       // Initialize session in store without fetching from server (only if not already initialized)
       if (currentSessionId !== sessionId) {
-        clearCurrentSession();
+        clearSession();
         // Manually initialize the session store for this new session
         useSessionStore.setState({
-          currentSessionId: sessionId,
-          currentSession: {
+          sessionId: sessionId,
+          session: {
             id: sessionId,
-            agent: config.agent || 'claude', // Use agent from config or default to claude
+            agent: 'claude', // Default to claude
             messages: [],
             isStreaming: false,
             metadata: null,
             loadingState: "loaded",
             error: null,
-            permissionMode: config.permissionMode, // Use permission mode from config
+            currentMessageTokens: 0,
           },
         });
       }
@@ -98,7 +95,7 @@ export default function ProjectSession() {
 
       // Clear previous session only if we're coming from a different session
       if (currentSessionId && currentSessionId !== sessionId) {
-        clearCurrentSession();
+        clearSession();
       }
 
       // Load session from server
@@ -134,40 +131,40 @@ export default function ProjectSession() {
     }
   }, [sessionId]);
 
-  // Handle initial message from config parameter
+  // Handle initial message from query parameter
   useEffect(() => {
     if (!sessionId || initialMessageSentRef.current) {
       return;
     }
 
     const searchParams = new URLSearchParams(location.search);
-    const configParam = searchParams.get('config');
-    const config = configParam ? decodeSessionConfig(configParam) : null;
+    const queryParam = searchParams.get('query');
 
-    if (config) {
+    if (queryParam) {
       if (import.meta.env.DEV) {
-        console.log("[ProjectSession] Processing initial message from config parameter");
+        console.log("[ProjectSession] Processing initial message from query parameter");
       }
       initialMessageSentRef.current = true;
 
       try {
+        const decodedMessage = decodeURIComponent(queryParam);
+
         // Add the user message to the store for UI display
         // (Message was already sent via WebSocket during session creation)
         addMessage({
           id: crypto.randomUUID(),
           role: "user",
-          content: [{ type: "text", text: config.query }],
-          images: config.images,
+          content: [{ type: "text", text: decodedMessage }],
           timestamp: Date.now(),
         });
 
         // Set streaming state to show loading indicator
         setStreaming(true);
 
-        // Remove config parameter from URL
+        // Remove query parameter from URL
         navigate(location.pathname, { replace: true });
       } catch (error) {
-        console.error("[ProjectSession] Error processing config parameter:", error);
+        console.error("[ProjectSession] Error processing query parameter:", error);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -207,9 +204,9 @@ export default function ProjectSession() {
         // Convert images to base64 if present
         const imagePaths = images ? await handleImageUpload(images) : undefined;
 
-        // Get permission mode from prompt form (for new sessions)
-        const getPromptFormPermissionMode = useSessionStore.getState().getPromptFormPermissionMode;
-        const permissionMode = getPromptFormPermissionMode();
+        // Get permission mode from form
+        const getPermissionMode = useSessionStore.getState().getPermissionMode;
+        const permissionMode = getPermissionMode();
 
         // Immediately send message via app-wide WebSocket (before navigation)
         // This starts the assistant processing right away
@@ -219,16 +216,9 @@ export default function ProjectSession() {
           config: { permissionMode },
         });
 
-        // Encode session config for URL parameter
-        const sessionConfig = encodeSessionConfig({
-          query: message,
-          permissionMode,
-          images: imagePaths,
-        });
-
-        // Navigate to the new session with encoded config parameter
-        // Config param signals: message already sent, just display it
-        navigate(`/projects/${projectId}/session/${newSession.id}?config=${sessionConfig}`, {
+        // Navigate to the new session with query parameter
+        // Query param signals: message already sent, just display it
+        navigate(`/projects/${projectId}/session/${newSession.id}?query=${encodeURIComponent(message)}`, {
           replace: true,
         });
       } catch (error) {
@@ -256,9 +246,9 @@ export default function ProjectSession() {
     const assistantMessageCount = session?.messages.filter(m => m.role === 'assistant').length || 0;
     const shouldResume = assistantMessageCount > 0;
 
-    // Get permission mode from prompt form
-    const getPromptFormPermissionMode = useSessionStore.getState().getPromptFormPermissionMode;
-    const permissionMode = getPromptFormPermissionMode();
+    // Get permission mode from form
+    const getPermissionMode = useSessionStore.getState().getPermissionMode;
+    const permissionMode = getPermissionMode();
 
     const config = shouldResume
       ? { resume: true, sessionId, permissionMode }
