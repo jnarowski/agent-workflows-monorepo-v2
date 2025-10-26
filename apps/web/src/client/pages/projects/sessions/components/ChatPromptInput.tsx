@@ -39,16 +39,18 @@ import {
   removeAllOccurrences,
 } from "@/client/pages/projects/files/lib/fileUtils";
 import { cn } from "@/client/lib/utils";
+import { TokenUsageCircle } from "./TokenUsageCircle";
 
 const permissionModes: Array<{
   id: ClaudePermissionMode;
   name: string;
+  shortName: string;
   color: string;
 }> = [
-  { id: "default", name: "Default", color: "bg-gray-500" },
-  { id: "plan", name: "Plan Mode", color: "bg-green-500" },
-  { id: "acceptEdits", name: "Accept Edits", color: "bg-purple-500" },
-  { id: "reject", name: "Reject", color: "bg-red-500" },
+  { id: "default", name: "Default", shortName: "Default", color: "bg-gray-500" },
+  { id: "plan", name: "Plan Mode", shortName: "Plan", color: "bg-green-500" },
+  { id: "acceptEdits", name: "Accept Edits", shortName: "Accept", color: "bg-purple-500" },
+  { id: "reject", name: "Reject", shortName: "Reject", color: "bg-red-500" },
 ];
 
 const SUBMITTING_TIMEOUT = 200;
@@ -362,7 +364,22 @@ const ChatPromptInputInner = forwardRef<
                 value={permissionMode}
               >
                 <PromptInputPermissionModeSelectTrigger>
-                  <PromptInputPermissionModeSelectValue />
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`size-2 rounded-full ${
+                        permissionModes.find((m) => m.id === permissionMode)
+                          ?.color
+                      }`}
+                    />
+                    {/* Show short name on mobile, full name on desktop */}
+                    <span className="md:hidden">
+                      {permissionModes.find((m) => m.id === permissionMode)
+                        ?.shortName}
+                    </span>
+                    <span className="hidden md:inline">
+                      <PromptInputPermissionModeSelectValue />
+                    </span>
+                  </div>
                 </PromptInputPermissionModeSelectTrigger>
                 <PromptInputPermissionModeSelectContent>
                   {permissionModes.map((mode) => (
@@ -380,15 +397,13 @@ const ChatPromptInputInner = forwardRef<
               </PromptInputPermissionModeSelect>
             </PromptInputTools>
             <div className="flex items-center gap-2">
-              {/* Token count display */}
+              {/* Token count display - circular badge */}
               {totalTokens !== undefined && (
-                <div className="text-xs text-muted-foreground">
-                  <span>{totalTokens.toLocaleString()} tokens</span>
-                </div>
+                <TokenUsageCircle totalTokens={totalTokens} />
               )}
               <PromptInputSubmit
                 className={cn(
-                  "!h-8 transition-colors",
+                  "h-10 w-16 md:!h-8 md:!w-8 transition-colors",
                   permissionMode === "plan" &&
                     "bg-green-500 hover:bg-green-600 text-white",
                   permissionMode === "acceptEdits" &&
