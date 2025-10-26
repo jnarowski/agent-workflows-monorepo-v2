@@ -217,6 +217,7 @@ export class ClaudeAdapter {
           process.stderr.write(chunk);
         }
       },
+      verbose: mergedOptions.verbose,
     });
 
     // Parse output

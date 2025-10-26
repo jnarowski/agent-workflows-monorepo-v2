@@ -249,9 +249,6 @@ export function DiffViewer({
       className={`diff-viewer text-xs ${className}`}
       style={{
         fontFamily: "ui-monospace, monospace",
-        border: `1px solid ${colors.border}`,
-        borderRadius: "6px",
-        overflow: "hidden",
         backgroundColor: colors.background,
         paddingTop: "8px",
         paddingBottom: "8px",

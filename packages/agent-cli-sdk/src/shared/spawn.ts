@@ -26,13 +26,14 @@ export interface SpawnWithCallbacksOptions {
   timeout?: number;
   onStdout?: (chunk: string) => void;
   onStderr?: (chunk: string) => void;
+  verbose?: boolean;
 }
 
 /**
  * Spawn a process and collect output
  */
 export async function spawnProcess(command: string, options: SpawnWithCallbacksOptions = {}): Promise<SpawnResult> {
-  const { args = [], cwd, env, timeout, onStdout, onStderr } = options;
+  const { args = [], cwd, env, timeout, onStdout, onStderr, verbose } = options;
 
   const startTime = Date.now();
   let stdout = '';
@@ -47,24 +48,26 @@ export async function spawnProcess(command: string, options: SpawnWithCallbacksO
   };
 
   // Verbose logging for debugging
-  // console.log('[agent-cli-sdk:spawn] ========== SPAWNING PROCESS ==========');
-  // console.log('[agent-cli-sdk:spawn] Command:', command);
-  // console.log('[agent-cli-sdk:spawn] Arguments:', JSON.stringify(args, null, 2));
-  // console.log('[agent-cli-sdk:spawn] Working Directory (cwd):', spawnOptions.cwd);
-  // console.log('[agent-cli-sdk:spawn] Timeout:', timeout ? `${timeout}ms` : 'none');
+  if (verbose) {
+    console.log('[agent-cli-sdk:spawn] ========== SPAWNING PROCESS ==========');
+    console.log('[agent-cli-sdk:spawn] Command:', command);
+    console.log('[agent-cli-sdk:spawn] Arguments:', JSON.stringify(args, null, 2));
+    console.log('[agent-cli-sdk:spawn] Working Directory (cwd):', spawnOptions.cwd);
+    console.log('[agent-cli-sdk:spawn] Timeout:', timeout ? `${timeout}ms` : 'none');
 
-  // Log environment variables (redact sensitive keys)
-  if (env) {
-    const redactedEnv = { ...env };
-    if (redactedEnv['ANTHROPIC_API_KEY']) {
-      redactedEnv['ANTHROPIC_API_KEY'] = '***REDACTED***';
+    // Log environment variables (redact sensitive keys)
+    if (env) {
+      const redactedEnv = { ...env };
+      if (redactedEnv['ANTHROPIC_API_KEY']) {
+        redactedEnv['ANTHROPIC_API_KEY'] = '***REDACTED***';
+      }
+      if (redactedEnv['CLAUDE_CODE_OAUTH_TOKEN']) {
+        redactedEnv['CLAUDE_CODE_OAUTH_TOKEN'] = '***REDACTED***';
+      }
+      console.log('[agent-cli-sdk:spawn] Environment Variables (custom):', redactedEnv);
     }
-    if (redactedEnv['CLAUDE_CODE_OAUTH_TOKEN']) {
-      redactedEnv['CLAUDE_CODE_OAUTH_TOKEN'] = '***REDACTED***';
-    }
-    console.log('[agent-cli-sdk:spawn] Environment Variables (custom):', redactedEnv);
+    console.log('[agent-cli-sdk:spawn] ==========================================');
   }
-  console.log('[agent-cli-sdk:spawn] ==========================================');
 
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, spawnOptions);

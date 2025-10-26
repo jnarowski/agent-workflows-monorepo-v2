@@ -210,12 +210,16 @@ export default function ProjectSession() {
         // Convert images to base64 if present
         const imagePaths = images ? await handleImageUpload(images) : undefined;
 
+        // Get permission mode from session store
+        const getPermissionMode = useSessionStore.getState().getPermissionMode;
+        const permissionMode = getPermissionMode();
+
         // Immediately send message via app-wide WebSocket (before navigation)
         // This starts the assistant processing right away
         globalSendMessage(`session.${newSession.id}.send_message`, {
           message,
           images: imagePaths,
-          config: {}, // First message, no resume
+          config: { permissionMode }, // First message, include permission mode
         });
 
         if (import.meta.env.DEV) {
@@ -252,14 +256,19 @@ export default function ProjectSession() {
     const assistantMessageCount = session?.messages.filter(m => m.role === 'assistant').length || 0;
     const shouldResume = assistantMessageCount > 0;
 
+    // Get permission mode from session store
+    const getPermissionMode = useSessionStore.getState().getPermissionMode;
+    const permissionMode = getPermissionMode();
+
     const config = shouldResume
-      ? { resume: true, sessionId } // Subsequent messages: include resume flag
-      : {}; // First message (no assistant responses yet): no resume
+      ? { resume: true, sessionId, permissionMode } // Subsequent messages: include resume flag + permission mode
+      : { permissionMode }; // First message: include permission mode
 
     if (import.meta.env.DEV) {
       console.log("[ProjectSession] Sending message via WebSocket", {
         assistantMessageCount,
         shouldResume,
+        permissionMode,
         config
       });
     }

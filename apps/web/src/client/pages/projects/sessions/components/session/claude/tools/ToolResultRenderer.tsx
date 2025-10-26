@@ -16,7 +16,10 @@ interface ToolResultRendererProps {
 const MAX_LENGTH_BEFORE_COLLAPSE = 500;
 
 export function ToolResultRenderer({ result, isError = false }: ToolResultRendererProps) {
-  const shouldCollapse = result.length > MAX_LENGTH_BEFORE_COLLAPSE;
+  // SAFETY: Ensure result is a string
+  const safeResult = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+
+  const shouldCollapse = safeResult.length > MAX_LENGTH_BEFORE_COLLAPSE;
   const [isOpen, setIsOpen] = useState(!shouldCollapse);
 
   const Icon = isError ? AlertCircle : CheckCircle2;
@@ -50,7 +53,7 @@ export function ToolResultRenderer({ result, isError = false }: ToolResultRender
 
       <div className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 px-3 py-2">
         <pre className="font-mono text-xs whitespace-pre-wrap break-words">
-          {result}
+          {safeResult}
         </pre>
       </div>
     </div>

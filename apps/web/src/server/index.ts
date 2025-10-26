@@ -83,6 +83,40 @@ export async function createServer() {
         }
   }).withTypeProvider<ZodTypeProvider>();
 
+  // Intercept console.log/error/warn and redirect to Pino logger
+  // This captures console.log calls from dependencies like agent-cli-sdk
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+  const originalConsoleWarn = console.warn;
+
+  console.log = (...args: unknown[]) => {
+    const message = args.map(arg =>
+      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+    ).join(' ');
+    fastify.log.info(message);
+  };
+
+  console.error = (...args: unknown[]) => {
+    const message = args.map(arg =>
+      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+    ).join(' ');
+    fastify.log.error(message);
+  };
+
+  console.warn = (...args: unknown[]) => {
+    const message = args.map(arg =>
+      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+    ).join(' ');
+    fastify.log.warn(message);
+  };
+
+  // Store originals for potential restoration
+  (fastify as typeof fastify & { _originalConsole?: typeof console })._originalConsole = {
+    log: originalConsoleLog,
+    error: originalConsoleError,
+    warn: originalConsoleWarn,
+  };
+
   // Set up Zod validation
   fastify.setValidatorCompiler(validatorCompiler);
   fastify.setSerializerCompiler(serializerCompiler);

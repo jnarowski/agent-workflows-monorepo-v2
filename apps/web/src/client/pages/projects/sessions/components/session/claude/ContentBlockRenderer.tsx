@@ -19,17 +19,6 @@ export function ContentBlockRenderer({
   toolResults,
   className = "",
 }: ContentBlockRendererProps) {
-  // DEBUG: Log block structure
-  if (import.meta.env.DEV) {
-    console.log("[ContentBlockRenderer] Rendering block:", {
-      type: block.type,
-      // @ts-ignore
-      text: block.type === 'text' ? (typeof block.text === 'string' ? block.text.substring(0, 50) : typeof block.text) : 'n/a',
-      // @ts-ignore
-      hasUnexpectedStructure: block.type === 'text' && typeof block.text !== 'string',
-    });
-  }
-
   switch (block.type) {
     case "text":
       return <TextBlock text={block.text} className={className} />;

@@ -64,20 +64,20 @@ export function WriteToolBlock({ input, result }: WriteToolBlockProps) {
       </div>
 
       {/* Content preview */}
-      <div className="pl-5 relative">
+      <div className="pl-5">
         <div
-          className={`overflow-hidden rounded-lg ${
+          className={`relative rounded-lg border overflow-hidden ${
             shouldTruncate && !isExpanded ? "max-h-40" : ""
           }`}
+          style={{
+            borderColor: colors.border,
+            backgroundColor: colors.background,
+          }}
         >
           <div
             className="text-xs [&_pre]:!m-0 [&_pre]:!p-3 [&_code]:!block"
             style={{
               fontFamily: "ui-monospace, monospace",
-              border: `1px solid ${colors.border}`,
-              borderRadius: "6px",
-              overflow: "auto",
-              backgroundColor: colors.background,
             }}
           >
             <SyntaxHighlighter
@@ -86,29 +86,28 @@ export function WriteToolBlock({ input, result }: WriteToolBlockProps) {
               showLineNumbers={false}
             />
           </div>
+
+          {/* Fade gradient overlay */}
+          {shouldTruncate && !isExpanded && (
+            <>
+              <div
+                className="absolute inset-x-0 bottom-0 h-20 pointer-events-none"
+                style={{
+                  background: `linear-gradient(to top, ${colors.background} 0%, transparent 100%)`,
+                }}
+              />
+              {/* Click to expand button */}
+              <div className="absolute bottom-4 right-4">
+                <button
+                  className="text-xs text-muted-foreground bg-background px-3 py-1 rounded-md border border-border hover:bg-muted/50 cursor-pointer"
+                  onClick={() => setIsExpanded(true)}
+                >
+                  Click to expand
+                </button>
+              </div>
+            </>
+          )}
         </div>
-
-        {/* Fade gradient overlay */}
-        {shouldTruncate && !isExpanded && (
-          <div
-            className="absolute bottom-0 left-5 right-0 h-20 pointer-events-none rounded-b-lg"
-            style={{
-              background: `linear-gradient(to top, ${colors.background} 0%, transparent 100%)`,
-            }}
-          />
-        )}
-
-        {/* Click to expand button */}
-        {shouldTruncate && !isExpanded && (
-          <div className="absolute bottom-4 right-4">
-            <button
-              className="text-xs text-muted-foreground bg-background px-3 py-1 rounded-md border border-border hover:bg-muted/50 cursor-pointer"
-              onClick={() => setIsExpanded(true)}
-            >
-              Click to expand
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

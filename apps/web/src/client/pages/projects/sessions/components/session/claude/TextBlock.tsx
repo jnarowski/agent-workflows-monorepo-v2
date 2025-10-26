@@ -12,16 +12,6 @@ interface TextBlockProps {
 }
 
 export function TextBlock({ text, className = "" }: TextBlockProps) {
-  // DEBUG: Log text value and type
-  if (import.meta.env.DEV) {
-    console.log("[TextBlock] Rendering text:", {
-      textType: typeof text,
-      textValue: typeof text === 'string' ? text.substring(0, 100) : text,
-      isObject: typeof text === 'object',
-      objectKeys: typeof text === 'object' && text !== null ? Object.keys(text) : [],
-    });
-  }
-
   // SAFETY: Ensure text is a string
   const safeText = typeof text === 'string' ? text : JSON.stringify(text, null, 2);
 

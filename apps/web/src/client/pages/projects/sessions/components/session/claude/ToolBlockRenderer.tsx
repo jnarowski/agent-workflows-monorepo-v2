@@ -12,6 +12,7 @@ import { TodoWriteToolBlock } from './blocks/TodoWriteToolBlock';
 import { WebSearchToolBlock } from './blocks/WebSearchToolBlock';
 import { GlobToolBlock } from './blocks/GlobToolBlock';
 import { GrepToolBlock } from './blocks/GrepToolBlock';
+import { TaskToolBlock } from './blocks/TaskToolBlock';
 import { DefaultToolBlock } from './blocks/DefaultToolBlock';
 
 import type {
@@ -23,6 +24,7 @@ import type {
   WebSearchToolInput,
   GlobToolInput,
   GrepToolInput,
+  TaskToolInput,
 } from '@/shared/types/tool.types';
 
 interface ToolBlockRendererProps {
@@ -59,6 +61,9 @@ export function ToolBlockRenderer({ toolName, input, result }: ToolBlockRenderer
 
     case 'Grep':
       return <GrepToolBlock input={input as GrepToolInput} result={result} />;
+
+    case 'Task':
+      return <TaskToolBlock input={input as TaskToolInput} result={result} />;
 
     default:
       // Fallback to default block for unknown tools

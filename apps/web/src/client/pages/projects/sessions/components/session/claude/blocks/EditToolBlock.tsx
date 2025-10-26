@@ -65,40 +65,43 @@ export function EditToolBlock({ input, result }: EditToolBlockProps) {
       </div>
 
       {/* Inline diff */}
-      <div className="pl-5 relative">
+      <div className="pl-5">
         <div
-          className={`overflow-hidden rounded-lg ${
+          className={`relative rounded-lg border overflow-hidden ${
             shouldTruncate && !isExpanded ? "max-h-40" : ""
           }`}
+          style={{
+            borderColor: colors.border,
+          }}
         >
           <DiffViewer
             oldString={input.old_string}
             newString={input.new_string}
             filePath={input.file_path}
+            className="border-0"
           />
+
+          {/* Fade gradient overlay */}
+          {shouldTruncate && !isExpanded && (
+            <>
+              <div
+                className="absolute inset-x-0 bottom-0 h-10 pointer-events-none"
+                style={{
+                  background: `linear-gradient(to top, ${colors.background} 0%, transparent 100%)`,
+                }}
+              />
+              {/* Click to expand button */}
+              <div className="absolute bottom-2 right-2">
+                <button
+                  className="text-[10px] text-muted-foreground bg-background px-2 py-0.5 rounded border border-border hover:bg-muted/50 cursor-pointer"
+                  onClick={() => setIsExpanded(true)}
+                >
+                  Click to expand
+                </button>
+              </div>
+            </>
+          )}
         </div>
-
-        {/* Fade gradient overlay */}
-        {shouldTruncate && !isExpanded && (
-          <div
-            className="absolute bottom-0 left-5 right-0 h-10 pointer-events-none rounded-b-lg"
-            style={{
-              background: `linear-gradient(to top, ${colors.background} 0%, transparent 100%)`,
-            }}
-          />
-        )}
-
-        {/* Click to expand button */}
-        {shouldTruncate && !isExpanded && (
-          <div className="absolute bottom-2 right-2">
-            <button
-              className="text-[10px] text-muted-foreground bg-background px-2 py-0.5 rounded border border-border hover:bg-muted/50 cursor-pointer"
-              onClick={() => setIsExpanded(true)}
-            >
-              Click to expand
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
