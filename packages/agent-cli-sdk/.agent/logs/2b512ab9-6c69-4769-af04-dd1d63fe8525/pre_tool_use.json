@@ -11,5 +11,17 @@
       "timeout": 120000,
       "description": "Type check web app"
     }
+  },
+  {
+    "session_id": "2b512ab9-6c69-4769-af04-dd1d63fe8525",
+    "transcript_path": "/Users/devbot/.claude/projects/-Users-devbot-Dev-sourceborn-agent-workflows-monorepo-v2/2b512ab9-6c69-4769-af04-dd1d63fe8525.jsonl",
+    "cwd": "/Users/devbot/Dev/sourceborn/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "cd /Users/devbot/Dev/sourceborn/agent-workflows-monorepo-v2/apps/web && pnpm check-types 2>&1 | tail -50",
+      "description": "Check web app type errors"
+    }
   }
 ]
