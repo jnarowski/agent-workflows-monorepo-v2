@@ -10,6 +10,7 @@ import type {
 } from '../../utils/types';
 import { parseJSONL, extractJSON, safeJSONParse } from '../../utils/json-parser';
 import { ParseError } from '../../utils/errors';
+import type { ClaudeStreamEvent } from './events';
 
 /**
  * Parse Claude stream output into ExecutionResponse
@@ -19,9 +20,9 @@ export async function parseClaudeOutput<T = string>(
   duration: number,
   exitCode: number,
   responseSchema?: true | { safeParse: (data: unknown) => { success: boolean; data?: unknown; error?: { message: string } } }
-): Promise<ExecutionResponse<T>> {
+): Promise<ExecutionResponse<T, ClaudeStreamEvent>> {
   // Parse JSONL events
-  const events = parseJSONL(stdout) as StreamEvent[];
+  const events = parseJSONL(stdout) as ClaudeStreamEvent[];
 
   // Extract final output from last text event or execution_complete event
   let output: T;

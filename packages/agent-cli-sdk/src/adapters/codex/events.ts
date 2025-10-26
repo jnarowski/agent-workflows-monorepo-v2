@@ -1,263 +1,327 @@
 /**
  * Codex CLI event types
- * Based on Codex CLI 0.46.0+ event format
+ * Based on Codex CLI v0.46.0 event format
+ *
+ * Codex events come in 4 main types:
+ * - session_meta: Session metadata (id, git info, cwd, etc.)
+ * - response_item: Content items (messages, reasoning, function calls/outputs)
+ * - event_msg: Event messages (user message, agent reasoning, token counts)
+ * - turn_context: Turn execution context (sandbox policy, model, etc.)
  */
 
-/**
- * Base stream event (adapter-specific)
- */
-interface BaseStreamEvent {
-  type: string;
-  timestamp?: number;
-  data?: unknown;
+// ============================================================================
+// Session Meta Event
+// ============================================================================
+
+export interface GitInfo {
+  commit_hash: string;
+  branch: string;
+  repository_url: string;
 }
 
-/**
- * Token usage information
- */
-export interface CodexUsage {
-  input_tokens?: number;
-  output_tokens?: number;
-  total_tokens?: number;
+export interface SessionMetaPayload {
+  id: string;
+  timestamp: string;
+  cwd: string;
+  originator: string;
+  cli_version: string;
+  instructions: string | null;
+  source: string;
+  git: GitInfo;
 }
 
-/**
- * Thread started event data
- */
-export interface ThreadStartedData {
-  thread_id: string;
-  timestamp?: number;
+export interface SessionMetaEvent {
+  timestamp: string;
+  type: 'session_meta';
+  payload: SessionMetaPayload;
 }
 
-/**
- * Thread started event
- */
-export interface ThreadStartedEvent extends BaseStreamEvent {
-  type: 'thread.started';
-  data?: ThreadStartedData;
+// ============================================================================
+// Response Item Event - Content Items
+// ============================================================================
+
+// Content item types within messages
+export interface InputTextContent {
+  type: 'input_text';
+  text: string;
 }
 
-/**
- * Turn completed event data
- */
-export interface TurnCompletedData {
-  turn_id?: string;
-  usage?: CodexUsage;
-  timestamp?: number;
+export interface OutputTextContent {
+  type: 'output_text';
+  text: string;
 }
 
-/**
- * Turn completed event
- */
-export interface TurnCompletedEvent extends BaseStreamEvent {
-  type: 'turn.completed';
-  data?: TurnCompletedData;
+export type MessageContent = InputTextContent | OutputTextContent;
+
+// Message payload (user or agent messages)
+export interface MessagePayload {
+  type: 'message';
+  role: 'user' | 'agent';
+  content: MessageContent[];
 }
 
-/**
- * Item types in Codex
- */
-export type CodexItemType = 'agent_message' | 'user_message' | 'tool_call' | 'tool_result';
-
-/**
- * Codex item structure
- */
-export interface CodexItem {
-  type: CodexItemType;
-  id?: string;
-  text?: string;
-  content?: unknown;
-  metadata?: Record<string, unknown>;
+// Reasoning payload (thinking/planning)
+export interface SummaryTextContent {
+  type: 'summary_text';
+  text: string;
 }
 
-/**
- * Item completed event data
- */
-export interface ItemCompletedData {
-  item: CodexItem;
-  timestamp?: number;
+export interface ReasoningPayload {
+  type: 'reasoning';
+  summary: SummaryTextContent[];
+  content: null;
+  encrypted_content: string;
 }
 
-/**
- * Item completed event (messages, tool calls, etc.)
- */
-export interface ItemCompletedEvent extends BaseStreamEvent {
-  type: 'item.completed';
-  data?: ItemCompletedData;
+// Function call payload (tool use)
+export interface FunctionCallPayload {
+  type: 'function_call';
+  name: string;
+  arguments: string; // JSON string
+  call_id: string;
 }
 
-/**
- * Tool started event data
- */
-export interface ToolStartedData {
-  toolName?: string;
-  name?: string;
-  input?: Record<string, unknown>;
-  timestamp?: number;
+// Function call output payload (tool result)
+export interface FunctionCallOutputPayload {
+  type: 'function_call_output';
+  call_id: string;
+  output: string; // JSON string with { output, metadata: { exit_code, duration_seconds } }
 }
 
-/**
- * Tool started event
- */
-export interface ToolStartedEvent extends BaseStreamEvent {
-  type: 'tool.started';
-  data?: ToolStartedData;
+// Custom tool call/output (for custom tools)
+export interface CustomToolCallPayload {
+  type: 'custom_tool_call';
+  name: string;
+  arguments: string;
+  call_id: string;
 }
 
-/**
- * Tool use event data (alternative format)
- */
-export interface ToolUseData {
-  toolName?: string;
-  name?: string;
-  input?: Record<string, unknown>;
-  timestamp?: number;
+export interface CustomToolCallOutputPayload {
+  type: 'custom_tool_call_output';
+  call_id: string;
+  output: string;
 }
 
-/**
- * Tool use event
- */
-export interface ToolUseEvent extends BaseStreamEvent {
-  type: 'tool_use';
-  data?: ToolUseData;
+// Union of all response item payloads
+export type ResponseItemPayload =
+  | MessagePayload
+  | ReasoningPayload
+  | FunctionCallPayload
+  | FunctionCallOutputPayload
+  | CustomToolCallPayload
+  | CustomToolCallOutputPayload;
+
+export interface ResponseItemEvent {
+  timestamp: string;
+  type: 'response_item';
+  payload: ResponseItemPayload;
 }
 
-/**
- * File written event data
- */
-export interface FileWrittenData {
-  path?: string;
-  file?: string;
-  content?: string;
-  timestamp?: number;
+// ============================================================================
+// Event Message Event - Event Stream Messages
+// ============================================================================
+
+// User message event (when user sends a message)
+export interface UserMessageEventPayload {
+  type: 'user_message';
+  message: string;
+  kind: 'plain' | 'rich';
 }
 
-/**
- * File written event
- */
-export interface FileWrittenEvent extends BaseStreamEvent {
-  type: 'file.written';
-  data?: FileWrittenData;
+// Agent message event (when agent sends a message)
+export interface AgentMessageEventPayload {
+  type: 'agent_message';
+  message: string;
 }
 
-/**
- * File modified event data
- */
-export interface FileModifiedData {
-  path?: string;
-  file?: string;
-  content?: string;
-  timestamp?: number;
+// Agent reasoning event (real-time reasoning updates)
+export interface AgentReasoningEventPayload {
+  type: 'agent_reasoning';
+  text: string;
 }
 
-/**
- * File modified event
- */
-export interface FileModifiedEvent extends BaseStreamEvent {
-  type: 'file.modified';
-  data?: FileModifiedData;
+// Token count event (token usage and rate limits)
+export interface TokenUsageInfo {
+  input_tokens: number;
+  cached_input_tokens: number;
+  output_tokens: number;
+  reasoning_output_tokens: number;
+  total_tokens: number;
 }
 
-/**
- * Usage event data
- */
-export interface UsageEventData {
-  usage: CodexUsage;
-  timestamp?: number;
+export interface RateLimit {
+  used_percent: number;
+  window_minutes: number;
+  resets_in_seconds: number;
 }
 
-/**
- * Usage event
- */
-export interface UsageEvent extends BaseStreamEvent {
-  type: 'usage';
-  data?: UsageEventData;
+export interface RateLimits {
+  primary: RateLimit;
+  secondary: RateLimit;
 }
 
-/**
- * Completion event data
- */
-export interface CompletionEventData {
-  usage?: CodexUsage;
-  result?: unknown;
-  timestamp?: number;
+export interface TokenInfo {
+  total_token_usage: TokenUsageInfo;
+  last_token_usage: TokenUsageInfo;
+  model_context_window: number;
 }
 
-/**
- * Completion event
- */
-export interface CompletionEvent extends BaseStreamEvent {
-  type: 'completion';
-  data?: CompletionEventData;
+export interface TokenCountEventPayload {
+  type: 'token_count';
+  info: TokenInfo | null;
+  rate_limits: RateLimits;
 }
 
+// Union of all event message payloads
+export type EventMsgPayload =
+  | UserMessageEventPayload
+  | AgentMessageEventPayload
+  | AgentReasoningEventPayload
+  | TokenCountEventPayload;
+
+export interface EventMsgEvent {
+  timestamp: string;
+  type: 'event_msg';
+  payload: EventMsgPayload;
+}
+
+// ============================================================================
+// Turn Context Event
+// ============================================================================
+
+export interface SandboxPolicy {
+  mode: 'workspace-write' | 'workspace-read' | 'off';
+  network_access: boolean;
+  exclude_tmpdir_env_var: boolean;
+  exclude_slash_tmp: boolean;
+}
+
+export interface TurnContextPayload {
+  cwd: string;
+  approval_policy: 'on-request' | 'auto';
+  sandbox_policy: SandboxPolicy;
+  model: string;
+  effort: 'low' | 'medium' | 'high';
+  summary: 'auto' | 'manual' | 'off';
+}
+
+export interface TurnContextEvent {
+  timestamp: string;
+  type: 'turn_context';
+  payload: TurnContextPayload;
+}
+
+// ============================================================================
+// Union Types & Type Guards
+// ============================================================================
+
 /**
- * Union of all Codex event types
+ * Union of all Codex stream event types
  */
 export type CodexStreamEvent =
-  | ThreadStartedEvent
-  | TurnCompletedEvent
-  | ItemCompletedEvent
-  | ToolStartedEvent
-  | ToolUseEvent
-  | FileWrittenEvent
-  | FileModifiedEvent
-  | UsageEvent
-  | CompletionEvent;
+  | SessionMetaEvent
+  | ResponseItemEvent
+  | EventMsgEvent
+  | TurnContextEvent;
 
-/**
- * Type guard to check if an event is a Codex event
- */
-export function isCodexEvent(event: BaseStreamEvent): event is CodexStreamEvent {
-  return event.type === 'thread.started'
-    || event.type === 'turn.completed'
-    || event.type === 'item.completed'
-    || event.type === 'tool.started'
-    || event.type === 'tool_use'
-    || event.type === 'file.written'
-    || event.type === 'file.modified'
-    || event.type === 'usage'
-    || event.type === 'completion';
+// ============================================================================
+// Type Guards - Event Types
+// ============================================================================
+
+export function isSessionMetaEvent(event: unknown): event is SessionMetaEvent {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'type' in event &&
+    event.type === 'session_meta'
+  );
 }
 
-/**
- * Type guard for thread started events
- */
-export function isThreadStartedEvent(event: BaseStreamEvent): event is ThreadStartedEvent {
-  return event.type === 'thread.started';
+export function isResponseItemEvent(event: unknown): event is ResponseItemEvent {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'type' in event &&
+    event.type === 'response_item'
+  );
 }
 
-/**
- * Type guard for turn completed events
- */
-export function isTurnCompletedEvent(event: BaseStreamEvent): event is TurnCompletedEvent {
-  return event.type === 'turn.completed';
+export function isEventMsgEvent(event: unknown): event is EventMsgEvent {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'type' in event &&
+    event.type === 'event_msg'
+  );
 }
 
-/**
- * Type guard for item completed events
- */
-export function isItemCompletedEvent(event: BaseStreamEvent): event is ItemCompletedEvent {
-  return event.type === 'item.completed';
+export function isTurnContextEvent(event: unknown): event is TurnContextEvent {
+  return (
+    typeof event === 'object' &&
+    event !== null &&
+    'type' in event &&
+    event.type === 'turn_context'
+  );
 }
 
-/**
- * Type guard for tool started events
- */
-export function isToolStartedEvent(event: BaseStreamEvent): event is ToolStartedEvent {
-  return event.type === 'tool.started';
+// ============================================================================
+// Type Guards - Response Item Payloads
+// ============================================================================
+
+export function isMessagePayload(payload: ResponseItemPayload): payload is MessagePayload {
+  return payload.type === 'message';
 }
 
-/**
- * Type guard for file written events
- */
-export function isFileWrittenEvent(event: BaseStreamEvent): event is FileWrittenEvent {
-  return event.type === 'file.written';
+export function isReasoningPayload(payload: ResponseItemPayload): payload is ReasoningPayload {
+  return payload.type === 'reasoning';
 }
 
-/**
- * Type guard for file modified events
- */
-export function isFileModifiedEvent(event: BaseStreamEvent): event is FileModifiedEvent {
-  return event.type === 'file.modified';
+export function isFunctionCallPayload(payload: ResponseItemPayload): payload is FunctionCallPayload {
+  return payload.type === 'function_call';
+}
+
+export function isFunctionCallOutputPayload(
+  payload: ResponseItemPayload
+): payload is FunctionCallOutputPayload {
+  return payload.type === 'function_call_output';
+}
+
+export function isCustomToolCallPayload(
+  payload: ResponseItemPayload
+): payload is CustomToolCallPayload {
+  return payload.type === 'custom_tool_call';
+}
+
+export function isCustomToolCallOutputPayload(
+  payload: ResponseItemPayload
+): payload is CustomToolCallOutputPayload {
+  return payload.type === 'custom_tool_call_output';
+}
+
+// ============================================================================
+// Type Guards - Event Message Payloads
+// ============================================================================
+
+export function isUserMessageEventPayload(
+  payload: EventMsgPayload
+): payload is UserMessageEventPayload {
+  return payload.type === 'user_message';
+}
+
+export function isAgentMessageEventPayload(
+  payload: EventMsgPayload
+): payload is AgentMessageEventPayload {
+  return payload.type === 'agent_message';
+}
+
+export function isAgentReasoningEventPayload(
+  payload: EventMsgPayload
+): payload is AgentReasoningEventPayload {
+  return payload.type === 'agent_reasoning';
+}
+
+export function isTokenCountEventPayload(
+  payload: EventMsgPayload
+): payload is TokenCountEventPayload {
+  return payload.type === 'token_count';
 }

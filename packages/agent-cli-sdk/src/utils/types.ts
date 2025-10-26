@@ -70,16 +70,26 @@ export interface ValidationResult {
  * Standard execution response
  *
  * @template T Output type (string or structured data)
+ * @template E Event type (defaults to generic StreamEvent)
  *
  * @remarks
- * The `events` field contains raw event data. For type-safe event handling,
- * cast to adapter-specific types:
- * - `response.events as ClaudeStreamEvent[]` for Claude Code
- * - `response.events as CodexStreamEvent[]` for Codex
+ * The generic parameter E allows adapters to specify their own event types:
+ * - `ExecutionResponse<string, ClaudeStreamEvent>` for Claude Code
+ * - `ExecutionResponse<string, CodexStreamEvent>` for Codex
+ *
+ * When using adapter-specific response types, the events field will be
+ * automatically typed to the adapter's event type without needing casts.
+ *
+ * @example
+ * ```ts
+ * const adapter = new ClaudeAdapter();
+ * const response = await adapter.execute(...); // ExecutionResponse<string, ClaudeStreamEvent>
+ * const firstEvent = response.events?.[0]; // ClaudeStreamEvent (not StreamEvent)
+ * ```
  */
-export interface ExecutionResponse<T = string> {
+export interface ExecutionResponse<T = string, E extends StreamEvent = StreamEvent> {
   data: T;
-  events?: StreamEvent[];
+  events?: E[];
   sessionId: string;
   status: 'success' | 'error' | 'timeout';
   exitCode: number;

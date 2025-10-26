@@ -97,37 +97,58 @@ export {
 
 // Codex event types and guards
 export type {
-  CodexUsage,
-  ThreadStartedData,
-  ThreadStartedEvent,
-  TurnCompletedData,
-  TurnCompletedEvent,
-  CodexItemType,
-  CodexItem,
-  ItemCompletedData,
-  ItemCompletedEvent,
-  ToolStartedData,
-  ToolStartedEvent,
-  ToolUseData,
-  ToolUseEvent,
-  FileWrittenData,
-  FileWrittenEvent,
-  FileModifiedData,
-  FileModifiedEvent,
-  UsageEventData,
-  UsageEvent,
-  CompletionEventData,
-  CompletionEvent,
+  // Session meta types
+  GitInfo,
+  SessionMetaPayload,
+  SessionMetaEvent,
+  // Response item types
+  InputTextContent,
+  OutputTextContent,
+  MessageContent,
+  MessagePayload,
+  SummaryTextContent,
+  ReasoningPayload,
+  FunctionCallPayload,
+  FunctionCallOutputPayload,
+  CustomToolCallPayload,
+  CustomToolCallOutputPayload,
+  ResponseItemPayload,
+  ResponseItemEvent,
+  // Event message types
+  UserMessageEventPayload,
+  AgentMessageEventPayload,
+  AgentReasoningEventPayload,
+  TokenUsageInfo,
+  RateLimit,
+  RateLimits,
+  TokenInfo,
+  TokenCountEventPayload,
+  EventMsgPayload,
+  EventMsgEvent,
+  // Turn context types
+  SandboxPolicy,
+  TurnContextPayload,
+  TurnContextEvent,
 } from './adapters/codex/events';
 
 export {
-  isCodexEvent,
-  isThreadStartedEvent,
-  isTurnCompletedEvent,
-  isItemCompletedEvent,
-  isToolStartedEvent,
-  isFileWrittenEvent,
-  isFileModifiedEvent,
+  // Event type guards
+  isSessionMetaEvent,
+  isResponseItemEvent,
+  isEventMsgEvent,
+  isTurnContextEvent,
+  // Response item payload guards
+  isMessagePayload,
+  isReasoningPayload,
+  isFunctionCallPayload,
+  isFunctionCallOutputPayload,
+  isCustomToolCallPayload,
+  isCustomToolCallOutputPayload,
+  // Event message payload guards
+  isUserMessageEventPayload,
+  isAgentMessageEventPayload,
+  isAgentReasoningEventPayload,
+  isTokenCountEventPayload,
 } from './adapters/codex/events';
 
 /**

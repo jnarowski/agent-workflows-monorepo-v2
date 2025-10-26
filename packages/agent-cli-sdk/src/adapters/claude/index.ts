@@ -42,12 +42,12 @@ export class ClaudeAdapter {
    * @template T - Expected output type (inferred from responseSchema)
    * @param prompt - The prompt to execute
    * @param options - Execution options
-   * @returns Promise resolving to execution response
+   * @returns Promise resolving to execution response with ClaudeStreamEvent[] events
    */
   async execute<T = string>(
     prompt: string,
     options: ClaudeOptions = {}
-  ): Promise<ExecutionResponse<T>> {
+  ): Promise<ExecutionResponse<T, ClaudeStreamEvent>> {
     // Inline prompt validation (4 lines)
     if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
       throw new ValidationError('Prompt must be a non-empty string');

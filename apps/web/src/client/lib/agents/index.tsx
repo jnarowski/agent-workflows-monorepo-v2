@@ -29,6 +29,7 @@ import { transformStreaming as transformGeminiStreaming } from "./gemini/transfo
 
 // Import components
 import { MessageRenderer as ClaudeMessageRenderer } from "@/client/pages/projects/sessions/components/session/claude/MessageRenderer";
+import { MessageRenderer as CodexMessageRenderer } from "@/client/pages/projects/sessions/components/session/codex/MessageRenderer";
 import { UnimplementedAgentRenderer } from "@/client/pages/projects/sessions/components/session/UnimplementedAgentRenderer";
 
 /**
@@ -82,12 +83,48 @@ function ClaudeMessageListRenderer({
 }
 
 /**
- * Wrapper components for unimplemented agents
+ * Wrapper component for Codex MessageRenderer
+ * Adapts array of messages to render each message
  */
-function CodexRenderer() {
-  return <UnimplementedAgentRenderer agent="codex" />;
+function CodexMessageListRenderer({
+  messages,
+}: {
+  messages: SessionMessage[];
+}) {
+  // Build tool results map for Codex renderer
+  const toolResults = new Map<
+    string,
+    { content: string; is_error?: boolean }
+  >();
+
+  // Build tool results map from both assistant and user messages
+  messages.forEach((msg) => {
+    msg.content.forEach((block) => {
+      if (block.type === "tool_result") {
+        toolResults.set(block.tool_use_id, {
+          content: block.content || "",
+          is_error: block.is_error,
+        });
+      }
+    });
+  });
+
+  return (
+    <div id="lib-agents-codex" className="space-y-2">
+      {messages.map((message) => (
+        <CodexMessageRenderer
+          key={message.id}
+          message={message}
+          toolResults={toolResults}
+        />
+      ))}
+    </div>
+  );
 }
 
+/**
+ * Wrapper components for unimplemented agents
+ */
 function CursorRenderer() {
   return <UnimplementedAgentRenderer agent="cursor" />;
 }
@@ -109,7 +146,7 @@ export const clientAgents: Record<AgentType, ClientAgent> = {
   codex: {
     transformMessages: transformCodexMessages,
     transformStreaming: transformCodexStreaming,
-    MessageRenderer: CodexRenderer,
+    MessageRenderer: CodexMessageListRenderer,
   },
   cursor: {
     transformMessages: transformCursorMessages,
