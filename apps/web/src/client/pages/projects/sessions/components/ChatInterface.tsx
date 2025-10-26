@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import type { SessionMessage } from "@/shared/types/message.types";
 import type { AgentType } from "@/shared/types/agent.types";
 import { getAgent } from "../../../../lib/agents";
-import { useLoadingPhrase } from "@/client/hooks/useLoadingPhrase";
+import { AgentLoadingIndicator } from "./AgentLoadingIndicator";
 
 interface ChatInterfaceProps {
   projectId: string;
@@ -47,9 +47,6 @@ export function ChatInterface({
   // Get agent renderer
   const agentImpl = getAgent(agent);
   const AgentMessageRenderer = agentImpl.MessageRenderer;
-
-  // Get fun loading phrase that rotates while streaming
-  const loadingPhrase = useLoadingPhrase(isStreaming);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -122,14 +119,7 @@ export function ChatInterface({
     >
       <div className="max-w-4xl mx-auto px-4 py-8">
         <AgentMessageRenderer messages={messages} />
-        {isStreaming && (
-          <div className="flex items-center gap-2 text-sm">
-            <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
-            <span className="text-orange-600 dark:text-orange-400 font-medium animate-[pulse_1s_ease-in-out_infinite]">
-              {loadingPhrase}...
-            </span>
-          </div>
-        )}
+        <AgentLoadingIndicator isStreaming={isStreaming} />
         <div ref={messagesEndRef} />
       </div>
     </div>

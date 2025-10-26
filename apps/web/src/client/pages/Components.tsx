@@ -1,11 +1,17 @@
 /**
- * Components showcase page - demonstrates DiffViewer component
+ * Components showcase page - demonstrates DiffViewer and AgentLoadingIndicator components
  * This page is NOT behind login authentication
  */
 
+import { useState } from "react";
 import { DiffViewer } from "@/client/components/DiffViewer";
+import { AgentLoadingIndicator } from "@/client/pages/projects/sessions/components/AgentLoadingIndicator";
+import { Button } from "@/client/components/ui/button";
 
 export default function Components() {
+  const [isLoadingIndicatorActive, setIsLoadingIndicatorActive] =
+    useState(false);
+
   // Example 1: EditToolBlock style - old/new string pairs (simple refactor)
   const editExample1 = {
     oldString: `export function calculateTotal(items: Item[]): number {
@@ -59,11 +65,99 @@ index 1234567..abcdefg 100644
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Header */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">DiffViewer Component</h1>
+          <h1 className="text-3xl font-bold">Components Showcase</h1>
           <p className="text-muted-foreground">
-            Showcasing the DiffViewer component with different usage patterns
+            Showcasing reusable components with different usage patterns
           </p>
         </div>
+
+        {/* AgentLoadingIndicator Example */}
+        <section className="space-y-4">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-semibold">AgentLoadingIndicator</h2>
+            <p className="text-sm text-muted-foreground">
+              Loading indicator displayed while agent is processing/streaming
+              responses
+            </p>
+            <div className="bg-muted/30 rounded-lg p-4 font-mono text-xs">
+              <div className="text-muted-foreground mb-2">Usage:</div>
+              <pre className="text-foreground">
+                {`<AgentLoadingIndicator isStreaming={true} />`}
+              </pre>
+            </div>
+          </div>
+
+          <div className="border rounded-lg overflow-hidden">
+            <div className="bg-muted/50 px-4 py-2 border-b flex items-center justify-between">
+              <span className="text-xs font-mono">
+                Interactive Demo - Toggle to see loading states
+              </span>
+              <Button
+                size="sm"
+                variant={isLoadingIndicatorActive ? "destructive" : "default"}
+                onClick={() =>
+                  setIsLoadingIndicatorActive(!isLoadingIndicatorActive)
+                }
+              >
+                {isLoadingIndicatorActive ? "Stop" : "Start"} Loading
+              </Button>
+            </div>
+            <div className="p-8 bg-card flex items-center justify-center min-h-[120px]">
+              <AgentLoadingIndicator isStreaming={isLoadingIndicatorActive} />
+              {!isLoadingIndicatorActive && (
+                <p className="text-sm text-muted-foreground">
+                  Click "Start Loading" to see the indicator
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Props table */}
+          <div className="border rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="text-left px-4 py-3 font-semibold">Prop</th>
+                  <th className="text-left px-4 py-3 font-semibold">Type</th>
+                  <th className="text-left px-4 py-3 font-semibold">
+                    Description
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                <tr>
+                  <td className="px-4 py-3 font-mono text-xs">isStreaming</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    boolean (default: false)
+                  </td>
+                  <td className="px-4 py-3">
+                    When true, displays the loading indicator with animated text
+                    that rotates through whimsical phrases
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Implementation notes */}
+          <div className="space-y-2 text-sm">
+            <div className="border-l-4 border-orange-500 pl-4 py-2">
+              <p className="font-medium mb-1">Rotating Phrases</p>
+              <p className="text-muted-foreground">
+                Uses the useLoadingPhrase hook to display 47 different whimsical
+                phrases (e.g., "Cogitating", "Noodling", "Percolating") that
+                rotate every 2-3 seconds while active.
+              </p>
+            </div>
+            <div className="border-l-4 border-blue-500 pl-4 py-2">
+              <p className="font-medium mb-1">Visual Design</p>
+              <p className="text-muted-foreground">
+                Orange spinning Loader2 icon with pulsing animated text, designed
+                to match the application's color scheme.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {/* Example 1a: EditToolBlock style - Simple refactor */}
         <section className="space-y-4">
@@ -162,7 +256,6 @@ index 1234567..abcdefg 100644
               <pre className="text-foreground">
                 {`<DiffViewer
   diff={gitDiffString}
-  showHeaders={true}
 />`}
               </pre>
             </div>
@@ -175,7 +268,7 @@ index 1234567..abcdefg 100644
               </span>
             </div>
             <div className="p-4 bg-card">
-              <DiffViewer diff={gitDiff} showHeaders={true} />
+              <DiffViewer diff={gitDiff} />
             </div>
           </div>
         </section>
@@ -230,22 +323,14 @@ index 1234567..abcdefg 100644
                   <td className="px-4 py-3">File path for context</td>
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 font-mono text-xs">showHeaders</td>
+                  <td className="px-4 py-3 font-mono text-xs">language</td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    boolean (default: false)
+                    string (optional)
                   </td>
                   <td className="px-4 py-3">
-                    Show git diff headers (@@, ---, +++ lines)
+                    Language for syntax highlighting (auto-detected from filePath
+                    if not provided)
                   </td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 font-mono text-xs">
-                    showLineNumbers
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    boolean (default: false)
-                  </td>
-                  <td className="px-4 py-3">Show line numbers in diff output</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-mono text-xs">className</td>
@@ -259,9 +344,11 @@ index 1234567..abcdefg 100644
           </div>
         </section>
 
-        {/* Implementation notes */}
+        {/* Implementation notes for DiffViewer */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold">Implementation Notes</h2>
+          <h2 className="text-2xl font-semibold">
+            DiffViewer Implementation Notes
+          </h2>
           <div className="space-y-2 text-sm">
             <div className="border-l-4 border-blue-500 pl-4 py-2">
               <p className="font-medium mb-1">Syntax Highlighting</p>
@@ -276,13 +363,6 @@ index 1234567..abcdefg 100644
                 Accepts either a pre-formatted diff string OR old/new string
                 pairs. The component automatically generates unified diff format
                 using the "diff" library.
-              </p>
-            </div>
-            <div className="border-l-4 border-orange-500 pl-4 py-2">
-              <p className="font-medium mb-1">Header Filtering</p>
-              <p className="text-muted-foreground">
-                By default, strips git metadata headers for cleaner inline diffs.
-                Set showHeaders=true to preserve full git diff format.
               </p>
             </div>
           </div>
