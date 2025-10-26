@@ -3,4 +3,10 @@ packages:
   - packages/*
 
 onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - bcrypt
+  - canvas
+  - esbuild
   - node-pty
+  - prisma

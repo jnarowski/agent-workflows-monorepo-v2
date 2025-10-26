@@ -1,4 +1,13 @@
 #!/usr/bin/env tsx
+// Load environment variables from .env file in monorepo root
+import { config } from 'dotenv';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename_temp = fileURLToPath(import.meta.url);
+const __dirname_temp = dirname(__filename_temp);
+config({ path: join(__dirname_temp, '../../../../.env') });
+
 import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import fastifyWebsocket from '@fastify/websocket';
