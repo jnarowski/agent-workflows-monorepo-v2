@@ -12,6 +12,19 @@ interface TextBlockProps {
 }
 
 export function TextBlock({ text, className = "" }: TextBlockProps) {
+  // DEBUG: Log text value and type
+  if (import.meta.env.DEV) {
+    console.log("[TextBlock] Rendering text:", {
+      textType: typeof text,
+      textValue: typeof text === 'string' ? text.substring(0, 100) : text,
+      isObject: typeof text === 'object',
+      objectKeys: typeof text === 'object' && text !== null ? Object.keys(text) : [],
+    });
+  }
+
+  // SAFETY: Ensure text is a string
+  const safeText = typeof text === 'string' ? text : JSON.stringify(text, null, 2);
+
   return (
     <div className={`flex gap-2.5 ${className}`}>
       {/* Gray dot indicator */}
@@ -22,6 +35,7 @@ export function TextBlock({ text, className = "" }: TextBlockProps) {
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        children={safeText}
         components={{
           // Custom heading renderers - compact and minimal
           h1({ children, ...props }) {
@@ -74,7 +88,7 @@ export function TextBlock({ text, className = "" }: TextBlockProps) {
             if (isInline) {
               return (
                 <code
-                  className="px-1.5 py-0.5 rounded bg-muted text-blue-700 font-mono text-xs font-normal"
+                  className="px-1.5 py-0.5 rounded bg-muted text-blue-600 dark:text-blue-400 font-mono text-xs font-normal"
                   {...props}
                 >
                   {children}
@@ -114,9 +128,7 @@ export function TextBlock({ text, className = "" }: TextBlockProps) {
             );
           },
         }}
-      >
-        {text}
-      </ReactMarkdown>
+      />
       </div>
     </div>
   );

@@ -102,7 +102,7 @@ export function SyntaxHighlighter({
 
   return (
     <div
-      className={`syntax-highlighter ${className}`}
+      className={`syntax-highlighter [&_pre]:!m-0 [&_pre]:!p-4 [&_code]:!block ${className}`}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

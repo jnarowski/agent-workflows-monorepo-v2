@@ -9,6 +9,7 @@ import { Badge } from "@/client/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/client/components/ui/collapsible";
 import { SyntaxHighlighter } from "@/client/utils/syntaxHighlighter";
 import { getLanguageDisplayName } from "@/client/utils/getLanguageFromPath";
+import { useCodeBlockTheme } from "@/client/utils/codeBlockTheme";
 
 interface CodeBlockProps {
   code: string;
@@ -30,6 +31,7 @@ export function CodeBlock({
   className = ''
 }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
+  const { isDark } = useCodeBlockTheme();
   const lineCount = code.split('\n').length;
   const shouldCollapse = collapsedByDefault && lineCount > MAX_LINES_BEFORE_COLLAPSE;
   const [isOpen, setIsOpen] = useState(!shouldCollapse);
@@ -45,10 +47,10 @@ export function CodeBlock({
   };
 
   const content = (
-    <div className={`rounded-lg border bg-muted/50 overflow-hidden ${className}`}>
+    <div className={`rounded-lg border overflow-hidden ${className}`}>
       {/* Header */}
       {showHeader && (
-        <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/30">
+        <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/20">
           <div className="flex items-center gap-2">
             {shouldCollapse && (
               <CollapsibleTrigger asChild>
@@ -90,6 +92,7 @@ export function CodeBlock({
       {/* Code content */}
       <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
         <SyntaxHighlighter
+          key={`${isDark ? 'dark' : 'light'}-${language}-${code.length}`}
           code={code}
           language={language}
           showLineNumbers={showLineNumbers}

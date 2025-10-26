@@ -14,6 +14,19 @@ interface UserMessageProps {
 }
 
 export function UserMessage({ message }: UserMessageProps) {
+  // DEBUG: Log user message structure
+  if (import.meta.env.DEV) {
+    console.log("[UserMessage] Rendering user message:", {
+      messageId: message.id,
+      contentBlocks: message.content.map((block, idx) => ({
+        index: idx,
+        type: block.type,
+        // @ts-ignore
+        textType: block.type === 'text' ? typeof block.text : 'n/a',
+      })),
+    });
+  }
+
   // Extract text content from content blocks
   const textBlocks = message.content.filter(
     (block): block is TextBlock => block.type === "text"

@@ -18,6 +18,24 @@ export function AssistantMessage({
 }: AssistantMessageProps) {
   const content = message.content;
 
+  // DEBUG: Log message structure
+  if (import.meta.env.DEV) {
+    console.log("[AssistantMessage] Rendering message:", {
+      messageId: message.id,
+      contentBlockCount: content.length,
+      contentBlocks: content.map((block, idx) => ({
+        index: idx,
+        type: block.type,
+        // @ts-ignore - checking for unexpected structure
+        hasTextProperty: 'text' in block,
+        // @ts-ignore
+        textType: block.text ? typeof block.text : 'n/a',
+        // @ts-ignore
+        textValue: block.text ? (typeof block.text === 'string' ? block.text.substring(0, 50) : block.text) : 'n/a',
+      })),
+    });
+  }
+
   // Strip ANSI color codes from text
   const stripAnsiCodes = (text: string): string => {
     // eslint-disable-next-line no-control-regex

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ToolDot } from "../components/ToolDot";
 import { getToolColor } from "../utils/getToolColor";
 import { DiffViewer } from "@/client/components/DiffViewer";
+import { useCodeBlockTheme } from "@/client/utils/codeBlockTheme";
 import type { EditToolInput } from "@/shared/types/tool.types";
 
 interface EditToolBlockProps {
@@ -20,6 +21,7 @@ const MAX_LINES_PREVIEW = 6;
 
 export function EditToolBlock({ input, result }: EditToolBlockProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { colors } = useCodeBlockTheme();
 
   // Extract filename from path
   const getFileName = (filePath: string): string => {
@@ -81,8 +83,7 @@ export function EditToolBlock({ input, result }: EditToolBlockProps) {
           <div
             className="absolute bottom-0 left-5 right-0 h-10 pointer-events-none rounded-b-lg"
             style={{
-              background:
-                "linear-gradient(to top, #0d1117 0%, transparent 100%)",
+              background: `linear-gradient(to top, ${colors.background} 0%, transparent 100%)`,
             }}
           />
         )}

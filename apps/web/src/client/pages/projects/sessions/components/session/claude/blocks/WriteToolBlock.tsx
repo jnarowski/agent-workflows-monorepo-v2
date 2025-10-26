@@ -7,6 +7,7 @@ import { ToolDot } from "../components/ToolDot";
 import { getToolColor } from "../utils/getToolColor";
 import { SyntaxHighlighter } from "@/client/utils/syntaxHighlighter";
 import { getLanguageFromPath } from "@/client/utils/getLanguageFromPath";
+import { useCodeBlockTheme } from "@/client/utils/codeBlockTheme";
 import type { WriteToolInput } from "@/shared/types/tool.types";
 
 interface WriteToolBlockProps {
@@ -21,6 +22,7 @@ const MAX_LINES_PREVIEW = 20;
 
 export function WriteToolBlock({ input, result }: WriteToolBlockProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { colors } = useCodeBlockTheme();
 
   // Extract filename from path
   const getFileName = (filePath: string): string => {
@@ -69,13 +71,13 @@ export function WriteToolBlock({ input, result }: WriteToolBlockProps) {
           }`}
         >
           <div
-            className="text-xs [&_pre]:!bg-[#0d1117] [&_pre]:!m-0 [&_pre]:!p-3 [&_code]:!block"
+            className="text-xs [&_pre]:!m-0 [&_pre]:!p-3 [&_code]:!block"
             style={{
               fontFamily: "ui-monospace, monospace",
-              border: "1px solid #21262d",
+              border: `1px solid ${colors.border}`,
               borderRadius: "6px",
               overflow: "auto",
-              backgroundColor: "#0d1117",
+              backgroundColor: colors.background,
             }}
           >
             <SyntaxHighlighter
@@ -91,8 +93,7 @@ export function WriteToolBlock({ input, result }: WriteToolBlockProps) {
           <div
             className="absolute bottom-0 left-5 right-0 h-20 pointer-events-none rounded-b-lg"
             style={{
-              background:
-                "linear-gradient(to top, #0d1117 0%, transparent 100%)",
+              background: `linear-gradient(to top, ${colors.background} 0%, transparent 100%)`,
             }}
           />
         )}

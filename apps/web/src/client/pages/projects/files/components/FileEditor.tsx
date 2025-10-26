@@ -10,7 +10,7 @@ import { oneDark } from "@codemirror/theme-one-dark";
 import { EditorView } from "@codemirror/view";
 import { X, Save, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/client/components/ui/button";
-import { useTheme } from "next-themes";
+import { useCodeBlockTheme } from "@/client/utils/codeBlockTheme";
 import { api } from "@/client/lib/api-client";
 
 interface FileEditorProps {
@@ -61,9 +61,7 @@ export function FileEditor({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [wordWrap, setWordWrap] = useState(false);
-  const { theme } = useTheme();
-
-  const isDarkMode = theme === "dark";
+  const { isDark } = useCodeBlockTheme();
 
   // Load file content
   useEffect(() => {
@@ -259,7 +257,7 @@ export function FileEditor({
               ...getLanguageExtension(fileName),
               ...(wordWrap ? [EditorView.lineWrapping] : []),
             ]}
-            theme={isDarkMode ? oneDark : undefined}
+            theme={isDark ? oneDark : "light"}
             height="100%"
             style={{
               fontSize: "14px",

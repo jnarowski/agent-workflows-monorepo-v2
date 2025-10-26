@@ -7,6 +7,7 @@
 import { useEffect, useState } from "react";
 import { diffLines, type Change } from "diff";
 import { codeToHtml, type BundledLanguage } from "shiki";
+import { useCodeBlockTheme } from "@/client/utils/codeBlockTheme";
 
 interface DiffViewerProps {
   // Pre-formatted diff string (from git commands)
@@ -117,7 +118,7 @@ function parseGitDiff(diffString: string): Change[] {
 /**
  * Unified diff viewer that handles both git diffs and old/new string pairs
  * Uses language-specific syntax highlighting with custom diff styling
- * Always uses dark mode theme
+ * Automatically adapts to light/dark mode
  */
 export function DiffViewer({
   diff,
@@ -128,6 +129,7 @@ export function DiffViewer({
   className = "",
 }: DiffViewerProps) {
   const [html, setHtml] = useState<string>("");
+  const { shikiTheme, colors } = useCodeBlockTheme();
 
   // Detect language if not provided
   const lang = language || detectLanguage(filePath);
@@ -163,10 +165,10 @@ export function DiffViewer({
 
           // Determine styling based on change type
           const bgColor = part.added
-            ? "#1a4d2e" // Brighter green for better contrast
+            ? colors.addedBackground
             : part.removed
-              ? "#5c1a1a" // Brighter red for better contrast
-              : "#0d1117"; // GitHub dark background for unchanged lines
+              ? colors.removedBackground
+              : colors.unchangedBackground;
           const symbol = part.added ? "+" : part.removed ? "-" : " ";
 
           // Extract lines from the part
@@ -177,7 +179,7 @@ export function DiffViewer({
             try {
               const lineHighlighted = await codeToHtml(line, {
                 lang: lang as BundledLanguage,
-                theme: "github-dark",
+                theme: shikiTheme,
               });
 
               // Extract just the code content from the pre/code tags
@@ -188,7 +190,7 @@ export function DiffViewer({
 
               htmlLines.push(`
                 <div class="diff-line" style="background: ${bgColor}; display: grid; grid-template-columns: 2ch 1fr; align-items: center; line-height: 1.5;">
-                  <div class="diff-gutter" style="text-align: center; color: #888; background: #0d1117; padding: 0 4px; user-select: none; border-right: 1px solid #21262d;">${symbol}</div>
+                  <div class="diff-gutter" style="text-align: center; color: #888; background: ${colors.gutterBackground}; padding: 0 4px; user-select: none; border-right: 1px solid ${colors.border};">${symbol}</div>
                   <div class="diff-code" style="overflow-x: auto; padding: 0 8px;"><code style="white-space: pre;">${codeContent}</code></div>
                 </div>
               `);
@@ -197,7 +199,7 @@ export function DiffViewer({
               console.warn("Failed to highlight line:", lineError);
               htmlLines.push(`
                 <div class="diff-line" style="background: ${bgColor}; display: grid; grid-template-columns: 2ch 1fr; align-items: center; line-height: 1.5;">
-                  <div class="diff-gutter" style="text-align: center; color: #888; background: #0d1117; padding: 0 4px; user-select: none; border-right: 1px solid #21262d;">${symbol}</div>
+                  <div class="diff-gutter" style="text-align: center; color: #888; background: ${colors.gutterBackground}; padding: 0 4px; user-select: none; border-right: 1px solid ${colors.border};">${symbol}</div>
                   <div class="diff-code" style="overflow-x: auto; padding: 0 8px;"><code style="white-space: pre;">${escapeHtml(line)}</code></div>
                 </div>
               `);
@@ -240,17 +242,17 @@ export function DiffViewer({
     return () => {
       cancelled = true;
     };
-  }, [diff, oldString, newString, lang]);
+  }, [diff, oldString, newString, lang, shikiTheme, colors]);
 
   return (
     <div
       className={`diff-viewer text-xs ${className}`}
       style={{
         fontFamily: "ui-monospace, monospace",
-        border: "1px solid #21262d",
+        border: `1px solid ${colors.border}`,
         borderRadius: "6px",
         overflow: "hidden",
-        backgroundColor: "#0d1117",
+        backgroundColor: colors.background,
         paddingTop: "8px",
         paddingBottom: "8px",
       }}
