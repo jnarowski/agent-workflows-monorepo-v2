@@ -200,31 +200,23 @@ export default function ProjectSession() {
           { sessionId: crypto.randomUUID() }
         );
 
-        if (import.meta.env.DEV) {
-          console.log("[ProjectSession] Session created:", newSession.id);
-        }
-
         // Invalidate sessions query to update sidebar immediately
         queryClient.invalidateQueries({ queryKey: sessionKeys.byProject(projectId) });
 
         // Convert images to base64 if present
         const imagePaths = images ? await handleImageUpload(images) : undefined;
 
-        // Get permission mode from session store
-        const getPermissionMode = useSessionStore.getState().getPermissionMode;
-        const permissionMode = getPermissionMode();
+        // Get permission mode from prompt form (for new sessions)
+        const getPromptFormPermissionMode = useSessionStore.getState().getPromptFormPermissionMode;
+        const permissionMode = getPromptFormPermissionMode();
 
         // Immediately send message via app-wide WebSocket (before navigation)
         // This starts the assistant processing right away
         globalSendMessage(`session.${newSession.id}.send_message`, {
           message,
           images: imagePaths,
-          config: { permissionMode }, // First message, include permission mode
+          config: { permissionMode },
         });
-
-        if (import.meta.env.DEV) {
-          console.log("[ProjectSession] Message sent via WebSocket, now navigating");
-        }
 
         // Navigate to the new session with query parameter
         // Query param signals: message already sent, just display it
@@ -256,22 +248,13 @@ export default function ProjectSession() {
     const assistantMessageCount = session?.messages.filter(m => m.role === 'assistant').length || 0;
     const shouldResume = assistantMessageCount > 0;
 
-    // Get permission mode from session store
-    const getPermissionMode = useSessionStore.getState().getPermissionMode;
-    const permissionMode = getPermissionMode();
+    // Get permission mode from prompt form
+    const getPromptFormPermissionMode = useSessionStore.getState().getPromptFormPermissionMode;
+    const permissionMode = getPromptFormPermissionMode();
 
     const config = shouldResume
-      ? { resume: true, sessionId, permissionMode } // Subsequent messages: include resume flag + permission mode
-      : { permissionMode }; // First message: include permission mode
-
-    if (import.meta.env.DEV) {
-      console.log("[ProjectSession] Sending message via WebSocket", {
-        assistantMessageCount,
-        shouldResume,
-        permissionMode,
-        config
-      });
-    }
+      ? { resume: true, sessionId, permissionMode }
+      : { permissionMode };
 
     wsSendMessage(message, imagePaths, config);
   };

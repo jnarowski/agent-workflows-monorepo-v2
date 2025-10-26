@@ -24,6 +24,14 @@ export type ClaudePermissionMode =
 export type LoadingState = "idle" | "loading" | "loaded" | "error";
 
 /**
+ * Prompt input form state
+ * Tracks the current state of the prompt input form
+ */
+export interface PromptFormState {
+  permissionMode: ClaudePermissionMode;
+}
+
+/**
  * Session data structure
  * Tracks all state for the current session
  */
@@ -48,6 +56,7 @@ export interface SessionStore {
   currentSessionId: string | null;
   currentSession: SessionData | null;
   defaultPermissionMode: ClaudePermissionMode;
+  promptForm: PromptFormState;
 
   // Session lifecycle actions
   loadSession: (sessionId: string, projectId: string) => Promise<void>;
@@ -68,6 +77,10 @@ export interface SessionStore {
   setDefaultPermissionMode: (mode: ClaudePermissionMode) => void;
   setPermissionMode: (mode: ClaudePermissionMode) => void;
   getPermissionMode: () => ClaudePermissionMode;
+
+  // Prompt form actions
+  setPromptFormPermissionMode: (mode: ClaudePermissionMode) => void;
+  getPromptFormPermissionMode: () => ClaudePermissionMode;
 }
 
 /**
@@ -78,6 +91,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   currentSessionId: null,
   currentSession: null,
   defaultPermissionMode: "acceptEdits",
+  promptForm: {
+    permissionMode: "acceptEdits",
+  },
 
   // Load session from server
   loadSession: async (sessionId: string, projectId: string) => {
@@ -355,5 +371,21 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   getPermissionMode: () => {
     const state = get();
     return state.currentSession?.permissionMode ?? state.defaultPermissionMode;
+  },
+
+  // Set permission mode in prompt form
+  setPromptFormPermissionMode: (mode: ClaudePermissionMode) => {
+    set((state) => ({
+      promptForm: {
+        ...state.promptForm,
+        permissionMode: mode,
+      },
+    }));
+  },
+
+  // Get permission mode from prompt form
+  getPromptFormPermissionMode: () => {
+    const state = get();
+    return state.promptForm.permissionMode;
   },
 }));

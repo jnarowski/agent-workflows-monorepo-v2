@@ -3,9 +3,9 @@
  */
 
 import { useState } from "react";
-import { ToolDot } from "../components/ToolDot";
-import { getToolColor } from "../utils/getToolColor";
+import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
 import { useCodeBlockTheme } from "@/client/utils/codeBlockTheme";
+import { ExpandButton } from "./ExpandButton";
 import type { GlobToolInput } from "@/shared/types/tool.types";
 
 interface GlobToolBlockProps {
@@ -43,8 +43,6 @@ export function GlobToolBlock({ input, result }: GlobToolBlockProps) {
     return `Found ${count} files`;
   };
 
-  const dotColor = getToolColor("Glob", result?.is_error);
-
   // Calculate total lines for truncation
   const totalLines = result?.content
     ? result.content.trim().split("\n").filter((line) => line.trim().length > 0).length
@@ -52,82 +50,60 @@ export function GlobToolBlock({ input, result }: GlobToolBlockProps) {
   const shouldTruncate = totalLines > MAX_LINES_PREVIEW;
 
   return (
-    <div className="space-y-2">
-      {/* Header */}
-      <div className="flex items-center gap-2.5">
-        <ToolDot color={dotColor} />
-        <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">Glob</span>
-            <span className="text-xs text-muted-foreground font-mono">
-              pattern: "{input.pattern}"
-            </span>
-          </div>
-          <span className="text-xs text-muted-foreground">
-            ↳ {getDescription()}
-          </span>
-        </div>
-      </div>
-
+    <ToolCollapsibleWrapper
+      toolName="Glob"
+      contextInfo={`pattern: "${input.pattern}"`}
+      description={getDescription()}
+      hasError={result?.is_error}
+      defaultOpen={false}
+    >
       {/* Results */}
       {result && !result.is_error && result.content.trim() && (
-        <div className="pl-5">
-          <div
-            className={`relative rounded-lg border overflow-hidden ${
-              shouldTruncate && !isExpanded ? "max-h-40" : ""
-            }`}
-            style={{
-              borderColor: colors.border,
-              backgroundColor: colors.background,
-            }}
+        <div
+          className={`relative rounded-lg border overflow-hidden ${
+            shouldTruncate && !isExpanded ? "max-h-40" : ""
+          }`}
+          style={{
+            borderColor: colors.border,
+            backgroundColor: colors.background,
+          }}
+        >
+          <pre
+            className="text-xs p-3 font-mono whitespace-pre-wrap break-words"
+            style={{ margin: 0 }}
           >
-            <pre
-              className="text-xs p-3 font-mono whitespace-pre-wrap break-words"
-              style={{ margin: 0 }}
-            >
-              {result.content.trim()}
-            </pre>
+            {result.content.trim()}
+          </pre>
 
-            {/* Fade gradient overlay */}
-            {shouldTruncate && !isExpanded && (
-              <>
-                <div
-                  className="absolute inset-x-0 bottom-0 h-10 pointer-events-none"
-                  style={{
-                    background: `linear-gradient(to top, ${colors.background} 0%, transparent 100%)`,
-                  }}
-                />
-                {/* Click to expand button */}
-                <div className="absolute bottom-2 right-2">
-                  <button
-                    className="text-[10px] text-muted-foreground bg-background px-2 py-0.5 rounded border border-border hover:bg-muted/50 cursor-pointer"
-                    onClick={() => setIsExpanded(true)}
-                  >
-                    Click to expand
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+          {/* Fade gradient overlay */}
+          {shouldTruncate && !isExpanded && (
+            <>
+              <div
+                className="absolute inset-x-0 bottom-0 h-10 pointer-events-none"
+                style={{
+                  background: `linear-gradient(to top, ${colors.background} 0%, transparent 100%)`,
+                }}
+              />
+              <ExpandButton onClick={() => setIsExpanded(true)} />
+            </>
+          )}
         </div>
       )}
 
       {/* Error message */}
       {result?.is_error && (
-        <div className="pl-5">
-          <div
-            className="rounded-lg border p-3"
-            style={{
-              borderColor: colors.border,
-              backgroundColor: colors.background,
-            }}
-          >
-            <pre className="text-xs font-mono text-red-500 whitespace-pre-wrap break-words">
-              {result.content}
-            </pre>
-          </div>
+        <div
+          className="rounded-lg border p-3"
+          style={{
+            borderColor: colors.border,
+            backgroundColor: colors.background,
+          }}
+        >
+          <pre className="text-xs font-mono text-red-500 whitespace-pre-wrap break-words">
+            {result.content}
+          </pre>
         </div>
       )}
-    </div>
+    </ToolCollapsibleWrapper>
   );
 }

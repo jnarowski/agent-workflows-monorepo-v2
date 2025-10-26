@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import { codeToHtml, type BundledLanguage } from 'shiki';
+import { useCodeBlockTheme } from '@/client/utils/codeBlockTheme';
 
 interface SyntaxHighlighterProps {
   code: string;
@@ -24,31 +25,7 @@ export function SyntaxHighlighter({
   className = ''
 }: SyntaxHighlighterProps) {
   const [html, setHtml] = useState<string>('');
-  const [isDark, setIsDark] = useState(false);
-
-  // Detect theme changes
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setIsDark(mediaQuery.matches || document.documentElement.classList.contains('dark'));
-
-    const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
-    mediaQuery.addEventListener('change', handler);
-
-    // Also watch for class changes on document element (for manual theme toggle)
-    const observer = new MutationObserver(() => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-
-    return () => {
-      mediaQuery.removeEventListener('change', handler);
-      observer.disconnect();
-    };
-  }, []);
+  const { isDark } = useCodeBlockTheme();
 
   // Highlight code when language, code, or theme changes
   useEffect(() => {

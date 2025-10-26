@@ -7,7 +7,7 @@ import { useState, type ReactNode } from "react";
 import { Button } from "@/client/components/ui/button";
 import {
   Collapsible,
-  // CollapsibleContent,
+  CollapsibleContent,
   CollapsibleTrigger,
 } from "@/client/components/ui/collapsible";
 import { ToolDot } from "./components/ToolDot";
@@ -20,6 +20,7 @@ interface ToolCollapsibleWrapperProps {
   hasError?: boolean;
   children: ReactNode;
   className?: string;
+  defaultOpen?: boolean;
 }
 
 export function ToolCollapsibleWrapper({
@@ -29,8 +30,9 @@ export function ToolCollapsibleWrapper({
   hasError = false,
   children,
   className = "",
+  defaultOpen = false,
 }: ToolCollapsibleWrapperProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const dotColor = getToolColor(toolName, hasError);
 
   return (
@@ -62,12 +64,10 @@ export function ToolCollapsibleWrapper({
         </Button>
       </CollapsibleTrigger>
 
-      {children && <div className="pl-5 pt-2 pb-3">{children}</div>}
-
       {/* Content */}
-      {/* <CollapsibleContent>
+      <CollapsibleContent>
         <div className="pl-5 pt-2 pb-3">{children}</div>
-      </CollapsibleContent> */}
+      </CollapsibleContent>
     </Collapsible>
   );
 }
