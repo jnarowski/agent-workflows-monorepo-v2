@@ -13,8 +13,8 @@
   ],
   "preferGlobal": true,
   "scripts": {
-    "postinstall": "prisma generate",
-    "setup": "node scripts/setup-env.js && prisma migrate dev",
+    "postinstall": "node scripts/setup-env.js && prisma generate",
+    "setup": "node scripts/setup-env.js && prisma migrate deploy",
     "dev": "concurrently --kill-others \"pnpm dev:server\" \"pnpm dev:client\"",
     "dev:server": "tsx watch src/server/index.ts",
     "dev:client": "vite --host",
