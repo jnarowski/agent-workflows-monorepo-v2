@@ -7,7 +7,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "agent-workflows": "./dist/cli/index.js"
+    "agent-workflows": "./bin/agent-workflows.js"
   },
   "exports": {
     ".": {
@@ -17,7 +17,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "bin"
   ],
   "scripts": {
     "build": "tsdown && tsdown src/cli/index.ts --format esm --outDir dist/cli",
