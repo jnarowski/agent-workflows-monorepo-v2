@@ -12,7 +12,14 @@ import {
   SelectTrigger,
   SelectSeparator,
 } from '@/client/components/ui/select';
-import { GitBranch, ArrowUpCircle, ArrowDownCircle, RefreshCw, GitPullRequest } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/client/components/ui/dropdown-menu';
+import { GitBranch, ArrowUpCircle, ArrowDownCircle, RefreshCw, GitPullRequest, MoreVertical } from 'lucide-react';
 import { CreateBranchDialog } from './CreateBranchDialog';
 import { CreatePullRequestDialog } from './CreatePullRequestDialog';
 import type { GitBranch as GitBranchType } from '@/shared/types/git.types';
@@ -59,13 +66,13 @@ export function GitTopBar({
   };
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="flex items-center justify-between px-4 py-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 gap-2">
       {/* Left side - Branch selector */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
         <Select value={currentBranch} onValueChange={handleBranchSelect}>
-          <SelectTrigger className="w-[280px]">
-            <div className="flex items-center gap-2">
-              <GitBranch className="h-4 w-4" />
+          <SelectTrigger className="w-full sm:w-[280px]">
+            <div className="flex items-center gap-2 min-w-0">
+              <GitBranch className="h-4 w-4 flex-shrink-0" />
               <span className="truncate">{currentBranch || "Select branch"}</span>
             </div>
           </SelectTrigger>
@@ -89,61 +96,105 @@ export function GitTopBar({
       </div>
 
       {/* Right side - Action buttons */}
-      <div className="flex items-center gap-2">
-        {/* Push button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onPush}
-          disabled={ahead === 0}
-          className="relative"
-        >
-          <ArrowUpCircle className="h-4 w-4 mr-2" />
-          Push
-          {ahead > 0 && (
-            <Badge variant="default" className="ml-2 h-5 px-1.5">
-              {ahead}
-            </Badge>
-          )}
-        </Button>
-
-        {/* Fetch button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onFetch}
-          className="relative"
-        >
-          <ArrowDownCircle className="h-4 w-4 mr-2" />
-          Fetch
-          {behind > 0 && (
-            <Badge variant="secondary" className="ml-2 h-5 px-1.5">
-              {behind}
-            </Badge>
-          )}
-        </Button>
-
-        {/* Refresh button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onRefresh}
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
-
-        {/* Create PR button - only show if ahead */}
-        {ahead > 0 && (
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {/* Desktop: Individual buttons */}
+        <div className="hidden sm:flex items-center gap-2">
           <Button
-            variant="default"
+            variant="outline"
             size="sm"
-            onClick={() => setCreatePrOpen(true)}
+            onClick={onPush}
+            disabled={ahead === 0}
+            className="relative"
           >
-            <GitPullRequest className="h-4 w-4 mr-2" />
-            Create PR
+            <ArrowUpCircle className="h-4 w-4 mr-2" />
+            Push
+            {ahead > 0 && (
+              <Badge variant="default" className="ml-2 h-5 px-1.5">
+                {ahead}
+              </Badge>
+            )}
           </Button>
-        )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onFetch}
+            className="relative"
+          >
+            <ArrowDownCircle className="h-4 w-4 mr-2" />
+            Fetch
+            {behind > 0 && (
+              <Badge variant="secondary" className="ml-2 h-5 px-1.5">
+                {behind}
+              </Badge>
+            )}
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRefresh}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+
+          {ahead > 0 && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => setCreatePrOpen(true)}
+            >
+              <GitPullRequest className="h-4 w-4 mr-2" />
+              Create PR
+            </Button>
+          )}
+        </div>
+
+        {/* Mobile: Dropdown menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="sm:hidden relative">
+              <MoreVertical className="h-4 w-4" />
+              {(ahead > 0 || behind > 0) && (
+                <span className="absolute -top-1 -right-1 h-2 w-2 bg-primary rounded-full" />
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onPush} disabled={ahead === 0}>
+              <ArrowUpCircle className="h-4 w-4 mr-2" />
+              Push
+              {ahead > 0 && (
+                <Badge variant="default" className="ml-2 h-5 px-1.5">
+                  {ahead}
+                </Badge>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onFetch}>
+              <ArrowDownCircle className="h-4 w-4 mr-2" />
+              Fetch
+              {behind > 0 && (
+                <Badge variant="secondary" className="ml-2 h-5 px-1.5">
+                  {behind}
+                </Badge>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onRefresh}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </DropdownMenuItem>
+            {ahead > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setCreatePrOpen(true)}>
+                  <GitPullRequest className="h-4 w-4 mr-2" />
+                  Create PR
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Dialogs */}

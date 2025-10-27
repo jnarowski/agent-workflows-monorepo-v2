@@ -2,19 +2,26 @@
  * Changes view showing uncommitted files with inline diffs
  */
 
-import { Button } from '@/client/components/ui/button';
-import { Textarea } from '@/client/components/ui/textarea';
-import { CheckCircle2, Wand2, Loader2 } from 'lucide-react';
-import type { GitFileStatus } from '@/shared/types/git.types';
-import { DataTable } from '@/client/components/ui/data-table';
-import { createGitChangesColumns } from './git-changes-columns';
-import type { Row } from '@tanstack/react-table';
-import { DiffViewer } from '@/client/components/DiffViewer';
-import { useFileDiff, useGenerateCommitMessage } from '../hooks/useGitOperations';
-import { Skeleton } from '@/client/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/client/components/ui/tooltip';
-import { useMemo } from 'react';
-import { toast } from 'sonner';
+import { Button } from "@/client/components/ui/button";
+import { Textarea } from "@/client/components/ui/textarea";
+import { CheckCircle2, Wand2, Loader2 } from "lucide-react";
+import type { GitFileStatus } from "@/shared/types/git.types";
+import { DataTable } from "@/client/components/ui/data-table";
+import { createGitChangesColumns } from "./git-changes-columns";
+import type { Row } from "@tanstack/react-table";
+import { DiffViewer } from "@/client/components/DiffViewer";
+import {
+  useFileDiff,
+  useGenerateCommitMessage,
+} from "../hooks/useGitOperations";
+import { Skeleton } from "@/client/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/client/components/ui/tooltip";
+import { useMemo } from "react";
+import { toast } from "sonner";
 
 interface ChangesViewProps {
   path: string | undefined;
@@ -58,7 +65,7 @@ function DiffContent({
   }
 
   // Check if it's a binary file or has actual diff content
-  if (diff.includes('Binary files')) {
+  if (diff.includes("Binary files")) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <p className="text-sm">Binary file - cannot display diff</p>
@@ -66,7 +73,7 @@ function DiffContent({
     );
   }
 
-  if (diff.trim() === '') {
+  if (diff.trim() === "") {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <p className="text-sm">No changes to display</p>
@@ -118,7 +125,7 @@ export function ChangesView({
       {
         onSuccess: (message) => {
           onCommitMessageChange(message);
-          toast.success('Commit message generated');
+          toast.success("Commit message generated");
         },
       }
     );
@@ -130,7 +137,9 @@ export function ChangesView({
       <div className="flex items-center justify-center h-full">
         <div className="text-center space-y-4">
           <CheckCircle2 className="h-12 w-12 text-muted-foreground mx-auto" />
-          <div className="text-muted-foreground text-lg">No changes detected</div>
+          <div className="text-muted-foreground text-lg">
+            No changes detected
+          </div>
           <p className="text-sm text-muted-foreground">
             All changes have been committed
           </p>
@@ -144,9 +153,6 @@ export function ChangesView({
       {/* Commit message section */}
       <div className="shrink-0 px-4 py-4 border-b bg-background">
         <div className="space-y-2">
-          <label htmlFor="commit-message" className="text-sm font-medium">
-            Commit message
-          </label>
           <div className="relative">
             <Textarea
               id="commit-message"
@@ -158,14 +164,18 @@ export function ChangesView({
             />
             <div className="absolute bottom-2 right-2 flex items-center gap-2">
               <div className="text-xs text-muted-foreground">
-                {selectedFiles.size} {selectedFiles.size === 1 ? 'file' : 'files'}
+                {selectedFiles.size}{" "}
+                {selectedFiles.size === 1 ? "file" : "files"}
               </div>
               <Tooltip delayDuration={300}>
                 <TooltipTrigger asChild>
                   <span>
                     <Button
                       onClick={handleGenerateCommitMessage}
-                      disabled={selectedFiles.size === 0 || generateCommitMessage.isPending}
+                      disabled={
+                        selectedFiles.size === 0 ||
+                        generateCommitMessage.isPending
+                      }
                       size="sm"
                       variant="outline"
                       className="h-8 w-8 p-0"
@@ -181,7 +191,9 @@ export function ChangesView({
                 <TooltipContent side="top" sideOffset={4}>
                   <div className="text-center">
                     <p>Generate commit message with AI</p>
-                    <p className="text-xs opacity-70">Requires ANTHROPIC_API_KEY</p>
+                    <p className="text-xs opacity-70">
+                      Requires ANTHROPIC_API_KEY
+                    </p>
                   </div>
                 </TooltipContent>
               </Tooltip>
@@ -191,7 +203,7 @@ export function ChangesView({
                 size="sm"
                 className="h-8"
               >
-                {isCommitting ? 'Committing...' : 'Commit'}
+                {isCommitting ? "Committing..." : "Commit"}
               </Button>
             </div>
           </div>

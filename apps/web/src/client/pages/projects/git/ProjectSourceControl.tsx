@@ -26,6 +26,7 @@ import {
 } from "./hooks/useGitOperations";
 import { useProject } from "../hooks/useProjects";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export default function ProjectSourceControl() {
   const { id: projectId } = useParams<{ id: string }>();
@@ -161,6 +162,7 @@ export default function ProjectSourceControl() {
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ["git", "status", projectPath] });
+    toast.success("Refreshed git status");
   };
 
   // Show not a git repo message if needed
