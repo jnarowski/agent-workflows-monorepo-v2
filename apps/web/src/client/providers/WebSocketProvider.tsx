@@ -124,6 +124,9 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
           const message: WebSocketMessage = JSON.parse(event.data);
           if (import.meta.env.DEV) {
             console.log('[WebSocket] Received:', message.type);
+            if (message.type.includes('stream_output')) {
+              console.log('[WebSocket] Stream output data:', message.data);
+            }
           }
 
           // Handle global.connected event

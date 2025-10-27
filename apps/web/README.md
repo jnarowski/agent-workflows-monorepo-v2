@@ -92,35 +92,27 @@ apps/web/
    pnpm install
    ```
 
-3. **Set up environment variables**
+3. **Set up the development environment**
 
    ```bash
    cd apps/web
-   cp .env.example .env
+   pnpm dev:setup
    ```
 
-   Edit `.env` and configure:
+   This will:
+   - Create `.env` file from `.env.example` with a secure JWT secret
+   - Set up the SQLite database at `prisma/dev.db`
+   - Run all database migrations
+   - Generate the Prisma client
+
+   After setup, edit `.env` to add optional configuration:
 
    ```bash
-   # Required
-   JWT_SECRET=your-secret-key-change-in-production  # Generate with: openssl rand -base64 32
-
    # Optional
    ANTHROPIC_API_KEY=your-anthropic-api-key  # For AI-powered session naming
    LOG_LEVEL=info
    PORT=3456
    VITE_PORT=5173
-   ```
-
-4. **Generate Prisma client**
-
-   ```bash
-   pnpm prisma:generate
-   ```
-
-5. **Run database migrations**
-   ```bash
-   pnpm prisma:migrate
    ```
 
 ### Development
@@ -451,8 +443,11 @@ pnpm dev:kill  # Kill processes on ports 3456 and 5173
 ### Database Issues
 
 ```bash
-# Reset database
+# Reset and recreate database
 rm prisma/dev.db
+pnpm dev:setup
+
+# Or manually run migrations only
 pnpm prisma:migrate
 
 # View database in Prisma Studio
