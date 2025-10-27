@@ -25,6 +25,7 @@ import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgen
 import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
 import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
+import { useSidebar } from "@/client/components/ui/sidebar";
 
 interface CommandMenuProps {
   onSearchChange?: (query: string) => void;
@@ -36,6 +37,7 @@ export function CommandMenu({ onSearchChange }: CommandMenuProps) {
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { data: projects = [], isLoading: projectsLoading } = useProjects();
+  const { isMobile } = useSidebar();
 
   const handleProjectCreated = (projectId: string) => {
     setProjectDialogOpen(false);
@@ -99,6 +101,7 @@ export function CommandMenu({ onSearchChange }: CommandMenuProps) {
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search projects..."
             className="pl-9 pr-16"
+            autoFocus={!isMobile}
           />
           <button
             onClick={() => setOpen(true)}

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/client/components/ui/button";
 import { Plus } from 'lucide-react';
+import { useSidebar } from "@/client/components/ui/sidebar";
 
 interface NewSessionButtonProps {
   projectId: string;
@@ -10,10 +11,15 @@ interface NewSessionButtonProps {
 
 export function NewSessionButton({ projectId, variant = 'default', size = 'default' }: NewSessionButtonProps) {
   const navigate = useNavigate();
+  const { isMobile, setOpenMobile } = useSidebar();
 
   const handleCreateSession = () => {
     // Navigate to the new session route
     navigate(`/projects/${projectId}/session/new`);
+    // Close mobile menu when creating a new session
+    if (isMobile) {
+      setOpenMobile(false);
+    }
   };
 
   return (

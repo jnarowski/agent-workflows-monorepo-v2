@@ -368,7 +368,7 @@ export default function ProjectSession() {
       </div>
 
       {/* Fixed Input Container at Bottom */}
-      <div className="md:pb-4 pb-2 md:px-4">
+      <div className="md:pb-4 md:px-4">
         <div className="mx-auto max-w-4xl">
           <ChatPromptInput
             ref={chatInputRef}
