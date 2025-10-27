@@ -6,6 +6,7 @@ import {
   ChatPromptInput,
   type ChatPromptInputHandle,
 } from "./components/ChatPromptInput";
+import { ConnectionStatusBanner } from "./components/ConnectionStatusBanner";
 import { useSessionWebSocket } from "./hooks/useSessionWebSocket";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import {
@@ -44,6 +45,9 @@ export default function ProjectSession() {
   const {
     sendMessage: globalSendMessage,
     isConnected: globalIsConnected,
+    readyState,
+    isReady,
+    connectionAttempts,
     reconnect,
   } = useWebSocket();
 
@@ -340,17 +344,13 @@ export default function ProjectSession() {
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden">
       {/* Connection status banner */}
-      {sessionId && !isConnected && (
-        <div className="bg-yellow-100 border-b border-yellow-200 px-4 py-2 text-sm text-yellow-800 flex items-center justify-between">
-          <span>Disconnected from session</span>
-          <button
-            onClick={reconnect}
-            className="text-yellow-900 underline hover:no-underline"
-          >
-            Reconnect
-          </button>
-        </div>
-      )}
+      <ConnectionStatusBanner
+        sessionId={sessionId}
+        readyState={readyState}
+        isReady={isReady}
+        connectionAttempts={connectionAttempts}
+        onReconnect={reconnect}
+      />
 
       {/* Chat Messages Container - takes up remaining space */}
       <div className="flex-1 overflow-hidden">
