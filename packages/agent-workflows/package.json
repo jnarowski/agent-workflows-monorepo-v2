@@ -21,7 +21,6 @@
   ],
   "scripts": {
     "build": "tsdown && tsdown src/cli/index.ts --format esm --outDir dist/cli",
-    "prepare": "pnpm build",
     "devv": "tsdown --watch",
     "gen-slash-command-types": "node dist/cli/index.js generate-slash-types --input .claude/commands --output .agent/types/slash-commands.ts",
     "lint": "eslint .",
