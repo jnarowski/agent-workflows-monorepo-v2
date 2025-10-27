@@ -25,6 +25,7 @@
  * - Server-side permission mode handling (tested in server tests)
  */
 
+import React from "react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -203,9 +204,8 @@ describe("ChatPromptInput", () => {
         { wrapper: TestWrapper }
       );
 
-      // Should show token count
-      expect(container.textContent).toContain("1,500");
-      expect(container.textContent).toContain("tokens");
+      // Should show token count (formatted as "1.5k")
+      expect(container.textContent).toContain("1.5k");
     });
 
     it("displays current message tokens in addition to total", () => {
@@ -218,8 +218,8 @@ describe("ChatPromptInput", () => {
         { wrapper: TestWrapper }
       );
 
-      // Should show both total and current message tokens
-      expect(container.textContent).toContain("1,500");
+      // Should show both total and current message tokens (formatted as "1.5k")
+      expect(container.textContent).toContain("1.5k");
       expect(container.textContent).toContain("+250");
     });
 

@@ -71,6 +71,7 @@ interface ChatPromptInputProps {
   disabled?: boolean;
   isStreaming?: boolean;
   totalTokens?: number; // Total session tokens
+  currentMessageTokens?: number; // Current message tokens (to be added)
 }
 
 export interface ChatPromptInputHandle {
@@ -88,6 +89,7 @@ const ChatPromptInputInner = forwardRef<
       disabled = false,
       isStreaming: externalIsStreaming = false,
       totalTokens,
+      currentMessageTokens,
     },
     ref
   ) => {
@@ -427,7 +429,10 @@ const ChatPromptInputInner = forwardRef<
             <div className="flex items-center gap-2">
               {/* Token count display - circular badge */}
               {totalTokens !== undefined && (
-                <TokenUsageCircle totalTokens={totalTokens} />
+                <TokenUsageCircle
+                  totalTokens={totalTokens}
+                  currentMessageTokens={currentMessageTokens}
+                />
               )}
               <PromptInputSubmit
                 className={cn(

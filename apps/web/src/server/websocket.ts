@@ -165,8 +165,8 @@ async function handleSessionEvent(
           messageData.message,
           {
             sessionId,
-            resume: !!(session.metadata as any)?.claudeSessionId, // Resume existing session
-            images: imagePaths.length > 0 ? (imagePaths as any) : undefined,
+            resume: !!(session.metadata as Record<string, unknown>)?.claudeSessionId, // Resume existing session
+            images: imagePaths.length > 0 ? imagePaths : undefined,
             onOutput: (outputData: unknown) => {
               // Stream output back to client with flat event name
               sendMessage(socket, `session.${sessionId}.stream_output`, {
@@ -258,36 +258,41 @@ async function handleSessionEvent(
 
           // Find the last assistant message with usage data
           for (let i = events.length - 1; i >= 0; i--) {
-            const event = events[i] as any; // Using any for legacy event format compatibility
+            const event = events[i] as Record<string, unknown>;
 
             // Log each event type we're checking
             fastify.log.debug({
               eventType: event.type,
               eventRole: event.role,
-              hasUsage: !!event.usage,
-              hasMessageUsage: !!event.message?.usage,
+              hasUsage: !!(event.usage as Record<string, unknown> | undefined),
+              hasMessageUsage: !!((event.message as Record<string, unknown> | undefined)?.usage),
               eventKeys: Object.keys(event),
               sessionId
             }, "Checking event for usage");
 
             if ((event.type === 'assistant' || event.role === 'assistant') && event.usage) {
+              const eventUsage = event.usage as Record<string, unknown>;
               usage = {
-                input_tokens: event.usage.input_tokens || 0,
-                output_tokens: event.usage.output_tokens || 0,
-                cache_creation_input_tokens: event.usage.cache_creation_input_tokens || 0,
-                cache_read_input_tokens: event.usage.cache_read_input_tokens || 0,
+                input_tokens: (eventUsage.input_tokens as number) || 0,
+                output_tokens: (eventUsage.output_tokens as number) || 0,
+                cache_creation_input_tokens: (eventUsage.cache_creation_input_tokens as number) || 0,
+                cache_read_input_tokens: (eventUsage.cache_read_input_tokens as number) || 0,
               };
               fastify.log.info({ usage, sessionId }, "Found usage in event.usage");
               break;
             }
             // Also check event.message.usage for Claude CLI format
-            if ((event.type === 'assistant' || event.role === 'assistant') && event.message?.usage) {
-              usage = {
-                input_tokens: event.message.usage.input_tokens || 0,
-                output_tokens: event.message.usage.output_tokens || 0,
-                cache_creation_input_tokens: event.message.usage.cache_creation_input_tokens || 0,
-                cache_read_input_tokens: event.message.usage.cache_read_input_tokens || 0,
-              };
+            if ((event.type === 'assistant' || event.role === 'assistant') && event.message) {
+              const message = event.message as Record<string, unknown>;
+              if (message.usage) {
+                const messageUsage = message.usage as Record<string, unknown>;
+                usage = {
+                  input_tokens: (messageUsage.input_tokens as number) || 0,
+                  output_tokens: (messageUsage.output_tokens as number) || 0,
+                  cache_creation_input_tokens: (messageUsage.cache_creation_input_tokens as number) || 0,
+                  cache_read_input_tokens: (messageUsage.cache_read_input_tokens as number) || 0,
+                };
+              }
               fastify.log.info({ usage, sessionId }, "Found usage in event.message.usage");
               break;
             }
