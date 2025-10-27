@@ -1,9 +1,0 @@
-[
-  {
-    "session_id": "58fe7d02-5646-4a38-9f7e-49938e2afd29",
-    "transcript_path": "/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2/58fe7d02-5646-4a38-9f7e-49938e2afd29.jsonl",
-    "cwd": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk",
-    "hook_event_name": "Notification",
-    "message": "Claude needs your permission to use Bash"
-  }
-]
