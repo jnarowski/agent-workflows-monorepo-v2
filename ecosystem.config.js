@@ -24,7 +24,7 @@ module.exports = {
       name: 'agent-workflows-web',
       script: 'pnpm',
       args: 'dev',
-      cwd: '/Users/devbot/Dev/sourceborn/agent-workflows-monorepo-prod',
+      cwd: '/Users/devbot/Dev/devbot/agent-workflows-monorepo-prod',
       interpreter: 'none',
       env: {
         ...envConfig,
