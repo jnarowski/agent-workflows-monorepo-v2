@@ -4,9 +4,9 @@
  * Wrapper file for agent-workflows CLI
  *
  * This file exists to ensure the bin symlink can be created during pnpm install,
- * even when dist/cli/index.js hasn't been built yet.
+ * even when dist/cli.js hasn't been built yet.
  *
  * See: https://webpro.nl/scraps/compiled-bin-in-typescript-monorepo
  */
 
-import '../dist/cli/index.js';
+import '../dist/cli.js';

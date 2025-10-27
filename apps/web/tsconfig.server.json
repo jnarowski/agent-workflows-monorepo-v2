@@ -10,7 +10,6 @@
     /* Module resolution for tsx */
     "moduleResolution": "bundler",
     "moduleDetection": "force",
-    "customConditions": ["source"],
     "noEmit": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
