@@ -6,6 +6,7 @@ import {
   ChatPromptInput,
   type ChatPromptInputHandle,
 } from "./components/ChatPromptInput";
+import { ConnectionStatusBanner } from "./components/ConnectionStatusBanner";
 import { useSessionWebSocket } from "./hooks/useSessionWebSocket";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import {
@@ -17,6 +18,7 @@ import { useNavigationStore } from "@/client/stores/index";
 import { api } from "@/client/lib/api-client";
 import type { ToolResultBlock } from "@/shared/types/message.types";
 import { sessionKeys } from "./hooks/useAgentSessions";
+import { generateUUID } from "@/client/lib/utils";
 
 export default function ProjectSession() {
   const navigate = useNavigate();
@@ -25,6 +27,7 @@ export default function ProjectSession() {
   const { projectId } = useActiveProject();
   const setActiveSession = useNavigationStore((s) => s.setActiveSession);
   const initialMessageSentRef = useRef(false);
+  const loadSessionInitiatedRef = useRef(false);
   const queryClient = useQueryClient();
   const chatInputRef = useRef<ChatPromptInputHandle>(null);
 
@@ -44,11 +47,14 @@ export default function ProjectSession() {
   const {
     sendMessage: globalSendMessage,
     isConnected: globalIsConnected,
+    readyState,
+    isReady,
+    connectionAttempts,
     reconnect,
   } = useWebSocket();
 
   // WebSocket hook (subscribes to session events)
-  const { isConnected, sendMessage: wsSendMessage } = useSessionWebSocket({
+  const { sendMessage: wsSendMessage } = useSessionWebSocket({
     sessionId: sessionId || "",
     projectId: projectId || "",
   });
@@ -111,18 +117,35 @@ export default function ProjectSession() {
       // Clear previous session only if we're coming from a different session
       if (currentSessionId && currentSessionId !== sessionId) {
         clearSession();
+        loadSessionInitiatedRef.current = false; // Reset on session change
       }
 
       // Load session from server
       if (!session || session.id !== sessionId) {
+        // Skip if already initiated (handles React Strict Mode double-invocation)
+        if (loadSessionInitiatedRef.current) {
+          if (import.meta.env.DEV) {
+            console.log(
+              "[ProjectSession] Load already initiated, skipping duplicate call"
+            );
+          }
+          return;
+        }
+
         if (import.meta.env.DEV) {
           console.log(
             "[ProjectSession] Loading session from server:",
             sessionId
           );
         }
-        loadSession(sessionId, projectId).catch((err) => {
+
+        // Mark as initiated immediately to prevent duplicate calls
+        loadSessionInitiatedRef.current = true;
+
+        loadSession(sessionId, projectId, queryClient).catch((err) => {
           console.error("[ProjectSession] Error loading session:", err);
+          // Reset ref on error so user can retry
+          loadSessionInitiatedRef.current = false;
         });
       } else {
         if (import.meta.env.DEV) {
@@ -174,7 +197,7 @@ export default function ProjectSession() {
         // Add the user message to the store for UI display
         // (Message was already sent via WebSocket during session creation)
         addMessage({
-          id: crypto.randomUUID(),
+          id: generateUUID(),
           role: "user",
           content: [{ type: "text", text: decodedMessage }],
           timestamp: Date.now(),
@@ -220,7 +243,7 @@ export default function ProjectSession() {
         // Create session via API
         const { data: newSession } = await api.post<{ data: { id: string } }>(
           `/api/projects/${projectId}/sessions`,
-          { sessionId: crypto.randomUUID() }
+          { sessionId: generateUUID() }
         );
 
         // Invalidate sessions query to update sidebar immediately
@@ -262,7 +285,7 @@ export default function ProjectSession() {
 
     // Add user message to store immediately
     addMessage({
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       role: "user",
       content: [{ type: "text", text: message }],
       images: imagePaths,
@@ -340,17 +363,13 @@ export default function ProjectSession() {
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden">
       {/* Connection status banner */}
-      {sessionId && !isConnected && (
-        <div className="bg-yellow-100 border-b border-yellow-200 px-4 py-2 text-sm text-yellow-800 flex items-center justify-between">
-          <span>Disconnected from session</span>
-          <button
-            onClick={reconnect}
-            className="text-yellow-900 underline hover:no-underline"
-          >
-            Reconnect
-          </button>
-        </div>
-      )}
+      <ConnectionStatusBanner
+        sessionId={sessionId}
+        readyState={readyState}
+        isReady={isReady}
+        connectionAttempts={connectionAttempts}
+        onReconnect={reconnect}
+      />
 
       {/* Chat Messages Container - takes up remaining space */}
       <div className="flex-1 overflow-hidden">
@@ -367,7 +386,7 @@ export default function ProjectSession() {
       </div>
 
       {/* Fixed Input Container at Bottom */}
-      <div className="md:pb-4 pb-2 md:px-4">
+      <div className="md:pb-4 md:px-4">
         <div className="mx-auto max-w-4xl">
           <ChatPromptInput
             ref={chatInputRef}

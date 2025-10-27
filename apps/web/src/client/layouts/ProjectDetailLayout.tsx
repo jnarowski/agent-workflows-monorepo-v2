@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useProject } from "@/client/pages/projects/hooks/useProjects";
 import { Button } from "@/client/components/ui/button";
 import { Skeleton } from "@/client/components/ui/skeleton";
-import { api } from '@/client/lib/api-client';
 import {
   AlertCircle,
   ArrowLeft,
@@ -19,7 +18,6 @@ export default function ProjectDetailLayout() {
   const setActiveProject = useNavigationStore((state) => state.setActiveProject);
   const clearNavigation = useNavigationStore((state) => state.clearNavigation);
   const { data: project, isLoading, error } = useProject(id!);
-  const [, setIsSyncing] = useState(false);
 
   // Sync projectId with navigationStore on mount and when id changes
   useEffect(() => {
@@ -40,28 +38,6 @@ export default function ProjectDetailLayout() {
       navigate("/", { replace: true });
     }
   }, [error, navigate]);
-
-  // Sync sessions on initial mount only
-  useEffect(() => {
-    if (!id) return;
-
-    const syncSessions = async () => {
-      try {
-        setIsSyncing(true);
-
-        const result = await api.post(`/api/projects/${id}/sessions/sync`);
-        if (import.meta.env.DEV) {
-          console.log('Sessions synced:', result);
-        }
-      } catch (err) {
-        console.error('Error syncing sessions:', err);
-      } finally {
-        setIsSyncing(false);
-      }
-    };
-
-    syncSessions();
-  }, [id]); // Only run when project ID changes
 
   // Loading state
   if (isLoading) {

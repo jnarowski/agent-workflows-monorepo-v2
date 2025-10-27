@@ -1,5 +1,5 @@
 import { useNavigationStore } from "@/client/stores/index";
-import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgentSessions";
+import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 import type { SessionResponse } from "@/shared/types";
 
 /**
@@ -36,18 +36,20 @@ export function useActiveSession(): UseActiveSessionReturn {
   const activeProjectId = useNavigationStore((state) => state.activeProjectId);
   const activeSessionId = useNavigationStore((state) => state.activeSessionId);
 
-  const sessionsQuery = useAgentSessions({
-    projectId: activeProjectId || "",
-    enabled: !!activeProjectId,
-  });
+  const projectsQuery = useProjectsWithSessions();
 
-  const session =
-    sessionsQuery.data?.find((s) => s.id === activeSessionId) ?? null;
+  // Find the active project and get its sessions
+  const activeProject = projectsQuery.data?.find(
+    (p) => p.id === activeProjectId
+  );
+  const sessions = activeProject?.sessions || [];
+
+  const session = sessions.find((s) => s.id === activeSessionId) ?? null;
 
   return {
     session,
     sessionId: activeSessionId,
-    isLoading: sessionsQuery.isLoading,
-    error: sessionsQuery.error,
+    isLoading: projectsQuery.isLoading,
+    error: projectsQuery.error,
   };
 }

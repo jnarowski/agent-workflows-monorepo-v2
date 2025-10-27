@@ -7,22 +7,27 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "agent-workflows": "./dist/cli/index.js"
+    "agent-workflows": "./bin/agent-workflows.js"
   },
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
+    },
+    "./cli": {
+      "import": "./dist/cli.js",
+      "types": "./dist/cli.d.ts"
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "bin"
   ],
   "scripts": {
-    "build": "tsdown && tsdown src/cli/index.ts --format esm --outDir dist/cli",
-    "devv": "tsdown --watch",
-    "gen-slash-command-types": "node dist/cli/index.js generate-slash-types --input .claude/commands --output .agent/types/slash-commands.ts",
+    "build": "bunchee",
+    "dev": "bunchee --watch",
+    "gen-slash-command-types": "node dist/cli.js generate-slash-types --input .claude/commands --output .agent/types/slash-commands.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "check-types": "tsc --noEmit",
@@ -60,9 +65,9 @@
     "@eslint/js": "^9.37.0",
     "@types/node": "^24.8.1",
     "@vitest/ui": "^3.2.4",
+    "bunchee": "^6.6.2",
     "eslint": "^9.37.0",
     "globals": "^16.4.0",
-    "tsdown": "^0.15.7",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.1",
     "vitest": "^3.2.4"

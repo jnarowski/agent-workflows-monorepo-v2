@@ -1,5 +1,6 @@
 import * as pty from 'node-pty';
 import * as os from 'os';
+import type { FastifyBaseLogger } from 'fastify';
 import { getProjectById } from '@/server/services/project';
 
 /**

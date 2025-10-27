@@ -57,9 +57,9 @@ export function AgentLoadingIndicator({
             <span className="inline-block w-[2px] h-4 bg-orange-500 ml-0.5 animate-[blink_1s_step-end_infinite]" />
           )}
           {displayedText.length === loadingPhrase.length && "..."}
-          {/* Flashlight shine effect */}
+          {/* Flashlight shine effect - only visible on text in dark mode */}
           <span
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none animate-[shine_2.5s_linear_infinite]"
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 dark:via-white/30 to-transparent pointer-events-none animate-[shine_2.5s_linear_infinite] dark:mix-blend-overlay"
             style={{
               width: "30%",
               transform: "skewX(-20deg)",

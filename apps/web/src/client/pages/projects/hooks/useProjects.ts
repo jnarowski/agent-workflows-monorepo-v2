@@ -8,9 +8,11 @@ import {
 import { toast } from "sonner";
 import type {
   Project,
+  ProjectWithSessions,
   CreateProjectRequest,
   UpdateProjectRequest,
   ProjectsResponse,
+  ProjectsWithSessionsResponse,
   ProjectResponse,
 } from "@/shared/types/project.types";
 import type { SyncProjectsResponse } from "@/shared/types/project-sync.types";
@@ -21,6 +23,7 @@ export const projectKeys = {
   all: ["projects"] as const,
   lists: () => [...projectKeys.all, "list"] as const,
   list: () => [...projectKeys.lists()] as const,
+  withSessions: () => [...projectKeys.all, "with-sessions"] as const,
   details: () => [...projectKeys.all, "detail"] as const,
   detail: (id: string) => [...projectKeys.details(), id] as const,
   readme: (id: string) => [...projectKeys.detail(id), "readme"] as const,
@@ -31,6 +34,16 @@ export const projectKeys = {
  */
 async function fetchProjects(): Promise<Project[]> {
   const data = await api.get<ProjectsResponse>("/api/projects");
+  return data.data;
+}
+
+/**
+ * Fetch all projects with sessions
+ */
+async function fetchProjectsWithSessions(): Promise<ProjectWithSessions[]> {
+  const data = await api.get<ProjectsWithSessionsResponse>(
+    "/api/projects?include=sessions&sessionLimit=20"
+  );
   return data.data;
 }
 
@@ -106,6 +119,18 @@ export function useProjects(): UseQueryResult<Project[], Error> {
 }
 
 /**
+ * Hook to fetch all projects with their sessions
+ */
+export function useProjectsWithSessions(): UseQueryResult<ProjectWithSessions[], Error> {
+  return useQuery({
+    queryKey: projectKeys.withSessions(),
+    queryFn: () => fetchProjectsWithSessions(),
+    staleTime: 30000, // 30 seconds
+    refetchOnWindowFocus: false,
+  });
+}
+
+/**
  * Hook to fetch a single project
  */
 export function useProject(id: string): UseQueryResult<Project, Error> {
@@ -129,8 +154,9 @@ export function useCreateProject(): UseMutationResult<
   return useMutation({
     mutationFn: (project) => createProject(project),
     onSuccess: (newProject) => {
-      // Invalidate and refetch projects list
+      // Invalidate and refetch both project lists and projects-with-sessions
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: projectKeys.withSessions() });
 
       // Optionally add the new project to cache optimistically
       queryClient.setQueryData<Project[]>(projectKeys.list(), (old) => {
@@ -172,6 +198,9 @@ export function useUpdateProject(): UseMutationResult<
         updatedProject
       );
 
+      // Invalidate projects-with-sessions to refetch
+      queryClient.invalidateQueries({ queryKey: projectKeys.withSessions() });
+
       toast.success("Project updated successfully");
     },
     onError: (error) => {
@@ -199,6 +228,9 @@ export function useDeleteProject(): UseMutationResult<Project, Error, string> {
       queryClient.removeQueries({
         queryKey: projectKeys.detail(deletedProject.id),
       });
+
+      // Invalidate projects-with-sessions to refetch
+      queryClient.invalidateQueries({ queryKey: projectKeys.withSessions() });
 
       toast.success("Project deleted successfully");
     },
@@ -231,8 +263,9 @@ export function useSyncProjects(): UseMutationResult<
   return useMutation({
     mutationFn: () => syncProjects(),
     onSuccess: (data) => {
-      // Invalidate projects list to trigger refetch
+      // Invalidate projects list and projects-with-sessions to trigger refetch
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: projectKeys.withSessions() });
 
       // Show success toast with sync stats
       toast.success(
@@ -274,6 +307,7 @@ export function useToggleProjectHidden(): UseMutationResult<
 
       // Invalidate queries to ensure consistency
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: projectKeys.withSessions() });
 
       // Show success toast
       const action = updatedProject.is_hidden ? "hidden" : "unhidden";
@@ -314,6 +348,7 @@ export function useToggleProjectStarred(): UseMutationResult<
 
       // Invalidate queries to ensure consistency
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: projectKeys.withSessions() });
 
       // Show success toast
       const action = updatedProject.is_starred ? "starred" : "unstarred";

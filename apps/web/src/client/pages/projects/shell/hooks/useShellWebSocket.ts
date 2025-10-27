@@ -43,7 +43,12 @@ export function useShellWebSocket({
 
       // Create WebSocket connection with token in query params
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.hostname}:3456/shell?token=${encodeURIComponent(token)}`;
+
+      // Allow override via VITE_WS_HOST for VPN/remote access
+      const isDev = import.meta.env.DEV;
+      const wsHost = import.meta.env.VITE_WS_HOST ||
+                     (isDev ? 'localhost:3456' : `${window.location.hostname}:3456`);
+      const wsUrl = `${protocol}//${wsHost}/shell?token=${encodeURIComponent(token)}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 

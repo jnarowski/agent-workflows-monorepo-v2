@@ -47,9 +47,19 @@ const permissionModes: Array<{
   shortName: string;
   color: string;
 }> = [
-  { id: "default", name: "Default", shortName: "Default", color: "bg-gray-500" },
+  {
+    id: "default",
+    name: "Default",
+    shortName: "Default",
+    color: "bg-gray-500",
+  },
   { id: "plan", name: "Plan Mode", shortName: "Plan", color: "bg-green-500" },
-  { id: "acceptEdits", name: "Accept Edits", shortName: "Accept", color: "bg-purple-500" },
+  {
+    id: "acceptEdits",
+    name: "Accept Edits",
+    shortName: "Accept",
+    color: "bg-purple-500",
+  },
   { id: "reject", name: "Reject", shortName: "Reject", color: "bg-red-500" },
 ];
 
@@ -212,7 +222,13 @@ const ChatPromptInputInner = forwardRef<
     };
 
     // Handle command selection from slash menu
-    const handleCommandSelect = (command: string) => {
+    const handleCommandSelect = ({
+      command,
+      immediateSubmit,
+    }: {
+      command: string;
+      immediateSubmit: boolean;
+    }) => {
       // Insert command at position 0 with trailing space
       const commandText = `${command} `;
       const newText = commandText + text;
@@ -221,16 +237,24 @@ const ChatPromptInputInner = forwardRef<
       // Close menu
       setIsSlashMenuOpen(false);
 
-      // Focus textarea and position cursor after command
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-        setTimeout(() => {
-          if (textareaRef.current) {
-            const newPosition = commandText.length;
-            textareaRef.current.setSelectionRange(newPosition, newPosition);
-            setCursorPosition(newPosition);
-          }
-        }, 0);
+      if (immediateSubmit) {
+        // Submit immediately with current files
+        handleSubmit({
+          text: newText,
+          files: controller.attachments.files
+        });
+      } else {
+        // Focus textarea and position cursor after command
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          setTimeout(() => {
+            if (textareaRef.current) {
+              const newPosition = commandText.length;
+              textareaRef.current.setSelectionRange(newPosition, newPosition);
+              setCursorPosition(newPosition);
+            }
+          }, 0);
+        }
       }
     };
 
@@ -319,6 +343,7 @@ const ChatPromptInputInner = forwardRef<
           multiple
           onSubmit={handleSubmit}
           inputGroupClassName={cn(
+            "pb-2 md:pb-0",
             "transition-colors",
             permissionMode === "plan" &&
               "border-green-500 md:has-[[data-slot=input-group-control]:focus-visible]:border-green-500",
@@ -365,17 +390,20 @@ const ChatPromptInputInner = forwardRef<
               >
                 <PromptInputPermissionModeSelectTrigger>
                   <div className="flex items-center gap-2">
+                    {/* Show dot + short name on mobile */}
                     <div
-                      className={`size-2 rounded-full ${
+                      className={`size-2 rounded-full md:hidden ${
                         permissionModes.find((m) => m.id === permissionMode)
                           ?.color
                       }`}
                     />
-                    {/* Show short name on mobile, full name on desktop */}
                     <span className="md:hidden">
-                      {permissionModes.find((m) => m.id === permissionMode)
-                        ?.shortName}
+                      {
+                        permissionModes.find((m) => m.id === permissionMode)
+                          ?.shortName
+                      }
                     </span>
+                    {/* Show full name with dot on desktop (via SelectValue) */}
                     <span className="hidden md:inline">
                       <PromptInputPermissionModeSelectValue />
                     </span>

@@ -30,14 +30,14 @@ export function DefaultToolBlock({
       <div className="space-y-3">
         {/* Tool Input */}
         <div className="space-y-2">
-          <div className="text-xs font-semibold text-muted-foreground">
+          <div className="text-sm md:text-xs font-semibold text-muted-foreground">
             Input
           </div>
-          <details className="text-sm">
+          <details className="text-base md:text-sm">
             <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
               View input
             </summary>
-            <pre className="mt-2 p-3 rounded-md bg-muted/50 border overflow-x-auto text-xs">
+            <pre className="mt-2 p-3 rounded-md bg-muted/50 border overflow-x-auto text-sm md:text-xs">
               {JSON.stringify(input, null, 2)}
             </pre>
           </details>
@@ -46,7 +46,7 @@ export function DefaultToolBlock({
         {/* Tool Result */}
         {result && (
           <div className="space-y-2">
-            <div className="text-xs font-semibold text-muted-foreground">
+            <div className="text-sm md:text-xs font-semibold text-muted-foreground">
               Output
             </div>
             <div className="border border-border rounded-md p-2 bg-background/50">

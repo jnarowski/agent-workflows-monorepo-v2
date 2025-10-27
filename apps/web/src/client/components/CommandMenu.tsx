@@ -20,11 +20,11 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/client/components/ui/command";
-import { useProjects } from "@/client/pages/projects/hooks/useProjects";
-import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgentSessions";
+import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
 import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
+import { useSidebar } from "@/client/components/ui/sidebar";
 
 interface CommandMenuProps {
   onSearchChange?: (query: string) => void;
@@ -35,7 +35,8 @@ export function CommandMenu({ onSearchChange }: CommandMenuProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [projectDialogOpen, setProjectDialogOpen] = useState(false);
   const navigate = useNavigate();
-  const { data: projects = [], isLoading: projectsLoading } = useProjects();
+  const { data: projects = [], isLoading: projectsLoading } = useProjectsWithSessions();
+  const { isMobile } = useSidebar();
 
   const handleProjectCreated = (projectId: string) => {
     setProjectDialogOpen(false);
@@ -99,6 +100,7 @@ export function CommandMenu({ onSearchChange }: CommandMenuProps) {
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search projects..."
             className="pl-9 pr-16"
+            autoFocus={!isMobile}
           />
           <button
             onClick={() => setOpen(true)}
@@ -154,14 +156,19 @@ interface ProjectGroupProps {
     id: string;
     name: string;
     path: string;
+    sessions?: Array<{
+      id: string;
+      metadata: {
+        lastMessageAt: string;
+        firstMessagePreview: string;
+      };
+    }>;
   };
   onNavigate: (path: string) => void;
 }
 
 function ProjectGroup({ project, onNavigate }: ProjectGroupProps) {
-  const { data: sessions = [] } = useAgentSessions({
-    projectId: project.id,
-  });
+  const sessions = project.sessions || [];
 
   // Get the 3 most recent sessions, sorted by lastMessageAt
   const recentSessions = [...sessions]

@@ -260,7 +260,6 @@ export async function createServer() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const PORT = parseInt(process.env.PORT || '3456');
   const HOST = process.env.HOST || '127.0.0.1';
-
   const server = await createServer();
 
   await server.listen({

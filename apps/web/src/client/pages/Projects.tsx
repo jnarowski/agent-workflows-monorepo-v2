@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useProjects } from "@/client/pages/projects/hooks/useProjects";
+import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/client/components/ui/card";
 import { Button } from "@/client/components/ui/button";
@@ -18,7 +18,7 @@ import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog"
 
 export default function Projects() {
   const navigate = useNavigate();
-  const { data: projects, isLoading } = useProjects();
+  const { data: projects, isLoading } = useProjectsWithSessions();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Loading state

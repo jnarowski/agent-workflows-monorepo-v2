@@ -28,5 +28,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/client"]
+  "include": ["src/client"],
+  "exclude": ["**/*.test.ts", "**/*.test.tsx"]
 }

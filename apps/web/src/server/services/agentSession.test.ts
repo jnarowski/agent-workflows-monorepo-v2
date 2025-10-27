@@ -233,6 +233,7 @@ describe("AgentSessionService", () => {
         name: "myproject",
         path: projectPath,
         is_hidden: false,
+        is_starred: false,
         created_at: new Date(),
         updated_at: new Date(),
       });
@@ -288,6 +289,7 @@ describe("AgentSessionService", () => {
         name: "myproject",
         path: projectPath,
         is_hidden: false,
+        is_starred: false,
         created_at: new Date(),
         updated_at: new Date(),
       });
@@ -360,6 +362,7 @@ describe("AgentSessionService", () => {
         name: "myproject",
         path: projectPath,
         is_hidden: false,
+        is_starred: false,
         created_at: new Date(),
         updated_at: new Date(),
       });
@@ -420,6 +423,7 @@ describe("AgentSessionService", () => {
         name: "myproject",
         path: "/Users/test/no-sessions",
         is_hidden: false,
+        is_starred: false,
         created_at: new Date(),
         updated_at: new Date(),
       });
@@ -471,6 +475,7 @@ describe("AgentSessionService", () => {
         name: "parseproject",
         path: projectPath,
         is_hidden: false,
+        is_starred: false,
         created_at: new Date(),
         updated_at: new Date(),
       });

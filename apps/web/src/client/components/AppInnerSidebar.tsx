@@ -36,11 +36,10 @@ import {
   CollapsibleTrigger,
 } from "@/client/components/ui/collapsible";
 import {
-  useProjects,
+  useProjectsWithSessions,
   useToggleProjectHidden,
   useToggleProjectStarred,
 } from "@/client/pages/projects/hooks/useProjects";
-import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgentSessions";
 import { SessionListItem } from "@/client/pages/projects/sessions/components/SessionListItem";
 import { NewSessionButton } from "@/client/pages/projects/sessions/components/NewSessionButton";
 import { CommandMenu } from "./CommandMenu";
@@ -61,7 +60,7 @@ export function AppInnerSidebar({
   const navigate = useNavigate();
   const location = useLocation();
   const { projectId: activeProjectIdFromHook } = useActiveProject();
-  const { data: projectsData, isLoading, error } = useProjects();
+  const { data: projectsData, isLoading, error } = useProjectsWithSessions();
   const { isMobile } = useSidebar();
 
   // Get the current session ID from the URL
@@ -84,15 +83,9 @@ export function AppInnerSidebar({
     undefined
   );
 
-  // Fetch sessions for the active project
-  const { data: sessionsData } = useAgentSessions({
-    projectId: activeProjectId || "",
-    enabled: !!activeProjectId,
-  });
-
-  // Backend already sorts sessions by created_at (most recent first)
-  // Just use the data directly
-  const sortedSessions = sessionsData || [];
+  // Get sessions for the active project from project data
+  const activeProject = projectsData?.find((p) => p.id === activeProjectId);
+  const sortedSessions = activeProject?.sessions || [];
 
   const toggleHiddenMutation = useToggleProjectHidden();
   const toggleStarredMutation = useToggleProjectStarred();
@@ -110,8 +103,7 @@ export function AppInnerSidebar({
       is_starred: project.is_starred,
       created_at: project.created_at,
       updated_at: project.updated_at,
-      sessionCount:
-        project.id === activeProjectId ? sessionsData?.length || 0 : 0,
+      sessionCount: project.sessions?.length || 0,
     }));
 
     // Filter by search query
@@ -138,7 +130,7 @@ export function AppInnerSidebar({
       visibleProjects: visible,
       hiddenProjects: hidden,
     };
-  }, [projectsData, activeProjectId, sessionsData, searchQuery]);
+  }, [projectsData, searchQuery]);
 
   const toggleProject = (projectId: string) => {
     // Always ensure the project is open when navigating to it
@@ -209,7 +201,7 @@ export function AppInnerSidebar({
                           <CollapsibleTrigger className="w-full overflow-hidden flex items-center gap-2">
                             <Folder className="shrink-0" />
                             <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0 overflow-hidden">
-                              <span className="text-sm truncate block">
+                              <span className="text-base md:text-sm truncate block">
                                 {project.name.length > 20
                                   ? `${project.name.slice(0, 20)}...`
                                   : project.name}
@@ -351,7 +343,7 @@ export function AppInnerSidebar({
                         <CollapsibleTrigger className="w-full overflow-hidden flex items-center gap-2">
                           <Folder className="shrink-0" />
                           <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0 overflow-hidden">
-                            <span className="text-sm truncate block">
+                            <span className="text-base md:text-sm truncate block">
                               {project.name.length > 20
                                 ? `${project.name.slice(0, 20)}...`
                                 : project.name}
@@ -502,7 +494,7 @@ export function AppInnerSidebar({
                             <CollapsibleTrigger className="w-full overflow-hidden flex items-center gap-2">
                               <Folder className="shrink-0" />
                               <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0 overflow-hidden">
-                                <span className="font-medium text-sm truncate block">
+                                <span className="font-medium text-base md:text-sm truncate block">
                                   {project.name.length > 50
                                     ? `${project.name.slice(0, 50)}...`
                                     : project.name}

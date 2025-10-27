@@ -33,13 +33,15 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
   // Connection state
   const [readyState, setReadyState] = useState<ReadyState>(ReadyState.CLOSED);
   const [isReady, setIsReady] = useState(false);
+  const [connectionAttempts, setConnectionAttempts] = useState(0);
 
   // Reconnection state
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const intentionalCloseRef = useRef(false);
+  const connectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const isConnected = readyState === ReadyState.OPEN;
+  const isConnected = readyState === ReadyState.OPEN && isReady;
 
   /**
    * Calculate exponential backoff delay
@@ -58,6 +60,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       if (import.meta.env.DEV) {
         console.log('[WebSocket] No auth token, skipping connection');
       }
+      
       return;
     }
 
@@ -71,12 +74,19 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       // In development, Vite runs on :5173 but backend is on :3456
       const isDev = import.meta.env.DEV;
-      const wsHost = isDev ? 'localhost:3456' : window.location.host;
+
+      // Allow override via VITE_WS_HOST for VPN/remote access
+      // Examples: "10.0.1.100:3456", "vpn.example.com:3456"
+      const wsHost = import.meta.env.VITE_WS_HOST ||
+                     (isDev ? 'localhost:3456' : window.location.host);
       const wsUrl = `${wsProtocol}//${wsHost}/ws?token=${token}`;
 
+      // Increment connection attempts
+      setConnectionAttempts((prev) => prev + 1);
+
       if (import.meta.env.DEV) {
-        console.log('[WebSocket] Environment:', { isDev, wsHost, protocol: wsProtocol });
-        console.log('[WebSocket] Connecting to', wsUrl.replace(token, '***'));
+        console.log('[WebSocket] Environment:', { isDev, wsHost, protocol: wsProtocol, override: import.meta.env.VITE_WS_HOST });
+        console.log('[WebSocket] Connecting to', wsUrl.replace(token, '***'), `(attempt ${connectionAttempts + 1})`);
       }
 
       const socket = new WebSocket(wsUrl);
@@ -84,10 +94,25 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       setReadyState(ReadyState.CONNECTING);
       setIsReady(false);
 
+      // Set connection timeout (10 seconds)
+      connectionTimeoutRef.current = setTimeout(() => {
+        if (socket.readyState === WebSocket.CONNECTING) {
+          console.warn('[WebSocket] Connection timeout - still in CONNECTING state after 10s');
+          socket.close();
+        }
+      }, 10000);
+
       // Handle connection open
       socket.onopen = () => {
+        // Clear connection timeout
+        if (connectionTimeoutRef.current) {
+          clearTimeout(connectionTimeoutRef.current);
+          connectionTimeoutRef.current = null;
+        }
+
         if (import.meta.env.DEV) {
-          console.log('[WebSocket] Connection established');
+          console.log('[WebSocket] ✓ Socket opened (readyState = OPEN)');
+          console.log('[WebSocket] ⏳ Waiting for global.connected message from server...');
         }
         setReadyState(ReadyState.OPEN);
         // Note: We wait for 'global.connected' message before setting isReady
@@ -99,12 +124,17 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
           const message: WebSocketMessage = JSON.parse(event.data);
           if (import.meta.env.DEV) {
             console.log('[WebSocket] Received:', message.type);
+            if (message.type.includes('stream_output')) {
+              console.log('[WebSocket] Stream output data:', message.data);
+            }
           }
 
           // Handle global.connected event
           if (message.type === 'global.connected') {
             if (import.meta.env.DEV) {
-              console.log('[WebSocket] Received global.connected, flushing message queue');
+              console.log('[WebSocket] ✓ Received global.connected from server');
+              console.log('[WebSocket] ✓ Connection fully established and ready');
+              console.log('[WebSocket] 📤 Flushing message queue:', messageQueueRef.current.length, 'messages');
             }
             setIsReady(true);
             reconnectAttemptsRef.current = 0; // Reset reconnect attempts on successful connection
@@ -263,9 +293,14 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       }
       intentionalCloseRef.current = true;
 
+      // Clear all timeouts
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
+      }
+      if (connectionTimeoutRef.current) {
+        clearTimeout(connectionTimeoutRef.current);
+        connectionTimeoutRef.current = null;
       }
 
       if (socketRef.current) {
@@ -308,6 +343,8 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     sendMessage,
     readyState,
     isConnected,
+    isReady,
+    connectionAttempts,
     eventBus: eventBusRef.current,
     reconnect,
   };

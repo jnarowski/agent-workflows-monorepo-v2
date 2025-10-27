@@ -1,4 +1,4 @@
-import type { SessionMessage, ContentBlock } from '@/shared/types/message.types';
+import type { SessionMessage } from '@/shared/types/message.types';
 import { isSystemMessage } from '@/shared/utils/message.utils';
 
 /**

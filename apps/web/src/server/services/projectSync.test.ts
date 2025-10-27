@@ -269,6 +269,7 @@ describe('ProjectSyncService', () => {
         name: 'project',
         path: '/Users/test/project',
         is_hidden: false,
+        is_starred: false,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -327,6 +328,7 @@ describe('ProjectSyncService', () => {
         name: 'existing',
         path: '/Users/test/existing',
         is_hidden: false,
+        is_starred: false,
         created_at: createdAt,
         updated_at: updatedAt,
       };
@@ -410,6 +412,7 @@ describe('ProjectSyncService', () => {
         name: 'project1',
         path: '/Users/test/project1',
         is_hidden: false,
+        is_starred: false,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -418,6 +421,7 @@ describe('ProjectSyncService', () => {
         name: 'project2',
         path: '/Users/test/project2',
         is_hidden: false,
+        is_starred: false,
         created_at: new Date('2024-01-01'),
         updated_at: new Date('2024-01-02'),
       };
@@ -467,6 +471,7 @@ describe('ProjectSyncService', () => {
         name: 'path',
         path: '/Users/actual/project/path',
         is_hidden: false,
+        is_starred: false,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -516,6 +521,7 @@ describe('ProjectSyncService', () => {
         name: 'failproject',
         path: '/Users/test/failproject',
         is_hidden: false,
+        is_starred: false,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -576,6 +582,7 @@ describe('ProjectSyncService', () => {
         name: 'projectC',
         path: '/Users/test/projectC',
         is_hidden: false,
+        is_starred: false,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -621,6 +628,7 @@ describe('ProjectSyncService', () => {
         name: 'edge-case',
         path: '/Users/test/edge-case',
         is_hidden: false,
+        is_starred: false,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -682,6 +690,7 @@ describe('ProjectSyncService', () => {
         name: 'many-sessions',
         path: '/Users/test/many-sessions',
         is_hidden: false,
+        is_starred: false,
         created_at: new Date(),
         updated_at: new Date(),
       };
@@ -735,6 +744,7 @@ describe('ProjectSyncService', () => {
           name,
           path,
           is_hidden: false,
+        is_starred: false,
           created_at: new Date(),
           updated_at: new Date(),
         };

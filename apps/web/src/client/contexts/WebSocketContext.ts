@@ -9,6 +9,8 @@ export interface WebSocketContextValue {
   sendMessage: (type: string, data: unknown) => void;
   readyState: ReadyState;
   isConnected: boolean;
+  isReady: boolean;
+  connectionAttempts: number;
   eventBus: WebSocketEventBus;
   reconnect: () => void;
 }

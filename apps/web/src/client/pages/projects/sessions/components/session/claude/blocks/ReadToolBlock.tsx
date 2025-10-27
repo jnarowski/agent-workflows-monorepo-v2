@@ -3,8 +3,6 @@
  */
 
 import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
-import { SyntaxHighlighter } from "@/client/utils/syntaxHighlighter";
-import { getLanguageFromPath } from "@/client/utils/getLanguageFromPath";
 import type { ReadToolInput } from "@/shared/types/tool.types";
 
 interface ReadToolBlockProps {
@@ -32,9 +30,6 @@ export function ReadToolBlock({ input, result }: ReadToolBlockProps) {
     }
     return filename;
   };
-
-  // Auto-detect language for syntax highlighting
-  const language = getLanguageFromPath(input.file_path);
 
   return (
     <ToolCollapsibleWrapper

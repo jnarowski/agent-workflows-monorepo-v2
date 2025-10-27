@@ -11,6 +11,7 @@ import type {
   ContentBlock,
 } from "@/shared/types/chat";
 import { isUserMessage, isAssistantMessage } from "@/shared/types/chat";
+import { generateUUID } from "@/client/lib/utils";
 
 /**
  * Normalize a single message object to ensure content is in ContentBlock[] format
@@ -42,7 +43,7 @@ export function normalizeMessage(msg: any): SessionMessage {
   }
 
   return {
-    id: msg.id || msg.uuid || crypto.randomUUID(),
+    id: msg.id || msg.uuid || generateUUID(),
     role: msg.role || msg.type,
     content,
     timestamp: msg.timestamp ? new Date(msg.timestamp).getTime() : Date.now(),
@@ -83,7 +84,7 @@ function transformClaudeCliEvent(event: any): any | null {
   // Transform to normalized format
   return {
     type: event.type === "user" ? "user_message" : "assistant_message",
-    id: event.uuid || crypto.randomUUID(),
+    id: event.uuid || generateUUID(),
     role: event.type,
     content: content, // Normalized to array format
     timestamp: event.timestamp,

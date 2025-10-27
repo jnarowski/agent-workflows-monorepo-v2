@@ -117,7 +117,7 @@ export function ChatInterface({
       data-project-id={projectId}
       data-session-id={sessionId}
     >
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="chat-container max-w-4xl mx-auto px-4 py-8">
         <AgentMessageRenderer messages={messages} />
         <AgentLoadingIndicator isStreaming={isStreaming} />
         <div ref={messagesEndRef} />

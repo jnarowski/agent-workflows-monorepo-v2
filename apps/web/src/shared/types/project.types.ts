@@ -1,5 +1,7 @@
 // Shared types between frontend and backend for type safety across the stack
 
+import type { SessionResponse } from './agent-session.types';
+
 export interface Project {
   id: string;
   name: string;
@@ -9,6 +11,10 @@ export interface Project {
   created_at: Date;
   updated_at: Date;
   currentBranch?: string;
+}
+
+export interface ProjectWithSessions extends Project {
+  sessions: SessionResponse[];
 }
 
 // Request/Response types for API endpoints
@@ -30,6 +36,10 @@ export interface ProjectResponse {
 
 export interface ProjectsResponse {
   data: Project[];
+}
+
+export interface ProjectsWithSessionsResponse {
+  data: ProjectWithSessions[];
 }
 
 export interface ErrorResponse {
