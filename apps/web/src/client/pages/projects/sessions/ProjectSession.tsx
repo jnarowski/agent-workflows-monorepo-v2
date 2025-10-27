@@ -18,6 +18,7 @@ import { useNavigationStore } from "@/client/stores/index";
 import { api } from "@/client/lib/api-client";
 import type { ToolResultBlock } from "@/shared/types/message.types";
 import { sessionKeys } from "./hooks/useAgentSessions";
+import { generateUUID } from "@/client/lib/utils";
 
 export default function ProjectSession() {
   const navigate = useNavigate();
@@ -178,7 +179,7 @@ export default function ProjectSession() {
         // Add the user message to the store for UI display
         // (Message was already sent via WebSocket during session creation)
         addMessage({
-          id: crypto.randomUUID(),
+          id: generateUUID(),
           role: "user",
           content: [{ type: "text", text: decodedMessage }],
           timestamp: Date.now(),
@@ -224,7 +225,7 @@ export default function ProjectSession() {
         // Create session via API
         const { data: newSession } = await api.post<{ data: { id: string } }>(
           `/api/projects/${projectId}/sessions`,
-          { sessionId: crypto.randomUUID() }
+          { sessionId: generateUUID() }
         );
 
         // Invalidate sessions query to update sidebar immediately
@@ -266,7 +267,7 @@ export default function ProjectSession() {
 
     // Add user message to store immediately
     addMessage({
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       role: "user",
       content: [{ type: "text", text: message }],
       images: imagePaths,

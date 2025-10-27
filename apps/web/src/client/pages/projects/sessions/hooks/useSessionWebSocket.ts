@@ -11,6 +11,7 @@ import type {
   SessionErrorData,
 } from "@/shared/types/websocket";
 import { sessionKeys } from "./useAgentSessions";
+import { generateUUID } from "@/client/lib/utils";
 
 interface UseSessionWebSocketOptions {
   sessionId: string;
@@ -138,7 +139,7 @@ export function useSessionWebSocket({
 
     // Add error message to store
     useSessionStore.getState().addMessage({
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       role: "assistant",
       content: [
         {

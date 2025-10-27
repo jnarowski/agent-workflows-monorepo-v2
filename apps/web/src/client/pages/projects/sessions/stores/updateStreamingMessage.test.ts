@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { generateUUID } from "@/client/lib/utils";
 
 /**
  * This is a minimal reproduction test for the message replacement bug
@@ -50,7 +51,7 @@ function updateStreamingMessageCurrentBehavior(
     return [
       ...messages,
       {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         role: "assistant" as const,
         content: contentBlocks,
         timestamp: Date.now(),
