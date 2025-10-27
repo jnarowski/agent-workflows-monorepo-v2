@@ -69,12 +69,12 @@ export function SessionListItem({
         />
         <div className="space-y-1 min-w-0 flex-1">
           <div
-            className="text-xs font-normal leading-none truncate"
+            className="text-sm md:text-xs font-normal leading-none truncate"
             title={firstMessagePreview || "New session"}
           >
             {truncatedName}
           </div>
-          <div className="flex items-center justify-between text-xs text-muted-foreground gap-2">
+          <div className="flex items-center justify-between text-sm md:text-xs text-muted-foreground gap-2">
             <span className="truncate">{timeAgo}</span>
             <span className="shrink-0">{messageCount} messages</span>
           </div>

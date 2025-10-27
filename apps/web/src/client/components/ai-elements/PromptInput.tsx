@@ -1258,7 +1258,9 @@ export const PromptInputModelSelectValue = ({
   <SelectValue className={cn(className)} {...props} />
 );
 
-export type PromptInputPermissionModeSelectProps = ComponentProps<typeof Select>;
+export type PromptInputPermissionModeSelectProps = ComponentProps<
+  typeof Select
+>;
 
 export const PromptInputPermissionModeSelect = (
   props: PromptInputPermissionModeSelectProps

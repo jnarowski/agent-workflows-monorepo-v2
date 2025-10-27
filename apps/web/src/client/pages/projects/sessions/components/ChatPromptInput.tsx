@@ -47,9 +47,19 @@ const permissionModes: Array<{
   shortName: string;
   color: string;
 }> = [
-  { id: "default", name: "Default", shortName: "Default", color: "bg-gray-500" },
+  {
+    id: "default",
+    name: "Default",
+    shortName: "Default",
+    color: "bg-gray-500",
+  },
   { id: "plan", name: "Plan Mode", shortName: "Plan", color: "bg-green-500" },
-  { id: "acceptEdits", name: "Accept Edits", shortName: "Accept", color: "bg-purple-500" },
+  {
+    id: "acceptEdits",
+    name: "Accept Edits",
+    shortName: "Accept",
+    color: "bg-purple-500",
+  },
   { id: "reject", name: "Reject", shortName: "Reject", color: "bg-red-500" },
 ];
 
@@ -319,6 +329,7 @@ const ChatPromptInputInner = forwardRef<
           multiple
           onSubmit={handleSubmit}
           inputGroupClassName={cn(
+            "pb-2 md:pb-0",
             "transition-colors",
             permissionMode === "plan" &&
               "border-green-500 md:has-[[data-slot=input-group-control]:focus-visible]:border-green-500",
@@ -373,8 +384,10 @@ const ChatPromptInputInner = forwardRef<
                       }`}
                     />
                     <span className="md:hidden">
-                      {permissionModes.find((m) => m.id === permissionMode)
-                        ?.shortName}
+                      {
+                        permissionModes.find((m) => m.id === permissionMode)
+                          ?.shortName
+                      }
                     </span>
                     {/* Show full name with dot on desktop (via SelectValue) */}
                     <span className="hidden md:inline">

@@ -47,9 +47,9 @@ export function ThinkingBlock({ thinking, className = '' }: ThinkingBlockProps) 
             </div>
             <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
               <div className="flex items-center gap-2 w-full min-w-0">
-                <span className="text-sm font-semibold">Thinking</span>
+                <span className="text-base md:text-sm font-semibold">Thinking</span>
               </div>
-              <span className="text-xs text-muted-foreground break-words max-w-full overflow-hidden">
+              <span className="text-sm md:text-xs text-muted-foreground break-words max-w-full overflow-hidden">
                 ↳ {description}
               </span>
             </div>
@@ -60,7 +60,7 @@ export function ThinkingBlock({ thinking, className = '' }: ThinkingBlockProps) 
       {/* Content */}
       <CollapsibleContent>
         <div className="pl-5 pt-2 pb-3">
-          <pre className="whitespace-pre-wrap break-words text-sm italic text-muted-foreground font-sans">
+          <pre className="whitespace-pre-wrap break-words text-base md:text-sm italic text-muted-foreground font-sans">
             {thinking}
           </pre>
         </div>

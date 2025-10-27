@@ -64,7 +64,7 @@ export function ToolInputRenderer({ toolName, input }: ToolInputRendererProps) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const searchInput = input as any;
       return (
-        <div className="text-sm font-mono bg-muted/50 px-3 py-2 rounded-md border">
+        <div className="text-base md:text-sm font-mono bg-muted/50 px-3 py-2 rounded-md border">
           <div className="text-muted-foreground">Pattern:</div>
           <div>{searchInput.pattern}</div>
           {searchInput.path && (
@@ -80,11 +80,11 @@ export function ToolInputRenderer({ toolName, input }: ToolInputRendererProps) {
     default:
       // Fallback: display JSON for unknown tools
       return (
-        <details className="text-sm">
+        <details className="text-base md:text-sm">
           <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
             View input
           </summary>
-          <pre className="mt-2 p-3 rounded-md bg-muted/50 border overflow-x-auto text-xs">
+          <pre className="mt-2 p-3 rounded-md bg-muted/50 border overflow-x-auto text-sm md:text-xs">
             {JSON.stringify(input, null, 2)}
           </pre>
         </details>

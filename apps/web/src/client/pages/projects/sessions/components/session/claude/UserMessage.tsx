@@ -40,7 +40,7 @@ export function UserMessage({ message }: UserMessageProps) {
         {/* Text content */}
         {hasText && (
           <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
-            <div className="whitespace-pre-wrap break-words text-sm">
+            <div className="whitespace-pre-wrap break-words text-base md:text-sm">
               {textBlocks.map((block: TextBlock) => block.text).join("\n\n")}
             </div>
           </div>

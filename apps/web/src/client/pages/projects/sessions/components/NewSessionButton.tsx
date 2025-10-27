@@ -1,15 +1,19 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/client/components/ui/button";
-import { Plus } from 'lucide-react';
+import { Plus } from "lucide-react";
 import { useSidebar } from "@/client/components/ui/sidebar";
 
 interface NewSessionButtonProps {
   projectId: string;
-  variant?: 'default' | 'outline' | 'ghost';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
+  variant?: "default" | "outline" | "ghost";
+  size?: "default" | "sm" | "lg" | "icon";
 }
 
-export function NewSessionButton({ projectId, variant = 'default', size = 'default' }: NewSessionButtonProps) {
+export function NewSessionButton({
+  projectId,
+  variant = "default",
+  size = "default",
+}: NewSessionButtonProps) {
   const navigate = useNavigate();
   const { isMobile, setOpenMobile } = useSidebar();
 
@@ -26,7 +30,7 @@ export function NewSessionButton({ projectId, variant = 'default', size = 'defau
     <Button
       onClick={handleCreateSession}
       variant={variant}
-      size={size}
+      size={isMobile ? "lg" : size}
       className="w-full"
     >
       <Plus className="h-4 w-4 mr-2" />

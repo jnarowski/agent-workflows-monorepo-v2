@@ -209,7 +209,7 @@ export function AppInnerSidebar({
                           <CollapsibleTrigger className="w-full overflow-hidden flex items-center gap-2">
                             <Folder className="shrink-0" />
                             <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0 overflow-hidden">
-                              <span className="text-sm truncate block">
+                              <span className="text-base md:text-sm truncate block">
                                 {project.name.length > 20
                                   ? `${project.name.slice(0, 20)}...`
                                   : project.name}
@@ -351,7 +351,7 @@ export function AppInnerSidebar({
                         <CollapsibleTrigger className="w-full overflow-hidden flex items-center gap-2">
                           <Folder className="shrink-0" />
                           <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0 overflow-hidden">
-                            <span className="text-sm truncate block">
+                            <span className="text-base md:text-sm truncate block">
                               {project.name.length > 20
                                 ? `${project.name.slice(0, 20)}...`
                                 : project.name}
@@ -502,7 +502,7 @@ export function AppInnerSidebar({
                             <CollapsibleTrigger className="w-full overflow-hidden flex items-center gap-2">
                               <Folder className="shrink-0" />
                               <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0 overflow-hidden">
-                                <span className="font-medium text-sm truncate block">
+                                <span className="font-medium text-base md:text-sm truncate block">
                                   {project.name.length > 50
                                     ? `${project.name.slice(0, 50)}...`
                                     : project.name}

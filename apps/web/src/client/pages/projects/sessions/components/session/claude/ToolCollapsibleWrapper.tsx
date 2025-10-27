@@ -49,15 +49,15 @@ export function ToolCollapsibleWrapper({
             </div>
             <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
               <div className="flex items-center gap-2 w-full min-w-0">
-                <span className="text-sm font-semibold">{toolName}</span>
+                <span className="text-base md:text-sm font-semibold">{toolName}</span>
                 {contextInfo && (
-                  <span className="text-xs text-muted-foreground font-mono truncate">
+                  <span className="text-sm md:text-xs text-muted-foreground font-mono truncate">
                     {contextInfo}
                   </span>
                 )}
               </div>
               {description && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-sm md:text-xs text-muted-foreground">
                   ↳ {description}
                 </span>
               )}

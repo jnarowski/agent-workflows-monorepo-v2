@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/client/stores/index";
 import { useSyncProjects } from "@/client/pages/projects/hooks/useProjects";
@@ -14,15 +14,31 @@ function ProtectedLayout() {
   const user = useAuthStore((state) => state.user);
   const syncProjects = useSyncProjects();
 
+  // Track if sync has been initiated to prevent duplicate calls in React Strict Mode
+  const syncInitiatedRef = useRef(false);
+
   // Sync projects from Claude CLI on mount (only if needed based on localStorage)
   useEffect(() => {
+    // Skip if already initiated (handles React Strict Mode double-invocation)
+    if (syncInitiatedRef.current) {
+      return;
+    }
+
     if (shouldSyncProjects(user?.id)) {
       if (import.meta.env.DEV) {
         console.log("Syncing projects from Claude CLI...");
       }
+
+      // Mark as initiated immediately to prevent duplicate calls
+      syncInitiatedRef.current = true;
+
       syncProjects.mutate(undefined, {
         onSuccess: () => {
           markProjectsSynced(user?.id);
+        },
+        onError: () => {
+          // Reset ref on error so user can retry
+          syncInitiatedRef.current = false;
         },
       });
     } else {

@@ -29,7 +29,7 @@ export function ToolResultRenderer({ result, isError = false }: ToolResultRender
     <div className="rounded-md border border-gray-200 dark:border-gray-800 overflow-hidden">
       <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-900/50">
         <Icon className={`h-4 w-4 ${iconColor} flex-shrink-0`} />
-        <span className="text-sm font-medium">
+        <span className="text-base md:text-sm font-medium">
           {isError ? 'Error' : 'Success'}
         </span>
         {shouldCollapse && (
@@ -52,7 +52,7 @@ export function ToolResultRenderer({ result, isError = false }: ToolResultRender
       </div>
 
       <div className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 px-3 py-2">
-        <pre className="font-mono text-xs whitespace-pre-wrap break-words">
+        <pre className="font-mono text-sm md:text-xs whitespace-pre-wrap break-words">
           {safeResult}
         </pre>
       </div>
