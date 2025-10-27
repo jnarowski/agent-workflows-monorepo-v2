@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
 import {
   getAllProjects,
   getProjectById,
@@ -22,6 +23,7 @@ import {
 } from "@/server/schemas/project";
 import {
   projectsResponseSchema,
+  projectsWithSessionsResponseSchema,
   projectResponseSchema,
   errorResponse,
   fileTreeResponseSchema,
@@ -35,23 +37,37 @@ import type {
 } from "@/shared/types/project.types";
 import { buildErrorResponse } from "@/server/utils/error";
 
+// Query schema for projects endpoint
+const ProjectsQuerySchema = z.object({
+  include: z.enum(['sessions']).optional(),
+  sessionLimit: z.coerce.number().min(1).max(100).default(20).optional(),
+});
+
 export async function projectRoutes(fastify: FastifyInstance) {
   /**
    * GET /api/projects
-   * Get all projects
+   * Get all projects (optionally with sessions)
    */
-  fastify.get(
+  fastify.get<{
+    Querystring: z.infer<typeof ProjectsQuerySchema>;
+  }>(
     "/api/projects",
     {
       preHandler: fastify.authenticate,
       schema: {
-        response: {
-          200: projectsResponseSchema,
-        },
+        querystring: ProjectsQuerySchema,
+        // Note: Response schema validation disabled to support dynamic response shape
+        // (with or without sessions based on query params)
       },
     },
     async (request, reply) => {
-      const projects = await getAllProjects();
+      const { include, sessionLimit } = request.query;
+
+      const projects = await getAllProjects({
+        includeSessions: include === 'sessions',
+        sessionLimit,
+      });
+
       return reply.send({ data: projects });
     }
   );

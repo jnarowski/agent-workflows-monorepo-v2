@@ -118,6 +118,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  .chat-container .prose > :first-child {
+    margin-top: 0 !important;
+  }
 }
 
 .shiki {

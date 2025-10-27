@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod";
+import { sessionResponseSchema } from "./session";
 
 // Standard success response wrapper
 export const successResponse = <T extends z.ZodType>(dataSchema: T) =>
@@ -31,6 +32,15 @@ export const projectSchema = z.object({
 
 export const projectResponseSchema = successResponse(projectSchema);
 export const projectsResponseSchema = successResponse(z.array(projectSchema));
+
+// Project with sessions schema
+export const projectWithSessionsSchema = projectSchema.extend({
+  sessions: z.array(sessionResponseSchema),
+});
+
+export const projectsWithSessionsResponseSchema = successResponse(
+  z.array(projectWithSessionsSchema)
+);
 
 // Auth schemas
 export const userSchema = z.object({

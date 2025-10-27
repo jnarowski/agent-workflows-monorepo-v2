@@ -1,5 +1,5 @@
 import { useNavigationStore } from "@/client/stores/index";
-import { useProjects } from "@/client/pages/projects/hooks/useProjects";
+import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 import type { Project } from "@/shared/types/project.types";
 
 /**
@@ -34,7 +34,7 @@ export interface UseActiveProjectReturn {
  */
 export function useActiveProject(): UseActiveProjectReturn {
   const activeProjectId = useNavigationStore((state) => state.activeProjectId);
-  const projectsQuery = useProjects();
+  const projectsQuery = useProjectsWithSessions();
 
   const project =
     projectsQuery.data?.find((p) => p.id === activeProjectId) ?? null;

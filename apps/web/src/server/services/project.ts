@@ -5,7 +5,25 @@ import type {
   CreateProjectInput,
   UpdateProjectInput,
 } from "@/server/schemas/project";
-import type { Project } from "@/shared/types/project.types";
+import type { Project, ProjectWithSessions } from "@/shared/types/project.types";
+import type { SessionResponse } from "@/shared/types/agent-session.types";
+
+/**
+ * Transform Prisma session to API session format
+ * @param prismaSession - Raw session from Prisma
+ */
+function transformSession(prismaSession: any): SessionResponse {
+  return {
+    id: prismaSession.id,
+    projectId: prismaSession.projectId,
+    userId: prismaSession.userId,
+    name: prismaSession.name,
+    agent: prismaSession.agent,
+    metadata: prismaSession.metadata,
+    created_at: prismaSession.created_at,
+    updated_at: prismaSession.updated_at,
+  };
+}
 
 /**
  * Transform Prisma project to API project format
@@ -24,15 +42,62 @@ function transformProject(prismaProject: any): Project {
 }
 
 /**
- * Get all projects
+ * Transform Prisma project with sessions to API format
+ * @param prismaProject - Raw project from Prisma with sessions
+ */
+function transformProjectWithSessions(prismaProject: any): ProjectWithSessions {
+  return {
+    ...transformProject(prismaProject),
+    sessions: prismaProject.sessions ? prismaProject.sessions.map(transformSession) : [],
+  };
+}
+
+/**
+ * Get all projects (with optional sessions)
+ * @param options - Options for fetching projects
+ * @param options.includeSessions - Whether to include sessions
+ * @param options.sessionLimit - Maximum number of sessions per project (default: 20)
  * @returns Array of all projects ordered by creation date (newest first)
  */
-export async function getAllProjects(): Promise<Project[]> {
+export async function getAllProjects(options?: {
+  includeSessions?: boolean;
+  sessionLimit?: number;
+}): Promise<Project[] | ProjectWithSessions[]> {
+  const { includeSessions = false, sessionLimit = 20 } = options || {};
+
   const projects = await prisma.project.findMany({
+    where: {
+      is_hidden: false,
+    },
     orderBy: {
       created_at: "desc",
     },
+    take: 500,
+    ...(includeSessions && {
+      include: {
+        sessions: {
+          orderBy: {
+            updated_at: "desc",
+          },
+          take: sessionLimit,
+          select: {
+            id: true,
+            projectId: true,
+            userId: true,
+            name: true,
+            agent: true,
+            metadata: true,
+            created_at: true,
+            updated_at: true,
+          },
+        },
+      },
+    }),
   });
+
+  if (includeSessions) {
+    return projects.map(transformProjectWithSessions);
+  }
 
   return projects.map(transformProject);
 }

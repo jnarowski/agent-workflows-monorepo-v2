@@ -1,6 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useProject, useProjectReadme } from "@/client/pages/projects/hooks/useProjects";
-import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgentSessions";
+import { useProjectsWithSessions, useProjectReadme } from "@/client/pages/projects/hooks/useProjects";
 import { SessionListItem } from "@/client/pages/projects/sessions/components/SessionListItem";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/client/components/ui/card";
@@ -10,11 +9,9 @@ import remarkGfm from "remark-gfm";
 
 export default function ProjectHome() {
   const { id } = useParams<{ id: string }>();
-  const { data: project, isLoading } = useProject(id!);
-  const { data: sessions, isLoading: isLoadingSessions } = useAgentSessions({
-    projectId: id!,
-    enabled: !!id
-  });
+  const { data: projectsData, isLoading } = useProjectsWithSessions();
+  const project = projectsData?.find((p) => p.id === id);
+  const sessions = project?.sessions || [];
   const { data: readme, isLoading: isLoadingReadme, error: readmeError } = useProjectReadme(id!);
 
   if (isLoading) {
@@ -87,13 +84,7 @@ export default function ProjectHome() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoadingSessions ? (
-            <div className="space-y-2">
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-16 w-full" />
-            </div>
-          ) : !sessions || sessions.length === 0 ? (
+          {!sessions || sessions.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               No sessions yet. Start a new chat to see it here.
             </p>

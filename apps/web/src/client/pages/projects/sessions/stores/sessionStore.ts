@@ -10,6 +10,8 @@ import type {
 import type { AgentType } from "@/shared/types/agent.types";
 import { getAgent } from "@/client/lib/agents";
 import { api } from "@/client/lib/api-client";
+import type { ProjectWithSessions } from "@/shared/types/project.types";
+import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
 
 // Permission mode types from agent-cli-sdk
 export type ClaudePermissionMode =
@@ -56,7 +58,7 @@ export interface SessionStore {
   form: FormState;
 
   // Session lifecycle actions
-  loadSession: (sessionId: string, projectId: string) => Promise<void>;
+  loadSession: (sessionId: string, projectId: string, queryClient?: { getQueryData: (key: unknown) => unknown }) => Promise<void>;
   clearSession: () => void;
 
   // Message actions
@@ -87,17 +89,38 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   },
 
   // Load session from server
-  loadSession: async (sessionId: string, projectId: string) => {
+  loadSession: async (sessionId: string, projectId: string, queryClient?: { getQueryData: (key: unknown) => unknown }) => {
     try {
-      // First, fetch session details to get agent type
-      const sessionData = await api.get<{ data: SessionResponse[] }>(
-        `/api/projects/${projectId}/sessions`
-      );
-      const sessions: SessionResponse[] = sessionData.data || [];
-      const session = sessions.find((s) => s.id === sessionId);
+      let session: SessionResponse | undefined;
 
+      // First, try to get session from React Query cache (useProjectsWithSessions)
+      if (queryClient) {
+        const cachedProjects = queryClient.getQueryData(projectKeys.withSessions()) as ProjectWithSessions[] | undefined;
+
+        if (cachedProjects) {
+          const project = cachedProjects.find((p) => p.id === projectId);
+          session = project?.sessions?.find((s) => s.id === sessionId);
+
+          if (import.meta.env.DEV && session) {
+            console.log("[sessionStore] Using cached session data from projectsWithSessions");
+          }
+        }
+      }
+
+      // Fall back to API call if not in cache
       if (!session) {
-        throw new Error(`Session not found: ${sessionId}`);
+        if (import.meta.env.DEV) {
+          console.log("[sessionStore] Session not in cache, fetching from API");
+        }
+        const sessionData = await api.get<{ data: SessionResponse[] }>(
+          `/api/projects/${projectId}/sessions`
+        );
+        const sessions: SessionResponse[] = sessionData.data || [];
+        session = sessions.find((s) => s.id === sessionId);
+
+        if (!session) {
+          throw new Error(`Session not found: ${sessionId}`);
+        }
       }
 
       // Get agent implementation for this session

@@ -63,14 +63,8 @@ async function scanCommandsDirectory(
           const fileContent = await fs.readFile(fullPath, 'utf-8');
           const { data } = matter(fileContent);
 
-          // Extract description (required)
-          const description = data.description || '';
-
-          // Skip files without description
-          if (!description) {
-            console.warn(`Skipping ${fullPath}: missing description in frontmatter`);
-            continue;
-          }
+          // Extract description (optional - use filename as fallback)
+          const description = data.description || `Command: ${entry.name.replace(/\.md$/i, '')}`;
 
           // Extract and parse optional argument hint
           const argumentHintRaw = data['argument-hint'] || data.argumentHint;

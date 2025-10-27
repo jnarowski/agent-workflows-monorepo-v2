@@ -55,6 +55,8 @@ export const sessionResponseSchema = z.object({
   id: z.string().uuid(),
   projectId: z.string().cuid(),
   userId: z.string().uuid(),
+  name: z.string().optional(),
+  agent: z.enum(['claude', 'codex', 'cursor', 'gemini']),
   metadata: agentSessionMetadataSchema,
   created_at: z.date(),
   updated_at: z.date(),

@@ -27,6 +27,7 @@ export default function ProjectSession() {
   const { projectId } = useActiveProject();
   const setActiveSession = useNavigationStore((s) => s.setActiveSession);
   const initialMessageSentRef = useRef(false);
+  const loadSessionInitiatedRef = useRef(false);
   const queryClient = useQueryClient();
   const chatInputRef = useRef<ChatPromptInputHandle>(null);
 
@@ -116,18 +117,35 @@ export default function ProjectSession() {
       // Clear previous session only if we're coming from a different session
       if (currentSessionId && currentSessionId !== sessionId) {
         clearSession();
+        loadSessionInitiatedRef.current = false; // Reset on session change
       }
 
       // Load session from server
       if (!session || session.id !== sessionId) {
+        // Skip if already initiated (handles React Strict Mode double-invocation)
+        if (loadSessionInitiatedRef.current) {
+          if (import.meta.env.DEV) {
+            console.log(
+              "[ProjectSession] Load already initiated, skipping duplicate call"
+            );
+          }
+          return;
+        }
+
         if (import.meta.env.DEV) {
           console.log(
             "[ProjectSession] Loading session from server:",
             sessionId
           );
         }
-        loadSession(sessionId, projectId).catch((err) => {
+
+        // Mark as initiated immediately to prevent duplicate calls
+        loadSessionInitiatedRef.current = true;
+
+        loadSession(sessionId, projectId, queryClient).catch((err) => {
           console.error("[ProjectSession] Error loading session:", err);
+          // Reset ref on error so user can retry
+          loadSessionInitiatedRef.current = false;
         });
       } else {
         if (import.meta.env.DEV) {

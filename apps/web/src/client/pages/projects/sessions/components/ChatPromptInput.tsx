@@ -222,7 +222,13 @@ const ChatPromptInputInner = forwardRef<
     };
 
     // Handle command selection from slash menu
-    const handleCommandSelect = (command: string) => {
+    const handleCommandSelect = ({
+      command,
+      immediateSubmit,
+    }: {
+      command: string;
+      immediateSubmit: boolean;
+    }) => {
       // Insert command at position 0 with trailing space
       const commandText = `${command} `;
       const newText = commandText + text;
@@ -231,16 +237,24 @@ const ChatPromptInputInner = forwardRef<
       // Close menu
       setIsSlashMenuOpen(false);
 
-      // Focus textarea and position cursor after command
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-        setTimeout(() => {
-          if (textareaRef.current) {
-            const newPosition = commandText.length;
-            textareaRef.current.setSelectionRange(newPosition, newPosition);
-            setCursorPosition(newPosition);
-          }
-        }, 0);
+      if (immediateSubmit) {
+        // Submit immediately with current files
+        handleSubmit({
+          text: newText,
+          files: controller.attachments.files
+        });
+      } else {
+        // Focus textarea and position cursor after command
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          setTimeout(() => {
+            if (textareaRef.current) {
+              const newPosition = commandText.length;
+              textareaRef.current.setSelectionRange(newPosition, newPosition);
+              setCursorPosition(newPosition);
+            }
+          }, 0);
+        }
       }
     };
 

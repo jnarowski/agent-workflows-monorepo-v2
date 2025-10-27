@@ -15,7 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/client/components/ui/popover";
-import { SlashIcon } from "lucide-react";
+import { SlashIcon, CornerDownLeft } from "lucide-react";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { useSlashCommands } from "@/client/pages/projects/sessions/hooks/useSlashCommands";
 import Fuse from "fuse.js";
@@ -24,7 +24,7 @@ interface ChatPromptInputSlashCommandsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: string | undefined;
-  onCommandSelect: (command: string) => void;
+  onCommandSelect: (options: { command: string; immediateSubmit: boolean }) => void;
 }
 
 export const ChatPromptInputSlashCommands = ({
@@ -139,34 +139,46 @@ export const ChatPromptInputSlashCommands = ({
                   return (
                     <PromptInputCommandItem
                       key={command.fullCommand}
-                      onSelect={() => onCommandSelect(command.fullCommand)}
+                      onSelect={() => onCommandSelect({ command: command.fullCommand, immediateSubmit: false })}
                     >
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <div className="flex items-baseline gap-1">
-                          <span className="font-medium text-sm">
-                            {hasNamespace ? (
-                              <>
-                                <span className="text-primary">
-                                  {parts.slice(0, -1).join(":")}:
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <div className="flex items-baseline gap-1">
+                            <span className="font-medium text-sm">
+                              {hasNamespace ? (
+                                <>
+                                  <span className="text-primary">
+                                    {parts.slice(0, -1).join(":")}:
+                                  </span>
+                                  <span>{parts[parts.length - 1]}</span>
+                                </>
+                              ) : (
+                                command.fullCommand
+                              )}
+                            </span>
+                            {command.argumentHints &&
+                              command.argumentHints.length > 0 && (
+                                <span className="text-muted-foreground text-xs ml-2">
+                                  {command.argumentHints
+                                    .map((arg) => `[${arg}]`)
+                                    .join(" ")}
                                 </span>
-                                <span>{parts[parts.length - 1]}</span>
-                              </>
-                            ) : (
-                              command.fullCommand
-                            )}
+                              )}
+                          </div>
+                          <span className="text-muted-foreground text-xs">
+                            {command.description}
                           </span>
-                          {command.argumentHints &&
-                            command.argumentHints.length > 0 && (
-                              <span className="text-muted-foreground text-xs ml-2">
-                                {command.argumentHints
-                                  .map((arg) => `[${arg}]`)
-                                  .join(" ")}
-                              </span>
-                            )}
                         </div>
-                        <span className="text-muted-foreground text-xs">
-                          {command.description}
-                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onCommandSelect({ command: command.fullCommand, immediateSubmit: true });
+                          }}
+                          className="flex-shrink-0 p-1.5 rounded hover:bg-accent transition-colors"
+                          title="Add command and submit"
+                        >
+                          <CornerDownLeft size={14} className="text-muted-foreground" />
+                        </button>
                       </div>
                     </PromptInputCommandItem>
                   );
@@ -185,25 +197,37 @@ export const ChatPromptInputSlashCommands = ({
                 {builtinCommands.map((command) => (
                   <PromptInputCommandItem
                     key={command.fullCommand}
-                    onSelect={() => onCommandSelect(command.fullCommand)}
+                    onSelect={() => onCommandSelect({ command: command.fullCommand, immediateSubmit: false })}
                   >
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-medium text-sm">
-                          {command.fullCommand}
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <div className="flex items-baseline gap-2">
+                          <span className="font-medium text-sm">
+                            {command.fullCommand}
+                          </span>
+                          {command.argumentHints &&
+                            command.argumentHints.length > 0 && (
+                              <span className="text-muted-foreground text-xs ml-2">
+                                {command.argumentHints
+                                  .map((arg) => `[${arg}]`)
+                                  .join(" ")}
+                              </span>
+                            )}
+                        </div>
+                        <span className="text-muted-foreground text-xs">
+                          {command.description}
                         </span>
-                        {command.argumentHints &&
-                          command.argumentHints.length > 0 && (
-                            <span className="text-muted-foreground text-xs ml-2">
-                              {command.argumentHints
-                                .map((arg) => `[${arg}]`)
-                                .join(" ")}
-                            </span>
-                          )}
                       </div>
-                      <span className="text-muted-foreground text-xs">
-                        {command.description}
-                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onCommandSelect({ command: command.fullCommand, immediateSubmit: true });
+                        }}
+                        className="flex-shrink-0 p-1.5 rounded hover:bg-accent transition-colors"
+                        title="Add command and submit"
+                      >
+                        <CornerDownLeft size={14} className="text-muted-foreground" />
+                      </button>
                     </div>
                   </PromptInputCommandItem>
                 ))}
