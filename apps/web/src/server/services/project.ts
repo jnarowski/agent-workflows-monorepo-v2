@@ -66,9 +66,6 @@ export async function getAllProjects(options?: {
   const { includeSessions = false, sessionLimit = 20 } = options || {};
 
   const projects = await prisma.project.findMany({
-    where: {
-      is_hidden: false,
-    },
     orderBy: {
       created_at: "desc",
     },
