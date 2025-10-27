@@ -52,7 +52,7 @@ export default function ProjectSession() {
   } = useWebSocket();
 
   // WebSocket hook (subscribes to session events)
-  const { isConnected, sendMessage: wsSendMessage } = useSessionWebSocket({
+  const { sendMessage: wsSendMessage } = useSessionWebSocket({
     sessionId: sessionId || "",
     projectId: projectId || "",
   });
