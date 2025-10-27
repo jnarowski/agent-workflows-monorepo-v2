@@ -52,7 +52,7 @@ if (!existsSync(envExamplePath)) {
 
 // Check if .env already exists
 if (existsSync(envPath)) {
-  console.log('ℹ️  .env already exists, skipping setup');
+  console.log('✅ .env file already exists');
   process.exit(0);
 }
 

@@ -45,7 +45,7 @@ This monorepo includes the following packages and apps:
 3. **Set up the web application** (first-time only)
    ```bash
    cd apps/web
-   pnpm setup
+   pnpm dev:setup
    ```
    This will:
    - Create `.env` file with secure JWT_SECRET (if it doesn't exist)
@@ -160,7 +160,7 @@ The new behavior:
 - ✅ On-demand builds via Turborepo (only when needed)
 - ✅ Automatic builds before publishing (via `prepublishOnly`)
 - ✅ Prisma generation uses `postinstall` (Prisma's recommended pattern, only runs in apps/web)
-- ✅ First-time setup is explicit via `pnpm setup` command
+- ✅ First-time setup is explicit via `pnpm dev:setup` command
 
 ### Troubleshooting
 
@@ -264,7 +264,7 @@ Database file location: `apps/web/prisma/dev.db`
 
 ## Environment Variables
 
-The web app requires environment variables. When you run `pnpm setup` for the first time, a `.env` file is created automatically from `.env.example` with:
+The web app requires environment variables. When you run `pnpm dev:setup` for the first time, a `.env` file is created automatically from `.env.example` with:
 - **JWT_SECRET** - Auto-generated secure random value
 - **ANTHROPIC_API_KEY** - Placeholder (you need to add your own)
 

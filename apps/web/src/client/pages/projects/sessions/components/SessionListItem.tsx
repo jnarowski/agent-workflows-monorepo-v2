@@ -69,7 +69,7 @@ export function SessionListItem({
         />
         <div className="space-y-1 min-w-0 flex-1">
           <div
-            className="text-sm md:text-xs font-normal leading-none truncate"
+            className="text-sm font-normal leading-none truncate"
             title={firstMessagePreview || "New session"}
           >
             {truncatedName}
