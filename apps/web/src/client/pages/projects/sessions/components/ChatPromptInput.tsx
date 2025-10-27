@@ -365,17 +365,18 @@ const ChatPromptInputInner = forwardRef<
               >
                 <PromptInputPermissionModeSelectTrigger>
                   <div className="flex items-center gap-2">
+                    {/* Show dot + short name on mobile */}
                     <div
-                      className={`size-2 rounded-full ${
+                      className={`size-2 rounded-full md:hidden ${
                         permissionModes.find((m) => m.id === permissionMode)
                           ?.color
                       }`}
                     />
-                    {/* Show short name on mobile, full name on desktop */}
                     <span className="md:hidden">
                       {permissionModes.find((m) => m.id === permissionMode)
                         ?.shortName}
                     </span>
+                    {/* Show full name with dot on desktop (via SelectValue) */}
                     <span className="hidden md:inline">
                       <PromptInputPermissionModeSelectValue />
                     </span>
