@@ -14,12 +14,12 @@
   "scripts": {
     "build": "bunchee",
     "dev": "bunchee --watch",
+    "check": "vitest run && pnpm check-types && pnpm lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "check": "vitest run && pnpm check-types && pnpm lint"
+    "test:watch": "vitest"
   },
   "keywords": [
     "ai",
