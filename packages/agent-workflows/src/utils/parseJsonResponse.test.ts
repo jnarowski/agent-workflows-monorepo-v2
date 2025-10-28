@@ -6,12 +6,12 @@ describe('parseJsonResponse', () => {
   describe('when response.data is already an object (responseSchema used)', () => {
     it('returns the data directly', () => {
       const response: ExecutionResponse<{ success: boolean }> = {
-        status: 'success',
+        success: true,
         data: { success: true },
         sessionId: 'test-session',
         exitCode: 0,
         duration: 1000,
-        metadata: {},
+        messages: [],
       };
 
       const result = parseJsonResponse(response);
@@ -20,12 +20,12 @@ describe('parseJsonResponse', () => {
 
     it('handles complex objects', () => {
       const response: ExecutionResponse<{ data: { nested: boolean } }> = {
-        status: 'success',
+        success: true,
         data: { data: { nested: true } },
         sessionId: 'test-session',
         exitCode: 0,
         duration: 1000,
-        metadata: {},
+        messages: [],
       };
 
       const result = parseJsonResponse(response);
@@ -36,12 +36,12 @@ describe('parseJsonResponse', () => {
   describe('when JSON is in markdown code blocks', () => {
     it('extracts JSON from ```json block', () => {
       const response: ExecutionResponse<string> = {
-        status: 'success',
+        success: true,
         data: 'Here is the result:\n```json\n{"success": true, "count": 5}\n```\nDone!',
         sessionId: 'test-session',
         exitCode: 0,
         duration: 1000,
-        metadata: {},
+        messages: [],
       };
 
       const result = parseJsonResponse(response);
@@ -163,24 +163,24 @@ describe('parseJsonResponse', () => {
 // Helper function to create ExecutionResponse with string data
 function createStringResponse(data: string): ExecutionResponse<string> {
   return {
-    status: 'success',
+    success: true,
     data,
     sessionId: 'test-session',
     exitCode: 0,
     duration: 1000,
-    metadata: {},
+    messages: [],
   };
 }
 
 describe('parseJsonResponseStrict', () => {
   it('returns parsed JSON when data is already an object', () => {
     const response: ExecutionResponse<{ success: boolean }> = {
-      status: 'success',
+      success: true,
       data: { success: true },
       sessionId: 'test-session',
       exitCode: 0,
       duration: 1000,
-      metadata: {},
+      messages: [],
     };
 
     const result = parseJsonResponseStrict(response);
@@ -196,15 +196,15 @@ describe('parseJsonResponseStrict', () => {
 
   it('includes response details in error message', () => {
     const response: ExecutionResponse<string> = {
-      status: 'error',
+      success: false,
       data: 'Some text without JSON',
       sessionId: 'test-session',
       exitCode: 1,
       duration: 1000,
-      metadata: {},
+      messages: [],
     };
 
-    expect(() => parseJsonResponseStrict(response)).toThrow(/status: error/);
+    expect(() => parseJsonResponseStrict(response)).toThrow(/success: false/);
     expect(() => parseJsonResponseStrict(response)).toThrow(/Output type: string/);
     expect(() => parseJsonResponseStrict(response)).toThrow(/Output length: 22/);
   });

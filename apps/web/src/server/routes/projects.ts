@@ -22,8 +22,6 @@ import {
   starProjectSchema,
 } from "@/server/schemas/project";
 import {
-  projectsResponseSchema,
-  projectsWithSessionsResponseSchema,
   projectResponseSchema,
   errorResponse,
   fileTreeResponseSchema,

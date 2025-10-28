@@ -1,6 +1,5 @@
 ---
 description: Run validation command from README and fix all issues and warnings
-argument-hint: []
 ---
 
 # Fix
@@ -9,26 +8,19 @@ Runs all validation commands found in readme, and automatically fixes all issues
 
 ## Workflow
 
-1. **Read README.md**
-
-   - Locate the `## Validation` section (search for exact header text)
-   - Extract the command shown in the code block under this section
-   - If no command is found, report error and stop
+1. exceute "pnpm check" - this runs check-types, lint and test
 
 2. **Run Initial Validation**
-
    - Execute the validation command using the Bash tool
    - Capture the full output including errors, warnings, and info messages
    - Parse the output to identify all issues that need fixing
 
 3. **Create Fix Plan**
-
    - Use TodoWrite to create a todo list with all issues found
    - Group similar issues together (e.g., "Fix 5 type errors", "Fix 3 lint warnings")
    - Mark the first issue as in_progress
 
 4. **Fix Issues Automatically**
-
    - Fix all issues without prompting for confirmation, even if they aren't related to code you wrote
    - For each issue or group of issues:
      - Analyze the root cause
@@ -42,7 +34,6 @@ Runs all validation commands found in readme, and automatically fixes all issues
      - **Build errors**: Fix import paths, resolve missing dependencies, update configs
 
 5. **Verify Fixes**
-
    - Re-run the validation command
    - Check if all issues are resolved
    - If new issues appeared, add them to the todo list and continue fixing

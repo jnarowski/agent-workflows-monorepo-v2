@@ -165,8 +165,8 @@ async function handleSessionEvent(
           messageData.message,
           {
             sessionId,
-            resume: !!(session.metadata as any)?.claudeSessionId, // Resume existing session
-            images: imagePaths.length > 0 ? (imagePaths as any) : undefined,
+            resume: !!(session.metadata as { claudeSessionId?: string })?.claudeSessionId, // Resume existing session
+            images: imagePaths.length > 0 ? imagePaths.map(p => ({ path: p })) : undefined,
             onOutput: (outputData: unknown) => {
               // Stream output back to client with flat event name
               sendMessage(socket, `session.${sessionId}.stream_output`, {
@@ -258,7 +258,17 @@ async function handleSessionEvent(
 
           // Find the last assistant message with usage data
           for (let i = events.length - 1; i >= 0; i--) {
-            const event = events[i] as any; // Using any for legacy event format compatibility
+            const event = events[i] as {
+              type?: string;
+              role?: string;
+              usage?: {
+                input_tokens?: number;
+                output_tokens?: number;
+                cache_creation_input_tokens?: number;
+                cache_read_input_tokens?: number;
+              };
+              message?: { usage?: unknown };
+            };
 
             // Log each event type we're checking
             fastify.log.debug({

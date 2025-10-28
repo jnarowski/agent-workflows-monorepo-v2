@@ -10,12 +10,12 @@ const TEST_STATE_DIR = ".agent/workflows/logs-test-workflow";
 const createMockCli = (response: Partial<ExecutionResponse> = {}): Cli => ({
   async execute<T>(): Promise<ExecutionResponse<T>> {
     return {
+      success: true,
       data: "" as T,
       sessionId: "test-session",
-      status: "success",
       exitCode: 0,
       duration: 100,
-      metadata: {},
+      messages: [],
       ...response,
     } as ExecutionResponse<T>;
   },
@@ -375,7 +375,7 @@ describe("Workflow", () => {
       };
       const workflow = new Workflow(config);
 
-      const mockCli = createMockCli({ status: "success", data: "test output" });
+      const mockCli = createMockCli({ success: true, data: "test output" });
 
       const stepConfig: ExecuteCliStepConfig = {
         cli: mockCli,
@@ -386,13 +386,13 @@ describe("Workflow", () => {
 
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.data.status).toBe("success");
+        expect(result.data.success).toBe(true);
         expect(result.data.data).toBe("test output");
       }
 
       // The entire ExecutionResponse is stored in the step state
       const stepState = workflow.getState().steps?.["test-cli-step"] as ExecutionResponse;
-      expect(stepState.status).toBe("success");
+      expect(stepState.success).toBe(true);
       expect(stepState.data).toBe("test output");
     });
 
@@ -405,7 +405,7 @@ describe("Workflow", () => {
       };
       const workflow = new Workflow(config);
 
-      const mockCli = createMockCli({ status: "success" });
+      const mockCli = createMockCli({ success: true });
 
       const stepConfig: ExecuteCliStepConfig = {
         cli: mockCli,
@@ -428,8 +428,8 @@ describe("Workflow", () => {
       const workflow = new Workflow(config);
 
       const mockCli = createMockCli({
-        status: "error",
-        error: { code: "TEST_ERROR", message: "Test error" }
+        success: false,
+        error: "Test error"
       });
 
       const stepConfig: ExecuteCliStepConfig = {
@@ -458,8 +458,8 @@ describe("Workflow", () => {
       const workflow = new Workflow(config);
 
       const mockCli = createMockCli({
-        status: "timeout",
-        error: { code: "TIMEOUT", message: "Timeout error" }
+        success: false,
+        error: "Timeout error"
       });
 
       const stepConfig: ExecuteCliStepConfig = {
@@ -531,12 +531,12 @@ describe("Workflow", () => {
         execute: async <T>(_prompt: string, options?: Record<string, unknown>): Promise<ExecutionResponse<T>> => {
           receivedOptions = options;
           return {
+            success: true,
             data: "" as T,
             sessionId: "test-session",
-            status: "success",
             exitCode: 0,
             duration: 100,
-            metadata: {},
+            messages: [],
           } as ExecutionResponse<T>;
         },
         getCapabilities() {
@@ -641,7 +641,7 @@ describe("Workflow", () => {
       });
 
       // Step 2
-      const mockCli = createMockCli({ status: "success", data: "step2-output" });
+      const mockCli = createMockCli({ success: true, data: "step2-output" });
       await workflow.executeCliStep("step2", {
         cli: mockCli,
         prompt: "Execute step 2",

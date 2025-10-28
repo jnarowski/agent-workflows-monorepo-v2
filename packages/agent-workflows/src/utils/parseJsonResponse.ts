@@ -118,7 +118,7 @@ export function parseJsonResponseStrict<T = unknown>(
     const outputLength = typeof response.data === 'string' ? response.data.length : 0;
     throw new Error(
       'No valid JSON found in CLI response. ' +
-        `Response status: ${response.status}, ` +
+        `Response success: ${response.success}, ` +
         `Output type: ${outputType}, ` +
         `Output length: ${outputLength}`
     );

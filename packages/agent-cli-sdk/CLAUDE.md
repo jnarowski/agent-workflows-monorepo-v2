@@ -2,148 +2,176 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Build, Test, and Development Commands
+## Essential Commands
 
-### Building
+### Building and Development
+
 ```bash
-pnpm build              # Build using tsdown (ESM bundler)
-pnpm check-types        # Type-check without emitting
+pnpm build              # Build with bunchee (outputs to dist/)
+pnpm dev                # Watch mode for development
+pnpm check              # Run all checks (tests + types + lint)
 ```
 
 ### Testing
+
 ```bash
-pnpm test               # Run unit tests with Vitest
+pnpm test               # Run unit tests (Vitest)
 pnpm test:watch         # Run tests in watch mode
-pnpm check              # Run all checks: tests + type-check + lint
-
-# E2E tests (require real CLI installations)
-pnpm test:e2e           # Run all E2E tests (requires Claude Code & Codex CLIs)
-pnpm test:e2e:claude    # Run Claude-specific E2E tests
-pnpm test:e2e:codex     # Run Codex-specific E2E tests
+pnpm test:e2e           # Run E2E tests (180s timeout, sequential)
 ```
 
-**E2E Test Requirements:**
-- E2E tests require `RUN_E2E_TESTS=true` environment variable
-- Claude tests require Claude Code CLI installed (claude.ai/download)
-- Codex tests require OpenAI Codex CLI installed
-- Use `vitest.e2e.config.ts` for E2E tests (90s timeout, no setup file)
-- Regular unit tests use `vitest.config.ts` (excludes E2E directory)
+**Important**: To run a single test file:
 
-### Running Single Tests
 ```bash
-pnpm vitest run tests/unit/shared/json-parser.test.ts        # Single unit test
-pnpm vitest run tests/e2e/claude-e2e.test.ts                 # Single E2E test
+pnpm vitest run src/path/to/file.test.ts           # Single unit test
+pnpm vitest run tests/e2e/claude/basic.test.ts     # Single E2E test
 ```
 
-### Linting and Formatting
+### Quality Checks
+
 ```bash
-pnpm lint               # ESLint check
-pnpm format             # Prettier format all files
+pnpm check-types        # TypeScript type checking (tsc --noEmit)
+pnpm lint               # ESLint on src/**/*.ts
+pnpm format             # Format with Prettier
 ```
 
-## Architecture
+### Utilities
 
-This is a **TypeScript SDK for orchestrating AI-powered CLI tools** (Claude Code, OpenAI Codex). Version 4.0.0 represents a complete rewrite with **60% less code** and **no backwards compatibility** with 3.x.
-
-### Core Design Principles
-
-1. **Direct Adapter Pattern** - No wrapper classes, no inheritance, no `AgentClient`
-2. **Lightweight Implementation** - Each adapter is self-contained with minimal abstractions
-3. **Type-Safe Events** - Adapter-specific event types with TypeScript type guards
-4. **Streaming First** - JSONL parsing with real-time callbacks (`onOutput`, `onEvent`)
-5. **Session Continuation** - Built-in session management via `sessionId` and `resume`
-6. **Structured Output** - JSON extraction with optional Zod schema validation
-
-### Directory Structure
-
-```
-src/
-├── adapters/            # All adapter implementations
-│   ├── claude/          # Claude Code adapter
-│   │   ├── index.ts         # ClaudeAdapter class
-│   │   ├── types.ts         # Config & options types
-│   │   ├── events.ts        # Event types & type guards
-│   │   ├── cli-args.ts      # CLI argument builder
-│   │   ├── cli-detector.ts  # Auto-detect CLI path
-│   │   ├── parser.ts        # Parse JSONL output into ExecutionResponse
-│   │   ├── image-handler.ts # Image file handling
-│   │   └── mcp-detector.ts  # MCP server detection
-│   ├── codex/           # OpenAI Codex adapter (similar structure)
-│   ├── cursor/          # Cursor adapter (stub)
-│   └── gemini/          # Gemini adapter (stub)
-├── utils/               # Shared utilities
-│   ├── types.ts         # Base types (ExecutionResponse, StreamEvent, etc.)
-│   ├── errors.ts        # Error classes (ValidationError, CLINotFoundError, etc.)
-│   ├── spawn.ts         # Cross-platform process spawning with cross-spawn
-│   ├── logging.ts       # File logging utilities
-│   └── json-parser.ts   # JSON utilities (extractJSON, parseJSONL, safeJSONParse)
-└── index.ts             # Main exports & getAdapter() helper
+```bash
+pnpm extract-claude-fixtures    # Extract Claude session fixtures (via tsx)
 ```
 
-### Adapter Lifecycle
+## Architecture Overview
 
-Each adapter follows the same pattern:
+This is a TypeScript SDK for orchestrating AI-powered CLI tools (currently Claude Code only, with planned support for Codex/Gemini/Cursor). The SDK provides a unified API for executing AI CLI commands programmatically and loading/parsing session histories.
 
-1. **Construction** - Auto-detect CLI path or use provided `cliPath`
-2. **Argument Building** - `buildClaudeArgs()` / `buildCodexArgs()` translate options to CLI flags
-3. **Process Spawning** - `spawnProcess()` from `utils/spawn.ts` handles execution
-4. **JSONL Streaming** - Parse stdout line-by-line into `StreamEvent[]`
-5. **Event Emission** - Call `onEvent()` and `onOutput()` callbacks in real-time
-6. **Response Parsing** - `parseClaudeOutput()` / `parseCodexOutput()` extract final output, session ID, token usage
-7. **Structured Output** - Optional JSON extraction/validation via `responseSchema`
+### Core Components
 
-### Key Implementation Details
+**Main Entry Point** (`src/index.ts`)
 
-**Session Management:**
-- `sessionId` alone = create new session with specific ID
-- `sessionId + resume: true` = continue existing session
-- `continue: true` = continue last session (Claude-specific)
-- All three are mutually exclusive
+- Exports unified `loadMessages()` and `execute()` functions
+- Routes to tool-specific implementations (currently only Claude)
+- Uses exhaustive type checking pattern for tool selection
 
-**Streaming:**
-- Default is `streaming: true` (uses `--output-format stream-json` for Claude)
-- Line buffer accumulates stdout chunks and splits on `\n`
-- Each line is parsed as JSONL and emitted via `onEvent()`
-- Text content is extracted and provided via `onOutput({ text, accumulated })`
+**Claude Implementation** (`src/claude/`)
 
-**Synthetic Events:**
-- Claude adapter emits synthetic `turn.started`, `turn.completed`, `text`, `tool.started`, `tool.completed` events for backward compatibility
-- These are generated from `assistant` and `user` message events
+- `execute.ts`: Spawns Claude CLI process, monitors JSONL output streams, handles callbacks
+- `loadSession.ts`: Reads session files from `~/.claude/projects/{encoded-path}/{sessionId}.jsonl`
+- `parse.ts`: Converts Claude JSONL events to UnifiedMessage format
+- `detectCli.ts`: Detects Claude CLI installation path
+- `types.ts`: Claude-specific types and events
 
-**Error Handling:**
-- Adapters throw domain-specific errors: `ValidationError`, `CLINotFoundError`, `ExecutionError`, `TimeoutError`, `ParseError`, `SessionError`
-- All extend `AgentSDKError` base class
-- Exit code != 0 results in `status: 'error'` with error details in `response.error`
+**Unified Types** (`src/types/unified.ts`)
 
-**Structured Output:**
-- `responseSchema: true` - Extract first JSON object/array using `extractJSON()`
-- `responseSchema: ZodSchema` - Extract and validate JSON using Zod's `safeParse()`
-- Throws `ParseError` if extraction/validation fails
+- `UnifiedMessage`: Standardized message format across AI tools
+- `UnifiedContent`: Union of content blocks (text, thinking, tool_use, tool_result, slash_command)
+- Tool-specific input types (BashToolInput, ReadToolInput, WriteToolInput, etc.)
+- Type guard functions for each tool type
 
-## Testing Conventions
+**Utilities** (`src/utils/`)
 
-- **Unit tests** live in `tests/unit/` and mirror the source structure
-- **E2E tests** live in `tests/e2e/` and require real CLI installations
-- Tests use Vitest with Node environment
-- Use `tests/setup.ts` for shared test setup (currently empty)
-- E2E tests have 90s timeout and skip setup file to avoid mocked CLI paths
+- `spawn.ts`: Process spawning abstraction with callbacks and timeout handling
+- `extractJson.ts`: Extract and validate JSON from text (supports Zod schemas)
+
+### Data Flow
+
+1. **Execute Flow**:
+   - User calls `execute()` → routes to `executeClaudeCommand()`
+   - Spawns Claude CLI with args built from options
+   - Streams JSONL output line-by-line via `spawnProcess()`
+   - Each line parsed by `parse()` into UnifiedMessage
+   - Callbacks invoked with events/messages in real-time
+   - Returns ExecuteResult with messages, session ID, extracted data
+
+2. **Load Session Flow**:
+   - User calls `loadMessages()` → routes to `loadClaudeSession()`
+   - Reads `~/.claude/projects/{encoded-path}/{sessionId}.jsonl`
+   - Parses each line with `parse()`, filters nulls, sorts by timestamp
+   - Returns UnifiedMessage array
+
+### Key Patterns
+
+**JSONL Streaming Parser**: The execute function uses line buffering to handle streaming JSONL output from Claude CLI without blocking.
+
+**Unified Message Format**: All AI CLI outputs are normalized to UnifiedMessage with typed content blocks, enabling tool-agnostic processing.
+
+**Permission Modes**: Claude execution supports safety modes:
+
+- `default`: Standard mode with permission prompts
+- `plan`: Read-only analysis mode
+- `acceptEdits`: Auto-accepts file edits
+- `bypassPermissions`: Dangerous mode for isolated environments
+
+**Session ID Encoding**: Claude encodes project paths by replacing `/` with `-` (e.g., `/Users/john/project` → `-Users-john-project`)
+
+## Testing Strategy
+
+**Unit Tests**: Co-located with source files (e.g., `parse.test.ts` next to `parse.ts`)
+
+- Test parsing logic, CLI detection, JSON extraction, spawn utilities
+- Fast, no external dependencies
+
+**E2E Tests** (`tests/e2e/claude/`):
+
+- `basic.test.ts`: Basic command execution
+- `json.test.ts`: JSON extraction
+- `resume.test.ts`: Session resumption
+- Run sequentially (singleFork: true) to avoid conflicts
+- Long timeout (180s) for real Claude CLI interactions
+
+**Fixtures** (`tests/fixtures/claude/`):
+
+- Individual tool JSONL examples (bash, read, write, edit, etc.)
+- Full session examples for integration testing
+- Generated via `extract-claude-fixtures` script
 
 ## TypeScript Configuration
 
-- Target: ES2022, Module: ESNext, Resolution: bundler
-- Strict mode enabled with additional strictness flags:
-  - `noUncheckedIndexedAccess: true`
-  - `noUnusedLocals: true`
-  - `noUnusedParameters: true`
-  - `noImplicitReturns: true`
-- Source: `src/`, Output: `dist/`
-- Exclude: `tests/` and `src/types/__type-tests__/`
+**Strict Mode**: Full strict type checking enabled with additional strictness:
 
-## Important Notes
+- `noUncheckedIndexedAccess: true`
+- `noUnusedLocals: true`
+- `noUnusedParameters: true`
+- `noImplicitReturns: true`
+- `noFallthroughCasesInSwitch: true`
 
-- **ESM-only package** (`"type": "module"` in package.json)
-- Uses `cross-spawn` for cross-platform process spawning
-- Requires Node.js >= 22.0.0
-- Peer dependency: Zod 3.x or 4.x (optional)
-- Build tool: `tsdown` (not tsc)
-- All exports are from `src/index.ts` (adapters, types, errors, utilities, type guards)
+**Module System**: ESM-only (`type: "module"`)
+
+- `moduleResolution: "bundler"`
+- `target: "ES2022"`
+
+**Build**: Bunchee handles bundling with declaration files, source maps, and declaration maps
+
+## Code Style
+
+**ESLint**: TypeScript recommended + requiring type checking
+
+- Unused vars with `_` prefix ignored
+- `any` type is warning, not error
+- Type-safety rules relaxed for dynamic JSON handling
+
+**Naming Conventions**:
+
+- Unused variables: prefix with `_` (e.g., `const _exhaustive: never`)
+- Private functions: not exported from module
+- Type guards: `isBashTool()`, `isReadTool()`, etc.
+
+## Unit Test Location
+
+**Critical**: Unit tests MUST be co-located with source files in the same directory, not in a separate `tests/` folder. Example:
+
+- `src/claude/parse.ts` → `src/claude/parse.test.ts`
+- `src/utils/spawn.ts` → `src/utils/spawn.test.ts`
+
+## Important Conventions
+
+1. **Unit tests are co-located with source files** (e.g., `parse.ts` → `parse.test.ts`)
+2. **JSONL parsing errors are silently skipped** (don't throw, just continue)
+3. **Execute function returns errors, doesn't throw** (use `ExecuteResult.success: false`)
+4. **Use exhaustive type checking with `never`** for tool selection switches
+5. **Session path encoding**: Replace `/` with `-` (e.g., `/Users/john/project` → `-Users-john-project`)
+6. **Line buffering for JSONL streams** to handle large outputs without blocking
+7. **`--session-id`, `--continue`, and `--resume` are mutually exclusive**
+8. **Permission modes**: Default to `'default'` for safety, use `'acceptEdits'` for automation, never use `'bypassPermissions'` in production
+9. **E2E tests run sequentially** (`singleFork: true`) to avoid session conflicts
+10. **Type guards over type assertions** when working with UnifiedContent blocks
