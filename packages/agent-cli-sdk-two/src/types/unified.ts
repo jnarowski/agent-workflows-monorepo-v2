@@ -36,7 +36,10 @@ export interface UnifiedThinkingBlock {
 // Tool input types
 export interface BashToolInput {
   command: string;
-  description: string;
+  description?: string;
+  timeout?: number;
+  run_in_background?: boolean;
+  dangerouslyDisableSandbox?: boolean;
 }
 
 export interface ReadToolInput {
@@ -54,17 +57,27 @@ export interface EditToolInput {
   file_path: string;
   old_string: string;
   new_string: string;
+  replace_all?: boolean;
 }
 
 export interface GlobToolInput {
   pattern: string;
+  path?: string;
 }
 
 export interface GrepToolInput {
   pattern: string;
-  output_mode: string;
+  output_mode?: 'content' | 'files_with_matches' | 'count';
   path?: string;
+  glob?: string;
+  type?: string;
   '-n'?: boolean;
+  '-i'?: boolean;
+  '-A'?: number;
+  '-B'?: number;
+  '-C'?: number;
+  head_limit?: number;
+  multiline?: boolean;
 }
 
 export interface TodoWriteToolInput {
@@ -77,6 +90,8 @@ export interface TodoWriteToolInput {
 
 export interface WebSearchToolInput {
   query: string;
+  allowed_domains?: string[];
+  blocked_domains?: string[];
 }
 
 export interface AskUserQuestionToolInput {

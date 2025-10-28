@@ -19,7 +19,8 @@
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "extract-claude-fixtures": "tsx scripts/extract-claude-fixtures.ts"
   },
   "keywords": [
     "ai",
