@@ -5,7 +5,11 @@
  * into Claude-compatible unified format (thinking, text, tool_use, tool_result).
  */
 
-import type { UnifiedMessage, UnifiedContent } from '../types/unified.js';
+import type {
+  UnifiedMessage,
+  UnifiedContent,
+  UnifiedToolUseBlock,
+} from '../types/unified.js';
 import type {
   CodexEvent,
   ItemCompletedEvent,
@@ -148,7 +152,7 @@ function transformFileChange(
   item: FileChangeItem
 ): UnifiedMessage {
   // Map file changes to tool uses
-  const changes = item.changes
+  const changes: UnifiedContent[] = item.changes
     .map(change => {
       switch (change.kind) {
         case 'add':
@@ -159,7 +163,7 @@ function transformFileChange(
             input: {
               file_path: change.path,
             },
-          };
+          } satisfies UnifiedToolUseBlock;
         case 'modify':
           return {
             type: 'tool_use' as const,
@@ -168,7 +172,7 @@ function transformFileChange(
             input: {
               file_path: change.path,
             },
-          };
+          } satisfies UnifiedToolUseBlock;
         case 'delete':
           return {
             type: 'tool_use' as const,
@@ -177,14 +181,13 @@ function transformFileChange(
             input: {
               command: `rm ${change.path}`,
             },
-          };
+          } satisfies UnifiedToolUseBlock;
         default: {
           const _exhaustive: never = change.kind;
           return _exhaustive;
         }
       }
-    })
-    .filter((c): c is UnifiedContent => c !== null);
+    });
 
   return {
     id: item.id,

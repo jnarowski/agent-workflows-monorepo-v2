@@ -4,7 +4,7 @@ import { extractJSON } from '../utils/extractJson.js';
 import { parse } from './parse.js';
 import { extractTextContent } from '../types/unified.js';
 import { detectCli } from './detectCli.js';
-import type { CodexEvent, SessionMetaPayload } from './types.js';
+import type { CodexEvent } from './types.js';
 
 // ============================================================================
 // Types

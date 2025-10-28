@@ -471,18 +471,22 @@ See the [examples directory](./examples) for comprehensive usage examples:
 - [Error Handling](./examples/claude/error-handling.ts)
 - [Streaming Callbacks](./examples/claude/streaming-callbacks.ts)
 
+**Codex Examples:**
+- [Basic Execution](./examples/codex/basic-execute.ts)
+- [JSON Extraction](./examples/codex/json-extraction.ts)
+- [Session Loading](./examples/codex/load-session.ts)
+
 ## Provider Support Status
 
 | Provider | Execute | Load Session | CLI Detection | Tests | Status |
 |----------|---------|--------------|---------------|-------|--------|
 | Claude   | ✅      | ✅           | ✅            | ✅    | Production |
-| Codex    | ✅      | ✅           | ✅            | ⚠️    | Beta (missing E2E tests) |
+| Codex    | ✅      | ✅           | ✅            | ✅    | Production |
 | Gemini   | ❌      | ❌           | ❌            | ❌    | Planned |
 | Cursor   | ❌      | ❌           | ❌            | ❌    | Planned |
 
 ## Current Limitations
 
-- **Codex E2E Tests**: Codex implementation needs E2E validation with actual CLI
 - **Node.js 22+**: Requires Node.js version 22.0.0 or higher
 - **Platform Detection**: Automatic CLI detection works best on macOS and Linux
 - **Session Storage**: Different providers use different session storage formats
@@ -492,7 +496,7 @@ See the [examples directory](./examples) for comprehensive usage examples:
 ## Roadmap
 
 - ✅ Support for Claude Code
-- 🚧 Support for OpenAI Codex (implementation complete, E2E tests pending)
+- ✅ Support for OpenAI Codex
 - 📋 Support for Google Gemini
 - 📋 Support for Cursor AI
 - 📋 Enhanced error handling and recovery

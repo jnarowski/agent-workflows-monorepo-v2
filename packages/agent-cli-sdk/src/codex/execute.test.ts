@@ -139,7 +139,11 @@ describe('execute', () => {
     expect(result.sessionId).toBe('test-session-123');
     expect(result.messages).toHaveLength(1);
     expect(result.messages[0]?.role).toBe('assistant');
-    expect(result.messages[0]?.content[0]?.type).toBe('text');
+    const content = result.messages[0]?.content;
+    expect(Array.isArray(content)).toBe(true);
+    if (Array.isArray(content)) {
+      expect(content[0]?.type).toBe('text');
+    }
   });
 
   it('should call onEvent callback for each parsed event', async () => {
@@ -383,7 +387,11 @@ describe('execute', () => {
     const result = await execute({ prompt: 'test' });
 
     expect(result.messages).toHaveLength(1);
-    expect(result.messages[0]?.content[0]?.type).toBe('text');
+    const content = result.messages[0]?.content;
+    expect(Array.isArray(content)).toBe(true);
+    if (Array.isArray(content)) {
+      expect(content[0]?.type).toBe('text');
+    }
   });
 
   it('should call onStdout callback with accumulated data', async () => {
@@ -422,8 +430,16 @@ describe('execute', () => {
     const result = await execute({ prompt: 'test' });
 
     expect(result.messages).toHaveLength(2);
-    expect(result.messages[0]?.content[0]?.type).toBe('thinking');
-    expect(result.messages[1]?.content[0]?.type).toBe('text');
+    const content0 = result.messages[0]?.content;
+    const content1 = result.messages[1]?.content;
+    expect(Array.isArray(content0)).toBe(true);
+    expect(Array.isArray(content1)).toBe(true);
+    if (Array.isArray(content0)) {
+      expect(content0[0]?.type).toBe('thinking');
+    }
+    if (Array.isArray(content1)) {
+      expect(content1[0]?.type).toBe('text');
+    }
   });
 
   it('should return text output by default (json: false)', async () => {
