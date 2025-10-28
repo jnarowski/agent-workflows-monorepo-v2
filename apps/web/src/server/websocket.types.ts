@@ -5,8 +5,6 @@
  * Used by the WebSocket handler for type-safe message processing.
  */
 
-import type { ClaudeAdapter } from "@repo/agent-cli-sdk";
-
 /**
  * Generic WebSocket message structure
  * All WebSocket messages follow this format with a type and data payload
@@ -57,9 +55,9 @@ export interface ShellInitData {
 /**
  * Active session data structure
  * Stored in activeSessions Map for managing ongoing agent sessions
+ * Note: We no longer store adapter instances - SDK execute() is stateless
  */
 export interface ActiveSessionData {
-  adapter: ClaudeAdapter;
   projectPath: string;
   userId: string;
   tempImageDir?: string;

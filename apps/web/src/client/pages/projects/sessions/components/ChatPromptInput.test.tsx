@@ -25,14 +25,13 @@
  * - Server-side permission mode handling (tested in server tests)
  */
 
-import React from "react";
+import React, { type ReactNode } from "react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ChatPromptInput } from "./ChatPromptInput";
 import { useSessionStore } from "../stores/sessionStore";
-import type { ReactNode } from "react";
 
 // Mock navigation hooks (not needed for core behavior, but component imports them)
 vi.mock("@/client/stores/navigationStore", () => ({
@@ -187,9 +186,9 @@ describe("ChatPromptInput", () => {
         "acceptEdits"
       );
 
-      // Cycle to 'reject'
+      // Cycle to 'bypassPermissions'
       await user.keyboard("{Shift>}{Tab}{/Shift}");
-      expect(useSessionStore.getState().form.permissionMode).toBe("reject");
+      expect(useSessionStore.getState().form.permissionMode).toBe("bypassPermissions");
 
       // Cycle back to 'default'
       await user.keyboard("{Shift>}{Tab}{/Shift}");
@@ -198,29 +197,24 @@ describe("ChatPromptInput", () => {
   });
 
   describe("Token Display", () => {
-    it("displays total tokens when provided", () => {
+    it("displays total tokens when provided", async () => {
       const { container } = render(
         <ChatPromptInput onSubmit={mockOnSubmit} totalTokens={1500} />,
         { wrapper: TestWrapper }
       );
 
-      // Should show token count (formatted as "1.5k")
+      // Should show formatted token count (1500 = 1.5k)
       expect(container.textContent).toContain("1.5k");
     });
 
-    it("displays current message tokens in addition to total", () => {
+    it("displays formatted token count", () => {
       const { container } = render(
-        <ChatPromptInput
-          onSubmit={mockOnSubmit}
-          totalTokens={1500}
-          currentMessageTokens={250}
-        />,
+        <ChatPromptInput onSubmit={mockOnSubmit} totalTokens={500} />,
         { wrapper: TestWrapper }
       );
 
-      // Should show both total and current message tokens (formatted as "1.5k")
-      expect(container.textContent).toContain("1.5k");
-      expect(container.textContent).toContain("+250");
+      // Should show token count under 1000 as-is
+      expect(container.textContent).toContain("500");
     });
 
     it("does not display tokens when not provided", () => {
@@ -228,8 +222,8 @@ describe("ChatPromptInput", () => {
         wrapper: TestWrapper,
       });
 
-      // Should not show token text
-      expect(container.textContent).not.toContain("tokens");
+      // Should not show token text - check for absence of "k" suffix which only appears with tokens
+      expect(container.textContent).not.toContain("k");
     });
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "@repo/agent-cli-sdk",
-  "version": "4.0.0",
+  "version": "1.0.0",
   "description": "TypeScript SDK for orchestrating AI-powered CLI tools (Claude Code, OpenAI Codex) in development workflows",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,20 +13,15 @@
   },
   "scripts": {
     "build": "bunchee",
-    "prepublishOnly": "pnpm build",
+    "dev": "bunchee --watch",
     "check": "vitest run && pnpm check-types && pnpm lint",
     "check-types": "tsc --noEmit",
-    "check-types:tests": "tsc --noEmit --project tsconfig.type-tests.json",
-    "dev": "bunchee --watch",
-    "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint src --ext .ts",
-    "ship": "git add . && git commit -m 'chore: prepare release' || true && pnpm version patch && git push && git push --tags && pnpm publish",
+    "format": "prettier --write \"src/**/*.ts\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:console": "tsx examples/console-test.ts",
-    "test:e2e": "RUN_E2E_TESTS=true vitest run --config vitest.e2e.config.ts",
-    "test:e2e:claude": "RUN_E2E_TESTS=true vitest run --config vitest.e2e.config.ts tests/e2e/claude-e2e.test.ts",
-    "test:e2e:codex": "RUN_E2E_TESTS=true vitest run --config vitest.e2e.config.ts tests/e2e/codex-e2e.test.ts"
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
+    "extract-claude-fixtures": "tsx scripts/extract-claude-fixtures.ts"
   },
   "keywords": [
     "ai",
@@ -42,24 +37,12 @@
     "workflow",
     "orchestration"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/sourceborn/agent-cli-sdk.git"
-  },
-  "bugs": {
-    "url": "https://github.com/sourceborn/agent-cli-sdk/issues"
-  },
-  "homepage": "https://github.com/sourceborn/agent-cli-sdk#readme",
   "files": [
     "dist",
-    "README.md",
-    "LICENSE"
+    "README.md"
   ],
   "author": "Sourceborn",
   "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
   "engines": {
     "node": ">=22.0.0"
   },
@@ -79,15 +62,17 @@
   "devDependencies": {
     "@types/cross-spawn": "^6.0.6",
     "@types/node": "^22.0.0",
+    "@types/uuid": "^11.0.0",
     "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.1",
     "bunchee": "^6.6.2",
-    "canvas": "^3.2.0",
     "eslint": "^8.57.0",
     "prettier": "^3.3.0",
     "tsx": "^4.7.0",
     "typescript": "^5.5.0",
+    "uuid": "^13.0.0",
     "vitest": "^2.0.0",
     "zod": "^4.0.0"
-  }
+  },
+  "packageManager": "pnpm@10.19.0"
 }

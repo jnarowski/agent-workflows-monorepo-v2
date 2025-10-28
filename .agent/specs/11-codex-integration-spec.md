@@ -1,0 +1,771 @@
+# Codex Integration Specification
+
+## Overview
+
+Add Codex support to the agent-cli-sdk package to achieve feature parity with the existing Claude implementation. The critical requirement is that Codex output must be transformed to match Claude's `UnifiedMessage` and `UnifiedContent[]` format exactly, ensuring frontend components can consume both providers identically without modification.
+
+## Goals
+
+- **Primary Goal:** Transform Codex events into Claude-compatible `UnifiedMessage` format for frontend compatibility
+- **Type Safety:** Use Codex-specific types for parsing input and typing `_original` field only
+- **Feature Parity:** Support all features that Claude implementation provides (execute, loadSession, detectCli)
+- **Test Coverage:** Match Claude's comprehensive test patterns
+- **Full Implementation:** Include CLI execution and E2E tests
+
+## Key Architectural Principles
+
+1. **Codex types are input-only** - Used for parsing incoming JSONL, typing `_original` field, and TypeScript safety during transformation
+2. **Output types are always Claude's types** - `UnifiedMessage`, `UnifiedContent[]`, tool types, etc.
+3. **Frontend sees no difference** - Same components, same data structures, regardless of provider
+4. **Original preserved** - Raw Codex events stored in typed `_original` field for debugging
+
+## Research Summary
+
+### Codex Event Format
+
+Based on analysis of fixtures in `tests/fixtures/codex/full/`:
+
+**Event Types:**
+- `response_item` - Contains messages, function calls, outputs, and reasoning
+- `event_msg` - Token counts and metadata
+- `turn_context` - Turn information
+- `session_meta` - Session and git context
+
+**Key Differences from Claude:**
+
+| Aspect | Codex | Claude | Transformation |
+|--------|-------|--------|----------------|
+| Tool calls | `function_call` with `call_id`, `name`, `arguments` (JSON string) | `tool_use` content block with `id`, `name`, `input` (object) | Parse JSON string → object, map names |
+| Tool results | `function_call_output` with `call_id`, `output` | `tool_result` content block with `tool_use_id`, `content` | Map field names |
+| Tool names | `shell` | `Bash` | Direct mapping |
+| Reasoning | Separate `reasoning` events with `summary`/`content` | `thinking` content blocks inline | Transform to content block |
+| Content | `input_text` type | `text` type | Map type name |
+| Token usage | Separate `event_msg` events | Inline in message `usage` | Attach to appropriate message |
+
+## Implementation Plan
+
+### Phase 1: Types & Parser Foundation
+
+#### 1.1 Create `src/codex/types.ts`
+
+Define input-only types for parsing Codex JSONL events:
+
+```typescript
+// Top-level event structure
+interface CodexEvent {
+  timestamp: string;
+  type: 'response_item' | 'event_msg' | 'turn_context' | 'session_meta';
+  payload: ResponseItemPayload | EventMsgPayload | TurnContextPayload | SessionMetaPayload;
+}
+
+// Response items
+interface ResponseItemPayload {
+  type: 'message' | 'function_call' | 'function_call_output' | 'reasoning';
+  role?: 'user' | 'assistant';
+  content?: ContentBlock[];
+  // Function call fields
+  name?: string;
+  arguments?: string;  // JSON string
+  call_id?: string;
+  // Function output fields
+  output?: string;
+  // Reasoning fields
+  summary?: string[];
+  encrypted_content?: string;
+}
+
+interface ContentBlock {
+  type: 'input_text';
+  text: string;
+}
+
+interface EventMsgPayload {
+  type: 'token_count' | 'agent_reasoning' | 'user_message' | 'agent_message';
+  input_tokens?: number;
+  cached_input_tokens?: number;
+  output_tokens?: number;
+  reasoning_output_tokens?: number;
+  total_tokens?: number;
+}
+
+interface SessionMetaPayload {
+  session_id: string;
+  model: string;
+  // ... other metadata
+}
+
+interface TurnContextPayload {
+  // ... turn context fields
+}
+```
+
+**Testing:**
+- Type checking only - no runtime tests needed
+
+#### 1.2 Implement `src/codex/parse.ts`
+
+Main function: `parse(jsonlLine: string): UnifiedMessage | null`
+
+**Transformation Logic:**
+
+```typescript
+export function parse(jsonlLine: string): UnifiedMessage | null {
+  try {
+    const event: CodexEvent = JSON.parse(jsonlLine);
+
+    // Skip non-message events
+    if (event.type !== 'response_item' && event.type !== 'event_msg') {
+      return null;
+    }
+
+    const payload = event.payload;
+
+    // Handle different response item types
+    if ('type' in payload) {
+      switch (payload.type) {
+        case 'message':
+          return transformMessage(event);
+        case 'function_call':
+          return transformFunctionCall(event);
+        case 'function_call_output':
+          return transformFunctionCallOutput(event);
+        case 'reasoning':
+          return transformReasoning(event);
+        case 'token_count':
+          return transformTokenCount(event);
+      }
+    }
+
+    return null;
+  } catch (error) {
+    // Silently skip invalid events (match Claude behavior)
+    return null;
+  }
+}
+```
+
+**Key Transformations:**
+
+1. **Function Call → tool_use:**
+```typescript
+function transformFunctionCall(event: CodexEvent): UnifiedMessage {
+  const payload = event.payload as ResponseItemPayload;
+
+  // Parse JSON arguments string
+  const input = JSON.parse(payload.arguments || '{}');
+
+  // Map tool name
+  const name = mapToolName(payload.name || '');
+
+  return {
+    role: 'assistant',
+    content: [
+      {
+        type: 'tool_use',
+        id: payload.call_id,
+        name,
+        input
+      }
+    ],
+    timestamp: event.timestamp,
+    _original: event
+  };
+}
+```
+
+2. **Function Call Output → tool_result:**
+```typescript
+function transformFunctionCallOutput(event: CodexEvent): UnifiedMessage {
+  const payload = event.payload as ResponseItemPayload;
+
+  return {
+    role: 'assistant',
+    content: [
+      {
+        type: 'tool_result',
+        tool_use_id: payload.call_id,
+        content: payload.output
+      }
+    ],
+    timestamp: event.timestamp,
+    _original: event
+  };
+}
+```
+
+3. **Reasoning → thinking:**
+```typescript
+function transformReasoning(event: CodexEvent): UnifiedMessage {
+  const payload = event.payload as ResponseItemPayload;
+
+  // Use summary if content is encrypted
+  const text = payload.content || payload.summary?.join('\n') || '';
+
+  return {
+    role: 'assistant',
+    content: [
+      {
+        type: 'thinking',
+        thinking: text
+      }
+    ],
+    timestamp: event.timestamp,
+    _original: event
+  };
+}
+```
+
+4. **Tool Name Mapping:**
+```typescript
+const TOOL_NAME_MAP: Record<string, string> = {
+  'shell': 'Bash',
+  // Add more mappings as discovered
+};
+
+function mapToolName(codexName: string): string {
+  return TOOL_NAME_MAP[codexName] || codexName;
+}
+```
+
+**Testing:** `src/codex/parse.test.ts`
+
+Test cases using fixture files:
+- ✅ Parse function_call → verify tool_use structure matches Claude
+- ✅ Parse function_call_output → verify tool_result structure matches Claude
+- ✅ Parse reasoning → verify thinking block matches Claude
+- ✅ Parse message with input_text → verify text content block matches Claude
+- ✅ Tool name mapping (shell → Bash)
+- ✅ JSON argument parsing
+- ✅ Invalid events return null
+- ✅ _original field contains typed Codex event
+- ✅ Compare with Claude fixture output for structural equivalence
+
+### Phase 2: CLI Detection & Session Loading
+
+#### 2.1 Implement `src/codex/detectCli.ts`
+
+```typescript
+export function detectCli(): string | undefined {
+  // Check environment variable
+  if (process.env.CODEX_CLI_PATH) {
+    return process.env.CODEX_CLI_PATH;
+  }
+
+  // Search common installation paths
+  const commonPaths = [
+    // Research needed: where does Codex CLI install?
+    // Investigate VS Code extension data location
+    // Check OpenAI documentation
+  ];
+
+  for (const path of commonPaths) {
+    if (fs.existsSync(path)) {
+      return path;
+    }
+  }
+
+  return undefined;
+}
+```
+
+**Research Tasks:**
+- Investigate VS Code Codex extension for CLI location
+- Check OpenAI/Codex documentation
+- Test with actual Codex installation
+
+#### 2.2 Implement `src/codex/loadSession.ts`
+
+```typescript
+export async function loadSession(
+  projectPath: string,
+  sessionId: string
+): Promise<UnifiedMessage[]> {
+  // Research: Codex session file location
+  // Likely: ~/.codex/projects/{encoded-path}/{sessionId}.jsonl
+  // Or: VS Code extension data directory
+
+  const sessionPath = resolveSessionPath(projectPath, sessionId);
+
+  const content = await fs.readFile(sessionPath, 'utf-8');
+  const lines = content.trim().split('\n');
+
+  const messages: UnifiedMessage[] = [];
+
+  for (const line of lines) {
+    const message = parse(line);
+    if (message) {
+      messages.push(message);
+    }
+  }
+
+  // Sort by timestamp (match Claude behavior)
+  return messages.sort((a, b) =>
+    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
+}
+```
+
+**Testing:** `src/codex/loadSession.test.ts`
+- ✅ Load fixture files as sessions
+- ✅ Verify messages are parsed correctly
+- ✅ Verify sorting by timestamp
+- ✅ Verify Claude-compatible output
+
+### Phase 3: CLI Execution
+
+#### 3.1 Implement `src/codex/execute.ts`
+
+```typescript
+export async function execute<T = unknown>(
+  options: ExecuteOptions
+): Promise<ExecuteResult<T>> {
+  const cliPath = detectCli();
+  if (!cliPath) {
+    return {
+      success: false,
+      error: 'Codex CLI not found',
+      messages: []
+    };
+  }
+
+  // Research: Codex CLI argument structure
+  const args = buildCliArgs(options);
+
+  const messages: UnifiedMessage[] = [];
+  let sessionId: string | undefined;
+  let lineBuffer = '';
+
+  const result = await spawnProcess({
+    command: cliPath,
+    args,
+    onStdout: (chunk) => {
+      lineBuffer += chunk;
+      const lines = lineBuffer.split('\n');
+      lineBuffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+
+        try {
+          const event: CodexEvent = JSON.parse(line);
+
+          // Extract session ID from session_meta
+          if (event.type === 'session_meta') {
+            sessionId = event.payload.session_id;
+          }
+
+          // Parse to unified format
+          const message = parse(line);
+
+          // Call callbacks
+          options.onEvent?.({
+            raw: line,
+            event,
+            message
+          });
+
+          if (message) {
+            messages.push(message);
+            options.onMessage?.(message);
+          }
+        } catch (error) {
+          // Silently skip invalid lines
+        }
+      }
+    },
+    onStderr: (chunk) => {
+      options.onStderr?.(chunk);
+    }
+  });
+
+  // Extract JSON if requested
+  let data: T | undefined;
+  if (options.extractJson) {
+    const lastTextContent = findLastTextContent(messages);
+    if (lastTextContent) {
+      data = extractJson<T>(lastTextContent);
+    }
+  }
+
+  return {
+    success: result.exitCode === 0,
+    messages,
+    sessionId,
+    data,
+    exitCode: result.exitCode
+  };
+}
+
+function buildCliArgs(options: ExecuteOptions): string[] {
+  // Research needed: Codex CLI syntax
+  // Likely similar to Claude but may differ
+  const args: string[] = [];
+
+  if (options.prompt) {
+    args.push(options.prompt);
+  }
+
+  if (options.sessionId) {
+    args.push('--session', options.sessionId);
+  }
+
+  // Add other options as discovered
+
+  return args;
+}
+```
+
+**Research Tasks:**
+- Determine Codex CLI command structure
+- Identify available CLI flags and options
+- Test with actual Codex CLI
+
+**Testing:** `src/codex/execute.test.ts`
+- ✅ Unit tests with mocked spawn
+- ✅ Verify JSONL parsing
+- ✅ Verify session ID extraction
+- ✅ Verify message streaming
+- ✅ Verify Claude-compatible output
+- ✅ E2E tests with actual Codex CLI
+- ✅ Test tool_use/tool_result flow
+
+### Phase 4: Integration & Testing
+
+#### 4.1 Create `src/codex/index.ts`
+
+```typescript
+export { parse } from './parse';
+export { execute } from './execute';
+export { loadSession } from './loadSession';
+export { detectCli } from './detectCli';
+export type * from './types';
+```
+
+#### 4.2 Update `src/index.ts`
+
+Add Codex routing in existing switch statements:
+
+```typescript
+export function loadMessages(
+  tool: ToolType,
+  projectPath: string,
+  sessionId: string
+): Promise<UnifiedMessage[]> {
+  switch (tool) {
+    case 'claude':
+      return claude.loadSession(projectPath, sessionId);
+    case 'codex':
+      return codex.loadSession(projectPath, sessionId);
+    default:
+      throw new Error(`Unsupported tool: ${tool}`);
+  }
+}
+
+export function execute<T = unknown>(
+  tool: ToolType,
+  options: ExecuteOptions
+): Promise<ExecuteResult<T>> {
+  switch (tool) {
+    case 'claude':
+      return claude.execute(options);
+    case 'codex':
+      return codex.execute(options);
+    default:
+      throw new Error(`Unsupported tool: ${tool}`);
+  }
+}
+```
+
+#### 4.3 Integration Tests
+
+Create tests that verify end-to-end compatibility:
+
+```typescript
+describe('Provider Compatibility', () => {
+  it('tool_use blocks have identical structure', () => {
+    const claudeToolUse = parseClaudeToolUse(claudeFixture);
+    const codexToolUse = parseCodexToolUse(codexFixture);
+
+    // Verify structure is identical
+    expect(claudeToolUse).toMatchObject({
+      type: 'tool_use',
+      id: expect.any(String),
+      name: expect.any(String),
+      input: expect.any(Object)
+    });
+
+    expect(codexToolUse).toMatchObject({
+      type: 'tool_use',
+      id: expect.any(String),
+      name: expect.any(String),
+      input: expect.any(Object)
+    });
+  });
+
+  it('frontend can consume both providers identically', () => {
+    // Mock frontend component
+    const component = new MessageRenderer();
+
+    const claudeMessages = loadClaudeFixture();
+    const codexMessages = loadCodexFixture();
+
+    // Both should render without errors
+    expect(() => component.render(claudeMessages)).not.toThrow();
+    expect(() => component.render(codexMessages)).not.toThrow();
+  });
+});
+```
+
+#### 4.4 Create `tests/fixtures/README.md`
+
+Document fixture formats and transformations:
+
+```markdown
+# Test Fixtures
+
+## Claude Fixtures
+
+Location: `tests/fixtures/claude/`
+
+Format: JSONL with Claude event structure
+- Events have `type: 'user' | 'assistant'`
+- Content blocks: text, thinking, tool_use, tool_result
+- Tool names: Bash, Read, Write, etc.
+
+## Codex Fixtures
+
+Location: `tests/fixtures/codex/full/`
+
+Format: JSONL with Codex event structure
+- Events have `type: 'response_item' | 'event_msg' | ...`
+- Function calls and outputs are separate events
+- Tool names: shell, etc.
+
+## Transformation Examples
+
+### Function Call
+**Codex Input:**
+```json
+{
+  "type": "response_item",
+  "payload": {
+    "type": "function_call",
+    "name": "shell",
+    "arguments": "{\"command\": [\"bash\", \"-lc\", \"ls\"]}",
+    "call_id": "call_123"
+  }
+}
+```
+
+**Unified Output (Claude-compatible):**
+```json
+{
+  "role": "assistant",
+  "content": [
+    {
+      "type": "tool_use",
+      "id": "call_123",
+      "name": "Bash",
+      "input": {
+        "command": ["bash", "-lc", "ls"]
+      }
+    }
+  ]
+}
+```
+```
+
+### Phase 5: Documentation
+
+#### 5.1 Update Package README
+
+Add Codex documentation:
+
+```markdown
+# Agent CLI SDK
+
+Multi-provider SDK for agent CLI tools (Claude, Codex).
+
+## Features
+
+- **Unified Interface**: Both providers output identical `UnifiedMessage` format
+- **Frontend Compatible**: Use same components for both providers
+- **Type Safe**: Full TypeScript support
+- **Original Preserved**: Raw events available in `_original` field
+
+## Usage
+
+### Execute with Codex
+
+```typescript
+import { execute } from '@agent-cli-sdk';
+
+const result = await execute('codex', {
+  prompt: 'List files in current directory',
+  onMessage: (message) => {
+    console.log(message.content);
+  }
+});
+```
+
+### Load Session History
+
+```typescript
+import { loadMessages } from '@agent-cli-sdk';
+
+const messages = await loadMessages('codex', '/path/to/project', 'session-id');
+```
+
+## Unified Message Format
+
+Both Claude and Codex output the same structure:
+
+```typescript
+interface UnifiedMessage {
+  role: 'user' | 'assistant';
+  content: UnifiedContent[];
+  timestamp: string;
+  _original?: unknown;  // Original provider event
+}
+
+type UnifiedContent =
+  | { type: 'text'; text: string }
+  | { type: 'thinking'; thinking: string }
+  | { type: 'tool_use'; id: string; name: string; input: unknown }
+  | { type: 'tool_result'; tool_use_id: string; content: string };
+```
+
+## Provider Differences (Internal)
+
+The SDK handles these transformations automatically:
+
+| Feature | Codex | Claude | SDK Output |
+|---------|-------|--------|------------|
+| Tool calls | function_call | tool_use | tool_use |
+| Tool names | shell | Bash | Bash |
+| Reasoning | separate event | inline thinking | thinking |
+```
+
+## Success Criteria
+
+### Critical Requirements
+
+- ✅ Frontend components work with both Claude and Codex without modification
+- ✅ Tool calls (tool_use/tool_result) have identical structure between providers
+- ✅ Thinking blocks have identical structure
+- ✅ Content blocks are interchangeable
+- ✅ Codex types provide type safety for parsing only
+- ✅ Original Codex format preserved in typed `_original` field
+
+### Test Coverage
+
+- ✅ Unit tests for all transformation functions
+- ✅ Fixture-based tests for all Codex event types
+- ✅ Integration tests verifying provider compatibility
+- ✅ E2E tests with actual Codex CLI
+- ✅ Match Claude test coverage patterns
+
+### Code Quality
+
+- ✅ Full TypeScript typing
+- ✅ No `any` types without justification
+- ✅ Consistent error handling (silent skipping like Claude)
+- ✅ Clear separation: input types vs output types
+
+## File Structure
+
+```
+packages/agent-cli-sdk/
+├── src/
+│   ├── codex/
+│   │   ├── types.ts              # Input-only types for parsing
+│   │   ├── parse.ts              # JSONL → UnifiedMessage
+│   │   ├── parse.test.ts
+│   │   ├── execute.ts            # CLI execution
+│   │   ├── execute.test.ts
+│   │   ├── loadSession.ts        # Session history
+│   │   ├── loadSession.test.ts
+│   │   ├── detectCli.ts          # CLI detection
+│   │   └── index.ts              # Exports
+│   ├── claude/                   # Existing
+│   ├── types/
+│   │   └── unified.ts            # Shared output types
+│   └── index.ts                  # Updated routing
+├── tests/
+│   ├── fixtures/
+│   │   ├── codex/full/          # Existing fixtures
+│   │   ├── claude/              # Existing fixtures
+│   │   └── README.md            # New documentation
+│   └── integration/
+│       └── compatibility.test.ts # New compatibility tests
+└── README.md                     # Updated docs
+```
+
+## Implementation Order
+
+1. **Phase 1: Parser** (Immediate - have fixtures)
+   - types.ts
+   - parse.ts + tests
+   - Validate output matches Claude format
+
+2. **Phase 2: Session Loading** (After parser working)
+   - Research session location
+   - loadSession.ts + tests
+   - detectCli.ts
+
+3. **Phase 3: CLI Execution** (Requires CLI access)
+   - Research CLI arguments
+   - execute.ts + tests
+   - E2E tests
+
+4. **Phase 4: Integration** (After all above)
+   - Update main index.ts
+   - Compatibility tests
+   - Documentation
+
+5. **Phase 5: Documentation** (Final)
+   - README updates
+   - Fixture documentation
+
+## Open Questions / Research Needed
+
+1. **CLI Location**: Where does Codex CLI install?
+   - Check VS Code extension data directory
+   - Check OpenAI documentation
+   - Environment variable name?
+
+2. **CLI Arguments**: What's the command structure?
+   - How to pass prompts?
+   - How to resume sessions?
+   - Permission modes?
+
+3. **Session Storage**: Where are session files stored?
+   - `~/.codex/`?
+   - VS Code extension data?
+   - Different path encoding?
+
+4. **Tool Mappings**: Complete list of Codex → Claude tool names
+   - shell → Bash (confirmed)
+   - Others?
+
+5. **Encrypted Content**: How to handle `encrypted_content` in reasoning?
+   - Use summary for now?
+   - Is decryption key available?
+
+## Estimated Effort
+
+- **Phase 1**: 4-6 hours (types + parser + tests)
+- **Phase 2**: 2-3 hours (session loading + CLI detection)
+- **Phase 3**: 4-6 hours (execution + E2E tests + research)
+- **Phase 4**: 2-3 hours (integration + compatibility tests)
+- **Phase 5**: 1-2 hours (documentation)
+
+**Total**: ~15-20 hours
+
+## Notes
+
+- Prioritize getting parser working first - it's the core transformation
+- Use fixture files extensively for testing since they're comprehensive
+- Research CLI details can happen in parallel with parser work
+- Keep transformation logic simple and testable
+- Mirror Claude's patterns for consistency

@@ -1,8 +1,11 @@
 import type { BaseStorage } from '../storage/BaseStorage';
 import type { WorkflowStateData, StepStatus, ExecutionResponse, Cli, CheckpointResult } from '../types/workflow';
-import type { ClaudeOptions, CodexOptions } from '@repo/agent-cli-sdk';
+import type { ClaudeExecuteOptions } from '@repo/agent-cli-sdk';
 import type { Result } from '../utils/result';
 import { ok, err } from '../utils/result';
+
+// Placeholder type for Codex options (not yet implemented in agent-cli-sdk)
+type CodexOptions = Record<string, unknown>;
 import path from 'path';
 import { simpleGit, type SimpleGit } from 'simple-git';
 
@@ -54,7 +57,7 @@ export interface ExecuteCliStepConfig {
   /** The CLI adapter instance to execute the step */
   cli: Cli;
   /** Optional CLI-specific execution options (model, timeout, etc.) */
-  cliOptions?: ClaudeOptions | CodexOptions;
+  cliOptions?: ClaudeExecuteOptions | CodexOptions;
   /** The prompt to send to the CLI */
   prompt: string;
 }
@@ -255,19 +258,16 @@ export class Workflow {
 
       const response = await cli.execute<TResponse>(prompt, mergedOptions);
 
-      if (response.status === 'success') {
+      if (response.success) {
         this._logStepComplete(stepLabel);
         await this._markStepCompleted(name, response);
         return ok(response);
-      } else if (response.status === 'error' || response.status === 'timeout') {
-        const errorMessage = response.error?.message || 'Unknown error';
+      } else {
+        const errorMessage = response.error || 'Unknown error';
         this._logStepFailed(stepLabel, errorMessage);
         await this.storage.addFailure(name, errorMessage);
-        return err(`CLI step failed: ${errorMessage} (${response.error?.code || response.status})`);
+        return err(`CLI step failed: ${errorMessage}`);
       }
-
-      // This should never be reached, but TypeScript requires it
-      return ok(response);
     } catch (error) {
       this._logStepFailed(stepLabel, error);
       const message = error instanceof Error ? error.message : String(error);

@@ -5,11 +5,13 @@ import {
   getSessionMessages,
   createSession,
   syncProjectSessions,
+  updateSessionName,
 } from "@/server/services/agentSession";
 import {
   createSessionSchema,
   sessionIdSchema,
   projectIdSchema,
+  updateSessionNameSchema,
 } from "@/server/schemas/session";
 import { errorResponse } from "@/server/schemas/response";
 import type { CreateSessionRequest } from "@/shared/types/agent-session.types";
@@ -174,6 +176,43 @@ export async function sessionRoutes(fastify: FastifyInstance) {
 
         throw error;
       }
+    }
+  );
+
+  /**
+   * PATCH /api/sessions/:sessionId
+   * Update session name
+   */
+  fastify.patch<{
+    Params: { sessionId: string };
+    Body: { name: string };
+  }>(
+    "/api/sessions/:sessionId",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: sessionIdSchema,
+        body: updateSessionNameSchema,
+      },
+    },
+    async (request, reply) => {
+      const userId = request.user?.id;
+      if (!userId) {
+        return reply.code(401).send(buildErrorResponse(401, "Unauthorized"));
+      }
+
+      const { sessionId } = request.params;
+      const { name } = request.body;
+
+      fastify.log.info({ sessionId, userId, name }, 'Updating session name');
+
+      const session = await updateSessionName(sessionId, userId, name);
+
+      if (!session) {
+        return reply.code(404).send(buildErrorResponse(404, "Session not found"));
+      }
+
+      return reply.send({ data: session });
     }
   );
 }

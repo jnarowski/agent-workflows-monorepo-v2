@@ -4,7 +4,6 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    setupFiles: ['./tests/setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -12,7 +11,6 @@ export default defineConfig({
         'node_modules/**',
         'dist/**',
         'tests/**',
-        'examples/**',
         '**/*.d.ts',
         '**/*.config.*',
       ],
@@ -21,11 +19,10 @@ export default defineConfig({
       branches: 80,
       statements: 80,
     },
-    // Skip E2E tests by default (require real CLIs)
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
-      '**/tests/e2e/**', // E2E tests run separately
+      '**/tests/e2e/**', // Exclude e2e tests from regular test suite
     ],
   },
 });

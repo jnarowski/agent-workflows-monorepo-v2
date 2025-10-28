@@ -2,8 +2,7 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
-import { getAgent } from "../lib/agents";
-import type { ContentBlock } from "@/shared/types/message.types";
+import type { UnifiedContent } from "@repo/agent-cli-sdk";
 import type {
   SessionStreamOutputData,
   SessionMessageCompleteData,
@@ -45,24 +44,14 @@ export function useSessionWebSocket({
    * Handle stream_output events
    */
   const handleStreamOutput = useCallback((data: SessionStreamOutputData) => {
-    // Get current session to access agent type
-    const currentSession = useSessionStore.getState().currentSession;
-    if (!currentSession) {
-      if (import.meta.env.DEV) {
-        console.warn("[useSessionWebSocket] No current session, skipping stream update");
-      }
-      return;
-    }
-
-    // Get agent implementation and use its transform
-    const agent = getAgent(currentSession.agent);
-    const contentBlocks = agent.transformStreaming(data);
-
-    // Only update if we have content blocks - skip system/result events
-    if (contentBlocks.length > 0) {
+    // SDK already provides clean UnifiedMessage with content
+    if (data.message && Array.isArray(data.message.content)) {
       useSessionStore
         .getState()
-        .updateStreamingMessage(contentBlocks as ContentBlock[]);
+        .updateStreamingMessage(
+          data.message.id,
+          data.message.content as UnifiedContent[]
+        );
     }
   }, []);
 

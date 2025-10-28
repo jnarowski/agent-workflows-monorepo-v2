@@ -63,7 +63,7 @@ async function scanCommandsDirectory(
           const fileContent = await fs.readFile(fullPath, 'utf-8');
           const { data } = matter(fileContent);
 
-          // Skip commands without description
+          // Skip commands without a description
           if (!data.description) {
             continue;
           }

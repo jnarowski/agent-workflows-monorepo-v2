@@ -5,7 +5,7 @@
 import { getAuthToken } from '@/client/lib/auth';
 import { useAuthStore } from '@/client/stores/authStore';
 import { ApiError, type ApiErrorResponse } from '@/client/lib/api-types';
-import type { SessionMessage } from "@/shared/types/chat";
+import type { UnifiedMessage } from "@/shared/types/message.types";
 
 /**
  * Request options for API calls
@@ -174,9 +174,9 @@ export const api = new ApiClient();
 export async function getSessionMessages(
   projectId: string,
   sessionId: string
-): Promise<SessionMessage[]> {
+): Promise<UnifiedMessage[]> {
   try {
-    const response = await api.get<{ data: SessionMessage[] }>(
+    const response = await api.get<{ data: UnifiedMessage[] }>(
       `/api/projects/${projectId}/sessions/${sessionId}/messages`
     );
     return response.data || [];
