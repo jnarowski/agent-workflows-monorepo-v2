@@ -21,7 +21,8 @@ export type UnifiedContent =
   | UnifiedTextBlock
   | UnifiedThinkingBlock
   | UnifiedToolUseBlock
-  | UnifiedToolResultBlock;
+  | UnifiedToolResultBlock
+  | UnifiedSlashCommandBlock;
 
 export interface UnifiedTextBlock {
   type: 'text';
@@ -31,6 +32,13 @@ export interface UnifiedTextBlock {
 export interface UnifiedThinkingBlock {
   type: 'thinking';
   thinking: string;
+}
+
+export interface UnifiedSlashCommandBlock {
+  type: 'slash_command';
+  command: string;
+  message?: string;
+  args?: string;
 }
 
 // Tool input types
@@ -150,7 +158,61 @@ export function extractTextContent(message: UnifiedMessage): string {
   }
 
   return message.content
-    .filter(block => block.type === 'text' && block.text)
-    .map(block => block.text)
+    .filter(block => block.type === 'text')
+    .map(block => {
+      if (block.type === 'text') {
+        return block.text;
+      }
+      return '';
+    })
     .join('');
+}
+
+// Type guard functions for tool inputs
+export function isBashTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: BashToolInput } {
+  return block.name === 'Bash';
+}
+
+export function isReadTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: ReadToolInput } {
+  return block.name === 'Read';
+}
+
+export function isWriteTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: WriteToolInput } {
+  return block.name === 'Write';
+}
+
+export function isEditTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: EditToolInput } {
+  return block.name === 'Edit';
+}
+
+export function isGlobTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: GlobToolInput } {
+  return block.name === 'Glob';
+}
+
+export function isGrepTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: GrepToolInput } {
+  return block.name === 'Grep';
+}
+
+export function isTodoWriteTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: TodoWriteToolInput } {
+  return block.name === 'TodoWrite';
+}
+
+export function isWebSearchTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: WebSearchToolInput } {
+  return block.name === 'WebSearch';
+}
+
+export function isAskUserQuestionTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: AskUserQuestionToolInput } {
+  return block.name === 'AskUserQuestion';
+}
+
+export function isExitPlanModeTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: ExitPlanModeToolInput } {
+  return block.name === 'ExitPlanMode';
+}
+
+export function isMcpTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: McpToolInput } {
+  return block.name.startsWith('mcp__');
+}
+
+export function isSlashCommand(block: UnifiedContent): block is UnifiedSlashCommandBlock {
+  return block.type === 'slash_command';
 }

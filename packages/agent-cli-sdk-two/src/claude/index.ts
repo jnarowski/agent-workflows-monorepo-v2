@@ -1,3 +1,3 @@
 export * from './types';
-export * from './parser';
+export * from './parse';
 export * from './loader';

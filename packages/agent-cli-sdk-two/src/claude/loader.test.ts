@@ -4,7 +4,7 @@ import { mkdir, copyFile, rm } from 'fs/promises';
 import { loader } from './loader';
 import { tmpdir } from 'os';
 
-const REAL_SESSION_PATH = resolve(__dirname, '../../tests/fixtures/claude/sample.jsonl');
+const REAL_SESSION_PATH = resolve(__dirname, '../../tests/fixtures/claude/full/full-session.jsonl');
 const TEST_SESSION_ID = 'test-session-id';
 
 describe('loader', () => {

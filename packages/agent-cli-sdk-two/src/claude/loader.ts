@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import type { UnifiedMessage } from '../types/unified';
-import { parser } from './parser';
+import { parser } from './parse';
 
 // ============================================================================
 // Public API

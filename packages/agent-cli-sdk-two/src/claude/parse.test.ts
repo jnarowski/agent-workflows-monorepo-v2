@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parser } from './parser';
+import { parser } from './parse';
 
 describe('parser', () => {
   // Real messages from actual Claude session (sample.jsonl)
@@ -54,8 +54,11 @@ describe('parser', () => {
     expect(result?.content).toHaveLength(1);
 
     if (Array.isArray(result?.content)) {
-      expect(result.content[0]?.type).toBe('text');
-      expect(result.content[0]?.text).toBe('Hey');
+      const block = result.content[0];
+      expect(block?.type).toBe('text');
+      if (block?.type === 'text') {
+        expect(block.text).toBe('Hey');
+      }
     }
   });
 
@@ -68,8 +71,11 @@ describe('parser', () => {
     expect(result?.content).toHaveLength(1);
 
     if (Array.isArray(result?.content)) {
-      expect(result.content[0]?.type).toBe('text');
-      expect(result.content[0]?.text).toContain('help you with whatever you need');
+      const block = result.content[0];
+      expect(block?.type).toBe('text');
+      if (block?.type === 'text') {
+        expect(block.text).toContain('help you with whatever you need');
+      }
     }
   });
 
@@ -242,9 +248,142 @@ describe('parser', () => {
     expect(result?.content).toHaveLength(1);
 
     if (Array.isArray(result?.content)) {
-      expect(result.content[0]?.type).toBe('text');
-      expect(result.content[0]?.text).toContain('<options>');
-      expect(result.content[0]?.text).toContain('Help me fix a bug');
+      const block = result.content[0];
+      expect(block?.type).toBe('text');
+      if (block?.type === 'text') {
+        expect(block.text).toContain('<options>');
+        expect(block.text).toContain('Help me fix a bug');
+      }
     }
+  });
+
+  // Type guard tests
+  describe('type guards', () => {
+    it('should correctly identify Bash tool with type guard', () => {
+      const result = parser(bashToolMessage);
+      expect(result).not.toBeNull();
+
+      if (Array.isArray(result?.content)) {
+        const block = result.content[0];
+        if (block?.type === 'tool_use') {
+          // Type guard narrows the input type
+          if (block.name === 'Bash') {
+            expect(block.input.command).toBeDefined();
+            expect(block.input.description).toBeDefined();
+            expect(typeof block.input.command).toBe('string');
+          }
+        }
+      }
+    });
+
+    it('should correctly identify Read tool with type guard', () => {
+      const result = parser(readToolMessage);
+      expect(result).not.toBeNull();
+
+      if (Array.isArray(result?.content)) {
+        const block = result.content[0];
+        if (block?.type === 'tool_use') {
+          if (block.name === 'Read') {
+            expect(block.input.file_path).toBeDefined();
+            expect(typeof block.input.file_path).toBe('string');
+          }
+        }
+      }
+    });
+
+    it('should correctly identify TodoWrite tool with type guard', () => {
+      const result = parser(todoWriteMessage);
+      expect(result).not.toBeNull();
+
+      if (Array.isArray(result?.content)) {
+        const block = result.content[0];
+        if (block?.type === 'tool_use') {
+          if (block.name === 'TodoWrite') {
+            expect(block.input.todos).toBeDefined();
+            expect(Array.isArray(block.input.todos)).toBe(true);
+          }
+        }
+      }
+    });
+
+    it('should correctly identify MCP tool with name check', () => {
+      const result = parser(realToolUseMessage);
+      expect(result).not.toBeNull();
+
+      if (Array.isArray(result?.content)) {
+        const block = result.content[0];
+        if (block?.type === 'tool_use') {
+          if (block.name.startsWith('mcp__')) {
+            expect(block.name).toBe('mcp__happy__change_title');
+            expect(block.input.title).toBeDefined();
+          }
+        }
+      }
+    });
+  });
+
+  // Slash command tests
+  describe('slash commands', () => {
+    // User message with slash command (no args)
+    const slashCommandNoArgs =
+      '{"parentUuid":"2335eb3e-0ec2-44dd-8fde-522f665767be","isSidechain":false,"userType":"external","cwd":"/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2","sessionId":"2d984148-cddb-4605-aac1-13e720fe613c","version":"2.0.27","gitBranch":"feat/final-react-refactor-v2","type":"user","message":{"role":"user","content":"<command-name>/clear</command-name>\\n            <command-message>clear</command-message>\\n            <command-args></command-args>"},"uuid":"8470dfec-6c0e-419e-a7bc-937e177ebdc3","timestamp":"2025-10-26T10:38:08.687Z"}';
+
+    // User message with slash command (with args)
+    const slashCommandWithArgs =
+      '{"parentUuid":"5a289ca7-2029-49f5-82c1-14818eca4896","isSidechain":false,"userType":"external","cwd":"/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2","sessionId":"33ae3837-255e-4ccf-aea4-90e8bf675372","version":"2.0.28","gitBranch":"feat/agent-cli-sdk-revamp-v3","type":"user","message":{"role":"user","content":"<command-message>generate-feature is running…</command-message>\\n<command-name>/generate-feature</command-name>\\n<command-args>\\"a\\" \\"b\\"</command-args>"},"uuid":"091f5c55-fa08-42c5-a2e7-5d21f88e656e","timestamp":"2025-10-28T11:46:48.673Z"}';
+
+    it('should parse slash command without args', () => {
+      const result = parser(slashCommandNoArgs);
+
+      expect(result).not.toBeNull();
+      expect(result?.role).toBe('user');
+      expect(result?.content).toHaveLength(1);
+
+      if (Array.isArray(result?.content)) {
+        const block = result.content[0];
+        expect(block?.type).toBe('slash_command');
+        if (block?.type !== 'slash_command') {
+          throw new Error(`Expected slash_command block, got ${block?.type}`);
+        }
+        expect(block.command).toBe('/clear');
+        expect(block.message).toBe('clear');
+        expect(block.args).toBe('');
+      }
+    });
+
+    it('should parse slash command with args', () => {
+      const result = parser(slashCommandWithArgs);
+
+      expect(result).not.toBeNull();
+      expect(result?.role).toBe('user');
+      expect(result?.content).toHaveLength(1);
+
+      if (Array.isArray(result?.content)) {
+        const block = result.content[0];
+        expect(block?.type).toBe('slash_command');
+        if (block?.type !== 'slash_command') {
+          throw new Error(`Expected slash_command block, got ${block?.type}`);
+        }
+        expect(block.command).toBe('/generate-feature');
+        expect(block.message).toBe('generate-feature is running…');
+        expect(block.args).toBe('"a" "b"');
+      }
+    });
+
+    it('should handle user message without slash command', () => {
+      const result = parser(realUserMessage);
+
+      expect(result).not.toBeNull();
+      expect(result?.content).toHaveLength(1);
+
+      if (Array.isArray(result?.content)) {
+        const block = result.content[0];
+        expect(block?.type).toBe('text');
+        if (block?.type !== 'text') {
+          throw new Error(`Expected text block, got ${block?.type}`);
+        }
+        expect(block.text).toBe('Hey');
+      }
+    });
   });
 });

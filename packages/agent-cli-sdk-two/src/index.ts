@@ -5,14 +5,14 @@
  */
 
 import type { UnifiedMessage } from './types/unified';
-import { loadClaudeMessages } from './claude/loader';
+import { loader as loadClaudeMessages } from './claude/loader';
 
 export const version = '1.0.0';
 
 export interface LoadMessagesOptions {
   tool: 'claude' | 'codex' | 'gemini' | 'cursor';
   sessionId: string;
-  sessionDir?: string;
+  projectPath?: string;
 }
 
 export async function loadMessages(
@@ -20,7 +20,10 @@ export async function loadMessages(
 ): Promise<UnifiedMessage[]> {
   switch (options.tool) {
     case 'claude':
-      return await loadClaudeMessages(options);
+      return await loadClaudeMessages({
+        sessionId: options.sessionId,
+        projectPath: options.projectPath || process.cwd(),
+      });
     case 'codex':
       throw new Error('Codex loader not yet implemented');
     case 'gemini':
