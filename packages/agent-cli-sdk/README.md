@@ -27,47 +27,75 @@ yarn add @repo/agent-cli-sdk-two
 ## Requirements
 
 - Node.js >= 22.0.0
-- Claude Code CLI (for Claude functionality)
+- AI CLI tool:
+  - Claude Code CLI (for Claude functionality)
+  - Codex CLI (for Codex functionality)
 - Optional: Zod (for enhanced type validation)
 
 ## Quick Start
 
-### Execute a Claude Command
+### Execute a Command
+
+The SDK provides a unified interface that works with both Claude and Codex:
 
 ```typescript
 import { execute } from '@repo/agent-cli-sdk-two';
 
-const result = await execute({
+// Using Claude
+const claudeResult = await execute({
   tool: 'claude',
   prompt: 'List all TypeScript files in the src directory',
   workingDir: '/path/to/project',
   verbose: true,
-  onMessage: (message) => {
-    console.log('Received message:', message);
+  onEvent: ({ message }) => {
+    if (message) console.log('Message:', message);
   }
 });
 
-console.log('Final output:', result.output);
+// Using Codex
+const codexResult = await execute({
+  tool: 'codex',
+  prompt: 'List all TypeScript files in the src directory',
+  workingDir: '/path/to/project',
+  verbose: true,
+  onEvent: ({ message }) => {
+    if (message) console.log('Message:', message);
+  }
+});
+
+console.log('Final output:', claudeResult.data);
 ```
 
-### Load Claude Session Messages
+### Load Session Messages
+
+Load message history from either Claude or Codex sessions:
 
 ```typescript
 import { loadMessages } from '@repo/agent-cli-sdk-two';
 
-const messages = await loadMessages({
+// Load Claude session
+const claudeMessages = await loadMessages({
   tool: 'claude',
   sessionId: 'your-session-id',
   projectPath: '/path/to/project'
 });
 
-console.log(`Loaded ${messages.length} messages`);
-messages.forEach(msg => {
+// Load Codex session
+const codexMessages = await loadMessages({
+  tool: 'codex',
+  sessionId: '01997e76-d124-7592-9cac-2ec05abbca08'
+  // Note: Codex sessions are globally indexed, projectPath is optional
+});
+
+console.log(`Loaded ${claudeMessages.length} messages`);
+claudeMessages.forEach(msg => {
   console.log(`[${msg.role}]:`, msg.content);
 });
 ```
 
 ### Extract JSON from AI Responses
+
+Both Claude and Codex support automatic JSON extraction:
 
 ```typescript
 import { execute } from '@repo/agent-cli-sdk-two';
@@ -79,14 +107,14 @@ interface PackageInfo {
 }
 
 const result = await execute<PackageInfo>({
-  tool: 'claude',
+  tool: 'codex', // or 'claude'
   prompt: 'Analyze package.json and return JSON with name, version, and dependencies',
-  extractJSON: true
+  json: true
 });
 
-if (result.extractedJSON) {
-  console.log('Package name:', result.extractedJSON.name);
-  console.log('Version:', result.extractedJSON.version);
+if (typeof result.data === 'object' && result.data !== null) {
+  console.log('Package name:', result.data.name);
+  console.log('Version:', result.data.version);
 }
 ```
 
@@ -115,9 +143,13 @@ interface ExecuteOptions {
 
 ```typescript
 interface ExecuteResult<T = unknown> {
-  output: string;
+  success: boolean;
+  exitCode: number;
+  sessionId: string;
+  duration: number;
   messages: UnifiedMessage[];
-  extractedJSON?: T;
+  data: T; // Text output or parsed JSON
+  error?: string;
 }
 ```
 
@@ -168,32 +200,35 @@ const toolUses = messages.filter(msg =>
 );
 ```
 
-### `detectCli(options?)`
+### `detectClaudeCli()` / `detectCodexCli()`
 
-Detect the path to the Claude CLI executable.
-
-**Parameters:**
-
-```typescript
-interface DetectCliOptions {
-  customPath?: string;
-}
-```
+Detect the path to AI CLI executables.
 
 **Returns:** `string | null`
 
 **Example:**
 
 ```typescript
-import { detectCli } from '@repo/agent-cli-sdk-two';
+import { detectClaudeCli, detectCodexCli } from '@repo/agent-cli-sdk-two';
 
-const cliPath = detectCli();
-if (cliPath) {
-  console.log('Claude CLI found at:', cliPath);
+const claudePath = detectClaudeCli();
+if (claudePath) {
+  console.log('Claude CLI found at:', claudePath);
 } else {
   console.error('Claude CLI not found');
 }
+
+const codexPath = detectCodexCli();
+if (codexPath) {
+  console.log('Codex CLI found at:', codexPath);
+} else {
+  console.error('Codex CLI not found');
+}
 ```
+
+**Environment Variables:**
+- `CLAUDE_CLI_PATH` - Custom path to Claude CLI
+- `CODEX_CLI_PATH` - Custom path to Codex CLI
 
 ### `extractJSON(text, schema?)`
 
@@ -234,67 +269,127 @@ const validatedData = extractJSON(text, userSchema);
 
 ### `UnifiedMessage`
 
-Standardized message format across different AI tools:
+Standardized message format across different AI tools. Both Claude and Codex outputs are normalized to this format:
 
 ```typescript
 interface UnifiedMessage {
+  id: string;
   role: 'user' | 'assistant';
-  content: ContentBlock[];
+  content: UnifiedContent[];
+  timestamp: number;
+  tool: 'claude' | 'codex';
+  usage?: {
+    inputTokens: number;
+    outputTokens: number;
+    totalTokens: number;
+    cacheReadTokens?: number;
+  };
+  _original?: unknown; // Original provider event for debugging
 }
 
-type ContentBlock =
+type UnifiedContent =
   | { type: 'text'; text: string }
+  | { type: 'thinking'; thinking: string }
   | { type: 'tool_use'; id: string; name: string; input: unknown }
-  | { type: 'tool_result'; tool_use_id: string; content: string; is_error?: boolean };
+  | { type: 'tool_result'; tool_use_id: string; content: string; is_error?: boolean }
+  | { type: 'slash_command'; name: string; args?: string[] };
 ```
+
+### Provider Compatibility
+
+The SDK automatically transforms provider-specific formats into the unified format:
+
+| Feature | Codex | Claude | SDK Output |
+|---------|-------|--------|------------|
+| Tool calls | `function_call` | `tool_use` | `tool_use` |
+| Tool results | `function_call_output` | `tool_result` | `tool_result` |
+| Tool names | `shell` | `Bash` | `Bash` |
+| Reasoning | separate `reasoning` event | inline `thinking` block | `thinking` |
+| Content | `input_text` / `output_text` | `text` | `text` |
+
+**Key Point:** Frontend components can consume both Claude and Codex messages identically without any modification.
 
 ## Advanced Usage
 
 ### Permission Modes
 
-Control how the CLI handles permission requests:
+Control how the CLI handles permission requests. Both Claude and Codex support permission modes with similar semantics:
 
 ```typescript
 import { execute } from '@repo/agent-cli-sdk-two';
 
-const result = await execute({
+// Claude permission modes
+const claudeResult = await execute({
   tool: 'claude',
   prompt: 'Refactor this code',
   permissionMode: 'acceptEdits', // Auto-approve edit operations
 });
+
+// Codex permission modes
+const codexResult = await execute({
+  tool: 'codex',
+  prompt: 'Refactor this code',
+  permissionMode: 'acceptEdits', // Same interface, different flags internally
+});
 ```
 
-Available permission modes:
-- `'accept'` - Accept all permissions automatically
-- `'acceptEdits'` - Accept only file edit operations
-- `'acceptTools'` - Accept only tool uses
-- `'manual'` - Require manual approval (default)
+**Available permission modes:**
+- `'default'` - Standard mode with permission prompts
+- `'plan'` - Read-only analysis mode (no file modifications)
+- `'acceptEdits'` - Auto-approve file edit operations
+- `'bypassPermissions'` - Dangerous mode for isolated environments (skip all checks)
 
-### Custom CLI Path
+**Internal Mapping (handled automatically):**
 
-Specify a custom path to the CLI executable:
+| Mode | Claude Flags | Codex Flags |
+|------|-------------|-------------|
+| `default` | Standard interactive | `-a untrusted -s workspace-write` |
+| `plan` | Read-only mode | `-a on-request -s read-only` |
+| `acceptEdits` | Auto-accept edits | `-a on-failure -s workspace-write` |
+| `bypassPermissions` | Bypass all | `-a never -s danger-full-access` |
+
+### Session Management
+
+Resume or continue existing sessions:
 
 ```typescript
-const result = await execute({
+// Resume a Claude session
+const claudeResult = await execute({
   tool: 'claude',
-  prompt: 'Run tests',
-  cliPath: '/custom/path/to/claude'
+  prompt: 'Continue the refactoring',
+  sessionId: 'previous-session-id',
+  resume: true
+});
+
+// Resume a Codex session
+const codexResult = await execute({
+  tool: 'codex',
+  prompt: 'Continue the refactoring',
+  sessionId: '01997e76-d124-7592-9cac-2ec05abbca08'
+  // Codex: session ID is in session_meta event
 });
 ```
 
 ### Event Streaming
 
-Monitor events in real-time:
+Monitor events in real-time with typed callbacks:
 
 ```typescript
 const result = await execute({
-  tool: 'claude',
+  tool: 'codex', // or 'claude'
   prompt: 'Build the project',
-  onEvent: (event) => {
-    console.log('Event:', event);
+  onEvent: ({ raw, event, message }) => {
+    console.log('Raw JSONL:', raw);
+    console.log('Parsed event:', event);
+    if (message) {
+      console.log('Unified message:', message);
+    }
   },
-  onMessage: (message) => {
-    console.log('Message:', message);
+  onStdout: ({ raw, events, messages }) => {
+    console.log(`Received ${messages.length} messages so far`);
+  },
+  onStderr: (chunk) => {
+    console.error('Error output:', chunk);
   }
 });
 ```
@@ -330,9 +425,15 @@ pnpm check
 ## Project Structure
 
 ```
-agent-cli-sdk-two/
+agent-cli-sdk/
 ├── src/
 │   ├── claude/          # Claude-specific implementation
+│   │   ├── detectCli.ts
+│   │   ├── execute.ts
+│   │   ├── loadSession.ts
+│   │   ├── parse.ts
+│   │   └── types.ts
+│   ├── codex/           # Codex-specific implementation
 │   │   ├── detectCli.ts
 │   │   ├── execute.ts
 │   │   ├── loadSession.ts
@@ -341,48 +442,82 @@ agent-cli-sdk-two/
 │   ├── utils/           # Shared utilities
 │   │   ├── extractJson.ts
 │   │   └── spawn.ts
-│   ├── types/           # Type definitions
+│   ├── types/           # Unified type definitions
 │   │   └── unified.ts
-│   └── index.ts         # Main entry point
+│   └── index.ts         # Main entry point with routing
 ├── examples/            # Usage examples
-├── tests/               # E2E tests and fixtures
-├── scripts/             # Development scripts
+│   ├── claude/          # Claude examples
+│   └── codex/           # Codex examples (planned)
+├── tests/
+│   ├── fixtures/        # Test fixtures
+│   │   ├── claude/      # Claude JSONL examples
+│   │   └── codex/       # Codex JSONL examples
+│   └── e2e/             # E2E tests
+│       └── claude/      # Claude E2E tests
+├── docs/                # Documentation
+│   ├── CLAUDE_CLI.md    # Claude CLI research
+│   └── CODEX_CLI.md     # Codex CLI research
 └── dist/                # Build output (generated)
 ```
 
 ## Examples
 
-See the [examples directory](./examples) for more usage examples:
+See the [examples directory](./examples) for comprehensive usage examples:
 
-- [Load Claude Session](./examples/loaders/load-claude-session.ts)
+**Claude Examples:**
+- [Basic Execution](./examples/claude/basic-execute.ts)
+- [JSON Extraction](./examples/claude/json-extraction.ts)
+- [Session Continuation](./examples/claude/session-continuation.ts)
+- [Error Handling](./examples/claude/error-handling.ts)
+- [Streaming Callbacks](./examples/claude/streaming-callbacks.ts)
+
+## Provider Support Status
+
+| Provider | Execute | Load Session | CLI Detection | Tests | Status |
+|----------|---------|--------------|---------------|-------|--------|
+| Claude   | ✅      | ✅           | ✅            | ✅    | Production |
+| Codex    | ✅      | ✅           | ✅            | ⚠️    | Beta (missing E2E tests) |
+| Gemini   | ❌      | ❌           | ❌            | ❌    | Planned |
+| Cursor   | ❌      | ❌           | ❌            | ❌    | Planned |
 
 ## Current Limitations
 
-- **Claude Support Only**: Version 1.0.0 currently supports Claude Code CLI only
+- **Codex E2E Tests**: Codex implementation needs E2E validation with actual CLI
 - **Node.js 22+**: Requires Node.js version 22.0.0 or higher
 - **Platform Detection**: Automatic CLI detection works best on macOS and Linux
+- **Session Storage**: Different providers use different session storage formats
+  - Claude: `~/.claude/projects/{encoded-path}/{sessionId}.jsonl`
+  - Codex: `~/.codex/sessions/YYYY/MM/DD/rollout-{timestamp}-{uuid}.jsonl`
 
 ## Roadmap
 
-- Support for OpenAI Codex
-- Support for Google Gemini
-- Support for Cursor AI
-- Streaming response support
-- Enhanced error handling and recovery
-- CLI installation helpers
+- ✅ Support for Claude Code
+- 🚧 Support for OpenAI Codex (implementation complete, E2E tests pending)
+- 📋 Support for Google Gemini
+- 📋 Support for Cursor AI
+- 📋 Enhanced error handling and recovery
+- 📋 CLI installation helpers
 
 ## Troubleshooting
 
-### Claude CLI Not Found
+### CLI Not Found
 
-If you get "Claude CLI not found" errors:
-
+**Claude CLI Not Found:**
 1. Install Claude Code: https://docs.anthropic.com/claude/docs/claude-code
 2. Set the `CLAUDE_CLI_PATH` environment variable
-3. Or specify `cliPath` in execute options
+3. Verify installation: `which claude`
 
 ```bash
 export CLAUDE_CLI_PATH=/path/to/claude
+```
+
+**Codex CLI Not Found:**
+1. Install Codex CLI (OpenAI)
+2. Set the `CODEX_CLI_PATH` environment variable
+3. Verify installation: `which codex`
+
+```bash
+export CODEX_CLI_PATH=/path/to/codex
 ```
 
 ### Permission Errors
@@ -390,8 +525,38 @@ export CLAUDE_CLI_PATH=/path/to/claude
 If you encounter permission issues:
 
 1. Check that the working directory exists and is writable
-2. Verify the Claude CLI has necessary permissions
-3. Try using `permissionMode: 'accept'` for non-interactive execution
+2. Verify the CLI has necessary permissions
+3. Try using appropriate permission mode:
+   - `permissionMode: 'acceptEdits'` for automated file edits
+   - `permissionMode: 'bypassPermissions'` for isolated/containerized environments (use with caution)
+
+### Session Not Found
+
+**Claude sessions:**
+- Stored at: `~/.claude/projects/{encoded-path}/{sessionId}.jsonl`
+- Requires matching project path
+- Session ID is part of filename
+
+**Codex sessions:**
+- Stored at: `~/.codex/sessions/YYYY/MM/DD/rollout-{timestamp}-{uuid}.jsonl`
+- Globally indexed (no project path needed)
+- Session ID is UUID from `session_meta` event
+
+### Type Errors
+
+If you encounter TypeScript errors with JSON extraction:
+
+```typescript
+// ❌ Wrong
+const result = await execute({ json: true });
+console.log(result.data.name); // Type error
+
+// ✅ Correct
+const result = await execute<{ name: string }>({ json: true });
+if (typeof result.data === 'object' && result.data !== null) {
+  console.log(result.data.name); // Type-safe
+}
+```
 
 ## License
 

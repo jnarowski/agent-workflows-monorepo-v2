@@ -18,6 +18,7 @@ import { useNavigationStore } from "@/client/stores/index";
 import { api } from "@/client/lib/api-client";
 import type { ToolResultBlock } from "@/shared/types/message.types";
 import { sessionKeys } from "./hooks/useAgentSessions";
+import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import { generateUUID } from "@/client/lib/utils";
 
 export default function ProjectSession() {
@@ -249,6 +250,11 @@ export default function ProjectSession() {
         // Invalidate sessions query to update sidebar immediately
         queryClient.invalidateQueries({
           queryKey: sessionKeys.byProject(projectId),
+        });
+
+        // Also invalidate projectsWithSessions which is used by the sidebar
+        queryClient.invalidateQueries({
+          queryKey: projectKeys.withSessions(),
         });
 
         // Convert images to base64 if present

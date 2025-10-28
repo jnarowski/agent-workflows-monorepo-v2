@@ -4,7 +4,7 @@
  * Shows real-time message processing as Claude responds
  */
 
-import { execute, UnifiedMessage } from '../src/index';
+import { execute, UnifiedMessage } from '../../src/index';
 
 async function main() {
   console.log('Running Claude command with streaming callbacks...\n');
@@ -30,12 +30,8 @@ async function main() {
           message.content.forEach((block) => {
             if (block.type === 'tool_use') {
               toolUseCount++;
-              console.log(
-                `  Tool: ${block.name} (id: ${block.id.substring(0, 8)}...)`
-              );
-              console.log(
-                `  Input: ${JSON.stringify(block.input).substring(0, 100)}...`
-              );
+              console.log(`  Tool: ${block.name} (id: ${block.id.substring(0, 8)}...)`);
+              console.log(`  Input: ${JSON.stringify(block.input).substring(0, 100)}...`);
             } else if (block.type === 'text') {
               console.log(`  Text: ${block.text.substring(0, 100)}...`);
             } else if (block.type === 'thinking') {

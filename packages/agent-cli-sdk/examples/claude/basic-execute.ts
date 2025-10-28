@@ -3,7 +3,7 @@
  * Basic example of using execute() to run a simple Claude command
  */
 
-import { execute } from '../src/index';
+import { execute } from '../../src/index';
 
 async function main() {
   console.log('Running basic Claude command...\n');

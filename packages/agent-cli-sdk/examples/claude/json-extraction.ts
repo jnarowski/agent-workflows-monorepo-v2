@@ -4,7 +4,7 @@
  * Demonstrates how to get structured data from Claude's response
  */
 
-import { execute } from '../src/index';
+import { execute } from '../../src/index';
 
 interface FileInfo {
   name: string;

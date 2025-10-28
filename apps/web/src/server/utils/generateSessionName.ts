@@ -32,7 +32,7 @@ export async function generateSessionName(
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
   if (!apiKey) {
-    console.warn("ANTHROPIC_API_KEY not set, using default session name");
+    // Silently return default - this is an optional feature
     return "Untitled Session";
   }
 

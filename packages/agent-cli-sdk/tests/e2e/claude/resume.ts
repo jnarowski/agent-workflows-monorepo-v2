@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { execute } from '../../../src/index';
 import { randomUUID } from 'crypto';
 
-describe('Claude Session Continuation E2E', () => {
+describe('Claude Session Resume E2E', () => {
   it('should maintain context across multiple executions using session resume', async () => {
     // Generate a unique session ID
     const sessionId = randomUUID();

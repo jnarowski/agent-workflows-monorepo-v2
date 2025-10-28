@@ -4,7 +4,7 @@
  * Demonstrates how Claude remembers information from previous messages in the same session
  */
 
-import { execute } from '../src/index';
+import { execute } from '../../src/index';
 import { randomUUID } from 'crypto';
 
 async function main() {

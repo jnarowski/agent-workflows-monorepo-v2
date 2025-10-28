@@ -10,7 +10,7 @@
  * - pnpm tsx examples/error-handling.ts
  */
 
-import { execute } from '../src/index';
+import { execute } from '../../src/index';
 import { randomUUID } from 'crypto';
 
 async function main() {

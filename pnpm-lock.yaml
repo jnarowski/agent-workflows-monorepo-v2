@@ -426,6 +426,9 @@ importers:
       cross-spawn:
         specifier: ^7.0.6
         version: 7.0.6
+      glob:
+        specifier: ^11.0.3
+        version: 11.0.3
     devDependencies:
       '@types/cross-spawn':
         specifier: ^6.0.6

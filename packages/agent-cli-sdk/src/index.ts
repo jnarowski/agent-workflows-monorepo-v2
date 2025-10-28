@@ -11,6 +11,12 @@ import {
   type ExecuteOptions as ClaudeExecuteOptions,
   type ExecuteResult as ClaudeExecuteResult,
 } from './claude/execute';
+import { loadSession as loadCodexMessages } from './codex/loadSession';
+import {
+  execute as executeCodexCommand,
+  type ExecuteOptions as CodexExecuteOptions,
+  type ExecuteResult as CodexExecuteResult,
+} from './codex/execute';
 
 /**
  * Options for loading messages from an AI CLI session.
@@ -57,7 +63,10 @@ export async function loadMessages(
         projectPath: options.projectPath || process.cwd(),
       });
     case 'codex':
-      throw new Error('Codex loader not yet implemented');
+      return await loadCodexMessages({
+        sessionId: options.sessionId,
+        projectPath: options.projectPath || process.cwd(),
+      });
     case 'gemini':
       throw new Error('Gemini loader not yet implemented');
     case 'cursor':
@@ -158,12 +167,12 @@ export interface ExecuteOptions {
  */
 export async function execute<T = unknown>(
   options: ExecuteOptions,
-): Promise<ClaudeExecuteResult<T>> {
+): Promise<ClaudeExecuteResult<T> | CodexExecuteResult<T>> {
   switch (options.tool) {
     case 'claude':
       return await executeClaudeCommand<T>(options as ClaudeExecuteOptions);
     case 'codex':
-      throw new Error('Codex execute not yet implemented');
+      return await executeCodexCommand<T>(options as CodexExecuteOptions);
     case 'gemini':
       throw new Error('Gemini execute not yet implemented');
     case 'cursor':
@@ -177,17 +186,28 @@ export async function execute<T = unknown>(
 
 export * from './types/unified';
 export * from './claude/types';
+// Codex types are available via codex namespace import, not re-exported here to avoid conflicts
 export { extractTextContent } from './types/unified';
 
 // Re-export utilities
 export { extractJSON } from './utils/extractJson';
-export { detectCli } from './claude/detectCli';
+export { detectCli as detectClaudeCli } from './claude/detectCli';
+export { detectCli as detectCodexCli } from './codex/detectCli';
 
-// Re-export execute types
+// Re-export Claude execute types
 export type {
   ExecuteOptions as ClaudeExecuteOptions,
   ExecuteResult as ClaudeExecuteResult,
-  OnEventData,
-  OnStdoutData,
+  OnEventData as ClaudeOnEventData,
+  OnStdoutData as ClaudeOnStdoutData,
   ClaudePermissionMode,
 } from './claude/execute';
+
+// Re-export Codex execute types
+export type {
+  ExecuteOptions as CodexExecuteOptions,
+  ExecuteResult as CodexExecuteResult,
+  OnEventData as CodexOnEventData,
+  OnStdoutData as CodexOnStdoutData,
+  CodexPermissionMode,
+} from './codex/execute';

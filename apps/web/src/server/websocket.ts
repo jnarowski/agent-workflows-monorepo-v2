@@ -6,7 +6,7 @@ import { prisma } from "@/shared/prisma";
 import fs from "fs/promises";
 import path from "path";
 import { JWTPayload } from "@/server/utils/auth";
-// import { generateSessionName } from "@/server/utils/generateSessionName";
+import { generateSessionName } from "@/server/utils/generateSessionName";
 import type {
   WebSocketMessage,
   SessionSendMessageData,
@@ -224,42 +224,40 @@ async function handleSessionEvent(
           return; // Don't send message_complete on error
         }
 
-        // ============= SESSION NAME GENERATION (COMMENTED OUT) =============
-        // TODO: Uncomment this block to enable AI-generated session names
-        //
+        // ============= SESSION NAME GENERATION =============
         // Generate session name from first user message
         // This runs only once per session, after the first message completes successfully.
         // The session name is generated using Claude AI based on the user's initial prompt.
-        //
-        // if (!session.name && metadata && metadata.messageCount === 1) {
-        //   try {
-        //     fastify.log.info(
-        //       { sessionId, userPrompt: messageData.message.substring(0, 100) },
-        //       '[WebSocket] Generating session name from first user message'
-        //     );
-        //
-        //     const sessionName = await generateSessionName({
-        //       userPrompt: messageData.message,
-        //     });
-        //
-        //     // Update session with generated name
-        //     await prisma.agentSession.update({
-        //       where: { id: sessionId },
-        //       data: { name: sessionName },
-        //     });
-        //
-        //     fastify.log.info(
-        //       { sessionId, sessionName },
-        //       '[WebSocket] Session name generated successfully'
-        //     );
-        //   } catch (nameErr: unknown) {
-        //     // Don't fail message completion if name generation fails
-        //     fastify.log.warn(
-        //       { err: nameErr, sessionId },
-        //       '[WebSocket] Failed to generate session name (non-critical)'
-        //     );
-        //   }
-        // }
+        // This is an optional feature - if ANTHROPIC_API_KEY is not set, it silently uses "Untitled Session"
+        if (!session.name) {
+          try {
+            fastify.log.info(
+              { sessionId, userPrompt: messageData.message.substring(0, 100) },
+              '[WebSocket] Generating session name from first user message'
+            );
+
+            const sessionName = await generateSessionName({
+              userPrompt: messageData.message,
+            });
+
+            // Update session with generated name
+            await prisma.agentSession.update({
+              where: { id: sessionId },
+              data: { name: sessionName },
+            });
+
+            fastify.log.info(
+              { sessionId, sessionName },
+              '[WebSocket] Session name generated successfully'
+            );
+          } catch (nameErr: unknown) {
+            // Don't fail message completion if name generation fails
+            fastify.log.warn(
+              { err: nameErr, sessionId },
+              '[WebSocket] Failed to generate session name (non-critical)'
+            );
+          }
+        }
         // ============= END SESSION NAME GENERATION =============
 
         // Extract usage data from the last assistant message in result.events
