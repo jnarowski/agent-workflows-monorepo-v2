@@ -151,10 +151,19 @@ async function handleSessionEvent(
         }
       }
 
+      // Validate agent is supported
+      if (session.agent !== 'claude' && session.agent !== 'codex') {
+        sendMessage(socket, `session.${sessionId}.error`, {
+          error: `Agent type '${session.agent}' is not yet implemented`,
+          code: 'UNSUPPORTED_AGENT',
+        });
+        return;
+      }
+
       // Send message via agent-cli-sdk
       try {
         fastify.log.info(
-          { sessionId, messageLength: messageData.message.length },
+          { sessionId, agent: session.agent, messageLength: messageData.message.length },
           "[WebSocket] Sending message to agent-cli-sdk"
         );
 
@@ -164,7 +173,7 @@ async function handleSessionEvent(
         const permissionMode = config?.permissionMode as ClaudePermissionMode | undefined;
 
         const result = await execute({
-          tool: "claude",
+          tool: session.agent as 'claude' | 'codex',
           prompt: messageData.message,
           workingDir: projectPath,
           sessionId,

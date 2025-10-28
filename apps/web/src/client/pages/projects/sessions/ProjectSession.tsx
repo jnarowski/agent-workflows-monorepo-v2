@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChatInterface } from "./components/ChatInterface";
@@ -20,6 +20,8 @@ import type { ToolResultBlock } from "@/shared/types/message.types";
 import { sessionKeys } from "./hooks/useAgentSessions";
 import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import { generateUUID } from "@/client/lib/utils";
+import { AgentSelector } from "@/client/components/AgentSelector";
+import type { AgentType } from "@/shared/types/agent.types";
 
 export default function ProjectSession() {
   const navigate = useNavigate();
@@ -34,6 +36,21 @@ export default function ProjectSession() {
 
   // Get sessionId from URL params (will be undefined for /session/new route)
   const sessionId = params.sessionId || null;
+
+  // Get agent from query params, default to claude
+  const searchParams = new URLSearchParams(location.search);
+  const agentFromUrl = (searchParams.get("agent") as AgentType) || "claude";
+
+  // Local state for selected agent (only used when sessionId is null)
+  const [selectedAgent, setSelectedAgent] = useState<AgentType>(agentFromUrl);
+
+  // Sync selectedAgent when URL query param changes
+  useEffect(() => {
+    if (!sessionId && agentFromUrl !== selectedAgent) {
+      setSelectedAgent(agentFromUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agentFromUrl, sessionId]);
 
   // Get session from store
   const session = useSessionStore((s) => s.session);
@@ -89,12 +106,13 @@ export default function ProjectSession() {
       // Initialize session in store without fetching from server (only if not already initialized)
       if (currentSessionId !== sessionId) {
         clearSession();
+        // Use selectedAgent from local state
         // Manually initialize the session store for this new session
         useSessionStore.setState({
           sessionId: sessionId,
           session: {
             id: sessionId,
-            agent: "claude", // Default to claude
+            agent: selectedAgent, // Use selected agent from local state
             messages: [],
             isStreaming: false,
             metadata: null,
@@ -241,10 +259,13 @@ export default function ProjectSession() {
       }
 
       try {
+        // Use selectedAgent from local state (can be changed on /new page)
+        const agent = selectedAgent;
+
         // Create session via API
         const { data: newSession } = await api.post<{ data: { id: string } }>(
           `/api/projects/${projectId}/sessions`,
-          { sessionId: generateUUID() }
+          { sessionId: generateUUID(), agent }
         );
 
         // Invalidate sessions query to update sidebar immediately
@@ -400,7 +421,17 @@ export default function ProjectSession() {
 
       {/* Fixed Input Container at Bottom */}
       <div className="md:pb-4 md:px-4">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-4xl space-y-4">
+          {/* Agent selector - only show on /new page */}
+          {!sessionId && (
+            <div>
+              <AgentSelector
+                value={selectedAgent}
+                onChange={setSelectedAgent}
+              />
+            </div>
+          )}
+
           <ChatPromptInput
             ref={chatInputRef}
             onSubmit={handleSubmit}

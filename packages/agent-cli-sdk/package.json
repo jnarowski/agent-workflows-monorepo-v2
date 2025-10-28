@@ -21,6 +21,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
+    "test:e2e:claude": "vitest run --config vitest.e2e.config.ts tests/e2e/claude",
+    "test:e2e:codex": "vitest run --config vitest.e2e.config.ts tests/e2e/codex",
     "extract-claude-fixtures": "tsx scripts/extract-claude-fixtures.ts"
   },
   "keywords": [

@@ -345,12 +345,14 @@ export async function getSessionMessages(sessionId: string, userId: string): Pro
  * @param projectId - Project ID
  * @param userId - User ID
  * @param sessionId - Pre-generated session UUID
+ * @param agent - Agent type (defaults to 'claude')
  * @returns Created session
  */
 export async function createSession(
   projectId: string,
   userId: string,
-  sessionId: string
+  sessionId: string,
+  agent: AgentType = 'claude'
 ): Promise<SessionResponse> {
   // Initialize with empty metadata
   const metadata: AgentSessionMetadata = {
@@ -365,6 +367,7 @@ export async function createSession(
       id: sessionId,
       projectId,
       userId,
+      agent,
       metadata: metadata as any,
     },
   });

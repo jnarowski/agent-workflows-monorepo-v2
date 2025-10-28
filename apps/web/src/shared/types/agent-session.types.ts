@@ -20,6 +20,7 @@ export interface AgentSessionMetadata {
  */
 export interface CreateSessionRequest {
   sessionId: string; // Pre-generated UUID
+  agent?: AgentType; // Optional agent type (defaults to 'claude')
 }
 
 /**

@@ -97,8 +97,7 @@ export function ChatInterface({
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
         <MessageCircle className="h-12 w-12 mb-4 opacity-50" />
-        <p className="text-lg font-medium">No messages yet</p>
-        <p className="text-sm mt-1">Start a conversation with Claude</p>
+        <p className="text-lg font-medium">New Session</p>
       </div>
     );
   }

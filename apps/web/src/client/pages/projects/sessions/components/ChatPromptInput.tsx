@@ -110,9 +110,10 @@ const ChatPromptInputInner = forwardRef<
     const { activeProjectId } = useNavigationStore();
     const { project } = useActiveProject();
 
-    // Session store for permission modes
+    // Session store for permission modes and agent type
     const permissionMode = useSessionStore((s) => s.form.permissionMode);
     const setPermissionMode = useSessionStore((s) => s.setPermissionMode);
+    const agent = useSessionStore((s) => s.session?.agent);
 
     // Handle permission mode change
     const handlePermissionModeChange = (mode: ClaudePermissionMode) => {
@@ -385,10 +386,13 @@ const ChatPromptInputInner = forwardRef<
                 projectId={activeProjectId}
                 onCommandSelect={handleCommandSelect}
               />
-              <PromptInputSpeechButton
-                onTranscriptionChange={controller.textInput.setInput}
-                textareaRef={textareaRef}
-              />
+              {/* Speech button - Claude only for now */}
+              {agent === 'claude' && (
+                <PromptInputSpeechButton
+                  onTranscriptionChange={controller.textInput.setInput}
+                  textareaRef={textareaRef}
+                />
+              )}
               <PromptInputPermissionModeSelect
                 onValueChange={handlePermissionModeChange}
                 value={permissionMode}
