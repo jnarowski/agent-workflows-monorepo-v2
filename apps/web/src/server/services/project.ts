@@ -7,6 +7,7 @@ import type {
 } from "@/server/schemas/project";
 import type { Project, ProjectWithSessions } from "@/shared/types/project.types";
 import type { SessionResponse } from "@/shared/types/agent-session.types";
+import { getCurrentBranch } from "@/server/services/git.service";
 
 /**
  * Transform Prisma session to API session format
@@ -28,8 +29,9 @@ function transformSession(prismaSession: any): SessionResponse {
 /**
  * Transform Prisma project to API project format
  * @param prismaProject - Raw project from Prisma
+ * @param currentBranch - Optional git branch (fetched separately)
  */
-function transformProject(prismaProject: any): Project {
+function transformProject(prismaProject: any, currentBranch?: string | null): Project {
   return {
     id: prismaProject.id,
     name: prismaProject.name,
@@ -38,16 +40,18 @@ function transformProject(prismaProject: any): Project {
     is_starred: prismaProject.is_starred,
     created_at: prismaProject.created_at,
     updated_at: prismaProject.updated_at,
+    current_branch: currentBranch ?? undefined,
   };
 }
 
 /**
  * Transform Prisma project with sessions to API format
  * @param prismaProject - Raw project from Prisma with sessions
+ * @param currentBranch - Optional git branch (fetched separately)
  */
-function transformProjectWithSessions(prismaProject: any): ProjectWithSessions {
+function transformProjectWithSessions(prismaProject: any, currentBranch?: string | null): ProjectWithSessions {
   return {
-    ...transformProject(prismaProject),
+    ...transformProject(prismaProject, currentBranch),
     sessions: prismaProject.sessions ? prismaProject.sessions.map(transformSession) : [],
   };
 }
@@ -92,11 +96,23 @@ export async function getAllProjects(options?: {
     }),
   });
 
+  // Fetch current branch for each project
+  const projectsWithBranches = await Promise.all(
+    projects.map(async (project) => {
+      const currentBranch = await getCurrentBranch(project.path);
+      return { project, currentBranch };
+    })
+  );
+
   if (includeSessions) {
-    return projects.map(transformProjectWithSessions);
+    return projectsWithBranches.map(({ project, currentBranch }) =>
+      transformProjectWithSessions(project, currentBranch)
+    );
   }
 
-  return projects.map(transformProject);
+  return projectsWithBranches.map(({ project, currentBranch }) =>
+    transformProject(project, currentBranch)
+  );
 }
 
 /**
@@ -113,7 +129,8 @@ export async function getProjectById(id: string): Promise<Project | null> {
     return null;
   }
 
-  return transformProject(project);
+  const currentBranch = await getCurrentBranch(project.path);
+  return transformProject(project, currentBranch);
 }
 
 /**
@@ -130,7 +147,8 @@ export async function createProject(
       path: data.path,
     },
   });
-  return transformProject(project);
+  const currentBranch = await getCurrentBranch(project.path);
+  return transformProject(project, currentBranch);
 }
 
 /**
@@ -148,7 +166,8 @@ export async function updateProject(
       where: { id },
       data,
     });
-    return transformProject(project);
+    const currentBranch = await getCurrentBranch(project.path);
+    return transformProject(project, currentBranch);
   } catch (error) {
     // Return null if project not found
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -170,7 +189,8 @@ export async function deleteProject(id: string): Promise<Project | null> {
     const project = await prisma.project.delete({
       where: { id },
     });
-    return transformProject(project);
+    const currentBranch = await getCurrentBranch(project.path);
+    return transformProject(project, currentBranch);
   } catch (error) {
     // Return null if project not found
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -229,7 +249,11 @@ export async function getProjectByPath(path: string): Promise<Project | null> {
   const project = await prisma.project.findFirst({
     where: { path },
   });
-  return project ? transformProject(project) : null;
+  if (!project) {
+    return null;
+  }
+  const currentBranch = await getCurrentBranch(project.path);
+  return transformProject(project, currentBranch);
 }
 
 /**
@@ -254,5 +278,6 @@ export async function createOrUpdateProject(
       path,
     },
   });
-  return transformProject(project);
+  const currentBranch = await getCurrentBranch(project.path);
+  return transformProject(project, currentBranch);
 }

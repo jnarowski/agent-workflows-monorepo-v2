@@ -20,20 +20,8 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/",
-      icon: Home,
-      isActive: false,
-    },
-    {
-      title: "Projects",
       url: "/projects",
-      icon: FolderOpen,
-      isActive: false,
-    },
-    {
-      title: "About",
-      url: "/about",
-      icon: Info,
+      icon: Home,
       isActive: false,
     },
   ],

@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useProject } from "@/client/pages/projects/hooks/useProjects";
+import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
+import { useActiveSession } from "@/client/hooks/navigation/useActiveSession";
+import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { Button } from "@/client/components/ui/button";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import {
@@ -17,7 +19,29 @@ export default function ProjectDetailLayout() {
   const navigate = useNavigate();
   const setActiveProject = useNavigationStore((state) => state.setActiveProject);
   const clearNavigation = useNavigationStore((state) => state.clearNavigation);
-  const { data: project, isLoading, error } = useProject(id!);
+  const { data: projects, isLoading, error } = useProjectsWithSessions();
+  const project = projects?.find(p => p.id === id);
+
+  // Only show session when on a session route
+  const { sessionId: activeSessionId } = useParams<{ sessionId: string }>();
+
+  // Try to get session from React Query cache first (for sidebar sessions)
+  const { session: cachedSession } = useActiveSession();
+  // Fall back to sessionStore for active session (when viewing a session page)
+  const activeSession = useSessionStore((s) => s.session);
+
+  // Build current session with proper display name logic
+  // Use same display logic as SessionListItem: session.name || firstMessagePreview || "New session"
+  const currentSession = activeSessionId ? (
+    cachedSession ? {
+      ...cachedSession,
+      name: cachedSession.name || cachedSession.metadata.firstMessagePreview || "New session"
+    } : (activeSession ? {
+      id: activeSession.id,
+      agent: activeSession.agent,
+      name: activeSession.metadata?.firstMessagePreview || "New session",
+    } : null)
+  ) : null;
 
   // Sync projectId with navigationStore on mount and when id changes
   useEffect(() => {
@@ -77,7 +101,8 @@ export default function ProjectDetailLayout() {
       <ProjectHeader
         projectId={id!}
         projectName={project.name}
-        currentBranch={project.currentBranch}
+        currentBranch={project.current_branch}
+        currentSession={currentSession}
       />
 
       {/* Nested route content */}

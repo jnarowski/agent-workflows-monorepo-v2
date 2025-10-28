@@ -27,7 +27,7 @@ export const projectSchema = z.object({
   is_starred: z.boolean(),
   created_at: z.date(),
   updated_at: z.date(),
-  currentBranch: z.string().optional(),
+  current_branch: z.string().optional(),
 });
 
 export const projectResponseSchema = successResponse(projectSchema);

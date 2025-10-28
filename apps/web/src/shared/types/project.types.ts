@@ -10,7 +10,7 @@ export interface Project {
   is_starred: boolean;
   created_at: Date;
   updated_at: Date;
-  currentBranch?: string;
+  current_branch?: string;
 }
 
 export interface ProjectWithSessions extends Project {
