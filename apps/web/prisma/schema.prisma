@@ -63,19 +63,21 @@ enum AgentType {
 }
 
 model AgentSession {
-  id         String    @id @default(uuid())
-  projectId  String
-  userId     String
-  name       String? // AI-generated session name (nullable for legacy sessions)
-  agent      AgentType @default(claude)
-  metadata   Json // { totalTokens, messageCount, lastMessageAt, firstMessagePreview }
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  id             String    @id @default(uuid())
+  projectId      String
+  userId         String
+  name           String? // AI-generated session name (nullable for legacy sessions)
+  agent          AgentType @default(claude)
+  cli_session_id String? // Session ID from CLI tool (Claude/Codex) - needed for loading/resuming sessions
+  metadata       Json // { totalTokens, messageCount, lastMessageAt, firstMessagePreview }
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([projectId, updated_at])
   @@index([userId, updated_at])
+  @@index([cli_session_id])
   @@map("agent_sessions")
 }

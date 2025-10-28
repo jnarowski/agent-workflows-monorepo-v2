@@ -32,6 +32,7 @@ export interface SessionResponse {
   userId: string;
   name?: string; // AI-generated session name (optional for legacy sessions)
   agent: AgentType;
+  cli_session_id?: string; // Session ID from CLI tool (Claude/Codex) - needed for loading/resuming sessions
   metadata: AgentSessionMetadata;
   created_at: Date;
   updated_at: Date;

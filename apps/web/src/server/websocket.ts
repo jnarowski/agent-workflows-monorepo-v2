@@ -152,10 +152,10 @@ async function handleSessionEvent(
       }
 
       // Validate agent is supported
-      if (session.agent !== 'claude' && session.agent !== 'codex') {
+      if (session.agent !== "claude" && session.agent !== "codex") {
         sendMessage(socket, `session.${sessionId}.error`, {
           error: `Agent type '${session.agent}' is not yet implemented`,
-          code: 'UNSUPPORTED_AGENT',
+          code: "UNSUPPORTED_AGENT",
         });
         return;
       }
@@ -163,20 +163,37 @@ async function handleSessionEvent(
       // Send message via agent-cli-sdk
       try {
         fastify.log.info(
-          { sessionId, agent: session.agent, messageLength: messageData.message.length },
+          {
+            sessionId,
+            agent: session.agent,
+            messageLength: messageData.message.length,
+          },
           "[WebSocket] Sending message to agent-cli-sdk"
         );
 
         // Extract resume flag and permissionMode from config
-        const config = messageData.config as Record<string, unknown> | undefined;
+        const config = messageData.config as
+          | Record<string, unknown>
+          | undefined;
         const resume = config?.resume === true;
-        const permissionMode = config?.permissionMode as ClaudePermissionMode | undefined;
+        const permissionMode = config?.permissionMode as
+          | ClaudePermissionMode
+          | undefined;
+
+        // Use cli_session_id if available (for resuming sessions with CLI tools)
+        // Otherwise use our database session ID (for new sessions)
+        const cliSessionId = session.cli_session_id || sessionId;
+
+        fastify.log.info(
+          { sessionId, cliSessionId, resume },
+          "[WebSocket] Executing with session ID"
+        );
 
         const result = await execute({
-          tool: session.agent as 'claude' | 'codex',
+          tool: session.agent as "claude" | "codex",
           prompt: messageData.message,
           workingDir: projectPath,
-          sessionId,
+          sessionId: cliSessionId,
           resume,
           permissionMode,
           verbose: true,
@@ -201,7 +218,8 @@ async function handleSessionEvent(
 
         // Check if command failed
         if (!result.success) {
-          const errorMessage = result.error || "Command failed with non-zero exit code";
+          const errorMessage =
+            result.error || "Command failed with non-zero exit code";
           fastify.log.error(
             { sessionId, exitCode: result.exitCode, error: errorMessage },
             "[WebSocket] Agent CLI SDK command failed"
@@ -233,6 +251,39 @@ async function handleSessionEvent(
           return; // Don't send message_complete on error
         }
 
+        // ============= CLI SESSION ID STORAGE =============
+        // Store the CLI-generated session ID from the result
+        // This allows us to load/resume sessions using the CLI tool's native session ID
+        // Both Claude and Codex return sessionId in the result
+        try {
+          fastify.log.info(
+            { sessionId, cliSessionId: result.sessionId },
+            "[WebSocket] Storing CLI-generated session ID"
+          );
+
+          const sessionUpdateResponse = await prisma.agentSession.update({
+            where: { id: sessionId },
+            data: { cli_session_id: result.sessionId },
+          });
+
+          fastify.log.info(
+            {
+              sessionId,
+              cliSessionId: result.sessionId,
+              sessionUpdateResponse,
+            },
+            "[WebSocket] CLI session ID stored successfully"
+          );
+        } catch (cliIdErr: unknown) {
+          // Don't fail message completion if CLI session ID storage fails
+          fastify.log.warn(
+            { err: cliIdErr, sessionId },
+            "[WebSocket] Failed to store CLI session ID (non-critical)"
+          );
+        }
+
+        // ============= END CLI SESSION ID STORAGE =============
+
         // ============= SESSION NAME GENERATION =============
         // Generate session name from first user message
         // This runs only once per session, after the first message completes successfully.
@@ -242,7 +293,7 @@ async function handleSessionEvent(
           try {
             fastify.log.info(
               { sessionId, userPrompt: messageData.message.substring(0, 100) },
-              '[WebSocket] Generating session name from first user message'
+              "[WebSocket] Generating session name from first user message"
             );
 
             const sessionName = await generateSessionName({
@@ -250,20 +301,20 @@ async function handleSessionEvent(
             });
 
             // Update session with generated name
-            await prisma.agentSession.update({
+            const response = await prisma.agentSession.update({
               where: { id: sessionId },
               data: { name: sessionName },
             });
 
             fastify.log.info(
-              { sessionId, sessionName },
-              '[WebSocket] Session name generated successfully'
+              { sessionId, sessionName, response },
+              "[WebSocket] Session name generated successfully"
             );
           } catch (nameErr: unknown) {
             // Don't fail message completion if name generation fails
             fastify.log.warn(
               { err: nameErr, sessionId },
-              '[WebSocket] Failed to generate session name (non-critical)'
+              "[WebSocket] Failed to generate session name (non-critical)"
             );
           }
         }
@@ -273,59 +324,94 @@ async function handleSessionEvent(
         let usage = null;
         if (result.events && Array.isArray(result.events)) {
           const events = result.events;
-          fastify.log.info({ dataLength: events.length, sessionId }, "Extracting usage from result.events");
+          fastify.log.info(
+            { dataLength: events.length, sessionId },
+            "Extracting usage from result.events"
+          );
 
           // Log the last few events to understand the structure
           const lastEvents = events.slice(-3);
-          fastify.log.info({ lastEvents: JSON.stringify(lastEvents, null, 2), sessionId }, "Last 3 events in result.events");
+          fastify.log.info(
+            { lastEvents: JSON.stringify(lastEvents, null, 2), sessionId },
+            "Last 3 events in result.events"
+          );
 
           // Find the last assistant message with usage data
           for (let i = events.length - 1; i >= 0; i--) {
             const event = events[i] as Record<string, unknown>;
 
             // Log each event type we're checking
-            fastify.log.debug({
-              eventType: event.type,
-              eventRole: event.role,
-              hasUsage: !!(event.usage as Record<string, unknown> | undefined),
-              hasMessageUsage: !!((event.message as Record<string, unknown> | undefined)?.usage),
-              eventKeys: Object.keys(event),
-              sessionId
-            }, "Checking event for usage");
+            fastify.log.debug(
+              {
+                eventType: event.type,
+                eventRole: event.role,
+                hasUsage: !!(event.usage as
+                  | Record<string, unknown>
+                  | undefined),
+                hasMessageUsage: !!(
+                  event.message as Record<string, unknown> | undefined
+                )?.usage,
+                eventKeys: Object.keys(event),
+                sessionId,
+              },
+              "Checking event for usage"
+            );
 
-            if ((event.type === 'assistant' || event.role === 'assistant') && event.usage) {
+            if (
+              (event.type === "assistant" || event.role === "assistant") &&
+              event.usage
+            ) {
               const eventUsage = event.usage as Record<string, unknown>;
               usage = {
                 input_tokens: (eventUsage.input_tokens as number) || 0,
                 output_tokens: (eventUsage.output_tokens as number) || 0,
-                cache_creation_input_tokens: (eventUsage.cache_creation_input_tokens as number) || 0,
-                cache_read_input_tokens: (eventUsage.cache_read_input_tokens as number) || 0,
+                cache_creation_input_tokens:
+                  (eventUsage.cache_creation_input_tokens as number) || 0,
+                cache_read_input_tokens:
+                  (eventUsage.cache_read_input_tokens as number) || 0,
               };
-              fastify.log.info({ usage, sessionId }, "Found usage in event.usage");
+              fastify.log.info(
+                { usage, sessionId },
+                "Found usage in event.usage"
+              );
               break;
             }
             // Also check event.message.usage for Claude CLI format
-            if ((event.type === 'assistant' || event.role === 'assistant') && event.message) {
+            if (
+              (event.type === "assistant" || event.role === "assistant") &&
+              event.message
+            ) {
               const message = event.message as Record<string, unknown>;
               if (message.usage) {
                 const messageUsage = message.usage as Record<string, unknown>;
                 usage = {
                   input_tokens: (messageUsage.input_tokens as number) || 0,
                   output_tokens: (messageUsage.output_tokens as number) || 0,
-                  cache_creation_input_tokens: (messageUsage.cache_creation_input_tokens as number) || 0,
-                  cache_read_input_tokens: (messageUsage.cache_read_input_tokens as number) || 0,
+                  cache_creation_input_tokens:
+                    (messageUsage.cache_creation_input_tokens as number) || 0,
+                  cache_read_input_tokens:
+                    (messageUsage.cache_read_input_tokens as number) || 0,
                 };
               }
-              fastify.log.info({ usage, sessionId }, "Found usage in event.message.usage");
+              fastify.log.info(
+                { usage, sessionId },
+                "Found usage in event.message.usage"
+              );
               break;
             }
           }
 
           if (!usage) {
-            fastify.log.warn({ sessionId, lastEvent: events[events.length - 1] }, "No usage data found in result.events");
+            fastify.log.warn(
+              { sessionId, lastEvent: events[events.length - 1] },
+              "No usage data found in result.events"
+            );
           }
         } else {
-          fastify.log.warn({ sessionId, resultKeys: result ? Object.keys(result) : null }, "result.events is not an array or doesn't exist");
+          fastify.log.warn(
+            { sessionId, resultKeys: result ? Object.keys(result) : null },
+            "result.events is not an array or doesn't exist"
+          );
         }
 
         // Clean up temporary images

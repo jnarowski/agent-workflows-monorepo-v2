@@ -153,14 +153,10 @@ export interface ExecuteResult<T = string> {
  * });
  * ```
  */
-export async function execute<T = string>(
-  options: ExecuteOptions
-): Promise<ExecuteResult<T>> {
+export async function execute<T = string>(options: ExecuteOptions): Promise<ExecuteResult<T>> {
   const cliPath = detectCli();
   if (!cliPath) {
-    throw new Error(
-      'Codex CLI not found. Set CODEX_CLI_PATH or install Codex CLI.'
-    );
+    throw new Error('Codex CLI not found. Set CODEX_CLI_PATH or install Codex CLI.');
   }
 
   const args = buildArgs(options);
@@ -179,7 +175,7 @@ export async function execute<T = string>(
       cwd: options.workingDir,
       timeout: options.timeout || 300000, // 5 minutes default
       verbose: options.verbose,
-      onStdout: chunk => {
+      onStdout: (chunk) => {
         rawOutput += chunk;
         lineBuffer += chunk;
         const lines = lineBuffer.split('\n');
@@ -196,14 +192,14 @@ export async function execute<T = string>(
           messages,
         });
       },
-      onStderr: chunk => {
+      onStderr: (chunk) => {
         stderr += chunk;
         options.onStderr?.(chunk);
       },
-      onError: error => {
+      onError: (error) => {
         options.onError?.(error);
       },
-      onClose: exitCode => {
+      onClose: (exitCode) => {
         options.onClose?.(exitCode);
       },
     });
@@ -223,8 +219,7 @@ export async function execute<T = string>(
   } catch (error) {
     // Handle timeout and other errors gracefully
     const duration = Date.now() - startTime;
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const textOutput = extractOutput(messages);
 
     return {
@@ -343,9 +338,7 @@ function mapPermissionMode(mode: CodexPermissionMode): string[] {
  */
 function extractSessionId(events: CodexEvent[]): string {
   // Codex uses thread.started event with thread_id
-  const threadStartedEvent = events.find(
-    e => e.type === 'thread.started'
-  ) as any;
+  const threadStartedEvent = events.find((e) => e.type === 'thread.started') as any;
 
   if (threadStartedEvent?.thread_id) {
     return threadStartedEvent.thread_id;
@@ -359,8 +352,8 @@ function extractSessionId(events: CodexEvent[]): string {
  */
 function extractOutput(messages: UnifiedMessage[]): string {
   return messages
-    .filter(m => m.role === 'assistant')
-    .map(m => extractTextContent(m))
+    .filter((m) => m.role === 'assistant')
+    .map((m) => extractTextContent(m))
     .join('\n');
 }
 

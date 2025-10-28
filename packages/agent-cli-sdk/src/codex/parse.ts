@@ -5,11 +5,7 @@
  * into Claude-compatible unified format (thinking, text, tool_use, tool_result).
  */
 
-import type {
-  UnifiedMessage,
-  UnifiedContent,
-  UnifiedToolUseBlock,
-} from '../types/unified.js';
+import type { UnifiedMessage, UnifiedContent, UnifiedToolUseBlock } from '../types/unified.js';
 import type {
   CodexEvent,
   ItemCompletedEvent,
@@ -33,6 +29,17 @@ export function parse(jsonlLine: string): UnifiedMessage | null {
   try {
     const event: CodexEvent = JSON.parse(jsonlLine);
 
+    console.log('sevent', event);
+    console.log('....');
+    console.log('....');
+    console.log('....');
+    console.log('....');
+    console.log('....');
+    console.log('....');
+    console.log('....');
+    console.log('....');
+    console.log('....');
+
     // Only process item.completed events (these contain the actual content)
     if (event.type === 'item.completed') {
       return transformItemCompleted(event);
@@ -50,9 +57,7 @@ export function parse(jsonlLine: string): UnifiedMessage | null {
 // Item Transformers
 // ============================================================================
 
-function transformItemCompleted(
-  event: ItemCompletedEvent
-): UnifiedMessage | null {
+function transformItemCompleted(event: ItemCompletedEvent): UnifiedMessage | null {
   const { item } = event;
 
   switch (item.type) {
@@ -72,10 +77,7 @@ function transformItemCompleted(
   }
 }
 
-function transformReasoning(
-  event: ItemCompletedEvent,
-  item: ReasoningItem
-): UnifiedMessage {
+function transformReasoning(event: ItemCompletedEvent, item: ReasoningItem): UnifiedMessage {
   const content: UnifiedContent[] = [
     {
       type: 'thinking',
@@ -93,10 +95,7 @@ function transformReasoning(
   };
 }
 
-function transformAgentMessage(
-  event: ItemCompletedEvent,
-  item: AgentMessageItem
-): UnifiedMessage {
+function transformAgentMessage(event: ItemCompletedEvent, item: AgentMessageItem): UnifiedMessage {
   const content: UnifiedContent[] = [
     {
       type: 'text',
@@ -114,10 +113,7 @@ function transformAgentMessage(
   };
 }
 
-function transformCommandExecution(
-  event: ItemCompletedEvent,
-  item: CommandExecutionItem
-): UnifiedMessage {
+function transformCommandExecution(event: ItemCompletedEvent, item: CommandExecutionItem): UnifiedMessage {
   // Tool use for the command execution
   const toolUseContent: UnifiedContent = {
     type: 'tool_use',
@@ -147,47 +143,43 @@ function transformCommandExecution(
   };
 }
 
-function transformFileChange(
-  event: ItemCompletedEvent,
-  item: FileChangeItem
-): UnifiedMessage {
+function transformFileChange(event: ItemCompletedEvent, item: FileChangeItem): UnifiedMessage {
   // Map file changes to tool uses
-  const changes: UnifiedContent[] = item.changes
-    .map(change => {
-      switch (change.kind) {
-        case 'add':
-          return {
-            type: 'tool_use' as const,
-            id: `${item.id}_add_${simpleHash(change.path)}`,
-            name: 'Write',
-            input: {
-              file_path: change.path,
-            },
-          } satisfies UnifiedToolUseBlock;
-        case 'modify':
-          return {
-            type: 'tool_use' as const,
-            id: `${item.id}_edit_${simpleHash(change.path)}`,
-            name: 'Edit',
-            input: {
-              file_path: change.path,
-            },
-          } satisfies UnifiedToolUseBlock;
-        case 'delete':
-          return {
-            type: 'tool_use' as const,
-            id: `${item.id}_delete_${simpleHash(change.path)}`,
-            name: 'Bash',
-            input: {
-              command: `rm ${change.path}`,
-            },
-          } satisfies UnifiedToolUseBlock;
-        default: {
-          const _exhaustive: never = change.kind;
-          return _exhaustive;
-        }
+  const changes: UnifiedContent[] = item.changes.map((change) => {
+    switch (change.kind) {
+      case 'add':
+        return {
+          type: 'tool_use' as const,
+          id: `${item.id}_add_${simpleHash(change.path)}`,
+          name: 'Write',
+          input: {
+            file_path: change.path,
+          },
+        } satisfies UnifiedToolUseBlock;
+      case 'modify':
+        return {
+          type: 'tool_use' as const,
+          id: `${item.id}_edit_${simpleHash(change.path)}`,
+          name: 'Edit',
+          input: {
+            file_path: change.path,
+          },
+        } satisfies UnifiedToolUseBlock;
+      case 'delete':
+        return {
+          type: 'tool_use' as const,
+          id: `${item.id}_delete_${simpleHash(change.path)}`,
+          name: 'Bash',
+          input: {
+            command: `rm ${change.path}`,
+          },
+        } satisfies UnifiedToolUseBlock;
+      default: {
+        const _exhaustive: never = change.kind;
+        return _exhaustive;
       }
-    });
+    }
+  });
 
   return {
     id: item.id,

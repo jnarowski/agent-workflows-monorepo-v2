@@ -37,31 +37,65 @@ interface LoadSessionOptions {
 export async function loadSession(
   options: LoadSessionOptions
 ): Promise<UnifiedMessage[]> {
-  const { sessionId } = options;
+  const { sessionId, projectPath } = options;
+
+  console.log('[CodexLoadSession] Starting session load', {
+    sessionId,
+    projectPath: projectPath || '(not provided)',
+  });
 
   // Find the session file
   const sessionPath = await findSessionFile(sessionId);
 
   if (!sessionPath) {
+    console.log('[CodexLoadSession] No session file found', { sessionId });
     // Return empty array if session not found (match Claude behavior)
     return [];
   }
+
+  console.log('[CodexLoadSession] Found session file', { sessionPath });
 
   try {
     const content = await fs.readFile(sessionPath, 'utf-8');
     const lines = content.trim().split('\n').filter(Boolean);
 
-    const messages = lines
-      .map(line => parse(line))
-      .filter((msg): msg is UnifiedMessage => msg !== null)
-      .sort((a, b) => a.timestamp - b.timestamp);
+    console.log('[CodexLoadSession] Read session file', {
+      fileSize: content.length,
+      totalLines: lines.length,
+    });
+
+    const parsedMessages = lines.map(line => parse(line));
+    const validMessages = parsedMessages.filter(
+      (msg): msg is UnifiedMessage => msg !== null
+    );
+    const messages = validMessages.sort((a, b) => a.timestamp - b.timestamp);
+
+    console.log('[CodexLoadSession] Parsed messages', {
+      totalLines: lines.length,
+      parsedMessages: parsedMessages.length,
+      validMessages: validMessages.length,
+      nullMessages: parsedMessages.length - validMessages.length,
+      finalMessages: messages.length,
+    });
+
+    console.log('[CodexLoadSession] Returning messages', {
+      count: messages.length,
+    });
 
     return messages;
   } catch (error) {
     const err = error as NodeJS.ErrnoException;
     if (err.code === 'ENOENT') {
+      console.log('[CodexLoadSession] File not found (ENOENT)', {
+        sessionPath,
+      });
       return [];
     }
+    console.error('[CodexLoadSession] Error reading session file', {
+      error: err.message,
+      code: err.code,
+      sessionPath,
+    });
     throw error;
   }
 }
@@ -80,15 +114,34 @@ async function findSessionFile(sessionId: string): Promise<string | null> {
   const codexHome = process.env.CODEX_HOME || `${process.env.HOME}/.codex`;
   const sessionsDir = `${codexHome}/sessions`;
 
+  console.log('[CodexLoadSession] Searching for session file', {
+    sessionId,
+    codexHome,
+    sessionsDir,
+  });
+
   try {
     // Search for file containing the session ID
     // Pattern: sessions/**/*-{sessionId}.jsonl
     const pattern = `${sessionsDir}/**/*-${sessionId}.jsonl`;
+
+    console.log('[CodexLoadSession] Using glob pattern', { pattern });
+
     const files = await glob(pattern);
+
+    console.log('[CodexLoadSession] Glob search complete', {
+      filesFound: files.length,
+      firstMatch: files[0] || '(none)',
+      allMatches: files,
+    });
 
     // Return the first match (should be unique by UUID)
     return files[0] || null;
-  } catch {
+  } catch (error) {
+    console.error('[CodexLoadSession] Error during glob search', {
+      error: error instanceof Error ? error.message : String(error),
+      sessionId,
+    });
     return null;
   }
 }
