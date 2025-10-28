@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/client/components/ui/button";
 import {
@@ -8,6 +8,7 @@ import {
   FileText,
   ChevronDown,
   GitBranch,
+  Settings,
 } from "lucide-react";
 import { Separator } from "@/client/components/ui/separator";
 import { SidebarTrigger } from "@/client/components/ui/sidebar";
@@ -19,17 +20,20 @@ import {
 } from "@/client/components/ui/dropdown-menu";
 import type { SessionResponse } from "@/shared/types";
 import { AgentIcon } from "@/client/components/AgentIcon";
+import { GitOperationsModal } from "@/client/components/GitOperationsModal";
 
 interface ProjectHeaderProps {
   projectId: string;
   projectName: string;
+  projectPath: string;
   currentBranch?: string;
   currentSession?: SessionResponse | null;
 }
 
-export function ProjectHeader({ projectId, projectName, currentBranch, currentSession }: ProjectHeaderProps) {
+export function ProjectHeader({ projectId, projectName, projectPath, currentBranch, currentSession }: ProjectHeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [gitModalOpen, setGitModalOpen] = useState(false);
 
   // Truncate session name to 50 characters
   const truncatedSessionName = currentSession?.name && currentSession.name.length > 50
@@ -81,9 +85,18 @@ export function ProjectHeader({ projectId, projectName, currentBranch, currentSe
           <div className="flex flex-col gap-1 min-w-0">
             <div className="text-base font-medium truncate">{projectName}</div>
             {currentBranch && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <GitBranch className="h-3 w-3" />
                 <span className="truncate">{currentBranch}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 p-0 hover:bg-muted/50"
+                  onClick={() => setGitModalOpen(true)}
+                  title="Git operations"
+                >
+                  <Settings className="h-3 w-3" />
+                </Button>
               </div>
             )}
           </div>
@@ -144,6 +157,14 @@ export function ProjectHeader({ projectId, projectName, currentBranch, currentSe
           <span className="truncate">{truncatedSessionName}</span>
         </div>
       )}
+
+      {/* Git Operations Modal */}
+      <GitOperationsModal
+        open={gitModalOpen}
+        onOpenChange={setGitModalOpen}
+        projectPath={projectPath}
+        currentBranch={currentBranch}
+      />
     </>
   );
 }

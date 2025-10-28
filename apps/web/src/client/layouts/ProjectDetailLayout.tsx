@@ -101,6 +101,7 @@ export default function ProjectDetailLayout() {
       <ProjectHeader
         projectId={id!}
         projectName={project.name}
+        projectPath={project.path}
         currentBranch={project.current_branch}
         currentSession={currentSession}
       />
