@@ -85,7 +85,13 @@ export function AppInnerSidebar({
 
   // Get sessions for the active project from project data
   const activeProject = projectsData?.find((p) => p.id === activeProjectId);
-  const sortedSessions = activeProject?.sessions || [];
+  const sortedSessions = useMemo(() => {
+    if (!activeProject?.sessions) return [];
+    // Sort by created_at descending (most recent first)
+    return [...activeProject.sessions].sort((a, b) => {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [activeProject?.sessions]);
 
   const toggleHiddenMutation = useToggleProjectHidden();
   const toggleStarredMutation = useToggleProjectStarred();

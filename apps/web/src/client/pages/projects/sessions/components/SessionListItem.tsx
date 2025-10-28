@@ -37,15 +37,15 @@ export function SessionListItem({
   projectId,
   isActive = false,
 }: SessionListItemProps) {
-  const { id, metadata } = session;
-  const { firstMessagePreview, lastMessageAt, messageCount } = metadata;
+  const { id, metadata, created_at } = session;
+  const { firstMessagePreview, messageCount } = metadata;
   const { isMobile, setOpenMobile } = useSidebar();
   const [isHovered, setIsHovered] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const updateSessionMutation = useUpdateSession();
 
-  const timeAgo = formatDistanceToNow(new Date(lastMessageAt), {
+  const timeAgo = formatDistanceToNow(new Date(created_at), {
     addSuffix: true,
   });
 

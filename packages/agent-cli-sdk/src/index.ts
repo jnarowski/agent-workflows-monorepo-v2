@@ -91,6 +91,10 @@ export interface ExecuteOptions {
   resume?: boolean;
   /** Continue the current session */
   continue?: boolean;
+  /** Permission mode for file operations and command execution (Claude only) */
+  permissionMode?: 'default' | 'plan' | 'acceptEdits' | 'bypassPermissions';
+  /** Images to include with the prompt (Claude only) */
+  images?: Array<{ path: string }>;
   /**
    * Callback invoked for each event received from the CLI.
    * Provides raw JSONL line, parsed event, and unified message.

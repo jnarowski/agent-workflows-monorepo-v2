@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { FastifyInstance } from "fastify";
 import type { WebSocket } from "@fastify/websocket";
-import { execute } from "@repo/agent-cli-sdk";
+import { execute, type ClaudePermissionMode } from "@repo/agent-cli-sdk";
 import { prisma } from "@/shared/prisma";
 import fs from "fs/promises";
 import path from "path";
@@ -158,9 +158,10 @@ async function handleSessionEvent(
           "[WebSocket] Sending message to agent-cli-sdk"
         );
 
-        // Extract resume flag from config (frontend calculates based on message history)
+        // Extract resume flag and permissionMode from config
         const config = messageData.config as Record<string, unknown> | undefined;
         const resume = config?.resume === true;
+        const permissionMode = config?.permissionMode as ClaudePermissionMode | undefined;
 
         const result = await execute({
           tool: "claude",
@@ -168,6 +169,7 @@ async function handleSessionEvent(
           workingDir: projectPath,
           sessionId,
           resume,
+          permissionMode,
           verbose: true,
           images:
             imagePaths.length > 0

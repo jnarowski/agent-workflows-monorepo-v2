@@ -261,6 +261,66 @@ describe('execute', () => {
       ]);
     });
 
+    it('should pass permissionMode "acceptEdits" to CLI', async () => {
+      const mockOutput = createClaudeOutput([
+        { type: 'system', subtype: 'init', session_id: 'test-123', cwd: '/test' },
+      ]);
+
+      mockSpawnWithOutput(mockOutput);
+
+      await execute({ prompt: 'test', permissionMode: 'acceptEdits' });
+
+      expectSpawnCalledWith([
+        '-p',
+        '--permission-mode',
+        'acceptEdits',
+        '--output-format',
+        'stream-json',
+        '--verbose',
+        'test',
+      ]);
+    });
+
+    it('should pass permissionMode "plan" to CLI', async () => {
+      const mockOutput = createClaudeOutput([
+        { type: 'system', subtype: 'init', session_id: 'test-123', cwd: '/test' },
+      ]);
+
+      mockSpawnWithOutput(mockOutput);
+
+      await execute({ prompt: 'test', permissionMode: 'plan' });
+
+      expectSpawnCalledWith([
+        '-p',
+        '--permission-mode',
+        'plan',
+        '--output-format',
+        'stream-json',
+        '--verbose',
+        'test',
+      ]);
+    });
+
+    it('should pass permissionMode "bypassPermissions" to CLI', async () => {
+      const mockOutput = createClaudeOutput([
+        { type: 'system', subtype: 'init', session_id: 'test-123', cwd: '/test' },
+      ]);
+
+      mockSpawnWithOutput(mockOutput);
+
+      await execute({ prompt: 'test', permissionMode: 'bypassPermissions' });
+
+      expectSpawnCalledWith([
+        '-p',
+        '--permission-mode',
+        'bypassPermissions',
+        '--output-format',
+        'stream-json',
+        '--verbose',
+        'test',
+      ]);
+    });
+
     it('should convert dangerouslySkipPermissions to bypassPermissions mode', async () => {
       const mockOutput = createClaudeOutput([
         { type: 'system', subtype: 'init', session_id: 'test-123', cwd: '/test' },
