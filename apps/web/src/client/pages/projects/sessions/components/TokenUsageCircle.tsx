@@ -6,6 +6,7 @@ import {
 
 interface TokenUsageCircleProps {
   totalTokens: number;
+  currentMessageTokens?: number;
 }
 
 function formatTokens(count: number): string {
@@ -15,7 +16,10 @@ function formatTokens(count: number): string {
   return (count / 1000).toFixed(1) + "k";
 }
 
-export function TokenUsageCircle({ totalTokens }: TokenUsageCircleProps) {
+export function TokenUsageCircle({
+  totalTokens,
+  currentMessageTokens,
+}: TokenUsageCircleProps) {
   const formattedCount = formatTokens(totalTokens);
   const fullCount = totalTokens.toLocaleString();
 
@@ -25,12 +29,19 @@ export function TokenUsageCircle({ totalTokens }: TokenUsageCircleProps) {
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium text-muted-foreground">
             {formattedCount}
+            {currentMessageTokens !== undefined && (
+              <span data-testid="message-tokens">+{currentMessageTokens}</span>
+            )}
           </span>
           <div className="h-6 w-6 rounded-full border-2 border-muted-foreground/30 bg-background" />
         </div>
       </TooltipTrigger>
       <TooltipContent>
-        <p>{fullCount} tokens</p>
+        <p>
+          {fullCount} tokens
+          {currentMessageTokens !== undefined &&
+            ` (+${currentMessageTokens} in message)`}
+        </p>
       </TooltipContent>
     </Tooltip>
   );

@@ -60,7 +60,6 @@ describe('Git Service', () => {
     it('should return git status with files', async () => {
       const mockStatus = {
         current: 'main',
-        files: [],
         staged: ['file1.txt'],
         modified: ['file2.txt'],
         created: [],
@@ -321,7 +320,7 @@ describe('Git Service', () => {
       const mockLog = {
         all: [
           {
-            hash: 'abc123',
+            hash: 'abc1234567',
             message: 'Test commit',
             author_name: 'John Doe',
             author_email: 'john@example.com',
@@ -329,14 +328,14 @@ describe('Git Service', () => {
           },
         ],
       };
-      (mockGit.log as MockedFunction<(options: { maxCount?: number; from?: number }) => Promise<LogResult>>).mockResolvedValue(mockLog);
+      (mockGit.log as MockedFunction<(options: { maxCount?: number; from?: string }) => Promise<LogResult>>).mockResolvedValue(mockLog);
 
       const result = await getCommitHistory('/test/path');
 
-      expect(mockGit.log).toHaveBeenCalledWith({ maxCount: 100 });
+      expect(mockGit.log).toHaveBeenCalledWith({ maxCount: 100, from: undefined });
       expect(result).toHaveLength(1);
-      expect(result[0].hash).toBe('abc123');
-      expect(result[0].shortHash).toBe('abc123');
+      expect(result[0].hash).toBe('abc1234567');
+      expect(result[0].shortHash).toBe('abc1234');
       expect(result[0].message).toBe('Test commit');
       expect(result[0].author).toBe('John Doe');
     });

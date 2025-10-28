@@ -25,11 +25,11 @@
  * - Server-side permission mode handling (tested in server tests)
  */
 
+import React, { type ReactNode } from "react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import React, { type ReactNode } from "react";
 import { ChatPromptInput } from "./ChatPromptInput";
 import { useSessionStore } from "../stores/sessionStore";
 
