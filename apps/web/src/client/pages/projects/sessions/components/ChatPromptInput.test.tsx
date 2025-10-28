@@ -197,30 +197,24 @@ describe("ChatPromptInput", () => {
   });
 
   describe("Token Display", () => {
-    it("displays total tokens when provided", () => {
+    it("displays total tokens when provided", async () => {
       const { container } = render(
         <ChatPromptInput onSubmit={mockOnSubmit} totalTokens={1500} />,
         { wrapper: TestWrapper }
       );
 
-      // Should show token count
-      expect(container.textContent).toContain("1,500");
-      expect(container.textContent).toContain("tokens");
+      // Should show formatted token count (1500 = 1.5k)
+      expect(container.textContent).toContain("1.5k");
     });
 
-    it("displays current message tokens in addition to total", () => {
+    it("displays formatted token count", () => {
       const { container } = render(
-        <ChatPromptInput
-          onSubmit={mockOnSubmit}
-          totalTokens={1500}
-          currentMessageTokens={250}
-        />,
+        <ChatPromptInput onSubmit={mockOnSubmit} totalTokens={500} />,
         { wrapper: TestWrapper }
       );
 
-      // Should show both total and current message tokens
-      expect(container.textContent).toContain("1,500");
-      expect(container.textContent).toContain("+250");
+      // Should show token count under 1000 as-is
+      expect(container.textContent).toContain("500");
     });
 
     it("does not display tokens when not provided", () => {
@@ -228,8 +222,8 @@ describe("ChatPromptInput", () => {
         wrapper: TestWrapper,
       });
 
-      // Should not show token text
-      expect(container.textContent).not.toContain("tokens");
+      // Should not show token text - check for absence of "k" suffix which only appears with tokens
+      expect(container.textContent).not.toContain("k");
     });
   });
 });

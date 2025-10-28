@@ -14,7 +14,7 @@ This directory contains examples demonstrating how to use the `agent-cli-sdk` pa
 - **[json-extraction.ts](./json-extraction.ts)** - Extract structured JSON data from Claude's responses
 - **[streaming-callbacks.ts](./streaming-callbacks.ts)** - Process events and messages in real-time using callbacks
 - **[session-continuation.ts](./session-continuation.ts)** - Maintain context across multiple executions using session IDs
-- **[timeout-and-error-handling.ts](./timeout-and-error-handling.ts)** - Handle timeouts and errors gracefully (no exceptions thrown!)
+- **[error-handling.ts](./error-handling.ts)** - Handle timeouts, errors, and session resumption after failures (demonstrates result-based error pattern)
 
 ## Running Examples
 

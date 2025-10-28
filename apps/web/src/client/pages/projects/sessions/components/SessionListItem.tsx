@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/client/components/ui/dropdown-menu";
 import { useState } from "react";
+import { SessionDialog } from "./SessionDialog";
+import { useUpdateSession } from "../hooks/useAgentSessions";
 
 interface SessionListItemProps {
   session: SessionResponse;
@@ -40,15 +42,16 @@ export function SessionListItem({
   const { isMobile, setOpenMobile } = useSidebar();
   const [isHovered, setIsHovered] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const updateSessionMutation = useUpdateSession();
 
   const timeAgo = formatDistanceToNow(new Date(lastMessageAt), {
     addSuffix: true,
   });
 
-  // Truncate session name to 20 characters max
-  const truncatedName = firstMessagePreview
-    ? truncateToChars(firstMessagePreview)
-    : "New session";
+  // Use session name if available, otherwise fall back to first message preview
+  const displayName = session.name || firstMessagePreview || "New session";
+  const truncatedName = truncateToChars(displayName);
 
   const handleClick = () => {
     // Close mobile menu when clicking a session
@@ -60,12 +63,13 @@ export function SessionListItem({
   const handleEdit = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // TODO: Implement edit functionality
-    console.log("Edit session:", id);
+    setIsMenuOpen(false);
+    setEditDialogOpen(true);
   };
 
-  // Show menu button if hovered OR menu is open
-  const showMenu = isHovered || isMenuOpen;
+  const handleUpdateSession = async (sessionId: string, name: string) => {
+    await updateSessionMutation.mutateAsync({ id: sessionId, name });
+  };
 
   return (
     <div
@@ -95,7 +99,7 @@ export function SessionListItem({
           <div className="space-y-1 min-w-0 flex-1">
             <div
               className="text-sm font-normal leading-none truncate"
-              title={firstMessagePreview || "New session"}
+              title={displayName}
             >
               {truncatedName}
             </div>
@@ -108,12 +112,14 @@ export function SessionListItem({
       </Link>
 
       {/* Hover menu */}
-      {isHovered && (
-        <div className="absolute right-2 top-2 z-10">
-          <DropdownMenu>
+      {(isHovered || isMenuOpen) && (
+        <div className="absolute right-2 top-2 z-50">
+          <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <DropdownMenuTrigger
               className={cn(
-                "h-6 w-6 flex items-center justify-center rounded-md hover:bg-accent/50 transition-colors",
+                "h-6 w-6 flex items-center justify-center rounded-md transition-colors",
+                "bg-background/95 backdrop-blur-sm hover:bg-accent",
+                "border border-border/50",
                 "focus:outline-none focus:ring-2 focus:ring-primary"
               )}
               onClick={(e) => {
@@ -123,7 +129,7 @@ export function SessionListItem({
             >
               <MoreHorizontal className="h-4 w-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="z-50">
               <DropdownMenuItem onClick={handleEdit}>
                 <Pencil className="h-4 w-4" />
                 <span>Edit</span>
@@ -132,6 +138,13 @@ export function SessionListItem({
           </DropdownMenu>
         </div>
       )}
+
+      <SessionDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        session={session}
+        onUpdateSession={handleUpdateSession}
+      />
     </div>
   );
 }

@@ -15,9 +15,10 @@ export const agentSessionMetadataSchema = z.object({
 
 /**
  * Create session request schema
+ * Note: Session IDs are JSONL filenames, not UUIDs
  */
 export const createSessionSchema = z.object({
-  sessionId: z.string().uuid(),
+  sessionId: z.string().min(1),
 });
 
 /**
@@ -28,10 +29,18 @@ export const updateSessionMetadataSchema = z.object({
 });
 
 /**
+ * Update session name request schema
+ */
+export const updateSessionNameSchema = z.object({
+  name: z.string().min(1).max(255),
+});
+
+/**
  * Session ID parameter schema
+ * Note: Session IDs are JSONL filenames, not UUIDs (e.g., timestamp-based strings)
  */
 export const sessionIdSchema = z.object({
-  sessionId: z.string().uuid(),
+  sessionId: z.string().min(1),
 });
 
 /**

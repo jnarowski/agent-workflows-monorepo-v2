@@ -4,15 +4,15 @@ import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useActiveSession } from "./useActiveSession";
 import { useNavigationStore } from "@/client/stores/index";
-import { useAgentSessions } from "@/client/pages/projects/sessions/hooks/useAgentSessions";
+import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 
 // Mock the stores and hooks
-vi.mock("@/client/stores", () => ({
+vi.mock("@/client/stores/index", () => ({
   useNavigationStore: vi.fn(),
 }));
 
-vi.mock("@/client/pages/projects/sessions/hooks/useAgentSessions", () => ({
-  useAgentSessions: vi.fn(),
+vi.mock("@/client/pages/projects/hooks/useProjects", () => ({
+  useProjectsWithSessions: vi.fn(),
 }));
 
 describe("useActiveSession", () => {
@@ -21,6 +21,14 @@ describe("useActiveSession", () => {
   const mockSessions = [
     { id: "session-1", name: "Session 1" },
     { id: "session-2", name: "Session 2" },
+  ];
+
+  const mockProjectsWithSessions = [
+    {
+      id: "project-1",
+      name: "Project 1",
+      sessions: mockSessions,
+    },
   ];
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -42,8 +50,8 @@ describe("useActiveSession", () => {
     vi.mocked(useNavigationStore).mockImplementation((selector: (state: Record<string, unknown>) => unknown) =>
       selector({ activeProjectId: "project-1", activeSessionId: null })
     );
-    vi.mocked(useAgentSessions).mockReturnValue({
-      data: mockSessions,
+    vi.mocked(useProjectsWithSessions).mockReturnValue({
+      data: mockProjectsWithSessions,
       isLoading: false,
       error: null,
     });
@@ -59,8 +67,8 @@ describe("useActiveSession", () => {
     vi.mocked(useNavigationStore).mockImplementation((selector: (state: Record<string, unknown>) => unknown) =>
       selector({ activeProjectId: "project-1", activeSessionId: "session-1" })
     );
-    vi.mocked(useAgentSessions).mockReturnValue({
-      data: mockSessions,
+    vi.mocked(useProjectsWithSessions).mockReturnValue({
+      data: mockProjectsWithSessions,
       isLoading: false,
       error: null,
     });
@@ -79,8 +87,8 @@ describe("useActiveSession", () => {
         activeSessionId: "nonexistent-id",
       })
     );
-    vi.mocked(useAgentSessions).mockReturnValue({
-      data: mockSessions,
+    vi.mocked(useProjectsWithSessions).mockReturnValue({
+      data: mockProjectsWithSessions,
       isLoading: false,
       error: null,
     });
@@ -95,7 +103,7 @@ describe("useActiveSession", () => {
     vi.mocked(useNavigationStore).mockImplementation((selector: (state: Record<string, unknown>) => unknown) =>
       selector({ activeProjectId: "project-1", activeSessionId: "session-1" })
     );
-    vi.mocked(useAgentSessions).mockReturnValue({
+    vi.mocked(useProjectsWithSessions).mockReturnValue({
       data: undefined,
       isLoading: true,
       error: null,
@@ -112,7 +120,7 @@ describe("useActiveSession", () => {
     vi.mocked(useNavigationStore).mockImplementation((selector: (state: Record<string, unknown>) => unknown) =>
       selector({ activeProjectId: "project-1", activeSessionId: "session-1" })
     );
-    vi.mocked(useAgentSessions).mockReturnValue({
+    vi.mocked(useProjectsWithSessions).mockReturnValue({
       data: undefined,
       isLoading: false,
       error: mockError,
@@ -124,16 +132,20 @@ describe("useActiveSession", () => {
     expect(result.current.session).toBeNull();
   });
 
-  it("should disable query when no project is active", () => {
+  it("should return null when no project is active", () => {
     vi.mocked(useNavigationStore).mockImplementation((selector: (state: Record<string, unknown>) => unknown) =>
       selector({ activeProjectId: null, activeSessionId: "session-1" })
     );
-
-    renderHook(() => useActiveSession(), { wrapper });
-
-    expect(useAgentSessions).toHaveBeenCalledWith({
-      projectId: "",
-      enabled: false,
+    vi.mocked(useProjectsWithSessions).mockReturnValue({
+      data: mockProjectsWithSessions,
+      isLoading: false,
+      error: null,
     });
+
+    const { result } = renderHook(() => useActiveSession(), { wrapper });
+
+    // When no project is active, session should be null
+    expect(result.current.session).toBeNull();
+    expect(result.current.sessionId).toBe("session-1");
   });
 });

@@ -26,6 +26,7 @@ export function TodoWriteToolBlock({ input, result }: TodoWriteToolBlockProps) {
       contextInfo={null}
       description={description}
       hasError={result?.is_error}
+      defaultOpen={true}
     >
       <TodoWriteToolRenderer input={input} />
     </ToolCollapsibleWrapper>
