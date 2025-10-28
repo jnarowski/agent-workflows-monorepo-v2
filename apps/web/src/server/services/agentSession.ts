@@ -7,8 +7,8 @@ import type {
   SessionResponse,
   SyncSessionsResponse,
 } from '@/shared/types/agent-session.types';
-import { getAgent } from '../agents';
-import type { SessionMessage } from '@/shared/types/message.types';
+import { loadMessages } from '@repo/agent-cli-sdk';
+import type { UnifiedMessage } from '@repo/agent-cli-sdk';
 import {
   encodeProjectPath,
   getClaudeProjectsDir,
@@ -309,12 +309,12 @@ export async function getSessionsByProject(
 
 /**
  * Get messages for a specific session
- * Uses agent registry to load and parse messages
+ * Uses SDK to load and parse messages
  * @param sessionId - Session ID
  * @param userId - User ID (for authorization)
- * @returns Array of typed SessionMessage objects
+ * @returns Array of typed UnifiedMessage objects
  */
-export async function getSessionMessages(sessionId: string, userId: string): Promise<SessionMessage[]> {
+export async function getSessionMessages(sessionId: string, userId: string): Promise<UnifiedMessage[]> {
   // Verify session exists and user has access
   const session = await prisma.agentSession.findUnique({
     where: { id: sessionId },
@@ -329,9 +329,12 @@ export async function getSessionMessages(sessionId: string, userId: string): Pro
     throw new Error('Unauthorized access to session');
   }
 
-  // Use agent registry to load session
-  const agent = getAgent(session.agent);
-  const messages = await agent.loadSession(sessionId, session.project.path);
+  // Use SDK to load session messages
+  const messages = await loadMessages({
+    tool: session.agent,
+    sessionId,
+    projectPath: session.project.path
+  });
 
   return messages;
 }

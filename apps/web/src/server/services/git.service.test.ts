@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi, type MockedFunction } from 'vitest';
 import simpleGit, { type SimpleGit, type StatusResult, type BranchSummary, type LogResult } from 'simple-git';
+import { exec } from 'child_process';
 import {
   getGitStatus,
   getBranches,
@@ -18,6 +19,11 @@ import {
 
 // Mock simple-git
 vi.mock('simple-git');
+
+// Mock child_process
+vi.mock('child_process', () => ({
+  exec: vi.fn(),
+}));
 
 describe('Git Service', () => {
   let mockGit: Partial<SimpleGit>;
@@ -54,14 +60,16 @@ describe('Git Service', () => {
     it('should return git status with files', async () => {
       const mockStatus = {
         current: 'main',
-        files: [
-          { path: 'file1.txt', index: 'M', working_dir: ' ' },
-          { path: 'file2.txt', index: ' ', working_dir: 'M' },
-          { path: 'file3.txt', index: '?', working_dir: '?' },
-        ],
+        files: [],
+        staged: ['file1.txt'],
+        modified: ['file2.txt'],
+        created: [],
+        deleted: [],
+        not_added: ['file3.txt'],
+        renamed: [],
         ahead: 2,
         behind: 1,
-      };
+      } as StatusResult;
 
       (mockGit.checkIsRepo as MockedFunction<() => Promise<boolean>>).mockResolvedValue(true);
       (mockGit.status as MockedFunction<() => Promise<StatusResult>>).mockResolvedValue(mockStatus);
@@ -123,9 +131,10 @@ describe('Git Service', () => {
       const result = await getBranches('/test/path');
 
       expect(result).toHaveLength(3);
-      expect(result[0]).toEqual({ name: 'main', current: true });
+      // Results are sorted alphabetically
+      expect(result[0]).toEqual({ name: 'develop', current: false });
       expect(result[1]).toEqual({ name: 'feature/test', current: false });
-      expect(result[2]).toEqual({ name: 'develop', current: false });
+      expect(result[2]).toEqual({ name: 'main', current: true });
     });
 
     it('should handle errors', async () => {
@@ -222,11 +231,13 @@ describe('Git Service', () => {
   describe('commitChanges', () => {
     it('should commit staged files', async () => {
       const mockCommitResult = { commit: 'abc123' };
-      (mockGit.commit as MockedFunction<(message: string, files?: string[]) => Promise<{ commit: string }>>).mockResolvedValue(mockCommitResult);
+      (mockGit.add as MockedFunction<(files: string[]) => Promise<void>>).mockResolvedValue();
+      (mockGit.commit as MockedFunction<(message: string) => Promise<{ commit: string }>>).mockResolvedValue(mockCommitResult);
 
       const result = await commitChanges('/test/path', 'Test commit', ['file1.txt']);
 
-      expect(mockGit.commit).toHaveBeenCalledWith('Test commit', ['file1.txt']);
+      expect(mockGit.add).toHaveBeenCalledWith(['file1.txt']);
+      expect(mockGit.commit).toHaveBeenCalledWith('Test commit');
       expect(result).toBe('abc123');
     });
 
@@ -241,19 +252,19 @@ describe('Git Service', () => {
 
   describe('pushToRemote', () => {
     it('should push to remote with default origin', async () => {
-      (mockGit.push as MockedFunction<(remote: string, branch: string) => Promise<void>>).mockResolvedValue();
+      (mockGit.push as MockedFunction<(remote: string, branch: string, options?: string[]) => Promise<void>>).mockResolvedValue();
 
       await pushToRemote('/test/path', 'main');
 
-      expect(mockGit.push).toHaveBeenCalledWith('origin', 'main');
+      expect(mockGit.push).toHaveBeenCalledWith('origin', 'main', ['--set-upstream']);
     });
 
     it('should push to custom remote', async () => {
-      (mockGit.push as MockedFunction<(remote: string, branch: string) => Promise<void>>).mockResolvedValue();
+      (mockGit.push as MockedFunction<(remote: string, branch: string, options?: string[]) => Promise<void>>).mockResolvedValue();
 
       await pushToRemote('/test/path', 'main', 'upstream');
 
-      expect(mockGit.push).toHaveBeenCalledWith('upstream', 'main');
+      expect(mockGit.push).toHaveBeenCalledWith('upstream', 'main', ['--set-upstream']);
     });
 
     it('should handle push errors', async () => {
@@ -294,7 +305,7 @@ describe('Git Service', () => {
 
       const result = await getFileDiff('/test/path', 'file1.txt');
 
-      expect(mockGit.diff).toHaveBeenCalledWith(['--', 'file1.txt']);
+      expect(mockGit.diff).toHaveBeenCalledWith(['--text', '--', 'file1.txt']);
       expect(result).toBe(mockDiff);
     });
 
@@ -332,17 +343,20 @@ describe('Git Service', () => {
 
     it('should handle custom limit and offset', async () => {
       const mockLog = { all: [] };
-      (mockGit.log as MockedFunction<(options: { maxCount?: number; from?: number }) => Promise<LogResult>>).mockResolvedValue(mockLog);
+      (mockGit.log as MockedFunction<(options: { maxCount?: number; from?: string }) => Promise<LogResult>>).mockResolvedValue(mockLog);
 
       await getCommitHistory('/test/path', 50, 10);
 
-      expect(mockGit.log).toHaveBeenCalledWith({ maxCount: 50, from: 10 });
+      expect(mockGit.log).toHaveBeenCalledWith({ maxCount: 50, from: 'HEAD~10' });
     });
   });
 
   describe('checkGhCliAvailable', () => {
     it('should return true if gh CLI is available', async () => {
-      (mockGit.raw as MockedFunction<(args: string[]) => Promise<string>>).mockResolvedValue('Logged in');
+      const mockExec = exec as unknown as MockedFunction<typeof exec>;
+      mockExec.mockImplementation(((cmd: string, options: unknown, callback: (error: null, result: { stdout: string }) => void) => {
+        callback(null, { stdout: 'Logged in' });
+      }) as typeof exec);
 
       const result = await checkGhCliAvailable('/test/path');
 
@@ -350,7 +364,10 @@ describe('Git Service', () => {
     });
 
     it('should return false if gh CLI is not available', async () => {
-      (mockGit.raw as MockedFunction<(args: string[]) => Promise<string>>).mockRejectedValue(new Error('Command not found'));
+      const mockExec = exec as unknown as MockedFunction<typeof exec>;
+      mockExec.mockImplementation(((cmd: string, options: unknown, callback: (error: Error) => void) => {
+        callback(new Error('Command not found'));
+      }) as typeof exec);
 
       const result = await checkGhCliAvailable('/test/path');
 

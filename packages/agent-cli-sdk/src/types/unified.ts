@@ -152,6 +152,14 @@ export interface ExitPlanModeToolInput {
   plan: string;
 }
 
+export interface TaskToolInput {
+  prompt: string;
+  description: string;
+  subagent_type: string;
+  model?: string;
+  resume?: string;
+}
+
 // MCP tools have dynamic names (e.g., mcp__happy__change_title)
 // Keep as generic object for flexibility
 export interface McpToolInput {

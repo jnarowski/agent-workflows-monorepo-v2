@@ -9,7 +9,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pnpm build              # Build with bunchee (outputs to dist/)
 pnpm dev                # Watch mode for development
-pnpm check              # Run all checks (tests + types + lint)
 ```
 
 ### Testing
@@ -30,15 +29,8 @@ pnpm vitest run tests/e2e/claude/basic.test.ts     # Single E2E test
 ### Quality Checks
 
 ```bash
-pnpm check-types        # TypeScript type checking (tsc --noEmit)
-pnpm lint               # ESLint on src/**/*.ts
-pnpm format             # Format with Prettier
-```
-
-### Utilities
-
-```bash
-pnpm extract-claude-fixtures    # Extract Claude session fixtures (via tsx)
+pnpm check           # Runs lint, check-types and test
+pnpm format          # Format with Prettier
 ```
 
 ## Architecture Overview
@@ -165,13 +157,23 @@ This is a TypeScript SDK for orchestrating AI-powered CLI tools (currently Claud
 
 ## Important Conventions
 
-1. **Unit tests are co-located with source files** (e.g., `parse.ts` → `parse.test.ts`)
-2. **JSONL parsing errors are silently skipped** (don't throw, just continue)
-3. **Execute function returns errors, doesn't throw** (use `ExecuteResult.success: false`)
-4. **Use exhaustive type checking with `never`** for tool selection switches
-5. **Session path encoding**: Replace `/` with `-` (e.g., `/Users/john/project` → `-Users-john-project`)
-6. **Line buffering for JSONL streams** to handle large outputs without blocking
-7. **`--session-id`, `--continue`, and `--resume` are mutually exclusive**
-8. **Permission modes**: Default to `'default'` for safety, use `'acceptEdits'` for automation, never use `'bypassPermissions'` in production
-9. **E2E tests run sequentially** (`singleFork: true`) to avoid session conflicts
-10. **Type guards over type assertions** when working with UnifiedContent blocks
+1. **File naming**: Use camelCase (e.g., `loadSession.ts`, `detectCli.ts`, `extractJson.ts`)
+2. **Single export per file**: Each file has one primary export matching its filename (e.g., `parse.ts` exports `parse()`)
+3. **File structure**: Public exports first, then private helpers separated by comment dividers:
+
+   ```typescript
+   // ============================================================================
+   // Public API
+   // ============================================================================
+   export function publicFunction() {}
+
+   // ============================================================================
+   // Private Helpers
+   // ============================================================================
+   function privateHelper() {}
+   ```
+
+4. **Unit tests are co-located with source files** (e.g., `parse.ts` → `parse.test.ts`)
+5. **Use exhaustive type checking with `never`** for tool selection switches
+6. **E2E tests run sequentially** (`singleFork: true`) to avoid session conflicts
+7. **Type guards over type assertions** when working with UnifiedContent blocks

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { FastifyInstance } from "fastify";
-import type { WebSocket } from '@fastify/websocket';
-import { ClaudeAdapter } from "@repo/agent-cli-sdk";
+import type { WebSocket } from "@fastify/websocket";
+import { execute } from "@repo/agent-cli-sdk";
 import { prisma } from "@/shared/prisma";
 import fs from "fs/promises";
 import path from "path";
@@ -30,8 +30,8 @@ export const activeSessions = new Map<string, ActiveSessionData>();
 /**
  * Extract ID from event type (e.g., "session.123.send_message" -> "123")
  */
-function extractId(type: string, prefix: 'session' | 'shell'): string | null {
-  const parts = type.split('.');
+function extractId(type: string, prefix: "session" | "shell"): string | null {
+  const parts = type.split(".");
   if (parts[0] === prefix && parts.length >= 3) {
     return parts[1];
   }
@@ -57,10 +57,10 @@ async function handleSessionEvent(
   userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
-  const sessionId = extractId(type, 'session');
+  const sessionId = extractId(type, "session");
   if (!sessionId) {
-    sendMessage(socket, 'global.error', {
-      error: 'Invalid session event type',
+    sendMessage(socket, "global.error", {
+      error: "Invalid session event type",
       message: `Expected format: session.{id}.action, got: ${type}`,
     });
     return;
@@ -68,7 +68,7 @@ async function handleSessionEvent(
 
   try {
     // Handle send_message action
-    if (type.endsWith('.send_message')) {
+    if (type.endsWith(".send_message")) {
       const messageData = data as SessionSendMessageData;
 
       // Verify user owns session
@@ -79,33 +79,30 @@ async function handleSessionEvent(
 
       if (!session) {
         sendMessage(socket, `session.${sessionId}.error`, {
-          error: 'Session not found',
+          error: "Session not found",
         });
         return;
       }
 
       if (session.userId !== userId) {
         sendMessage(socket, `session.${sessionId}.error`, {
-          error: 'Unauthorized access to session',
+          error: "Unauthorized access to session",
         });
         return;
       }
 
       const projectPath = session.project.path;
 
-      // Initialize agent adapter if not already active
+      // Get or create session data for temp image tracking
       let sessionData = activeSessions.get(sessionId);
 
       if (!sessionData) {
-        fastify.log.info({ sessionId, projectPath }, '[WebSocket] Creating ClaudeAdapter');
-
-        // Create Claude adapter with working directory
-        const adapter = new ClaudeAdapter({
-          workingDir: projectPath,
-        });
+        fastify.log.info(
+          { sessionId, projectPath },
+          "[WebSocket] Initializing session data"
+        );
 
         sessionData = {
-          adapter,
           projectPath,
           userId,
         };
@@ -161,189 +158,117 @@ async function handleSessionEvent(
           "[WebSocket] Sending message to agent-cli-sdk"
         );
 
-        const response = await sessionData.adapter.execute(
-          messageData.message,
-          {
-            sessionId,
-            resume: !!(session.metadata as { claudeSessionId?: string })?.claudeSessionId, // Resume existing session
-            images: imagePaths.length > 0 ? imagePaths.map(p => ({ path: p })) : undefined,
-            onOutput: (outputData: unknown) => {
-              // Stream output back to client with flat event name
+        // Extract resume flag from config (frontend calculates based on message history)
+        const config = messageData.config as Record<string, unknown> | undefined;
+        const resume = config?.resume === true;
+
+        const result = await execute({
+          tool: "claude",
+          prompt: messageData.message,
+          workingDir: projectPath,
+          sessionId,
+          resume,
+          verbose: true,
+          images:
+            imagePaths.length > 0
+              ? imagePaths.map((path) => ({ path }))
+              : undefined,
+          onEvent: ({ message }) => {
+            if (message) {
+              // Stream message updates back to client
               sendMessage(socket, `session.${sessionId}.stream_output`, {
-                content: outputData,
+                message,
               });
-            },
-            verbose: true,
-            ...messageData.config,
-          }
+            }
+          },
+        });
+
+        fastify.log.info(
+          { sessionId, success: result.success, exitCode: result.exitCode },
+          "[WebSocket] Message execution completed"
         );
 
-        fastify.log.info({ sessionId }, "[WebSocket] Received response from agent-cli-sdk");
+        // Check if command failed
+        if (!result.success) {
+          const errorMessage = result.error || "Command failed with non-zero exit code";
+          fastify.log.error(
+            { sessionId, exitCode: result.exitCode, error: errorMessage },
+            "[WebSocket] Agent CLI SDK command failed"
+          );
 
-        // Check if the response indicates an error
-        if (response.status === "error") {
-          fastify.log.error({ sessionId, response }, "Agent CLI SDK returned error status");
+          // Send error to frontend
+          sendMessage(socket, `session.${sessionId}.error`, {
+            error: errorMessage,
+            message: errorMessage,
+            exitCode: result.exitCode,
+          });
 
           // Clean up temp images on error
           if (sessionData.tempImageDir) {
             try {
-              await fs.rm(sessionData.tempImageDir, { recursive: true, force: true });
+              await fs.rm(sessionData.tempImageDir, {
+                recursive: true,
+                force: true,
+              });
               sessionData.tempImageDir = undefined;
             } catch (cleanupErr) {
-              fastify.log.warn({ err: cleanupErr }, "Failed to clean up temp images");
+              fastify.log.warn(
+                { err: cleanupErr },
+                "Failed to clean up temp images"
+              );
             }
           }
 
-          // Send error message to client
-          sendMessage(socket, `session.${sessionId}.error`, {
-            error: response.data || "An error occurred",
-            message: response.data || "An error occurred while processing your request",
-            details: {
-              exitCode: response.exitCode,
-              stderr: response.raw?.stderr,
-              stdout: response.raw?.stdout,
-              duration: response.duration,
-            },
-          });
-          return;
-        }
-
-        // ============= SESSION NAME GENERATION (COMMENTED OUT) =============
-        // TODO: Uncomment this block to enable AI-generated session names
-        //
-        // Generate session name from first user message
-        // This runs only once per session, after the first message completes successfully.
-        // The session name is generated using Claude AI based on the user's initial prompt.
-        //
-        // if (!session.name && metadata && metadata.messageCount === 1) {
-        //   try {
-        //     fastify.log.info(
-        //       { sessionId, userPrompt: messageData.message.substring(0, 100) },
-        //       '[WebSocket] Generating session name from first user message'
-        //     );
-        //
-        //     const sessionName = await generateSessionName({
-        //       userPrompt: messageData.message,
-        //     });
-        //
-        //     // Update session with generated name
-        //     await prisma.agentSession.update({
-        //       where: { id: sessionId },
-        //       data: { name: sessionName },
-        //     });
-        //
-        //     fastify.log.info(
-        //       { sessionId, sessionName },
-        //       '[WebSocket] Session name generated successfully'
-        //     );
-        //   } catch (nameErr: unknown) {
-        //     // Don't fail message completion if name generation fails
-        //     fastify.log.warn(
-        //       { err: nameErr, sessionId },
-        //       '[WebSocket] Failed to generate session name (non-critical)'
-        //     );
-        //   }
-        // }
-        // ============= END SESSION NAME GENERATION =============
-
-        // Extract usage data from the last assistant message in response.events
-        let usage = null;
-        if (response.events && Array.isArray(response.events)) {
-          const events = response.events;
-          fastify.log.info({ dataLength: events.length, sessionId }, "Extracting usage from response.events");
-
-          // Log the last few events to understand the structure
-          const lastEvents = events.slice(-3);
-          fastify.log.info({ lastEvents: JSON.stringify(lastEvents, null, 2), sessionId }, "Last 3 events in response.events");
-
-          // Find the last assistant message with usage data
-          for (let i = events.length - 1; i >= 0; i--) {
-            const event = events[i] as {
-              type?: string;
-              role?: string;
-              usage?: {
-                input_tokens?: number;
-                output_tokens?: number;
-                cache_creation_input_tokens?: number;
-                cache_read_input_tokens?: number;
-              };
-              message?: { usage?: unknown };
-            };
-
-            // Log each event type we're checking
-            fastify.log.debug({
-              eventType: event.type,
-              eventRole: event.role,
-              hasUsage: !!event.usage,
-              hasMessageUsage: !!event.message?.usage,
-              eventKeys: Object.keys(event),
-              sessionId
-            }, "Checking event for usage");
-
-            if ((event.type === 'assistant' || event.role === 'assistant') && event.usage) {
-              usage = {
-                input_tokens: event.usage.input_tokens || 0,
-                output_tokens: event.usage.output_tokens || 0,
-                cache_creation_input_tokens: event.usage.cache_creation_input_tokens || 0,
-                cache_read_input_tokens: event.usage.cache_read_input_tokens || 0,
-              };
-              fastify.log.info({ usage, sessionId }, "Found usage in event.usage");
-              break;
-            }
-            // Also check event.message.usage for Claude CLI format
-            if ((event.type === 'assistant' || event.role === 'assistant') && event.message?.usage) {
-              usage = {
-                input_tokens: event.message.usage.input_tokens || 0,
-                output_tokens: event.message.usage.output_tokens || 0,
-                cache_creation_input_tokens: event.message.usage.cache_creation_input_tokens || 0,
-                cache_read_input_tokens: event.message.usage.cache_read_input_tokens || 0,
-              };
-              fastify.log.info({ usage, sessionId }, "Found usage in event.message.usage");
-              break;
-            }
-          }
-
-          if (!usage) {
-            fastify.log.warn({ sessionId, lastEvent: events[events.length - 1] }, "No usage data found in response.events");
-          }
-        } else {
-          fastify.log.warn({ sessionId, responseKeys: response ? Object.keys(response) : null }, "response.events is not an array or doesn't exist");
+          return; // Don't send message_complete on error
         }
 
         // Clean up temporary images
         if (sessionData.tempImageDir) {
           try {
-            await fs.rm(sessionData.tempImageDir, { recursive: true, force: true });
+            await fs.rm(sessionData.tempImageDir, {
+              recursive: true,
+              force: true,
+            });
             sessionData.tempImageDir = undefined;
           } catch (cleanupErr) {
-            fastify.log.warn({ err: cleanupErr }, "Failed to clean up temp images");
+            fastify.log.warn(
+              { err: cleanupErr },
+              "Failed to clean up temp images"
+            );
           }
         }
 
-        // Send completion event with usage data
-        sendMessage(socket, `session.${sessionId}.message_complete`, {
-          usage,
-        });
+        // Send completion event
+        sendMessage(socket, `session.${sessionId}.message_complete`, {});
       } catch (err: unknown) {
         fastify.log.error({ err, sessionId }, "Agent CLI SDK error");
 
         // Clean up temp images on error
         if (sessionData.tempImageDir) {
           try {
-            await fs.rm(sessionData.tempImageDir, { recursive: true, force: true });
+            await fs.rm(sessionData.tempImageDir, {
+              recursive: true,
+              force: true,
+            });
             sessionData.tempImageDir = undefined;
           } catch (cleanupErr) {
-            fastify.log.warn({ err: cleanupErr }, "Failed to clean up temp images");
+            fastify.log.warn(
+              { err: cleanupErr },
+              "Failed to clean up temp images"
+            );
           }
         }
 
         // Send detailed error information to frontend
-        const errorMessage = err instanceof Error ? err.message : "Failed to send message";
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to send message";
         const errorStack = err instanceof Error ? err.stack : undefined;
         const errorName = err instanceof Error ? err.name : undefined;
-        const errorDetails = typeof err === 'object' && err !== null
-          ? (err as Record<string, unknown>).response || (err as Record<string, unknown>).data
-          : undefined;
+        const errorDetails =
+          typeof err === "object" && err !== null
+            ? (err as Record<string, unknown>).response ||
+              (err as Record<string, unknown>).data
+            : undefined;
 
         sendMessage(socket, `session.${sessionId}.error`, {
           error: errorMessage,
@@ -356,13 +281,14 @@ async function handleSessionEvent(
     } else {
       // Unknown session action
       sendMessage(socket, `session.${sessionId}.error`, {
-        error: 'Unknown session action',
+        error: "Unknown session action",
         message: `Unknown action in event type: ${type}`,
       });
     }
   } catch (err: unknown) {
     fastify.log.error({ err, type, sessionId }, "Error handling session event");
-    const errorMessage = err instanceof Error ? err.message : "Internal server error";
+    const errorMessage =
+      err instanceof Error ? err.message : "Internal server error";
     const errorStack = err instanceof Error ? err.stack : undefined;
     const errorName = err instanceof Error ? err.name : undefined;
 
@@ -387,10 +313,10 @@ async function handleShellEvent(
   _userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
-  const shellId = extractId(type, 'shell');
+  const shellId = extractId(type, "shell");
   if (!shellId) {
-    sendMessage(socket, 'global.error', {
-      error: 'Invalid shell event type',
+    sendMessage(socket, "global.error", {
+      error: "Invalid shell event type",
       message: `Expected format: shell.{id}.action, got: ${type}`,
     });
     return;
@@ -398,10 +324,13 @@ async function handleShellEvent(
 
   // TODO: Implement shell functionality when ready
   // For now, just send a not implemented message
-  fastify.log.info({ type, shellId }, '[WebSocket] Shell event received (not implemented yet)');
+  fastify.log.info(
+    { type, shellId },
+    "[WebSocket] Shell event received (not implemented yet)"
+  );
   sendMessage(socket, `shell.${shellId}.error`, {
-    error: 'Shell functionality not implemented',
-    message: 'Shell/terminal features are not yet implemented',
+    error: "Shell functionality not implemented",
+    message: "Shell/terminal features are not yet implemented",
   });
 }
 
@@ -410,7 +339,9 @@ async function handleShellEvent(
 /**
  * Register unified WebSocket endpoint
  */
-export async function registerWebSocket(fastify: FastifyInstance): Promise<void> {
+export async function registerWebSocket(
+  fastify: FastifyInstance
+): Promise<void> {
   fastify.register(async (fastify) => {
     // Unified WebSocket endpoint with JWT authentication
     fastify.get("/ws", { websocket: true }, async (socket, request) => {
@@ -423,14 +354,16 @@ export async function registerWebSocket(fastify: FastifyInstance): Promise<void>
         try {
           // Get token from query params (browser WebSocket doesn't support custom headers)
           const query = request.query as { token?: string };
-          const token = query.token || request.headers.authorization?.replace("Bearer ", "");
+          const token =
+            query.token ||
+            request.headers.authorization?.replace("Bearer ", "");
 
           if (!token) {
-            sendMessage(socket, 'global.error', {
-              error: 'Authentication required',
-              message: 'No authentication token provided',
+            sendMessage(socket, "global.error", {
+              error: "Authentication required",
+              message: "No authentication token provided",
             });
-            socket.close(1008, 'Authentication required'); // 1008 = Policy Violation
+            socket.close(1008, "Authentication required"); // 1008 = Policy Violation
             return;
           }
 
@@ -441,59 +374,73 @@ export async function registerWebSocket(fastify: FastifyInstance): Promise<void>
           fastify.log.info({ userId }, "[WebSocket] Client authenticated");
 
           // Send global.connected event to signal client is ready
-          sendMessage(socket, 'global.connected', {
+          sendMessage(socket, "global.connected", {
             timestamp: Date.now(),
             userId,
           });
         } catch (err: unknown) {
           fastify.log.error({ err }, "[WebSocket] Authentication failed");
-          const errorMessage = err instanceof Error ? err.message : 'Invalid or expired token';
-          sendMessage(socket, 'global.error', {
-            error: 'Authentication failed',
+          const errorMessage =
+            err instanceof Error ? err.message : "Invalid or expired token";
+          sendMessage(socket, "global.error", {
+            error: "Authentication failed",
             message: errorMessage,
           });
-          socket.close(1008, 'Authentication failed'); // 1008 = Policy Violation
+          socket.close(1008, "Authentication failed"); // 1008 = Policy Violation
           return;
         }
 
         // Handle incoming messages
-        socket.on("message", async (message: Buffer | ArrayBuffer | Buffer[]) => {
-          try {
-            const messageStr = Buffer.isBuffer(message)
-              ? message.toString()
-              : Array.isArray(message)
-              ? Buffer.concat(message).toString()
-              : new TextDecoder().decode(message);
+        socket.on(
+          "message",
+          async (message: Buffer | ArrayBuffer | Buffer[]) => {
+            try {
+              const messageStr = Buffer.isBuffer(message)
+                ? message.toString()
+                : Array.isArray(message)
+                  ? Buffer.concat(message).toString()
+                  : new TextDecoder().decode(message);
 
-            const parsed: WebSocketMessage = JSON.parse(messageStr);
-            const { type, data } = parsed;
+              const parsed: WebSocketMessage = JSON.parse(messageStr);
+              const { type, data } = parsed;
 
-            fastify.log.info({ type, userId }, "[WebSocket] Received message");
+              fastify.log.info(
+                { type, userId },
+                "[WebSocket] Received message"
+              );
 
-            // Route based on event type prefix
-            if (type.startsWith('session.')) {
-              await handleSessionEvent(socket, type, data, userId!, fastify);
-            } else if (type.startsWith('shell.')) {
-              await handleShellEvent(socket, type, data, userId!, fastify);
-            } else if (type.startsWith('global.')) {
-              // Global events from client (if any needed in future)
-              fastify.log.info({ type }, "[WebSocket] Global event received (no handler)");
-            } else {
-              // Unknown event type
-              sendMessage(socket, 'global.error', {
-                error: 'Unknown event type',
-                message: `Event type must start with 'session.', 'shell.', or 'global.': ${type}`,
+              // Route based on event type prefix
+              if (type.startsWith("session.")) {
+                await handleSessionEvent(socket, type, data, userId!, fastify);
+              } else if (type.startsWith("shell.")) {
+                await handleShellEvent(socket, type, data, userId!, fastify);
+              } else if (type.startsWith("global.")) {
+                // Global events from client (if any needed in future)
+                fastify.log.info(
+                  { type },
+                  "[WebSocket] Global event received (no handler)"
+                );
+              } else {
+                // Unknown event type
+                sendMessage(socket, "global.error", {
+                  error: "Unknown event type",
+                  message: `Event type must start with 'session.', 'shell.', or 'global.': ${type}`,
+                });
+              }
+            } catch (err: unknown) {
+              fastify.log.error(
+                { err },
+                "[WebSocket] Error processing message"
+              );
+              const errorMessage =
+                err instanceof Error ? err.message : "Malformed message";
+              sendMessage(socket, "global.error", {
+                error: "Failed to process message",
+                message: errorMessage,
               });
             }
-          } catch (err: unknown) {
-            fastify.log.error({ err }, "[WebSocket] Error processing message");
-            const errorMessage = err instanceof Error ? err.message : 'Malformed message';
-            sendMessage(socket, 'global.error', {
-              error: 'Failed to process message',
-              message: errorMessage,
-            });
           }
-        });
+        );
 
         // Handle disconnection
         socket.on("close", () => {
@@ -504,11 +451,15 @@ export async function registerWebSocket(fastify: FastifyInstance): Promise<void>
             if (sessionData.userId === userId) {
               // Clean up temp images if any
               if (sessionData.tempImageDir) {
-                fs.rm(sessionData.tempImageDir, { recursive: true, force: true }).catch(
-                  (err) => {
-                    fastify.log.warn({ err }, "Failed to clean up temp images on disconnect");
-                  }
-                );
+                fs.rm(sessionData.tempImageDir, {
+                  recursive: true,
+                  force: true,
+                }).catch((err) => {
+                  fastify.log.warn(
+                    { err },
+                    "Failed to clean up temp images on disconnect"
+                  );
+                });
               }
 
               // Note: We don't delete the session from activeSessions immediately
@@ -524,16 +475,23 @@ export async function registerWebSocket(fastify: FastifyInstance): Promise<void>
           // Clean up on error
           for (const [_sessionId, sessionData] of activeSessions.entries()) {
             if (sessionData.userId === userId && sessionData.tempImageDir) {
-              fs.rm(sessionData.tempImageDir, { recursive: true, force: true }).catch(
-                (cleanupErr) => {
-                  fastify.log.warn({ err: cleanupErr }, "Failed to clean up temp images on error");
-                }
-              );
+              fs.rm(sessionData.tempImageDir, {
+                recursive: true,
+                force: true,
+              }).catch((cleanupErr) => {
+                fastify.log.warn(
+                  { err: cleanupErr },
+                  "Failed to clean up temp images on error"
+                );
+              });
             }
           }
         });
       } catch (err) {
-        fastify.log.error({ err }, "[WebSocket] Fatal error in WebSocket handler");
+        fastify.log.error(
+          { err },
+          "[WebSocket] Fatal error in WebSocket handler"
+        );
         socket.close();
       }
     });

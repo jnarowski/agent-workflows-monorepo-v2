@@ -180,4 +180,10 @@ export { extractJSON } from './utils/extractJson';
 export { detectCli } from './claude/detectCli';
 
 // Re-export execute types
-export type { ExecuteOptions as ClaudeExecuteOptions, ExecuteResult as ClaudeExecuteResult } from './claude/execute';
+export type {
+  ExecuteOptions as ClaudeExecuteOptions,
+  ExecuteResult as ClaudeExecuteResult,
+  OnEventData,
+  OnStdoutData,
+  ClaudePermissionMode,
+} from './claude/execute';

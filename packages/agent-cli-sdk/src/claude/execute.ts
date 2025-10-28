@@ -10,6 +10,15 @@ import { detectCli } from './detectCli';
 // ============================================================================
 
 /**
+ * Permission mode for file operations and command execution:
+ * - 'default': Standard mode with safety checks (asks permission before writes/edits/bash)
+ * - 'plan': Read-only analysis mode (cannot modify files or execute commands)
+ * - 'acceptEdits': Auto-accepts file modifications (bypasses edit prompts)
+ * - 'bypassPermissions': No safety checks (dangerous, use only in isolated environments)
+ */
+export type ClaudePermissionMode = 'default' | 'plan' | 'acceptEdits' | 'bypassPermissions';
+
+/**
  * Internal event types used by Claude CLI
  * These are not exposed in the main API but used internally for parsing
  */
@@ -31,6 +40,32 @@ interface ResultEvent {
 type InternalEvent = SystemInitEvent | ResultEvent | Record<string, unknown>;
 
 /**
+ * Data provided to the onEvent callback.
+ * Contains the raw JSONL line, parsed event, and unified message.
+ */
+export interface OnEventData {
+  /** Raw JSONL line from CLI output */
+  raw: string;
+  /** Parsed event object */
+  event: unknown;
+  /** Unified message (null if event is not a message) */
+  message: UnifiedMessage | null;
+}
+
+/**
+ * Data provided to the onStdout callback.
+ * Contains accumulated output data.
+ */
+export interface OnStdoutData {
+  /** Raw accumulated output */
+  raw: string;
+  /** All parsed events so far */
+  events: unknown[];
+  /** All unified messages so far */
+  messages: UnifiedMessage[];
+}
+
+/**
  * Options for executing a Claude CLI command.
  */
 export interface ExecuteOptions {
@@ -50,14 +85,8 @@ export interface ExecuteOptions {
   continue?: boolean;
   /** Claude model to use (e.g., 'claude-3-5-sonnet-20241022') */
   model?: string;
-  /**
-   * Permission mode for file operations and command execution:
-   * - 'default': Standard mode with safety checks (asks permission before writes/edits/bash)
-   * - 'plan': Read-only analysis mode (cannot modify files or execute commands)
-   * - 'acceptEdits': Auto-accepts file modifications (bypasses edit prompts)
-   * - 'bypassPermissions': No safety checks (dangerous, use only in isolated environments)
-   */
-  permissionMode?: 'default' | 'plan' | 'acceptEdits' | 'bypassPermissions';
+  /** Permission mode for file operations and command execution */
+  permissionMode?: ClaudePermissionMode;
   /** Dangerously skip all permission checks (use with extreme caution) */
   dangerouslySkipPermissions?: boolean;
   /** Enable streaming mode */
@@ -77,20 +106,12 @@ export interface ExecuteOptions {
    * Callback invoked for each event received from the CLI.
    * Provides raw JSONL line, parsed event, and unified message.
    */
-  onEvent?: (data: {
-    raw: string;
-    event: unknown;
-    message: UnifiedMessage | null;
-  }) => void;
+  onEvent?: (data: OnEventData) => void;
   /**
    * Callback invoked with accumulated output data.
    * Provides raw output, all events, and all messages so far.
    */
-  onStdout?: (data: {
-    raw: string;
-    events: unknown[];
-    messages: UnifiedMessage[];
-  }) => void;
+  onStdout?: (data: OnStdoutData) => void;
   /** Callback invoked when stderr data is received */
   onStderr?: (chunk: string) => void;
   /** Callback invoked when an error occurs */

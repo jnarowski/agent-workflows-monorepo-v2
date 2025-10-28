@@ -29,10 +29,8 @@ import {
   useImperativeHandle,
 } from "react";
 import { useNavigationStore } from "@/client/stores/navigationStore";
-import {
-  useSessionStore,
-  type ClaudePermissionMode,
-} from "@/client/pages/projects/sessions/stores/sessionStore";
+import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
+import type { ClaudePermissionMode } from "@repo/agent-cli-sdk";
 import { useActiveProject } from "@/client/hooks/navigation/useActiveProject";
 import {
   insertAtCursor,
@@ -60,7 +58,12 @@ const permissionModes: Array<{
     shortName: "Accept",
     color: "bg-purple-500",
   },
-  { id: "reject", name: "Reject", shortName: "Reject", color: "bg-red-500" },
+  {
+    id: "bypassPermissions",
+    name: "Bypass Permissions",
+    shortName: "Bypass",
+    color: "bg-red-500",
+  },
 ];
 
 const SUBMITTING_TIMEOUT = 200;

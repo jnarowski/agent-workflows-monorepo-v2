@@ -3,9 +3,6 @@
  * Based on Anthropic's Claude API message structure
  */
 
-// Re-export StreamEvent from agent-cli-sdk for consistency
-export type { StreamEvent } from '@repo/agent-cli-sdk';
-
 // Re-export Claude CLI session types
 export type {
   ClaudeSessionRow,
@@ -32,12 +29,15 @@ export {
  * This avoids duplicate type definitions
  */
 export type {
-  SessionMessage,
-  ContentBlock,
-  TextBlock,
-  ThinkingBlock,
-  ToolUseBlock,
-  ToolResultBlock,
+  UIMessage,
+  EnrichedToolUseBlock,
+  UnifiedMessage,
+  UnifiedContent,
+  UnifiedTextBlock,
+  UnifiedThinkingBlock,
+  UnifiedToolUseBlock,
+  UnifiedToolResultBlock,
+  UnifiedSlashCommandBlock,
 } from './message.types';
 
 /**

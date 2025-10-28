@@ -29,9 +29,9 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React, { type ReactNode } from "react";
 import { ChatPromptInput } from "./ChatPromptInput";
 import { useSessionStore } from "../stores/sessionStore";
-import type { ReactNode } from "react";
 
 // Mock navigation hooks (not needed for core behavior, but component imports them)
 vi.mock("@/client/stores/navigationStore", () => ({
@@ -186,9 +186,9 @@ describe("ChatPromptInput", () => {
         "acceptEdits"
       );
 
-      // Cycle to 'reject'
+      // Cycle to 'bypassPermissions'
       await user.keyboard("{Shift>}{Tab}{/Shift}");
-      expect(useSessionStore.getState().form.permissionMode).toBe("reject");
+      expect(useSessionStore.getState().form.permissionMode).toBe("bypassPermissions");
 
       // Cycle back to 'default'
       await user.keyboard("{Shift>}{Tab}{/Shift}");

@@ -1,24 +1,138 @@
 import { create } from "zustand";
-import type {
-  SessionMessage,
-  ContentBlock,
-} from "@/shared/types/message.types";
+import type { UnifiedMessage, UnifiedContent, ClaudePermissionMode } from '@repo/agent-cli-sdk';
+import type { UIMessage } from '@/shared/types/message.types';
 import type {
   AgentSessionMetadata,
   SessionResponse,
 } from "@/shared/types/agent-session.types";
 import type { AgentType } from "@/shared/types/agent.types";
-import { getAgent } from "@/client/lib/agents";
 import { api } from "@/client/lib/api-client";
 import type { ProjectWithSessions } from "@/shared/types/project.types";
 import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
+import { isSystemMessage } from '@/shared/utils/message.utils';
 
-// Permission mode types from agent-cli-sdk
-export type ClaudePermissionMode =
-  | "default"
-  | "plan"
-  | "acceptEdits"
-  | "reject";
+/**
+ * Enrich messages by nesting tool_result blocks into their corresponding tool_use blocks
+ * This is the ONLY transform on the frontend - happens once when loading messages
+ *
+ * Process:
+ * 1. Filter out messages containing only system content (caveats, command tags, etc.)
+ * 2. Build Map of tool_use_id → result from all tool_result blocks
+ * 3. Nest results into corresponding tool_use blocks (by matching IDs)
+ * 4. Filter out standalone tool_result blocks (now nested in tool_use)
+ * 5. Add isStreaming: false to all loaded messages
+ *
+ * @example
+ * // Input: Array of UnifiedMessages with separate tool_use and tool_result blocks
+ * [
+ *   {
+ *     id: '1',
+ *     role: 'assistant',
+ *     content: [
+ *       { type: 'text', text: 'Let me read the file' },
+ *       { type: 'tool_use', id: 'tool_abc123', name: 'Read', input: { file_path: '/src/index.ts' } }
+ *     ],
+ *     timestamp: 1234567890
+ *   },
+ *   {
+ *     id: '2',
+ *     role: 'user',
+ *     content: [
+ *       { type: 'tool_result', tool_use_id: 'tool_abc123', content: 'export const foo = "bar";' }
+ *     ],
+ *     timestamp: 1234567891
+ *   }
+ * ]
+ *
+ * // Output: tool_result nested inside tool_use, standalone tool_result filtered out
+ * [
+ *   {
+ *     id: '1',
+ *     role: 'assistant',
+ *     content: [
+ *       { type: 'text', text: 'Let me read the file' },
+ *       {
+ *         type: 'tool_use',
+ *         id: 'tool_abc123',
+ *         name: 'Read',
+ *         input: { file_path: '/src/index.ts' },
+ *         result: { content: 'export const foo = "bar";', is_error: false }  // Nested result
+ *       }
+ *     ],
+ *     timestamp: 1234567890,
+ *     isStreaming: false
+ *   }
+ *   // Note: Message '2' with standalone tool_result is now filtered out
+ * ]
+ */
+function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] {
+  // Step 1: Filter out messages with only system content
+  const filteredMessages = messages.filter(msg => {
+    const content = msg.content;
+
+    // If content is a string, check if it's a system message
+    if (typeof content === 'string') {
+      return !isSystemMessage(content);
+    }
+
+    // If content is an array, check if all text blocks are system messages
+    if (Array.isArray(content)) {
+      const textBlocks = content.filter(c => c.type === 'text');
+
+      // If no text blocks, keep the message (has other content like tools)
+      if (textBlocks.length === 0) return true;
+
+      // Filter out messages where ALL text blocks are system messages
+      return !textBlocks.every(c => isSystemMessage(c.text));
+    }
+
+    // Keep messages with other content types
+    return true;
+  });
+
+  // Step 2: Build lookup map of tool results
+  const resultMap = new Map<string, { content: string; is_error?: boolean }>();
+
+  for (const message of filteredMessages) {
+    if (Array.isArray(message.content)) {
+      for (const block of message.content) {
+        if (block.type === 'tool_result') {
+          resultMap.set(block.tool_use_id, {
+            content: typeof block.content === 'string'
+              ? block.content
+              : JSON.stringify(block.content),
+            is_error: block.is_error
+          });
+        }
+      }
+    }
+  }
+
+  // Step 3: Enrich tool_use blocks and filter out tool_result blocks
+  return filteredMessages.map(msg => {
+    if (!Array.isArray(msg.content)) {
+      return { ...msg, isStreaming: false };
+    }
+
+    const enrichedContent = msg.content
+      .map(block => {
+        // Nest result into tool_use block
+        if (block.type === 'tool_use') {
+          const result = resultMap.get(block.id);
+          return result ? { ...block, result } : block;
+        }
+        return block;
+      })
+      // Filter out standalone tool_result blocks (now nested in tool_use)
+      .filter(block => block.type !== 'tool_result');
+
+    return {
+      ...msg,
+      content: enrichedContent,
+      isStreaming: false
+    } as UIMessage;
+  });
+}
 
 /**
  * Loading states for async operations
@@ -40,7 +154,7 @@ export interface FormState {
 export interface SessionData {
   id: string;
   agent: AgentType;
-  messages: SessionMessage[];
+  messages: UIMessage[];
   isStreaming: boolean;
   metadata: AgentSessionMetadata | null;
   loadingState: LoadingState;
@@ -62,8 +176,8 @@ export interface SessionStore {
   clearSession: () => void;
 
   // Message actions
-  addMessage: (message: SessionMessage) => void;
-  updateStreamingMessage: (contentBlocks: ContentBlock[]) => void;
+  addMessage: (message: UIMessage) => void;
+  updateStreamingMessage: (messageId: string, contentBlocks: UnifiedContent[]) => void;
   finalizeMessage: (messageId: string) => void;
 
   // State actions
@@ -123,9 +237,6 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         }
       }
 
-      // Get agent implementation for this session
-      const agent = getAgent(session.agent);
-
       // Set loading state with agent type and metadata
       set({
         sessionId: sessionId,
@@ -141,9 +252,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       });
 
       // Now fetch messages
-      let rawMessages: SessionMessage[] = [];
+      let rawMessages: UnifiedMessage[] = [];
       try {
-        const data = await api.get<{ data: SessionMessage[] }>(
+        const data = await api.get<{ data: UnifiedMessage[] }>(
           `/api/projects/${projectId}/sessions/${sessionId}/messages`
         );
         rawMessages = data.data || [];
@@ -165,8 +276,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         throw error;
       }
 
-      // Transform messages using agent's transform function
-      const messages = agent.transformMessages(rawMessages);
+      // Enrich messages with nested tool results
+      const messages = enrichMessagesWithToolResults(rawMessages);
 
       set((state) => ({
         session: state.session
@@ -203,7 +314,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   },
 
   // Add a message to the current session
-  addMessage: (message: SessionMessage) => {
+  addMessage: (message: UIMessage) => {
     set((state) => {
       if (!state.session) return state;
 
@@ -217,8 +328,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   },
 
   // Update the streaming message content
-  // Receives already-transformed ContentBlock[] from agent.transformStreaming()
-  updateStreamingMessage: (messageId: string, contentBlocks: ContentBlock[]) => {
+  // Receives UnifiedContent[] blocks from streaming updates
+  updateStreamingMessage: (messageId: string, contentBlocks: UnifiedContent[]) => {
     set((state) => {
       if (!state.session) {
         return state;
@@ -381,8 +492,8 @@ export const selectTotalTokens = (state: SessionStore): number => {
     const usage = message.usage;
     return (
       total +
-      (usage.input_tokens || 0) +
-      (usage.output_tokens || 0)
+      (usage.inputTokens || 0) +
+      (usage.outputTokens || 0)
       // Note: NOT counting cache tokens - those are optimization metrics
     );
   }, 0);

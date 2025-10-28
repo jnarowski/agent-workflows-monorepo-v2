@@ -3,10 +3,8 @@ import { useEffect, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
-import { getAgent } from "../../../../lib/agents";
-import type { ContentBlock } from "@/shared/types/message.types";
+import type { UnifiedMessage, UnifiedContent } from "@repo/agent-cli-sdk";
 import type {
-  SessionStreamOutputData,
   SessionMessageCompleteData,
   SessionErrorData,
 } from "@/shared/types/websocket";
@@ -47,28 +45,24 @@ export function useSessionWebSocket({
 
   /**
    * Handle stream_output events
+   * SDK already provides clean UnifiedMessage format - no transforms needed
    */
-  const handleStreamOutput = useCallback((data: SessionStreamOutputData) => {
-    // Get current session to access agent type
-    const session = useSessionStore.getState().session;
-    if (!session) {
+  const handleStreamOutput = useCallback(
+    (data: { message?: UnifiedMessage }) => {
       if (import.meta.env.DEV) {
-        console.warn("[useSessionWebSocket] No current session, skipping stream update");
+        console.log("[useSessionWebSocket] stream_output received:", data);
       }
-      return;
-    }
 
-    // Get agent implementation and use its transform
-    const agent = getAgent(session.agent);
-    const streamingMessage = agent.transformStreaming(data);
-
-    // Only update if we have a valid streaming message - skip system/result events
-    if (streamingMessage) {
-      useSessionStore
-        .getState()
-        .updateStreamingMessage(streamingMessage.id, streamingMessage.content as ContentBlock[]);
-    }
-  }, []);
+      // SDK already provides clean UnifiedMessage
+      if (data.message) {
+        const msg = data.message;
+        useSessionStore
+          .getState()
+          .updateStreamingMessage(msg.id, msg.content as UnifiedContent[]);
+      }
+    },
+    []
+  );
 
   /**
    * Handle message_complete events
@@ -76,7 +70,7 @@ export function useSessionWebSocket({
   const handleMessageComplete = useCallback(
     (data: SessionMessageCompleteData) => {
       if (import.meta.env.DEV) {
-        console.log("[useSessionWebSocket] Message complete", data);
+        console.log("[useSessionWebSocket] message_complete received:", data);
       }
 
       // Get current session and messages
@@ -122,7 +116,9 @@ export function useSessionWebSocket({
       }
 
       // Invalidate sessions query to update sidebar with new metadata
-      queryClient.invalidateQueries({ queryKey: sessionKeys.byProject(projectIdRef.current) });
+      queryClient.invalidateQueries({
+        queryKey: sessionKeys.byProject(projectIdRef.current),
+      });
     },
     [queryClient]
   );

@@ -7,17 +7,16 @@ import { useEffect, useRef } from "react";
 import { MessageCircle, AlertCircle, Loader2 } from "lucide-react";
 import { ChatSkeleton } from "./ChatSkeleton";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
-import type { SessionMessage } from "@/shared/types/message.types";
+import type { UIMessage } from "@/shared/types/message.types";
 import type { AgentType } from "@/shared/types/agent.types";
-import { getAgent } from "../../../../lib/agents";
+import { MessageList } from "./session/MessageList";
 import { AgentLoadingIndicator } from "./AgentLoadingIndicator";
 
 interface ChatInterfaceProps {
   projectId: string;
   sessionId?: string;
   agent?: AgentType;
-  messages?: SessionMessage[];
-  toolResults?: Map<string, { content: string; is_error?: boolean }>;
+  messages?: UIMessage[];
   isLoading?: boolean;
   error?: Error | null;
   isStreaming?: boolean;
@@ -31,10 +30,9 @@ interface ChatInterfaceProps {
 export function ChatInterface({
   projectId,
   sessionId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   agent = "claude",
   messages = [],
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  toolResults: _toolResults = new Map(),
   isLoading = false,
   error = null,
   isStreaming = false,
@@ -43,10 +41,6 @@ export function ChatInterface({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const previousScrollHeight = useRef(0);
-
-  // Get agent renderer
-  const agentImpl = getAgent(agent);
-  const AgentMessageRenderer = agentImpl.MessageRenderer;
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -118,7 +112,7 @@ export function ChatInterface({
       data-session-id={sessionId}
     >
       <div className="chat-container max-w-4xl mx-auto px-4 py-8">
-        <AgentMessageRenderer messages={messages} />
+        <MessageList messages={messages} />
         <AgentLoadingIndicator isStreaming={isStreaming} />
         <div ref={messagesEndRef} />
       </div>

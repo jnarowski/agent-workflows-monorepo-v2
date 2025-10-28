@@ -3,20 +3,19 @@
  * Dispatches to appropriate renderer based on block type
  */
 
-import type { ContentBlock } from "@/shared/types/message.types";
+import type { UnifiedContent, EnrichedToolUseBlock } from "@/shared/types/message.types";
 import { TextBlock } from "./TextBlock";
 import { ThinkingBlock } from "./ThinkingBlock";
 import { ToolBlockRenderer } from "./ToolBlockRenderer";
+import { SlashCommandBlock } from "./blocks/SlashCommandBlock";
 
 interface ContentBlockRendererProps {
-  block: ContentBlock;
-  toolResults?: Map<string, { content: string; is_error?: boolean }>;
+  block: UnifiedContent;
   className?: string;
 }
 
 export function ContentBlockRenderer({
   block,
-  toolResults,
   className = "",
 }: ContentBlockRendererProps) {
   switch (block.type) {
@@ -27,16 +26,25 @@ export function ContentBlockRenderer({
       return <ThinkingBlock thinking={block.thinking} className={className} />;
 
     case "tool_use": {
-      // Look up the result for this tool use
-      const result = toolResults?.get(block.id);
+      // Access result directly from enriched block
+      const enrichedBlock = block as EnrichedToolUseBlock;
       return (
         <ToolBlockRenderer
           toolName={block.name}
           input={block.input}
-          result={result}
+          result={enrichedBlock.result}
         />
       );
     }
+
+    case "slash_command":
+      return (
+        <SlashCommandBlock
+          command={block.command}
+          message={block.message}
+          args={block.args}
+        />
+      );
 
     case "tool_result":
       // Tool results are handled inline with tool_use blocks
