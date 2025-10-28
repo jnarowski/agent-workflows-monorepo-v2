@@ -1,8 +1,12 @@
 #!/usr/bin/env node
-import { loader } from '../../src/claude/loader';
+import { loadMessages } from '../../src/index';
 
 /**
  * Example: Load Claude session messages
+ *
+ * This example demonstrates how to load messages from a Claude CLI session using
+ * the public API. Messages are loaded from the session's JSONL file and parsed
+ * into a unified format.
  *
  * Usage:
  *   pnpm tsx examples/loaders/load-claude-session.ts <sessionId> <projectPath>
@@ -30,7 +34,8 @@ async function main() {
   console.log('');
 
   try {
-    const messages = await loader({
+    const messages = await loadMessages({
+      tool: 'claude',
       sessionId,
       projectPath,
     });

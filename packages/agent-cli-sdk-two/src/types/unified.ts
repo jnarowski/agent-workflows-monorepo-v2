@@ -1,22 +1,42 @@
+/**
+ * Standardized message format across different AI CLI tools.
+ *
+ * Represents a single message in a conversation, containing content blocks,
+ * metadata, and usage statistics.
+ */
 export interface UnifiedMessage {
+  /** Unique identifier for this message */
   id: string;
+  /** Role of the message sender */
   role: 'user' | 'assistant' | 'system';
+  /** Message content (text or structured content blocks) */
   content: string | UnifiedContent[];
+  /** Unix timestamp in milliseconds */
   timestamp: number;
+  /** AI tool that generated this message */
   tool: 'claude' | 'codex' | 'gemini' | 'cursor';
-
+  /** Model identifier (e.g., 'claude-3-5-sonnet-20241022') */
   model?: string;
+  /** Token usage statistics */
   usage?: {
+    /** Number of input tokens consumed */
     inputTokens: number;
+    /** Number of output tokens generated */
     outputTokens: number;
+    /** Total tokens (input + output) */
     totalTokens: number;
+    /** Tokens used for cache creation */
     cacheCreationTokens?: number;
+    /** Tokens read from cache */
     cacheReadTokens?: number;
   };
-
+  /** Original raw event data from the CLI tool */
   _original: unknown;
 }
 
+/**
+ * Union type of all possible content block types in a unified message.
+ */
 export type UnifiedContent =
   | UnifiedTextBlock
   | UnifiedThinkingBlock
@@ -24,20 +44,34 @@ export type UnifiedContent =
   | UnifiedToolResultBlock
   | UnifiedSlashCommandBlock;
 
+/**
+ * Text content block.
+ */
 export interface UnifiedTextBlock {
   type: 'text';
+  /** The text content */
   text: string;
 }
 
+/**
+ * Thinking/reasoning content block (Claude extended thinking).
+ */
 export interface UnifiedThinkingBlock {
   type: 'thinking';
+  /** The thinking/reasoning content */
   thinking: string;
 }
 
+/**
+ * Slash command content block (user-initiated commands).
+ */
 export interface UnifiedSlashCommandBlock {
   type: 'slash_command';
+  /** Command name (e.g., 'commit', 'pull-request') */
   command: string;
+  /** Optional command message/description */
   message?: string;
+  /** Optional command arguments */
   args?: string;
 }
 
@@ -125,18 +159,9 @@ export interface McpToolInput {
 }
 
 // Union type for all tool names
-export type ToolName =
-  | 'Bash'
-  | 'Read'
-  | 'Write'
-  | 'Edit'
-  | 'Glob'
-  | 'Grep'
-  | 'TodoWrite'
-  | 'WebSearch'
-  | 'AskUserQuestion'
-  | 'ExitPlanMode'
-  | string; // Allow MCP tools with dynamic names (mcp__*)
+// Common Claude Code tools: Bash, Read, Write, Edit, Glob, Grep, TodoWrite, WebSearch, AskUserQuestion, ExitPlanMode
+// Also supports MCP tools with dynamic names (mcp__*)
+export type ToolName = string;
 
 export interface UnifiedToolUseBlock {
   type: 'tool_use';

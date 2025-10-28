@@ -9,10 +9,12 @@
 ## Project Overview
 
 Build a TypeScript SDK for:
+
 1. **Loading** JSONL session files into typed message arrays
 2. **Executing** AI CLI tools programmatically with type-safe options
 
 **Key Principles**:
+
 - Unified interface with native format preservation
 - Simple, type-safe API: `loadMessages()` and `execute()`
 - Tool-based organization (claude/, codex/, gemini/, cursor/)
@@ -38,16 +40,16 @@ packages/agent-cli-sdk-two/
 │   ├── claude/
 │   │   ├── index.ts                # Export all Claude functions
 │   │   ├── types.ts                # Claude native types
-│   │   ├── parser.ts               # Parse JSONL → UnifiedMessage
-│   │   ├── loader.ts               # loadClaudeMessages()
-│   │   └── executor.ts             # executeClaudeCommand()
+│   │   ├── parse.ts                # Parse JSONL → UnifiedMessage
+│   │   ├── loadSession.ts          # loadSession()
+│   │   └── execute.ts              # execute()
 │   │
 │   ├── codex/
 │   │   ├── index.ts
 │   │   ├── types.ts
-│   │   ├── parser.ts
-│   │   ├── loader.ts
-│   │   └── executor.ts
+│   │   ├── parse.ts
+│   │   ├── loadSession.ts
+│   │   └── execute.ts
 │   │
 │   ├── gemini/
 │   │   ├── index.ts                # Placeholder stubs
@@ -66,14 +68,14 @@ packages/agent-cli-sdk-two/
 │
 └── tests/
     ├── claude/
-    │   ├── parser.test.ts
-    │   ├── loader.test.ts
-    │   ├── executor.test.ts
+    │   ├── parse.test.ts
+    │   ├── loadSession.test.ts
+    │   ├── execute.test.ts
     │   └── fixtures/
     │       └── sample.jsonl
     ├── codex/
-    │   ├── parser.test.ts
-    │   └── loader.test.ts
+    │   ├── parse.test.ts
+    │   └── loadSession.test.ts
     └── utils/
         └── json-extract.test.ts
 ```
@@ -87,10 +89,11 @@ packages/agent-cli-sdk-two/
 **Duration**: ~2-3 hours
 
 **Deliverables**:
+
 - ✅ UnifiedMessage type system
 - ✅ Claude native types (from mock JSONL)
 - ✅ Claude parser (JSONL → UnifiedMessage)
-- ✅ Claude loader (read file, parse all messages)
+- ✅ Claude loadSession function (read file, parse all messages)
 - ✅ Main `loadMessages()` API
 - ✅ Helper function `extractTextContent()`
 - ✅ Placeholder stubs for other tools
@@ -111,14 +114,29 @@ packages/agent-cli-sdk-two/
 - [x] 1.11 Test Build
 
 #### Completion Notes
+
 - All Phase 1 tasks completed successfully
 - Tests are co-located with source files (per CLAUDE.md instructions)
 - Used real Claude session file for testing instead of fixtures
-- All 24 tests passing (parser and loader tests)
-- Build successful with no TypeScript errors
+- All 68 tests passing (parse, loadSession, and unified types tests)
+- Build successful with no TypeScript errors (8.3 kB output)
 - Package exports correctly configured
 
+#### Implementation Enhancements (Beyond Original Plan)
+
+- **Field naming**: Used `_original` instead of `native` for storing native format (more TypeScript-friendly)
+- **Enhanced tool types**: Added comprehensive tool-specific input types with discriminated unions:
+  - `BashToolInput`, `ReadToolInput`, `WriteToolInput`, `EditToolInput`
+  - `GlobToolInput`, `GrepToolInput`, `TodoWriteToolInput`, `WebSearchToolInput`
+  - `AskUserQuestionToolInput`, `ExitPlanModeToolInput`, `McpToolInput`
+  - Type guard functions for type-safe tool access (e.g., `isBashTool`, `isReadTool`)
+- **Slash command support**: Added `UnifiedSlashCommandBlock` type for slash command parsing
+- **MCP tool support**: Generic MCP tool input type with dynamic name matching (`mcp__*`)
+- **Better type safety**: Used discriminated unions for `UnifiedContent` instead of single interface
+- These enhancements will simplify Phase 2 execute implementation
+
 ### 1.1 Create Folder Structure
+
 ```bash
 mkdir -p src/types src/claude src/codex src/gemini src/cursor src/utils
 mkdir -p tests/claude/fixtures tests/codex tests/utils
@@ -127,13 +145,14 @@ mkdir -p tests/claude/fixtures tests/codex tests/utils
 ### 1.2 Define Core Types
 
 **File**: `src/types/unified.ts`
+
 ```typescript
 export interface UnifiedMessage {
   id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   content: string | UnifiedContent[];
   timestamp: number;
-  tool: 'claude' | 'codex' | 'gemini' | 'cursor';
+  tool: "claude" | "codex" | "gemini" | "cursor";
 
   model?: string;
   usage?: {
@@ -148,7 +167,7 @@ export interface UnifiedMessage {
 }
 
 export interface UnifiedContent {
-  type: 'text' | 'tool_use' | 'tool_result' | 'thinking';
+  type: "text" | "tool_use" | "tool_result" | "thinking";
   text?: string;
   thinking?: string;
   toolName?: string;
@@ -158,28 +177,30 @@ export interface UnifiedContent {
 }
 
 export function extractTextContent(message: UnifiedMessage): string {
-  if (typeof message.content === 'string') {
+  if (typeof message.content === "string") {
     return message.content;
   }
 
   return message.content
-    .filter(block => block.type === 'text' && block.text)
-    .map(block => block.text)
-    .join('');
+    .filter((block) => block.type === "text" && block.text)
+    .map((block) => block.text)
+    .join("");
 }
 ```
 
 **File**: `src/types/index.ts`
+
 ```typescript
-export * from './unified';
+export * from "./unified";
 ```
 
 ### 1.3 Define Claude Types
 
 **File**: `src/claude/types.ts`
+
 ```typescript
 export interface ClaudeEvent {
-  type: 'user' | 'assistant' | 'file-history-snapshot';
+  type: "user" | "assistant" | "file-history-snapshot";
   timestamp?: string;
   uuid?: string;
   sessionId?: string;
@@ -190,25 +211,25 @@ export interface ClaudeEvent {
   message?: ClaudeMessage;
   requestId?: string;
   isMeta?: boolean;
-  userType?: 'external' | 'internal';
+  userType?: "external" | "internal";
   isSidechain?: boolean;
   thinkingMetadata?: ThinkingMetadata;
   toolUseResult?: ToolUseResult;
 }
 
 export interface ClaudeMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string | ContentBlock[];
   model?: string;
   id?: string;
-  type?: 'message';
+  type?: "message";
   stop_reason?: string | null;
   stop_sequence?: string | null;
   usage?: ClaudeUsage;
 }
 
 export interface ContentBlock {
-  type: 'text' | 'tool_use' | 'tool_result' | 'thinking';
+  type: "text" | "tool_use" | "tool_result" | "thinking";
   text?: string;
   thinking?: string;
   tool_use_id?: string;
@@ -232,7 +253,7 @@ export interface ClaudeUsage {
 }
 
 export interface ThinkingMetadata {
-  level?: 'none' | 'low' | 'medium' | 'high';
+  level?: "none" | "low" | "medium" | "high";
   disabled?: boolean;
   triggers?: string[];
 }
@@ -254,16 +275,17 @@ export interface ToolUseResult {
 
 ### 1.4 Implement Claude Parser
 
-**File**: `src/claude/parser.ts`
+**File**: `src/claude/parse.ts`
+
 ```typescript
-import type { UnifiedMessage, UnifiedContent } from '../types/unified';
-import type { ClaudeEvent, ContentBlock } from './types';
+import type { UnifiedMessage, UnifiedContent } from "../types/unified";
+import type { ClaudeEvent, ContentBlock } from "./types";
 
 export function parseClaudeEvent(jsonlLine: string): UnifiedMessage | null {
   try {
     const event: ClaudeEvent = JSON.parse(jsonlLine);
 
-    if (event.type !== 'user' && event.type !== 'assistant') {
+    if (event.type !== "user" && event.type !== "assistant") {
       return null;
     }
 
@@ -273,37 +295,45 @@ export function parseClaudeEvent(jsonlLine: string): UnifiedMessage | null {
     }
 
     let content = message.content;
-    if (typeof content === 'string') {
-      content = [{ type: 'text', text: content }];
+    if (typeof content === "string") {
+      content = [{ type: "text", text: content }];
     }
 
-    const unifiedContent: UnifiedContent[] = (content as ContentBlock[]).map(block => {
-      const unified: UnifiedContent = { type: block.type };
-      if (block.text) unified.text = block.text;
-      if (block.thinking) unified.thinking = block.thinking;
-      if (block.name) unified.toolName = block.name;
-      if (block.input) unified.toolInput = block.input;
-      if (block.type === 'tool_result') {
-        unified.toolResult = block.content;
-        unified.isError = block.is_error;
+    const unifiedContent: UnifiedContent[] = (content as ContentBlock[]).map(
+      (block) => {
+        const unified: UnifiedContent = { type: block.type };
+        if (block.text) unified.text = block.text;
+        if (block.thinking) unified.thinking = block.thinking;
+        if (block.name) unified.toolName = block.name;
+        if (block.input) unified.toolInput = block.input;
+        if (block.type === "tool_result") {
+          unified.toolResult = block.content;
+          unified.isError = block.is_error;
+        }
+        return unified;
       }
-      return unified;
-    });
+    );
 
     return {
       id: event.uuid || message.id || `${event.timestamp}-${event.type}`,
       role: message.role,
       content: unifiedContent,
-      timestamp: event.timestamp ? new Date(event.timestamp).getTime() : Date.now(),
-      tool: 'claude',
+      timestamp: event.timestamp
+        ? new Date(event.timestamp).getTime()
+        : Date.now(),
+      tool: "claude",
       model: message.model,
-      usage: message.usage ? {
-        inputTokens: message.usage.input_tokens || 0,
-        outputTokens: message.usage.output_tokens || 0,
-        totalTokens: (message.usage.input_tokens || 0) + (message.usage.output_tokens || 0),
-        cacheCreationTokens: message.usage.cache_creation_input_tokens,
-        cacheReadTokens: message.usage.cache_read_input_tokens,
-      } : undefined,
+      usage: message.usage
+        ? {
+            inputTokens: message.usage.input_tokens || 0,
+            outputTokens: message.usage.output_tokens || 0,
+            totalTokens:
+              (message.usage.input_tokens || 0) +
+              (message.usage.output_tokens || 0),
+            cacheCreationTokens: message.usage.cache_creation_input_tokens,
+            cacheReadTokens: message.usage.cache_read_input_tokens,
+          }
+        : undefined,
       native: event,
     };
   } catch {
@@ -312,61 +342,63 @@ export function parseClaudeEvent(jsonlLine: string): UnifiedMessage | null {
 }
 ```
 
-### 1.5 Implement Claude Loader
+### 1.5 Implement Claude Load Function
 
-**File**: `src/claude/loader.ts`
+**File**: `src/claude/loadSessionSession.ts`
+
 ```typescript
-import fs from 'fs/promises';
-import type { UnifiedMessage } from '../types/unified';
-import { parseClaudeEvent } from './parser';
+import fs from "fs/promises";
+import type { UnifiedMessage } from "../types/unified";
+import { parser } from "./parse";
 
-export interface LoadClaudeMessagesOptions {
+export interface LoadSessionOptions {
   sessionId: string;
-  sessionDir?: string;
+  projectPath: string;
 }
 
-export async function loadClaudeMessages(
-  options: LoadClaudeMessagesOptions
+export async function loadSession(
+  options: LoadSessionOptions
 ): Promise<UnifiedMessage[]> {
-  const { sessionId, sessionDir } = options;
-
-  const filePath = sessionId.includes('/') || sessionId.endsWith('.jsonl')
-    ? sessionId
-    : `${sessionDir || getDefaultSessionDir()}/${sessionId}.jsonl`;
+  const { sessionId, projectPath } = options;
+  const filePath = `${getClaudeProjectDir(projectPath)}/${sessionId}.jsonl`;
 
   try {
-    const content = await fs.readFile(filePath, 'utf-8');
-    const lines = content.trim().split('\n').filter(Boolean);
+    const content = await fs.readFile(filePath, "utf-8");
+    const lines = content.trim().split("\n").filter(Boolean);
 
     const messages = lines
-      .map(line => parseClaudeEvent(line))
+      .map((line) => parser(line))
       .filter((msg): msg is UnifiedMessage => msg !== null)
       .sort((a, b) => a.timestamp - b.timestamp);
 
     return messages;
   } catch (error) {
     const err = error as NodeJS.ErrnoException;
-    if (err.code === 'ENOENT') {
+    if (err.code === "ENOENT") {
       return [];
     }
     throw error;
   }
 }
 
-function getDefaultSessionDir(): string {
-  return `${process.env.HOME}/.claude-code/sessions`;
+function getClaudeProjectDir(projectPath: string): string {
+  // Claude encodes project paths by replacing slashes with dashes
+  // e.g., /Users/jnarowski/Dev/playground -> -Users-jnarowski-Dev-playground
+  const encodedPath = projectPath.replace(/\//g, "-");
+  return `${process.env.HOME}/.claude/projects/${encodedPath}`;
 }
 ```
 
 ### 1.6 Wire Up Main API
 
 **File**: `src/index.ts`
+
 ```typescript
-import type { UnifiedMessage } from './types/unified';
-import { loadClaudeMessages } from './claude/loader';
+import type { UnifiedMessage } from "./types/unified";
+import { loadSession as loadClaudeMessages } from "./claude/loadSessionSession";
 
 export interface LoadMessagesOptions {
-  tool: 'claude' | 'codex' | 'gemini' | 'cursor';
+  tool: "claude" | "codex" | "gemini" | "cursor";
   sessionId: string;
   sessionDir?: string;
 }
@@ -375,14 +407,17 @@ export async function loadMessages(
   options: LoadMessagesOptions
 ): Promise<UnifiedMessage[]> {
   switch (options.tool) {
-    case 'claude':
-      return await loadClaudeMessages(options);
-    case 'codex':
-      throw new Error('Codex loader not yet implemented');
-    case 'gemini':
-      throw new Error('Gemini loader not yet implemented');
-    case 'cursor':
-      throw new Error('Cursor loader not yet implemented');
+    case "claude":
+      return await loadClaudeMessages({
+        sessionId: options.sessionId,
+        projectPath: options.projectPath || process.cwd(),
+      });
+    case "codex":
+      throw new Error("Codex loadSession function not yet implemented");
+    case "gemini":
+      throw new Error("Gemini load not yet implemented");
+    case "cursor":
+      throw new Error("Cursor load not yet implemented");
     default:
       const _exhaustive: never = options.tool;
       throw new Error(`Unknown tool: ${_exhaustive}`);
@@ -390,44 +425,48 @@ export async function loadMessages(
 }
 
 export async function execute(options: unknown): Promise<unknown> {
-  throw new Error('execute() not yet implemented - coming in Phase 2');
+  throw new Error("execute() not yet implemented - coming in Phase 2");
 }
 
-export * from './types/unified';
-export * from './claude/types';
-export { extractTextContent } from './types/unified';
+export * from "./types/unified";
+export * from "./claude/types";
+export { extractTextContent } from "./types/unified";
 ```
 
 ### 1.7 Create Placeholder Stubs
 
 **File**: `src/codex/index.ts`
+
 ```typescript
 export async function loadCodexMessages(): Promise<never> {
-  throw new Error('Codex not yet implemented');
+  throw new Error("Codex not yet implemented");
 }
 ```
 
 **File**: `src/gemini/index.ts`
+
 ```typescript
 export async function loadGeminiMessages(): Promise<never> {
-  throw new Error('Gemini not yet implemented');
+  throw new Error("Gemini not yet implemented");
 }
 ```
 
 **File**: `src/cursor/index.ts`
+
 ```typescript
 export async function loadCursorMessages(): Promise<never> {
-  throw new Error('Cursor not yet implemented');
+  throw new Error("Cursor not yet implemented");
 }
 ```
 
 ### 1.8 Set Up Exports
 
 **File**: `src/claude/index.ts`
+
 ```typescript
-export * from './types';
-export * from './parser';
-export * from './loader';
+export * from "./types";
+export * from "./parse";
+export * from "./loadSession";
 ```
 
 ### 1.9 Copy Test Fixtures
@@ -439,22 +478,24 @@ cp mocks/claude/1ba56c03-420b-4ee2-85fb-b4e5a26f9848.jsonl tests/claude/fixtures
 
 ### 1.10 Write Tests
 
-**File**: `tests/claude/parser.test.ts`
-```typescript
-import { describe, it, expect } from 'vitest';
-import { parseClaudeEvent } from '../../src/claude/parser';
+**File**: `tests/claude/parse.test.ts`
 
-describe('parseClaudeEvent', () => {
-  it('should parse user message', () => {
-    const line = '{"type":"user","message":{"role":"user","content":"Hello"},"uuid":"123","timestamp":"2025-01-01T00:00:00Z"}';
+```typescript
+import { describe, it, expect } from "vitest";
+import { parseClaudeEvent } from "../../src/claude/parser";
+
+describe("parseClaudeEvent", () => {
+  it("should parse user message", () => {
+    const line =
+      '{"type":"user","message":{"role":"user","content":"Hello"},"uuid":"123","timestamp":"2025-01-01T00:00:00Z"}';
     const result = parseClaudeEvent(line);
 
     expect(result).not.toBeNull();
-    expect(result?.role).toBe('user');
-    expect(result?.tool).toBe('claude');
+    expect(result?.role).toBe("user");
+    expect(result?.tool).toBe("claude");
   });
 
-  it('should skip file-history-snapshot', () => {
+  it("should skip file-history-snapshot", () => {
     const line = '{"type":"file-history-snapshot","messageId":"123"}';
     const result = parseClaudeEvent(line);
     expect(result).toBeNull();
@@ -462,24 +503,27 @@ describe('parseClaudeEvent', () => {
 });
 ```
 
-**File**: `tests/claude/loader.test.ts`
-```typescript
-import { describe, it, expect } from 'vitest';
-import { loadClaudeMessages } from '../../src/claude/loader';
+**File**: `tests/claude/loadSessionSession.test.ts`
 
-describe('loadClaudeMessages', () => {
-  it('should load messages from file', async () => {
-    const messages = await loadClaudeMessages({
-      sessionId: 'tests/claude/fixtures/sample.jsonl'
+```typescript
+import { describe, it, expect } from "vitest";
+import { loadSession } from "../../src/claude/loadSessionSession";
+
+describe("loadSession", () => {
+  it("should load messages from file", async () => {
+    const messages = await loadSession({
+      sessionId: "test-session-id",
+      projectPath: "/path/to/project",
     });
 
     expect(messages.length).toBeGreaterThan(0);
-    expect(messages[0].tool).toBe('claude');
+    expect(messages[0].tool).toBe("claude");
   });
 
-  it('should return empty array for missing file', async () => {
-    const messages = await loadClaudeMessages({
-      sessionId: '/nonexistent/file.jsonl'
+  it("should return empty array for missing file", async () => {
+    const messages = await loadSession({
+      sessionId: "nonexistent-session",
+      projectPath: "/nonexistent/project",
     });
 
     expect(messages).toEqual([]);
@@ -515,25 +559,30 @@ pnpm test
 **Duration**: ~3-4 hours
 
 **Deliverables**:
-- ✅ Claude executor (spawn CLI, parse output)
+
+- ✅ Claude execute function (spawn CLI, parse output)
 - ✅ JSON extraction utilities
 - ✅ Zod validation support
 - ✅ `execute()` API for Claude
 - ✅ Streaming support with callbacks
-- ✅ Tests for executor and JSON utilities
+- ✅ Tests for execute and JSON utilities
 
 ## Phase 2 Tasks
 
 ### 2.1 JSON Extraction Utilities
 
 **File**: `src/utils/json-extract.ts`
-```typescript
-import type { z } from 'zod';
+
+````typescript
+import type { z } from "zod";
 
 export class JSONExtractionError extends Error {
-  constructor(message: string, public readonly rawText: string) {
+  constructor(
+    message: string,
+    public readonly rawText: string
+  ) {
     super(message);
-    this.name = 'JSONExtractionError';
+    this.name = "JSONExtractionError";
   }
 }
 
@@ -544,13 +593,16 @@ export class JSONValidationError extends Error {
     public readonly zodError?: unknown
   ) {
     super(message);
-    this.name = 'JSONValidationError';
+    this.name = "JSONValidationError";
   }
 }
 
 export function extractJSON(text: string): unknown {
-  if (!text || typeof text !== 'string') {
-    throw new JSONExtractionError('Invalid input: expected non-empty string', text);
+  if (!text || typeof text !== "string") {
+    throw new JSONExtractionError(
+      "Invalid input: expected non-empty string",
+      text
+    );
   }
 
   // Try direct parse
@@ -586,7 +638,7 @@ export function extractJSON(text: string): unknown {
     }
   }
 
-  throw new JSONExtractionError('No valid JSON found in text', text);
+  throw new JSONExtractionError("No valid JSON found in text", text);
 }
 
 export function extractAndValidateJSON<T>(
@@ -598,8 +650,8 @@ export function extractAndValidateJSON<T>(
 
   if (!result.success) {
     const errorDetails = result.error.issues
-      .map(issue => `${issue.path.join('.')}: ${issue.message}`)
-      .join(', ');
+      .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+      .join(", ");
 
     throw new JSONValidationError(
       `JSON validation failed: ${errorDetails}`,
@@ -610,13 +662,14 @@ export function extractAndValidateJSON<T>(
 
   return result.data;
 }
-```
+````
 
 ### 2.2 Process Spawning Utility
 
 **File**: `src/utils/spawn.ts`
+
 ```typescript
-import { spawn } from 'cross-spawn';
+import { spawn } from "cross-spawn";
 
 export interface SpawnOptions {
   args: string[];
@@ -646,8 +699,8 @@ export async function spawnProcess(
       env: { ...process.env, ...options.env },
     });
 
-    let stdout = '';
-    let stderr = '';
+    let stdout = "";
+    let stderr = "";
     let timeoutId: NodeJS.Timeout | undefined;
 
     if (options.timeout) {
@@ -657,19 +710,19 @@ export async function spawnProcess(
       }, options.timeout);
     }
 
-    proc.stdout?.on('data', (chunk) => {
+    proc.stdout?.on("data", (chunk) => {
       const text = chunk.toString();
       stdout += text;
       options.onStdout?.(text);
     });
 
-    proc.stderr?.on('data', (chunk) => {
+    proc.stderr?.on("data", (chunk) => {
       const text = chunk.toString();
       stderr += text;
       options.onStderr?.(text);
     });
 
-    proc.on('close', (code) => {
+    proc.on("close", (code) => {
       if (timeoutId) clearTimeout(timeoutId);
 
       resolve({
@@ -680,7 +733,7 @@ export async function spawnProcess(
       });
     });
 
-    proc.on('error', (err) => {
+    proc.on("error", (err) => {
       if (timeoutId) clearTimeout(timeoutId);
       reject(err);
     });
@@ -691,8 +744,9 @@ export async function spawnProcess(
 ### 2.3 CLI Detector
 
 **File**: `src/utils/cli-detector.ts`
+
 ```typescript
-import { execSync } from 'child_process';
+import { execSync } from "child_process";
 
 export function detectClaudeCLI(): string | null {
   // Check CLAUDE_CLI_PATH env var
@@ -702,7 +756,7 @@ export function detectClaudeCLI(): string | null {
 
   // Try 'which claude'
   try {
-    const result = execSync('which claude', { encoding: 'utf-8' });
+    const result = execSync("which claude", { encoding: "utf-8" });
     return result.trim();
   } catch {
     return null;
@@ -715,7 +769,7 @@ export function detectCodexCLI(): string | null {
   }
 
   try {
-    const result = execSync('which codex', { encoding: 'utf-8' });
+    const result = execSync("which codex", { encoding: "utf-8" });
     return result.trim();
   } catch {
     return null;
@@ -723,17 +777,18 @@ export function detectCodexCLI(): string | null {
 }
 ```
 
-### 2.4 Claude Executor
+### 2.4 Claude Execute Function
 
-**File**: `src/claude/executor.ts`
+**File**: `src/claude/execute.ts`
+
 ```typescript
-import type { z } from 'zod';
-import type { UnifiedMessage } from '../types/unified';
-import { spawnProcess } from '../utils/spawn';
-import { detectClaudeCLI } from '../utils/cli-detector';
-import { extractJSON, extractAndValidateJSON } from '../utils/json-extract';
-import { parseClaudeEvent } from './parser';
-import { extractTextContent } from '../types/unified';
+import type { z } from "zod";
+import type { UnifiedMessage } from "../types/unified";
+import { spawnProcess } from "../utils/spawn";
+import { detectClaudeCLI } from "../utils/cli-detector";
+import { extractJSON, extractAndValidateJSON } from "../utils/json-extract";
+import { parseClaudeEvent } from "./parser";
+import { extractTextContent } from "../types/unified";
 
 export interface ExecuteClaudeOptions {
   prompt: string;
@@ -765,17 +820,19 @@ export async function executeClaudeCommand<T = unknown>(
 ): Promise<ExecuteClaudeResult<T>> {
   const cliPath = detectClaudeCLI();
   if (!cliPath) {
-    throw new Error('Claude CLI not found. Set CLAUDE_CLI_PATH or install Claude Code.');
+    throw new Error(
+      "Claude CLI not found. Set CLAUDE_CLI_PATH or install Claude Code."
+    );
   }
 
   // Build CLI args
   const args = [options.prompt];
   if (options.sessionId) {
-    args.push('--session-id', options.sessionId);
+    args.push("--session-id", options.sessionId);
   }
 
   // Spawn process
-  let lineBuffer = '';
+  let lineBuffer = "";
   const events: unknown[] = [];
 
   const result = await spawnProcess(cliPath, {
@@ -784,8 +841,8 @@ export async function executeClaudeCommand<T = unknown>(
     timeout: options.timeout || 60000,
     onStdout: (chunk) => {
       lineBuffer += chunk;
-      const lines = lineBuffer.split('\n');
-      lineBuffer = lines.pop() || '';
+      const lines = lineBuffer.split("\n");
+      lineBuffer = lines.pop() || "";
 
       for (const line of lines) {
         if (!line.trim()) continue;
@@ -809,30 +866,30 @@ export async function executeClaudeCommand<T = unknown>(
 
   // Parse all messages
   const messages = result.stdout
-    .split('\n')
-    .map(line => parseClaudeEvent(line))
+    .split("\n")
+    .map((line) => parseClaudeEvent(line))
     .filter((msg): msg is UnifiedMessage => msg !== null)
     .sort((a, b) => a.timestamp - b.timestamp);
 
   // Extract session ID from first event
   const firstEvent = events[0] as any;
-  const sessionId = options.sessionId || firstEvent?.sessionId || 'unknown';
+  const sessionId = options.sessionId || firstEvent?.sessionId || "unknown";
 
   // Extract text output
   const output = messages
-    .filter(m => m.role === 'assistant')
-    .map(m => extractTextContent(m))
-    .join('\n');
+    .filter((m) => m.role === "assistant")
+    .map((m) => extractTextContent(m))
+    .join("\n");
 
   // Extract JSON if requested
   let data: T | undefined;
   if (options.extractJSON || options.responseSchema) {
-    const lastAssistant = messages.filter(m => m.role === 'assistant').at(-1);
+    const lastAssistant = messages.filter((m) => m.role === "assistant").at(-1);
     if (lastAssistant) {
       const text = extractTextContent(lastAssistant);
       data = options.responseSchema
         ? extractAndValidateJSON<T>(text, options.responseSchema)
-        : extractJSON(text) as T;
+        : (extractJSON(text) as T);
     }
   }
 
@@ -850,12 +907,17 @@ export async function executeClaudeCommand<T = unknown>(
 ### 2.5 Update Main API
 
 **File**: `src/index.ts` (add execute implementation)
+
 ```typescript
-import type { z } from 'zod';
-import { executeClaudeCommand, type ExecuteClaudeOptions, type ExecuteClaudeResult } from './claude/executor';
+import type { z } from "zod";
+import {
+  executeClaudeCommand,
+  type ExecuteClaudeOptions,
+  type ExecuteClaudeResult,
+} from "./claude/execute";
 
 export interface ExecuteOptions {
-  tool: 'claude' | 'codex' | 'gemini' | 'cursor';
+  tool: "claude" | "codex" | "gemini" | "cursor";
   prompt: string;
   sessionId?: string;
   workingDir?: string;
@@ -871,14 +933,14 @@ export async function execute<T = unknown>(
   options: ExecuteOptions
 ): Promise<ExecuteClaudeResult<T>> {
   switch (options.tool) {
-    case 'claude':
+    case "claude":
       return await executeClaudeCommand<T>(options as ExecuteClaudeOptions);
-    case 'codex':
-      throw new Error('Codex executor not yet implemented');
-    case 'gemini':
-      throw new Error('Gemini executor not yet implemented');
-    case 'cursor':
-      throw new Error('Cursor executor not yet implemented');
+    case "codex":
+      throw new Error("Codex execute function not yet implemented");
+    case "gemini":
+      throw new Error("Gemini execute not yet implemented");
+    case "cursor":
+      throw new Error("Cursor execute not yet implemented");
     default:
       const _exhaustive: never = options.tool;
       throw new Error(`Unknown tool: ${_exhaustive}`);
@@ -886,52 +948,65 @@ export async function execute<T = unknown>(
 }
 
 // Re-export JSON utilities
-export { extractJSON, extractAndValidateJSON, JSONExtractionError, JSONValidationError } from './utils/json-extract';
+export {
+  extractJSON,
+  extractAndValidateJSON,
+  JSONExtractionError,
+  JSONValidationError,
+} from "./utils/json-extract";
 ```
 
 ### 2.6 Write Tests
 
 **File**: `tests/utils/json-extract.test.ts`
-```typescript
-import { describe, it, expect } from 'vitest';
-import { extractJSON, extractAndValidateJSON, JSONExtractionError } from '../../src/utils/json-extract';
-import { z } from 'zod';
 
-describe('extractJSON', () => {
-  it('should parse direct JSON', () => {
+````typescript
+import { describe, it, expect } from "vitest";
+import {
+  extractJSON,
+  extractAndValidateJSON,
+  JSONExtractionError,
+} from "../../src/utils/json-extract";
+import { z } from "zod";
+
+describe("extractJSON", () => {
+  it("should parse direct JSON", () => {
     const result = extractJSON('{"name":"Alice"}');
-    expect(result).toEqual({ name: 'Alice' });
+    expect(result).toEqual({ name: "Alice" });
   });
 
-  it('should extract from markdown code block', () => {
+  it("should extract from markdown code block", () => {
     const text = '```json\n{"name":"Bob"}\n```';
     const result = extractJSON(text);
-    expect(result).toEqual({ name: 'Bob' });
+    expect(result).toEqual({ name: "Bob" });
   });
 
-  it('should throw for no JSON', () => {
-    expect(() => extractJSON('Hello world')).toThrow(JSONExtractionError);
+  it("should throw for no JSON", () => {
+    expect(() => extractJSON("Hello world")).toThrow(JSONExtractionError);
   });
 });
 
-describe('extractAndValidateJSON', () => {
+describe("extractAndValidateJSON", () => {
   const UserSchema = z.object({
     name: z.string(),
     age: z.number(),
   });
 
-  it('should validate valid JSON', () => {
-    const result = extractAndValidateJSON('{"name":"Alice","age":30}', UserSchema);
-    expect(result).toEqual({ name: 'Alice', age: 30 });
+  it("should validate valid JSON", () => {
+    const result = extractAndValidateJSON(
+      '{"name":"Alice","age":30}',
+      UserSchema
+    );
+    expect(result).toEqual({ name: "Alice", age: 30 });
   });
 
-  it('should throw for invalid JSON', () => {
+  it("should throw for invalid JSON", () => {
     expect(() => {
       extractAndValidateJSON('{"name":"Alice"}', UserSchema);
     }).toThrow();
   });
 });
-```
+````
 
 ## Phase 2 Success Criteria
 
@@ -947,15 +1022,16 @@ describe('extractAndValidateJSON', () => {
 
 # Phase 3: Codex Support
 
-**Goal**: Add full Codex support (loader + executor)
+**Goal**: Add full Codex support (load + execute)
 
 **Duration**: ~2-3 hours
 
 **Deliverables**:
+
 - ✅ Codex native types
 - ✅ Codex parser
-- ✅ Codex loader
-- ✅ Codex executor
+- ✅ Codex loadSession function
+- ✅ Codex execute function
 - ✅ Tests for Codex
 
 ## Phase 3 Tasks
@@ -963,10 +1039,11 @@ describe('extractAndValidateJSON', () => {
 ### 3.1 Define Codex Types
 
 **File**: `src/codex/types.ts`
+
 ```typescript
 // Similar structure to Claude but with Codex-specific fields
 export interface CodexEvent {
-  type: 'thread.started' | 'turn.completed' | 'item.completed' | 'tool.started';
+  type: "thread.started" | "turn.completed" | "item.completed" | "tool.started";
   timestamp?: number;
   data?: unknown;
 }
@@ -976,23 +1053,26 @@ export interface CodexEvent {
 
 ### 3.2 Implement Codex Parser
 
-**File**: `src/codex/parser.ts`
+**File**: `src/codex/parse.ts`
+
 ```typescript
 // Similar to Claude parser but for Codex format
 ```
 
-### 3.3 Implement Codex Loader
+### 3.3 Implement Codex Load Function
 
-**File**: `src/codex/loader.ts`
+**File**: `src/codex/loadSession.ts`
+
 ```typescript
-// Similar to Claude loader
+// Similar to Claude loadSession() function
 ```
 
-### 3.4 Implement Codex Executor
+### 3.4 Implement Codex Execute Function
 
-**File**: `src/codex/executor.ts`
+**File**: `src/codex/execute.ts`
+
 ```typescript
-// Similar to Claude executor
+// Similar to Claude execute function
 ```
 
 ### 3.5 Update Main APIs
@@ -1005,8 +1085,8 @@ Similar test structure as Claude
 
 ## Phase 3 Success Criteria
 
-- ✅ Codex loader works
-- ✅ Codex executor works
+- ✅ Codex loadSession function works
+- ✅ Codex execute function works
 - ✅ All APIs support `tool: 'codex'`
 - ✅ Tests pass
 
@@ -1019,6 +1099,7 @@ Similar test structure as Claude
 **Duration**: ~1-2 hours
 
 **Deliverables**:
+
 - ✅ README with examples
 - ✅ API documentation
 - ✅ Usage examples
@@ -1032,6 +1113,7 @@ Similar test structure as Claude
 **File**: `packages/agent-cli-sdk-two/README.md`
 
 Include:
+
 - Installation
 - Quick start
 - API reference
@@ -1073,17 +1155,20 @@ Review all error messages for clarity
 **Not included in main phases**:
 
 ### Gemini & Cursor Support
+
 - Define types
-- Implement parsers/loaders/executors
+- Implement parsers/loadSession functions/execute functions
 - Add tests
 
 ### Advanced Features
+
 - Session replay/resume
 - Batch operations (if needed)
 - Performance optimizations
 - Streaming file parsing for large JSONL
 
 ### Developer Experience
+
 - CLI tool for testing
 - Interactive REPL
 - Better error messages with suggestions
@@ -1106,17 +1191,20 @@ Review all error messages for clarity
 ## Testing Strategy
 
 ### Unit Tests
+
 - Each parser function
-- Each loader function
+- Each loadSession function
 - JSON extraction utilities
 - CLI detector
 
 ### Integration Tests
+
 - Load real JSONL files
 - Execute actual CLI commands (optional, requires CLIs installed)
 - End-to-end workflows
 
 ### Type Tests
+
 - Verify TypeScript inference
 - Check discriminated unions work
 - Ensure type guards work
@@ -1142,23 +1230,24 @@ Project is complete when:
 
 **Key Differences**:
 
-| Feature | v4 | v2 (this project) |
-|---------|----|--------------------|
-| API | Class-based adapters | Functional API |
-| Session mgmt | Built-in | None (simpler) |
-| Batch ops | Not supported | Not supported |
-| JSON extraction | `responseSchema` | `extractJSON` + `responseSchema` |
-| Loading sessions | Not supported | ✅ `loadMessages()` |
-| Message format | Native only | Unified + Native |
+| Feature          | v4                   | v2 (this project)                |
+| ---------------- | -------------------- | -------------------------------- |
+| API              | Class-based adapters | Functional API                   |
+| Session mgmt     | Built-in             | None (simpler)                   |
+| Batch ops        | Not supported        | Not supported                    |
+| JSON extraction  | `responseSchema`     | `extractJSON` + `responseSchema` |
+| Loading sessions | Not supported        | ✅ `loadMessages()`              |
+| Message format   | Native only          | Unified + Native                 |
 
 **Migration Example**:
+
 ```typescript
 // v4
 const adapter = new ClaudeAdapter();
-const result = await adapter.execute('Hello');
+const result = await adapter.execute("Hello");
 
 // v2
-const result = await execute({ tool: 'claude', prompt: 'Hello' });
+const result = await execute({ tool: "claude", prompt: "Hello" });
 ```
 
 ---

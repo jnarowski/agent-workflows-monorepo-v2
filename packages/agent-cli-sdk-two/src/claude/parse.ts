@@ -5,7 +5,26 @@ import type { ClaudeEvent, ContentBlock } from './types';
 // Public API
 // ============================================================================
 
-export function parser(jsonlLine: string): UnifiedMessage | null {
+/**
+ * Parse a single JSONL line from a Claude session file into a unified message.
+ *
+ * Converts a Claude event (user or assistant message) into a standardized format
+ * that includes content blocks, timestamps, token usage, and metadata. Returns null
+ * for non-message events or invalid lines.
+ *
+ * @param jsonlLine - A single line from a Claude JSONL session file
+ * @returns A unified message object or null if the line cannot be parsed or is not a message
+ *
+ * @example
+ * ```typescript
+ * const line = '{"type":"assistant","message":{"role":"assistant","content":"Hello"},"timestamp":"2024-01-01T00:00:00Z"}';
+ * const message = parse(line);
+ * if (message) {
+ *   console.log(message.role, message.content);
+ * }
+ * ```
+ */
+export function parse(jsonlLine: string): UnifiedMessage | null {
   try {
     const event: ClaudeEvent = JSON.parse(jsonlLine);
 
@@ -164,7 +183,7 @@ function extractSlashCommand(content: string): {
   }
 
   // Remove the command tags from the remaining text
-  let remainingText = content
+  const remainingText = content
     .replace(/<command-name>.*?<\/command-name>/g, '')
     .replace(/<command-message>.*?<\/command-message>/g, '')
     .replace(/<command-args>.*?<\/command-args>/g, '')

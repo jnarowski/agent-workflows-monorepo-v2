@@ -482,6 +482,9 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.15.3
+      '@types/uuid':
+        specifier: ^11.0.0
+        version: 11.0.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.46.1
         version: 8.46.2(@typescript-eslint/parser@8.46.2(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
@@ -503,6 +506,9 @@ importers:
       typescript:
         specifier: ^5.5.0
         version: 5.9.3
+      uuid:
+        specifier: ^13.0.0
+        version: 13.0.0
       vitest:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@22.15.3)(happy-dom@20.0.8)(lightningcss@1.30.2)

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parser } from './parse';
+import { parse } from './parse';
 
 describe('parser', () => {
   // Real messages from actual Claude session (sample.jsonl)
@@ -45,7 +45,7 @@ describe('parser', () => {
     '{"parentUuid":"81b38c35-b17f-4165-8e60-5fe4fdbe8b8a","isSidechain":false,"userType":"external","cwd":"/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2","sessionId":"cfa1e878-62b5-4e40-b281-bbf9b250d766","version":"2.0.14","gitBranch":"main","message":{"model":"claude-sonnet-4-5-20250929","id":"msg_016s5eVR2dEB4RbiJkWPwgMf","type":"message","role":"assistant","content":[{"type":"tool_use","id":"toolu_011YYBysX3VvgEUTM9L2iWCJ","name":"mcp__happy__change_title","input":{"title":"Codebase Audit"}}],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":3,"cache_creation_input_tokens":181,"cache_read_input_tokens":14566,"cache_creation":{"ephemeral_5m_input_tokens":181,"ephemeral_1h_input_tokens":0},"output_tokens":4,"service_tier":"standard"}},"requestId":"req_011CUKdDSzjdQDj5azZsPxFW","type":"assistant","uuid":"6dd808e1-5323-4917-a73a-2cb7b3eb13f5","timestamp":"2025-10-21T03:22:00.061Z"}';
 
   it('should parse real user message', () => {
-    const result = parser(realUserMessage);
+    const result = parse(realUserMessage);
 
     expect(result).not.toBeNull();
     expect(result?.role).toBe('user');
@@ -63,7 +63,7 @@ describe('parser', () => {
   });
 
   it('should parse real assistant message with text content', () => {
-    const result = parser(realAssistantMessage);
+    const result = parse(realAssistantMessage);
 
     expect(result).not.toBeNull();
     expect(result?.role).toBe('assistant');
@@ -80,7 +80,7 @@ describe('parser', () => {
   });
 
   it('should parse real tool use message', () => {
-    const result = parser(realToolUseMessage);
+    const result = parse(realToolUseMessage);
 
     expect(result).not.toBeNull();
     expect(result?.content).toHaveLength(1);
@@ -98,7 +98,7 @@ describe('parser', () => {
   });
 
   it('should parse usage data from real message', () => {
-    const result = parser(realAssistantMessage);
+    const result = parse(realAssistantMessage);
 
     expect(result).not.toBeNull();
     expect(result?.usage).toBeDefined();
@@ -111,25 +111,25 @@ describe('parser', () => {
 
   it('should skip file-history-snapshot', () => {
     const line = '{"type":"file-history-snapshot","messageId":"123"}';
-    const result = parser(line);
+    const result = parse(line);
     expect(result).toBeNull();
   });
 
   it('should return null for invalid JSON', () => {
     const line = 'invalid json {';
-    const result = parser(line);
+    const result = parse(line);
     expect(result).toBeNull();
   });
 
   it('should return null when message is missing', () => {
     const line = '{"type":"user","timestamp":"2025-01-01T00:00:00Z","uuid":"user-222"}';
-    const result = parser(line);
+    const result = parse(line);
     expect(result).toBeNull();
   });
 
   // Additional test cases from sample.jsonl fixture
   it('should parse user message with tool_result content', () => {
-    const result = parser(toolResultMessage);
+    const result = parse(toolResultMessage);
 
     expect(result).not.toBeNull();
     expect(result?.role).toBe('user');
@@ -147,7 +147,7 @@ describe('parser', () => {
   });
 
   it('should parse assistant message with Bash tool use', () => {
-    const result = parser(bashToolMessage);
+    const result = parse(bashToolMessage);
 
     expect(result).not.toBeNull();
     expect(result?.role).toBe('assistant');
@@ -167,7 +167,7 @@ describe('parser', () => {
   });
 
   it('should parse assistant message with Read tool', () => {
-    const result = parser(readToolMessage);
+    const result = parse(readToolMessage);
 
     expect(result).not.toBeNull();
     expect(result?.role).toBe('assistant');
@@ -185,7 +185,7 @@ describe('parser', () => {
   });
 
   it('should parse user message with complex toolUseResult metadata', () => {
-    const result = parser(complexToolResult);
+    const result = parse(complexToolResult);
 
     expect(result).not.toBeNull();
     expect(result?.role).toBe('user');
@@ -203,7 +203,7 @@ describe('parser', () => {
   });
 
   it('should parse assistant message with TodoWrite tool', () => {
-    const result = parser(todoWriteMessage);
+    const result = parse(todoWriteMessage);
 
     expect(result).not.toBeNull();
     expect(result?.role).toBe('assistant');
@@ -222,7 +222,7 @@ describe('parser', () => {
   });
 
   it('should parse message with cache statistics', () => {
-    const result = parser(messageWithCache);
+    const result = parse(messageWithCache);
 
     expect(result).not.toBeNull();
     expect(result?.usage).toBeDefined();
@@ -234,7 +234,7 @@ describe('parser', () => {
   });
 
   it('should preserve timestamp', () => {
-    const result = parser(realUserMessage);
+    const result = parse(realUserMessage);
 
     expect(result).not.toBeNull();
     expect(result?.timestamp).toBeDefined();
@@ -242,7 +242,7 @@ describe('parser', () => {
   });
 
   it('should handle assistant message with text containing special characters', () => {
-    const result = parser(messageWithSpecialChars);
+    const result = parse(messageWithSpecialChars);
 
     expect(result).not.toBeNull();
     expect(result?.content).toHaveLength(1);
@@ -260,7 +260,7 @@ describe('parser', () => {
   // Type guard tests
   describe('type guards', () => {
     it('should correctly identify Bash tool with type guard', () => {
-      const result = parser(bashToolMessage);
+      const result = parse(bashToolMessage);
       expect(result).not.toBeNull();
 
       if (Array.isArray(result?.content)) {
@@ -277,7 +277,7 @@ describe('parser', () => {
     });
 
     it('should correctly identify Read tool with type guard', () => {
-      const result = parser(readToolMessage);
+      const result = parse(readToolMessage);
       expect(result).not.toBeNull();
 
       if (Array.isArray(result?.content)) {
@@ -292,7 +292,7 @@ describe('parser', () => {
     });
 
     it('should correctly identify TodoWrite tool with type guard', () => {
-      const result = parser(todoWriteMessage);
+      const result = parse(todoWriteMessage);
       expect(result).not.toBeNull();
 
       if (Array.isArray(result?.content)) {
@@ -307,7 +307,7 @@ describe('parser', () => {
     });
 
     it('should correctly identify MCP tool with name check', () => {
-      const result = parser(realToolUseMessage);
+      const result = parse(realToolUseMessage);
       expect(result).not.toBeNull();
 
       if (Array.isArray(result?.content)) {
@@ -333,7 +333,7 @@ describe('parser', () => {
       '{"parentUuid":"5a289ca7-2029-49f5-82c1-14818eca4896","isSidechain":false,"userType":"external","cwd":"/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2","sessionId":"33ae3837-255e-4ccf-aea4-90e8bf675372","version":"2.0.28","gitBranch":"feat/agent-cli-sdk-revamp-v3","type":"user","message":{"role":"user","content":"<command-message>generate-feature is running…</command-message>\\n<command-name>/generate-feature</command-name>\\n<command-args>\\"a\\" \\"b\\"</command-args>"},"uuid":"091f5c55-fa08-42c5-a2e7-5d21f88e656e","timestamp":"2025-10-28T11:46:48.673Z"}';
 
     it('should parse slash command without args', () => {
-      const result = parser(slashCommandNoArgs);
+      const result = parse(slashCommandNoArgs);
 
       expect(result).not.toBeNull();
       expect(result?.role).toBe('user');
@@ -352,7 +352,7 @@ describe('parser', () => {
     });
 
     it('should parse slash command with args', () => {
-      const result = parser(slashCommandWithArgs);
+      const result = parse(slashCommandWithArgs);
 
       expect(result).not.toBeNull();
       expect(result?.role).toBe('user');
@@ -371,7 +371,7 @@ describe('parser', () => {
     });
 
     it('should handle user message without slash command', () => {
-      const result = parser(realUserMessage);
+      const result = parse(realUserMessage);
 
       expect(result).not.toBeNull();
       expect(result?.content).toHaveLength(1);
