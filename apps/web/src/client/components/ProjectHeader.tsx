@@ -104,9 +104,8 @@ export function ProjectHeader({ projectId, projectName, currentBranch }: Project
       {/* Mobile navigation - dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild className="md:hidden">
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-1">
             <activeNavItem.icon className="h-4 w-4" />
-            <span>{activeNavItem.label}</span>
             <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
