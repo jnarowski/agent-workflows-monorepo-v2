@@ -5,17 +5,16 @@
 
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import type { SessionMessage } from "@/shared/types/message.types";
+import type { UIMessage } from "@/shared/types/message.types";
 import { UserMessage } from './UserMessage';
 import { AssistantMessage } from './AssistantMessage';
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 interface MessageRendererProps {
-  message: SessionMessage;
-  toolResults?: Map<string, { content: string; is_error?: boolean }>;
+  message: UIMessage;
 }
 
-export function MessageRenderer({ message, toolResults }: MessageRendererProps) {
+export function MessageRenderer({ message }: MessageRendererProps) {
   const [searchParams] = useSearchParams();
   const debugMode = searchParams.get('debug') === 'true';
   const [isJsonExpanded, setIsJsonExpanded] = useState(false);
@@ -26,7 +25,7 @@ export function MessageRenderer({ message, toolResults }: MessageRendererProps) 
         return <UserMessage message={message} />;
 
       case 'assistant':
-        return <AssistantMessage message={message} toolResults={toolResults} />;
+        return <AssistantMessage message={message} />;
 
       default:
         console.warn('Unknown message role:', message.role);

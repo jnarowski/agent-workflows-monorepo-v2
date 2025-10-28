@@ -1,6 +1,6 @@
 # Agent Workflows Monorepo
 
-A Turborepo-based monorepo for AI agent workflow tools, including a full-stack web application for managing and visualizing AI agent workflows, and TypeScript SDKs for orchestrating AI-powered CLI tools.
+A Turborepo monorepo for AI agent workflow tools: a full-stack web application for managing AI agent sessions (chat, file editor, terminal) and TypeScript SDKs for programmatically orchestrating AI CLI tools (Claude Code, OpenAI Codex).
 
 ## What's Inside?
 
@@ -8,16 +8,28 @@ This monorepo includes the following packages and apps:
 
 ### Apps
 
-- **`web`** - Full-stack application (React + Vite frontend, Fastify backend) for managing AI agent workflows
-- **`claudecodeui`** - Standalone UI application (currently not active)
+- **`web`** - Full-stack application (React + Vite, Fastify backend)
+  - Multi-agent chat interface (Claude Code, Codex)
+  - File editor with syntax highlighting
+  - Terminal emulator with WebSocket
+  - Session management with Prisma (SQLite)
 
 ### Packages
 
-- **`@repo/agent-cli-sdk`** - TypeScript SDK for orchestrating AI-powered CLI tools (Claude Code, OpenAI Codex)
-- **`@repo/agent-workflows`** - Core workflow utilities library with automatic state persistence and logging
-- **`@repo/ui`** - Shared UI components library
-- **`@repo/eslint-config`** - Shared ESLint configurations
-- **`@repo/typescript-config`** - Shared TypeScript configurations
+- **`@repo/agent-cli-sdk`** - SDK for AI CLI tools (Claude Code, Codex)
+  - Execute agents programmatically with streaming callbacks
+  - Load and parse session histories (JSONL)
+  - Unified message format across agents
+
+- **`@repo/agent-workflows`** - Workflow orchestration library
+  - Multi-step workflows with automatic state persistence
+  - Git branch management and error handling
+  - Pluggable storage adapters (FileStorage)
+  - Result pattern for error handling
+
+- **`@repo/ui`** - Shared React components
+- **`@repo/eslint-config`** - Shared ESLint configs
+- **`@repo/typescript-config`** - Shared TypeScript configs
 
 ## Getting Started
 
@@ -270,25 +282,53 @@ The web app requires environment variables. When you run `pnpm dev:setup` for th
 
 See `apps/web/.env.example` for all available options.
 
-## Useful Links
+## Tech Stack
 
-### Turborepo
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
+**Frontend:** React 19, Vite, TanStack Query, Zustand, Tailwind CSS v4, shadcn/ui, CodeMirror, xterm.js
+**Backend:** Fastify, Prisma (SQLite), JWT, WebSocket, node-pty, Zod
+**Build:** Turborepo, pnpm, Bunchee, TypeScript (strict mode)
 
-### Package Documentation
-- See `packages/agent-cli-sdk/README.md` for SDK documentation
-- See `packages/agent-workflows/README.md` for workflow utilities documentation
-- See `apps/web/CLAUDE.md` for web application development guide
+## Documentation
 
-## Contributing
+- **[CLAUDE.md](./CLAUDE.md)** - Monorepo development guide
+- **[apps/web/CLAUDE.md](./apps/web/CLAUDE.md)** - Web app architecture
+- **[packages/agent-cli-sdk/](./packages/agent-cli-sdk/)** - SDK docs (CLAUDE.md + README.md)
+- **[packages/agent-workflows/](./packages/agent-workflows/)** - Workflow library docs
 
-1. Create a feature branch
-2. Make your changes
-3. Run `pnpm lint` and `pnpm check-types`
-4. Test your changes
-5. Create a pull request
+## Usage Examples
+
+**agent-cli-sdk:**
+```typescript
+import { execute } from '@repo/agent-cli-sdk';
+
+const result = await execute('claude', {
+  prompt: 'Analyze this codebase',
+  cliOptions: { model: 'sonnet', permissionMode: 'plan' },
+  onMessage: (msg) => console.log(msg)
+});
+```
+
+**agent-workflows:**
+```typescript
+import { Workflow, FileStorage, generateWorkflowId } from '@repo/agent-workflows';
+
+const workflow = new Workflow({
+  storage: new FileStorage({ workflowId: generateWorkflowId('Feature') })
+});
+
+await workflow.executeStep('analyze', {
+  fn: async () => ({ analyzed: true })
+});
+```
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Module not found | `pnpm build` |
+| Database errors | `cd apps/web && pnpm prisma:generate && pnpm prisma:migrate` |
+| WebSocket issues | Check logs: `tail -f apps/web/logs/app.log` |
+| Port conflicts | `cd apps/web && pnpm dev:kill && pnpm dev` |
 
 ## License
 

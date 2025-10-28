@@ -4,18 +4,14 @@
  */
 
 import { AlertCircle } from "lucide-react";
-import type { SessionMessage } from "@/shared/types/message.types";
+import type { UIMessage } from "@/shared/types/message.types";
 import { ContentBlockRenderer } from "./ContentBlockRenderer";
 
 interface AssistantMessageProps {
-  message: SessionMessage;
-  toolResults?: Map<string, { content: string; is_error?: boolean }>;
+  message: UIMessage;
 }
 
-export function AssistantMessage({
-  message,
-  toolResults,
-}: AssistantMessageProps) {
+export function AssistantMessage({ message }: AssistantMessageProps) {
   const content = message.content;
 
   // Strip ANSI color codes from text
@@ -60,11 +56,7 @@ export function AssistantMessage({
     <div className="w-full overflow-hidden">
       {/* Content blocks */}
       {content.map((block, index) => (
-        <ContentBlockRenderer
-          key={index}
-          block={block}
-          toolResults={toolResults}
-        />
+        <ContentBlockRenderer key={index} block={block} />
       ))}
     </div>
   );

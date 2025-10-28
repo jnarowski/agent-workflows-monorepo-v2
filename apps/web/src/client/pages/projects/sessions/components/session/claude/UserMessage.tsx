@@ -4,24 +4,24 @@
  */
 
 import type {
-  SessionMessage,
-  TextBlock,
-  ToolResultBlock,
+  UIMessage,
+  UnifiedTextBlock,
+  UnifiedToolResultBlock,
 } from "@/shared/types/message.types";
 
 interface UserMessageProps {
-  message: SessionMessage;
+  message: UIMessage;
 }
 
 export function UserMessage({ message }: UserMessageProps) {
   // Extract text content from content blocks
   const textBlocks = message.content.filter(
-    (block): block is TextBlock => block.type === "text"
+    (block): block is UnifiedTextBlock => block.type === "text"
   );
 
   // Extract tool result blocks
   const toolResultBlocks = message.content.filter(
-    (block): block is ToolResultBlock => block.type === "tool_result"
+    (block): block is UnifiedToolResultBlock => block.type === "tool_result"
   );
 
   // If message only contains tool results (no text), don't render
@@ -41,7 +41,7 @@ export function UserMessage({ message }: UserMessageProps) {
         {hasText && (
           <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
             <div className="whitespace-pre-wrap break-words text-base md:text-sm">
-              {textBlocks.map((block: TextBlock) => block.text).join("\n\n")}
+              {textBlocks.map((block: UnifiedTextBlock) => block.text).join("\n\n")}
             </div>
           </div>
         )}

@@ -7,7 +7,7 @@ import { useNavigationStore } from "@/client/stores/index";
 import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 
 // Mock the stores and hooks
-vi.mock("@/client/stores", () => ({
+vi.mock("@/client/stores/index", () => ({
   useNavigationStore: vi.fn(),
 }));
 
@@ -23,7 +23,7 @@ describe("useActiveSession", () => {
     { id: "session-2", name: "Session 2" },
   ];
 
-  const mockProjects = [
+  const mockProjectsWithSessions = [
     {
       id: "project-1",
       name: "Project 1",
@@ -51,7 +51,7 @@ describe("useActiveSession", () => {
       selector({ activeProjectId: "project-1", activeSessionId: null })
     );
     vi.mocked(useProjectsWithSessions).mockReturnValue({
-      data: mockProjects,
+      data: mockProjectsWithSessions,
       isLoading: false,
       error: null,
     });
@@ -68,7 +68,7 @@ describe("useActiveSession", () => {
       selector({ activeProjectId: "project-1", activeSessionId: "session-1" })
     );
     vi.mocked(useProjectsWithSessions).mockReturnValue({
-      data: mockProjects,
+      data: mockProjectsWithSessions,
       isLoading: false,
       error: null,
     });
@@ -88,7 +88,7 @@ describe("useActiveSession", () => {
       })
     );
     vi.mocked(useProjectsWithSessions).mockReturnValue({
-      data: mockProjects,
+      data: mockProjectsWithSessions,
       isLoading: false,
       error: null,
     });
@@ -132,19 +132,20 @@ describe("useActiveSession", () => {
     expect(result.current.session).toBeNull();
   });
 
-  it("should disable query when no project is active", () => {
+  it("should return null when no project is active", () => {
     vi.mocked(useNavigationStore).mockImplementation((selector: (state: Record<string, unknown>) => unknown) =>
       selector({ activeProjectId: null, activeSessionId: "session-1" })
     );
     vi.mocked(useProjectsWithSessions).mockReturnValue({
-      data: undefined,
+      data: mockProjectsWithSessions,
       isLoading: false,
       error: null,
     });
 
     const { result } = renderHook(() => useActiveSession(), { wrapper });
 
-    // When no project is active, there should be no session
+    // When no project is active, session should be null
     expect(result.current.session).toBeNull();
+    expect(result.current.sessionId).toBe("session-1");
   });
 });

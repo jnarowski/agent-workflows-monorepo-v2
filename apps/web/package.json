@@ -15,7 +15,7 @@
   "scripts": {
     "build": "tsc -b && vite build && pnpm build:cli",
     "build:cli": "node scripts/build-cli.js && node scripts/copy-prisma-schema.js",
-    "check": "pnpm lint && pnpm check-types && pnpm run test",
+    "check": "pnpm lint && pnpm check-types && pnpm test",
     "check-types": "tsc --noEmit",
     "dev": "concurrently --kill-others \"pnpm dev:server\" \"pnpm dev:client\"",
     "dev:client": "vite --host",

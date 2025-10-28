@@ -230,7 +230,7 @@ describe('Git Service', () => {
   describe('commitChanges', () => {
     it('should commit staged files', async () => {
       const mockCommitResult = { commit: 'abc123' };
-      (mockGit.add as MockedFunction<(files: string[]) => Promise<void>>).mockResolvedValue(undefined as unknown as void);
+      (mockGit.add as MockedFunction<(files: string[]) => Promise<void>>).mockResolvedValue();
       (mockGit.commit as MockedFunction<(message: string) => Promise<{ commit: string }>>).mockResolvedValue(mockCommitResult);
 
       const result = await commitChanges('/test/path', 'Test commit', ['file1.txt']);
@@ -251,7 +251,7 @@ describe('Git Service', () => {
 
   describe('pushToRemote', () => {
     it('should push to remote with default origin', async () => {
-      (mockGit.push as MockedFunction<(remote: string, branch: string, options: string[]) => Promise<void>>).mockResolvedValue();
+      (mockGit.push as MockedFunction<(remote: string, branch: string, options?: string[]) => Promise<void>>).mockResolvedValue();
 
       await pushToRemote('/test/path', 'main');
 
@@ -259,7 +259,7 @@ describe('Git Service', () => {
     });
 
     it('should push to custom remote', async () => {
-      (mockGit.push as MockedFunction<(remote: string, branch: string, options: string[]) => Promise<void>>).mockResolvedValue();
+      (mockGit.push as MockedFunction<(remote: string, branch: string, options?: string[]) => Promise<void>>).mockResolvedValue();
 
       await pushToRemote('/test/path', 'main', 'upstream');
 
@@ -353,11 +353,8 @@ describe('Git Service', () => {
   describe('checkGhCliAvailable', () => {
     it('should return true if gh CLI is available', async () => {
       const mockExec = exec as unknown as MockedFunction<typeof exec>;
-      mockExec.mockImplementation(((_cmd: string, _opts: unknown, callback?: (error: Error | null, stdout: string, stderr: string) => void) => {
-        if (callback) {
-          callback(null, 'Logged in', '');
-        }
-        return {} as ReturnType<typeof exec>;
+      mockExec.mockImplementation(((cmd: string, options: unknown, callback: (error: null, result: { stdout: string }) => void) => {
+        callback(null, { stdout: 'Logged in' });
       }) as typeof exec);
 
       const result = await checkGhCliAvailable('/test/path');
@@ -367,11 +364,8 @@ describe('Git Service', () => {
 
     it('should return false if gh CLI is not available', async () => {
       const mockExec = exec as unknown as MockedFunction<typeof exec>;
-      mockExec.mockImplementation(((_cmd: string, _opts: unknown, callback?: (error: Error | null, stdout: string, stderr: string) => void) => {
-        if (callback) {
-          callback(new Error('Command not found'), '', 'gh: command not found');
-        }
-        return {} as ReturnType<typeof exec>;
+      mockExec.mockImplementation(((cmd: string, options: unknown, callback: (error: Error) => void) => {
+        callback(new Error('Command not found'));
       }) as typeof exec);
 
       const result = await checkGhCliAvailable('/test/path');

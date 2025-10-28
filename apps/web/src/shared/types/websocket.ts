@@ -63,9 +63,7 @@ export type WebSocketEventName =
  * Session event data types
  */
 export interface SessionStreamOutputData {
-  content: {
-    events: unknown[]; // Array of content blocks from Claude API
-  };
+  message?: import('@repo/agent-cli-sdk').UnifiedMessage; // SDK provides clean UnifiedMessage
 }
 
 export interface SessionMessageCompleteData {

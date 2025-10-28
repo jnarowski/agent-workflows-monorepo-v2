@@ -260,10 +260,15 @@ export default function ProjectSession() {
 
         // Immediately send message via app-wide WebSocket (before navigation)
         // This starts the assistant processing right away
+        // New session = resume: false (no prior messages)
         globalSendMessage(`session.${newSession.id}.send_message`, {
           message,
           images: imagePaths,
-          config: { permissionMode },
+          config: {
+            resume: false,
+            sessionId: newSession.id,
+            permissionMode,
+          },
         });
 
         // Navigate to the new session with query parameter
@@ -298,15 +303,17 @@ export default function ProjectSession() {
     // Count assistant messages to determine if we should resume
     const assistantMessageCount =
       session?.messages.filter((m) => m.role === "assistant").length || 0;
-    const shouldResume = assistantMessageCount > 0;
+    const resume = assistantMessageCount > 0;
 
     // Get permission mode from form
     const getPermissionMode = useSessionStore.getState().getPermissionMode;
     const permissionMode = getPermissionMode();
 
-    const config = shouldResume
-      ? { resume: true, sessionId, permissionMode }
-      : { permissionMode };
+    const config = {
+      resume,
+      sessionId,
+      permissionMode,
+    };
 
     wsSendMessage(message, imagePaths, config);
   };

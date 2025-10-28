@@ -24,13 +24,14 @@ export type WorkflowStateData = {
 /**
  * Import types from @repo/agent-cli-sdk for use in type aliases
  */
-import type { ExecutionResponse } from '@repo/agent-cli-sdk';
+import type { ClaudeExecuteResult } from '@repo/agent-cli-sdk';
 
 /**
- * Re-export types from @sourceborn/agent-cli-sdk for convenience
+ * Re-export types from @repo/agent-cli-sdk for convenience
  * This ensures type compatibility throughout the library
  */
-export type { ExecutionResponse };
+export type { ClaudeExecuteResult };
+export type ExecutionResponse<T = string> = ClaudeExecuteResult<T>;
 
 /**
  * Interface representing any AI adapter (Claude, Codex, etc.)
