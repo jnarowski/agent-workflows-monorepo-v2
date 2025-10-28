@@ -1,27 +1,26 @@
 import fs from 'fs/promises';
 import type { UnifiedMessage } from '../types/unified';
-import { parseClaudeEvent } from './parser';
+import { parser } from './parser';
 
-export interface LoadClaudeMessagesOptions {
+// ============================================================================
+// Public API
+// ============================================================================
+
+interface LoaderOptions {
   sessionId: string;
-  sessionDir?: string;
+  projectPath: string;
 }
 
-export async function loadClaudeMessages(
-  options: LoadClaudeMessagesOptions
-): Promise<UnifiedMessage[]> {
-  const { sessionId, sessionDir } = options;
-
-  const filePath = sessionId.includes('/') || sessionId.endsWith('.jsonl')
-    ? sessionId
-    : `${sessionDir || getDefaultSessionDir()}/${sessionId}.jsonl`;
+export async function loader(options: LoaderOptions): Promise<UnifiedMessage[]> {
+  const { sessionId, projectPath } = options;
+  const filePath = `${getClaudeProjectDir(projectPath)}/${sessionId}.jsonl`;
 
   try {
     const content = await fs.readFile(filePath, 'utf-8');
     const lines = content.trim().split('\n').filter(Boolean);
 
     const messages = lines
-      .map(line => parseClaudeEvent(line))
+      .map((line) => parser(line))
       .filter((msg): msg is UnifiedMessage => msg !== null)
       .sort((a, b) => a.timestamp - b.timestamp);
 
@@ -35,11 +34,13 @@ export async function loadClaudeMessages(
   }
 }
 
-function getDefaultSessionDir(): string {
-  // Try common Claude session directories
-  // 1. Official Claude Code sessions directory
-  // 2. Claude projects directory (used in some Claude versions)
-  return process.env.CLAUDE_SESSION_DIR ||
-         `${process.env.HOME}/.claude/projects` ||
-         `${process.env.HOME}/.claude-code/sessions`;
+// ============================================================================
+// Private Helpers
+// ============================================================================
+
+function getClaudeProjectDir(projectPath: string): string {
+  // Claude encodes project paths by replacing slashes with dashes
+  // e.g., /Users/jnarowski/Dev/playground -> -Users-jnarowski-Dev-playground
+  const encodedPath = projectPath.replace(/\//g, '-');
+  return `${process.env.HOME}/.claude/projects/${encodedPath}`;
 }

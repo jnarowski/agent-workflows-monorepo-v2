@@ -1,13 +1,40 @@
-import { describe, it, expect } from 'vitest';
-import { resolve } from 'path';
-import { loadClaudeMessages } from './loader';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { resolve, join } from 'path';
+import { mkdir, copyFile, rm } from 'fs/promises';
+import { loader } from './loader';
+import { tmpdir } from 'os';
 
 const REAL_SESSION_PATH = resolve(__dirname, '../../tests/fixtures/claude/sample.jsonl');
+const TEST_SESSION_ID = 'test-session-id';
 
-describe('loadClaudeMessages', () => {
-  it('should load messages from real Claude session file', async () => {
-    const messages = await loadClaudeMessages({
-      sessionId: REAL_SESSION_PATH,
+describe('loader', () => {
+  let testProjectPath: string;
+  let testClaudeProjectDir: string;
+
+  beforeEach(async () => {
+    // Create a temporary project directory
+    testProjectPath = join(tmpdir(), 'test-project-' + Date.now());
+
+    // Encode the project path (replace / with -)
+    const encodedPath = testProjectPath.replace(/\//g, '-');
+    testClaudeProjectDir = join(process.env.HOME || tmpdir(), '.claude', 'projects', encodedPath);
+
+    // Create the Claude project directory
+    await mkdir(testClaudeProjectDir, { recursive: true });
+
+    // Copy sample session file to the test location
+    await copyFile(REAL_SESSION_PATH, join(testClaudeProjectDir, `${TEST_SESSION_ID}.jsonl`));
+  });
+
+  afterEach(async () => {
+    // Cleanup test directory
+    await rm(testClaudeProjectDir, { recursive: true, force: true });
+  });
+
+  it('should load messages from Claude session file', async () => {
+    const messages = await loader({
+      sessionId: TEST_SESSION_ID,
+      projectPath: testProjectPath,
     });
 
     expect(messages.length).toBeGreaterThan(0);
@@ -24,8 +51,9 @@ describe('loadClaudeMessages', () => {
   });
 
   it('should parse all message types correctly', async () => {
-    const messages = await loadClaudeMessages({
-      sessionId: REAL_SESSION_PATH,
+    const messages = await loader({
+      sessionId: TEST_SESSION_ID,
+      projectPath: testProjectPath,
     });
 
     // Should have both user and assistant messages
@@ -36,28 +64,31 @@ describe('loadClaudeMessages', () => {
     expect(assistantMessages.length).toBeGreaterThan(0);
   });
 
-  it('should preserve native format in messages', async () => {
-    const messages = await loadClaudeMessages({
-      sessionId: REAL_SESSION_PATH,
+  it('should preserve original format in messages', async () => {
+    const messages = await loader({
+      sessionId: TEST_SESSION_ID,
+      projectPath: testProjectPath,
     });
 
-    expect(messages[0]?.native).toBeDefined();
-    expect(typeof messages[0]?.native).toBe('object');
+    expect(messages[0]?._original).toBeDefined();
+    expect(typeof messages[0]?._original).toBe('object');
   });
 
-  it('should return empty array for missing file', async () => {
-    const messages = await loadClaudeMessages({
-      sessionId: '/nonexistent/file.jsonl',
+  it('should return empty array for missing session file', async () => {
+    const messages = await loader({
+      sessionId: 'nonexistent-session',
+      projectPath: testProjectPath,
     });
 
     expect(messages).toEqual([]);
   });
 
-  it('should handle file path with sessionId', async () => {
-    const messages = await loadClaudeMessages({
-      sessionId: REAL_SESSION_PATH,
+  it('should return empty array for missing project', async () => {
+    const messages = await loader({
+      sessionId: TEST_SESSION_ID,
+      projectPath: '/nonexistent/project/path',
     });
 
-    expect(messages.length).toBeGreaterThan(0);
+    expect(messages).toEqual([]);
   });
 });

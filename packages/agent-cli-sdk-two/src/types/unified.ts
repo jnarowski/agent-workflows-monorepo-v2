@@ -14,17 +14,119 @@ export interface UnifiedMessage {
     cacheReadTokens?: number;
   };
 
-  native: unknown;
+  _original: unknown;
 }
 
-export interface UnifiedContent {
-  type: 'text' | 'tool_use' | 'tool_result' | 'thinking';
-  text?: string;
-  thinking?: string;
-  toolName?: string;
-  toolInput?: Record<string, unknown>;
-  toolResult?: unknown;
-  isError?: boolean;
+export type UnifiedContent =
+  | UnifiedTextBlock
+  | UnifiedThinkingBlock
+  | UnifiedToolUseBlock
+  | UnifiedToolResultBlock;
+
+export interface UnifiedTextBlock {
+  type: 'text';
+  text: string;
+}
+
+export interface UnifiedThinkingBlock {
+  type: 'thinking';
+  thinking: string;
+}
+
+// Tool input types
+export interface BashToolInput {
+  command: string;
+  description: string;
+}
+
+export interface ReadToolInput {
+  file_path: string;
+  offset?: number;
+  limit?: number;
+}
+
+export interface WriteToolInput {
+  file_path: string;
+  content: string;
+}
+
+export interface EditToolInput {
+  file_path: string;
+  old_string: string;
+  new_string: string;
+}
+
+export interface GlobToolInput {
+  pattern: string;
+}
+
+export interface GrepToolInput {
+  pattern: string;
+  output_mode: string;
+  path?: string;
+  '-n'?: boolean;
+}
+
+export interface TodoWriteToolInput {
+  todos: Array<{
+    content: string;
+    status: 'pending' | 'in_progress' | 'completed';
+    activeForm: string;
+  }>;
+}
+
+export interface WebSearchToolInput {
+  query: string;
+}
+
+export interface AskUserQuestionToolInput {
+  questions: Array<{
+    question: string;
+    header: string;
+    multiSelect: boolean;
+    options: Array<{
+      label: string;
+      description: string;
+    }>;
+  }>;
+}
+
+export interface ExitPlanModeToolInput {
+  plan: string;
+}
+
+// MCP tools have dynamic names (e.g., mcp__happy__change_title)
+// Keep as generic object for flexibility
+export interface McpToolInput {
+  [key: string]: unknown;
+}
+
+// Union type for all tool names
+export type ToolName =
+  | 'Bash'
+  | 'Read'
+  | 'Write'
+  | 'Edit'
+  | 'Glob'
+  | 'Grep'
+  | 'TodoWrite'
+  | 'WebSearch'
+  | 'AskUserQuestion'
+  | 'ExitPlanMode'
+  | string; // Allow MCP tools with dynamic names (mcp__*)
+
+export interface UnifiedToolUseBlock {
+  type: 'tool_use';
+  id: string;
+  name: string;
+  input: Record<string, unknown>;
+}
+
+export interface UnifiedToolResultBlock {
+  type: 'tool_result';
+  tool_use_id: string;
+  content?: unknown;
+  is_error?: boolean;
 }
 
 export function extractTextContent(message: UnifiedMessage): string {

@@ -1,7 +1,11 @@
 import type { UnifiedMessage, UnifiedContent } from '../types/unified';
 import type { ClaudeEvent, ContentBlock } from './types';
 
-export function parseClaudeEvent(jsonlLine: string): UnifiedMessage | null {
+// ============================================================================
+// Public API
+// ============================================================================
+
+export function parser(jsonlLine: string): UnifiedMessage | null {
   try {
     const event: ClaudeEvent = JSON.parse(jsonlLine);
 
@@ -20,16 +24,43 @@ export function parseClaudeEvent(jsonlLine: string): UnifiedMessage | null {
       : rawContent;
 
     const unifiedContent: UnifiedContent[] = content.map(block => {
-      const unified: UnifiedContent = { type: block.type };
-      if (block.text) unified.text = block.text;
-      if (block.thinking) unified.thinking = block.thinking;
-      if (block.name) unified.toolName = block.name;
-      if (block.input) unified.toolInput = block.input;
-      if (block.type === 'tool_result') {
-        unified.toolResult = block.content;
-        unified.isError = block.is_error;
+      if (block.type === 'text') {
+        return {
+          type: 'text',
+          text: block.text || '',
+        };
       }
-      return unified;
+
+      if (block.type === 'thinking') {
+        return {
+          type: 'thinking',
+          thinking: block.thinking || '',
+        };
+      }
+
+      if (block.type === 'tool_use') {
+        return {
+          type: 'tool_use',
+          id: block.id || '',
+          name: block.name || '',
+          input: block.input || {},
+        };
+      }
+
+      if (block.type === 'tool_result') {
+        return {
+          type: 'tool_result',
+          tool_use_id: block.tool_use_id || '',
+          content: block.content,
+          is_error: block.is_error,
+        };
+      }
+
+      // Fallback for unknown types - shouldn't happen but type-safe
+      return {
+        type: 'text',
+        text: '',
+      };
     });
 
     return {
@@ -46,7 +77,7 @@ export function parseClaudeEvent(jsonlLine: string): UnifiedMessage | null {
         cacheCreationTokens: message.usage.cache_creation_input_tokens,
         cacheReadTokens: message.usage.cache_read_input_tokens,
       } : undefined,
-      native: event,
+      _original: event,
     };
   } catch {
     return null;
