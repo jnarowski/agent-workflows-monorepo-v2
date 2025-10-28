@@ -26,6 +26,19 @@ import { Badge } from "@/client/components/ui/badge";
 import { Separator } from "@/client/components/ui/separator";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/client/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/client/components/ui/dropdown-menu";
+import { ButtonGroup, ButtonGroupSeparator } from "@/client/components/ui/button-group";
+import {
   GitBranch,
   GitCommit,
   ArrowUpCircle,
@@ -34,6 +47,8 @@ import {
   AlertCircle,
   Check,
   Sparkles,
+  ChevronDown,
+  GitPullRequest,
 } from "lucide-react";
 import {
   useGitStatus,
@@ -45,8 +60,10 @@ import {
   usePush,
   usePull,
   useGenerateCommitMessage,
+  useCreatePr,
 } from "@/client/pages/projects/git/hooks/useGitOperations";
 import { CreateBranchDialog } from "@/client/pages/projects/git/components/CreateBranchDialog";
+import { useIsAiEnabled, useIsGhCliEnabled } from "@/client/hooks/useSettings";
 
 interface GitOperationsModalProps {
   open: boolean;
@@ -64,8 +81,12 @@ export function GitOperationsModal({
   const [createBranchOpen, setCreateBranchOpen] = useState(false);
   const [commitMessage, setCommitMessage] = useState("");
 
+  // Feature flags
+  const isAiEnabled = useIsAiEnabled();
+  const isGhCliEnabled = useIsGhCliEnabled();
+
   // Queries
-  const { data: gitStatus } = useGitStatus(projectPath);
+  const { data: gitStatus, refetch: refetchGitStatus } = useGitStatus(projectPath);
   const { data: branches } = useBranches(projectPath);
 
   // Mutations
@@ -76,6 +97,7 @@ export function GitOperationsModal({
   const pushMutation = usePush();
   const pullMutation = usePull();
   const generateCommitMessageMutation = useGenerateCommitMessage();
+  const createPrMutation = useCreatePr();
 
   // Handlers
   const handleSwitchBranch = async (branchName: string) => {
@@ -125,6 +147,62 @@ export function GitOperationsModal({
 
     // Clear message on success
     setCommitMessage("");
+
+    // Refetch git status to update ahead/behind counts
+    await refetchGitStatus();
+  };
+
+  const handleCommitAndPush = async () => {
+    if (!commitMessage.trim() || !gitStatus?.files?.length || !currentBranch) return;
+
+    // First commit
+    await commitMutation.mutateAsync({
+      path: projectPath,
+      message: commitMessage.trim(),
+      files: gitStatus.files.map((f) => f.path),
+    });
+
+    // Then push
+    await pushMutation.mutateAsync({
+      path: projectPath,
+      branch: currentBranch,
+    });
+
+    // Clear message on success
+    setCommitMessage("");
+
+    // Refetch git status
+    await refetchGitStatus();
+  };
+
+  const handleCommitPushAndPr = async () => {
+    if (!commitMessage.trim() || !gitStatus?.files?.length || !currentBranch) return;
+
+    // First commit
+    await commitMutation.mutateAsync({
+      path: projectPath,
+      message: commitMessage.trim(),
+      files: gitStatus.files.map((f) => f.path),
+    });
+
+    // Then push
+    await pushMutation.mutateAsync({
+      path: projectPath,
+      branch: currentBranch,
+    });
+
+    // Then create PR (using commit message as title)
+    await createPrMutation.mutateAsync({
+      path: projectPath,
+      title: commitMessage.trim().split('\n')[0], // Use first line as title
+      description: commitMessage.trim(),
+    });
+
+    // Clear message on success
+    setCommitMessage("");
+
+    // Refetch git status
+    await refetchGitStatus();
   };
 
   const handlePush = async () => {
@@ -168,7 +246,7 @@ export function GitOperationsModal({
                 >
                   <SelectTrigger className="flex-1">
                     <div className="flex items-center gap-2 min-w-0">
-                      <GitBranch className="h-4 w-4 flex-shrink-0" />
+                      <GitBranch className="h-4 w-4 shrink-0" />
                       <SelectValue placeholder="Select branch" />
                     </div>
                   </SelectTrigger>
@@ -214,39 +292,53 @@ export function GitOperationsModal({
 
               {modifiedFilesCount > 0 ? (
                 <>
-                  <Textarea
-                    placeholder="Commit message..."
-                    value={commitMessage}
-                    onChange={(e) => setCommitMessage(e.target.value)}
-                    rows={3}
-                    disabled={
-                      commitMutation.isPending ||
-                      generateCommitMessageMutation.isPending ||
-                      stageFilesMutation.isPending
-                    }
-                  />
-                  <div className="flex gap-2">
-                    <LoadingButton
-                      variant="outline"
-                      onClick={handleGenerateCommitMessage}
-                      disabled={modifiedFilesCount === 0}
-                      isLoading={
-                        stageFilesMutation.isPending ||
-                        generateCommitMessageMutation.isPending
-                      }
-                      loadingText={
+                  <div className="relative">
+                    <Textarea
+                      placeholder="Commit message..."
+                      value={commitMessage}
+                      onChange={(e) => setCommitMessage(e.target.value)}
+                      rows={3}
+                      disabled={
+                        commitMutation.isPending ||
+                        generateCommitMessageMutation.isPending ||
                         stageFilesMutation.isPending
-                          ? "Staging..."
-                          : "Generating..."
                       }
-                      className="flex-1"
-                    >
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Generate AI Commit
-                    </LoadingButton>
+                      className={isAiEnabled ? "pr-10" : ""}
+                    />
+                    {isAiEnabled && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <LoadingButton
+                              variant="ghost"
+                              size="icon"
+                              onClick={handleGenerateCommitMessage}
+                              disabled={modifiedFilesCount === 0}
+                              isLoading={
+                                stageFilesMutation.isPending ||
+                                generateCommitMessageMutation.isPending
+                              }
+                              className="absolute bottom-2 right-2 h-7 w-7"
+                            >
+                              <Sparkles className="h-4 w-4" />
+                            </LoadingButton>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Generate AI commit message</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                  <ButtonGroup className="w-full">
                     <LoadingButton
                       onClick={handleCommit}
-                      disabled={!commitMessage.trim()}
+                      disabled={
+                        !commitMessage.trim() ||
+                        commitMutation.isPending ||
+                        pushMutation.isPending ||
+                        createPrMutation.isPending
+                      }
                       isLoading={commitMutation.isPending}
                       loadingText="Committing..."
                       className="flex-1"
@@ -254,7 +346,44 @@ export function GitOperationsModal({
                       <GitCommit className="h-4 w-4 mr-2" />
                       Commit
                     </LoadingButton>
-                  </div>
+                    <ButtonGroupSeparator />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="default"
+                          size="icon"
+                          disabled={
+                            !commitMessage.trim() ||
+                            commitMutation.isPending ||
+                            pushMutation.isPending ||
+                            createPrMutation.isPending
+                          }
+                          className="px-2"
+                          aria-label="More commit options"
+                        >
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={handleCommitAndPush}>
+                          <ArrowUpCircle className="h-4 w-4 mr-2" />
+                          Commit & Push
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={handleCommitPushAndPr}
+                          disabled={!isGhCliEnabled}
+                        >
+                          <GitPullRequest className="h-4 w-4 mr-2" />
+                          Commit, Push & Create PR
+                          {!isGhCliEnabled && (
+                            <span className="ml-auto text-xs text-muted-foreground">
+                              (gh CLI required)
+                            </span>
+                          )}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </ButtonGroup>
                 </>
               ) : (
                 <Alert>
@@ -273,7 +402,7 @@ export function GitOperationsModal({
                 <LoadingButton
                   variant="outline"
                   onClick={handlePush}
-                  disabled={ahead === 0}
+                  disabled={!currentBranch}
                   isLoading={pushMutation.isPending}
                   loadingText="Pushing..."
                   className="w-full"
