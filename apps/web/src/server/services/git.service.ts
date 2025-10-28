@@ -641,7 +641,7 @@ export async function generateCommitMessage(projectPath: string, files: string[]
 
     // Generate commit message using AI
     const result = await generateText({
-      model: anthropic('claude-3-5-sonnet-20241022'),
+      model: anthropic('claude-sonnet-4-5-20250929'),
       system: `You are an expert at writing clear, concise git commit messages following conventional commit format.
 
 Rules:

@@ -246,16 +246,27 @@ Test cases using fixture files:
 
 ```typescript
 export function detectCli(): string | undefined {
-  // Check environment variable
+  // Check environment variable first
   if (process.env.CODEX_CLI_PATH) {
     return process.env.CODEX_CLI_PATH;
   }
 
+  // Try using 'which codex' command
+  try {
+    const result = execSync('which codex', { encoding: 'utf-8' });
+    const path = result.trim();
+    if (path && fs.existsSync(path)) {
+      return path;
+    }
+  } catch {
+    // Continue to check common paths
+  }
+
   // Search common installation paths
   const commonPaths = [
-    // Research needed: where does Codex CLI install?
-    // Investigate VS Code extension data location
-    // Check OpenAI documentation
+    '/opt/homebrew/bin/codex',      // Homebrew on Apple Silicon
+    '/usr/local/bin/codex',          // Homebrew on Intel, or standard install
+    `${process.env.HOME}/.local/bin/codex`,  // User local install
   ];
 
   for (const path of commonPaths) {
@@ -268,23 +279,29 @@ export function detectCli(): string | undefined {
 }
 ```
 
-**Research Tasks:**
-- Investigate VS Code Codex extension for CLI location
-- Check OpenAI/Codex documentation
-- Test with actual Codex installation
+**Implementation Notes:**
+- Primary detection via `which codex` shell command
+- Environment variable override for custom installations
+- Common paths based on actual installations observed
 
 #### 2.2 Implement `src/codex/loadSession.ts`
 
 ```typescript
 export async function loadSession(
-  projectPath: string,
   sessionId: string
 ): Promise<UnifiedMessage[]> {
-  // Research: Codex session file location
-  // Likely: ~/.codex/projects/{encoded-path}/{sessionId}.jsonl
-  // Or: VS Code extension data directory
+  // Codex stores sessions in ~/.codex/sessions/YYYY/MM/DD/rollout-{timestamp}-{uuid}.jsonl
+  // We need to search for the session ID in the filename
 
-  const sessionPath = resolveSessionPath(projectPath, sessionId);
+  const codexHome = process.env.CODEX_HOME || `${process.env.HOME}/.codex`;
+  const sessionsDir = `${codexHome}/sessions`;
+
+  // Search for session file by ID (contained in filename)
+  const sessionPath = await findSessionFile(sessionsDir, sessionId);
+
+  if (!sessionPath) {
+    throw new Error(`Session not found: ${sessionId}`);
+  }
 
   const content = await fs.readFile(sessionPath, 'utf-8');
   const lines = content.trim().split('\n');
@@ -303,7 +320,23 @@ export async function loadSession(
     new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
   );
 }
+
+async function findSessionFile(sessionsDir: string, sessionId: string): Promise<string | null> {
+  // Recursively search sessions directory for file containing session ID
+  // Codex format: ~/.codex/sessions/2025/10/27/rollout-2025-10-27T16-14-10-{sessionId}.jsonl
+  // Use glob pattern: sessions/**/*-{sessionId}.jsonl
+
+  const pattern = `${sessionsDir}/**/*-${sessionId}.jsonl`;
+  const files = await glob(pattern);
+
+  return files[0] || null;
+}
 ```
+
+**Implementation Notes:**
+- Codex uses date-based directory structure unlike Claude's project-based structure
+- Session files named with timestamp and UUID
+- No project path parameter needed - session ID is globally unique
 
 **Testing:** `src/codex/loadSession.test.ts`
 - ✅ Load fixture files as sessions
@@ -397,28 +430,61 @@ export async function execute<T = unknown>(
 }
 
 function buildCliArgs(options: ExecuteOptions): string[] {
-  // Research needed: Codex CLI syntax
-  // Likely similar to Claude but may differ
-  const args: string[] = [];
+  const args: string[] = ['exec'];  // Use non-interactive mode
 
+  // Handle session resumption
+  if (options.sessionId) {
+    args.push('resume', options.sessionId);
+  }
+
+  // Map permission modes to Codex flags
+  if (options.permissionMode) {
+    const { approval, sandbox } = mapPermissionMode(options.permissionMode);
+    args.push('-a', approval, '-s', sandbox);
+  } else if (options.dangerouslySkipPermissions) {
+    args.push('--dangerously-bypass-approvals-and-sandbox');
+  } else {
+    // Default: equivalent to Claude 'default' mode
+    args.push('-a', 'untrusted', '-s', 'workspace-write');
+  }
+
+  // Working directory
+  if (options.workingDir) {
+    args.push('-C', options.workingDir);
+  }
+
+  // Model selection
+  if (options.model) {
+    args.push('-m', options.model);
+  }
+
+  // Prompt comes last
   if (options.prompt) {
     args.push(options.prompt);
   }
 
-  if (options.sessionId) {
-    args.push('--session', options.sessionId);
-  }
-
-  // Add other options as discovered
-
   return args;
+}
+
+function mapPermissionMode(mode: string): { approval: string; sandbox: string } {
+  switch (mode) {
+    case 'bypassPermissions':
+      return { approval: 'never', sandbox: 'danger-full-access' };
+    case 'acceptEdits':
+      return { approval: 'on-failure', sandbox: 'workspace-write' };
+    case 'plan':
+      return { approval: 'on-request', sandbox: 'read-only' };
+    case 'default':
+    default:
+      return { approval: 'untrusted', sandbox: 'workspace-write' };
+  }
 }
 ```
 
-**Research Tasks:**
-- Determine Codex CLI command structure
-- Identify available CLI flags and options
-- Test with actual Codex CLI
+**Implementation Notes:**
+- Use `codex exec` for non-interactive execution
+- Permission mode mapping based on research findings
+- Session resume via `codex exec resume [SESSION_ID]`
 
 **Testing:** `src/codex/execute.test.ts`
 - ✅ Unit tests with mocked spawn
@@ -727,30 +793,59 @@ packages/agent-cli-sdk/
    - README updates
    - Fixture documentation
 
-## Open Questions / Research Needed
+## Research Findings (COMPLETED)
 
-1. **CLI Location**: Where does Codex CLI install?
-   - Check VS Code extension data directory
-   - Check OpenAI documentation
-   - Environment variable name?
+### 1. CLI Location
+- **Installation**: `/opt/homebrew/bin/codex` (or `which codex`)
+- **Environment Variable**: `CODEX_CLI_PATH` (custom)
+- **Config Directory**: `~/.codex/`
+- **Detection Strategy**:
+  1. Check `process.env.CODEX_CLI_PATH`
+  2. Try `which codex` via shell
+  3. Check common paths: `/opt/homebrew/bin/codex`, `/usr/local/bin/codex`
 
-2. **CLI Arguments**: What's the command structure?
-   - How to pass prompts?
-   - How to resume sessions?
-   - Permission modes?
+### 2. CLI Arguments & Command Structure
+**Interactive Mode**: `codex [OPTIONS] [PROMPT]`
+**Non-Interactive**: `codex exec [OPTIONS] [PROMPT]`
+**Resume Session**: `codex resume [SESSION_ID] [PROMPT]` or `codex exec resume [SESSION_ID]`
 
-3. **Session Storage**: Where are session files stored?
-   - `~/.codex/`?
-   - VS Code extension data?
-   - Different path encoding?
+**Key Options**:
+- `-a, --ask-for-approval <POLICY>`: `untrusted` | `on-failure` | `on-request` | `never`
+- `-s, --sandbox <MODE>`: `read-only` | `workspace-write` | `danger-full-access`
+- `--full-auto`: Alias for `-a on-failure --sandbox workspace-write`
+- `--dangerously-bypass-approvals-and-sandbox`: Skip all safety checks
+- `-C, --cd <DIR>`: Working directory
+- `-m, --model <MODEL>`: Model selection
+- `-c, --config <key=value>`: Override config values
 
-4. **Tool Mappings**: Complete list of Codex → Claude tool names
-   - shell → Bash (confirmed)
-   - Others?
+**Permission Mode Mapping** (Codex → Claude equivalents):
+- Codex `never` + `danger-full-access` = Claude `bypassPermissions`
+- Codex `on-failure` + `workspace-write` = Claude `acceptEdits`
+- Codex `on-request` + `read-only` = Claude `plan`
+- Codex `untrusted` + `workspace-write` = Claude `default`
 
-5. **Encrypted Content**: How to handle `encrypted_content` in reasoning?
-   - Use summary for now?
-   - Is decryption key available?
+### 3. Session Storage
+- **Location**: `~/.codex/sessions/YYYY/MM/DD/rollout-{timestamp}-{uuid}.jsonl`
+- **Format**: JSONL files with timestamp-based organization
+- **Naming Pattern**: `rollout-2025-10-27T16-14-10-019a27bc-6b2a-71c2-8cf3-54a82f6c6fb8.jsonl`
+- **Session ID**: Extracted from `session_meta` event payload `id` field
+- **No Path Encoding**: Unlike Claude, Codex doesn't encode project paths in session filenames
+
+### 4. Tool Name Mappings
+Based on fixture analysis, confirmed tool mappings:
+```typescript
+const TOOL_NAME_MAP: Record<string, string> = {
+  'shell': 'Bash',
+  'update_plan': 'TodoWrite',
+  // Codex likely uses similar tool names to Claude for others
+};
+```
+
+### 5. Encrypted Reasoning Content
+- **Strategy**: Use `summary` field array when `encrypted_content` is present
+- **Summary Format**: Array of `{ type: 'summary_text', text: string }` objects
+- **Transformation**: Join summary text blocks with newlines for `thinking` content
+- **No Decryption**: Encrypted content is not accessible without decryption key
 
 ## Estimated Effort
 
