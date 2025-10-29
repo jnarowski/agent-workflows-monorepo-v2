@@ -14,7 +14,6 @@ import { sessionKeys } from "./hooks/useAgentSessions";
 import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import { generateUUID } from "@/client/lib/utils";
 import { AgentSelector } from "@/client/components/AgentSelector";
-import { useSettings } from "@/client/hooks/useSettings";
 import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
 import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 
@@ -32,9 +31,6 @@ export default function NewSession() {
   // Get agent from store
   const agent = useSessionStore((s) => s.form.agent);
   const setAgent = useSessionStore((s) => s.setAgent);
-
-  // Get settings for debug
-  const { data: settings } = useSettings();
 
   // App-wide WebSocket hook for sending messages during session creation
   const {

@@ -147,7 +147,7 @@ const ChatPromptInputInner = forwardRef<
 
       // Use stored model if valid, otherwise use first available model
       return isValidModel ? model : capabilities.models[0].id;
-    }, [model, capabilities.models, agent]);
+    }, [model, capabilities.models]);
 
     // Handle permission mode change
     const handlePermissionModeChange = (mode: ClaudePermissionMode) => {
@@ -429,18 +429,20 @@ const ChatPromptInputInner = forwardRef<
               />
               {/* Model selector - only for agents that support model selection */}
               {capabilities.models.length > 0 && (
-                <PromptInputModelSelect value={currentModel} onValueChange={setModel}>
-                  <PromptInputModelSelectTrigger>
-                    <PromptInputModelSelectValue />
-                  </PromptInputModelSelectTrigger>
-                  <PromptInputModelSelectContent>
-                    {capabilities.models.map((m) => (
-                      <PromptInputModelSelectItem key={m.id} value={m.id}>
-                        {m.name}
-                      </PromptInputModelSelectItem>
-                    ))}
-                  </PromptInputModelSelectContent>
-                </PromptInputModelSelect>
+                <div className="hidden md:flex">
+                  <PromptInputModelSelect value={currentModel} onValueChange={setModel}>
+                    <PromptInputModelSelectTrigger>
+                      <PromptInputModelSelectValue />
+                    </PromptInputModelSelectTrigger>
+                    <PromptInputModelSelectContent>
+                      {capabilities.models.map((m) => (
+                        <PromptInputModelSelectItem key={m.id} value={m.id}>
+                          {m.name}
+                        </PromptInputModelSelectItem>
+                      ))}
+                    </PromptInputModelSelectContent>
+                  </PromptInputModelSelect>
+                </div>
               )}
               <PromptInputPermissionModeSelect
                 onValueChange={handlePermissionModeChange}

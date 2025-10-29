@@ -10,9 +10,14 @@ vi.mock('../codex/detectCli.js', () => ({
   detectCli: vi.fn(),
 }));
 
+vi.mock('../gemini/detectCli.js', () => ({
+  detectCli: vi.fn(),
+}));
+
 // Import mocked functions
 import { detectCli as detectClaudeCli } from '../claude/detectCli.js';
 import { detectCli as detectCodexCli } from '../codex/detectCli.js';
+import { detectCli as detectGeminiCli } from '../gemini/detectCli.js';
 
 describe('getCapabilities', () => {
   beforeEach(() => {
@@ -88,12 +93,31 @@ describe('getCapabilities', () => {
   });
 
   describe('gemini', () => {
-    it('should return capabilities for gemini agent (not implemented)', async () => {
+    it('should return capabilities with install detection for gemini agent', async () => {
+      vi.mocked(detectGeminiCli).mockReturnValue('/usr/local/bin/gemini');
+
       const caps = await getCapabilities('gemini');
 
       expect(caps.supportsSlashCommands).toBe(false);
-      expect(caps.supportsModels).toBe(false);
-      expect(caps.models).toHaveLength(0);
+      expect(caps.supportsModels).toBe(true);
+      expect(caps.models).toHaveLength(2);
+      expect(caps.models[0]).toEqual({
+        id: 'gemini-2.5-pro',
+        name: 'Gemini 2.5 Pro',
+      });
+      expect(caps.models[1]).toEqual({
+        id: 'gemini-2.5-flash',
+        name: 'Gemini 2.5 Flash',
+      });
+      expect(caps.installed).toBe(true);
+      expect(caps.cliPath).toBe('/usr/local/bin/gemini');
+    });
+
+    it('should mark gemini as not installed when CLI not found', async () => {
+      vi.mocked(detectGeminiCli).mockReturnValue(null);
+
+      const caps = await getCapabilities('gemini');
+
       expect(caps.installed).toBe(false);
       expect(caps.cliPath).toBeUndefined();
     });

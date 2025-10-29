@@ -17,6 +17,12 @@ import {
   type ExecuteOptions as CodexExecuteOptions,
   type ExecuteResult as CodexExecuteResult,
 } from './codex/execute';
+import { loadSession as loadGeminiMessages } from './gemini/loadSession';
+import {
+  execute as executeGeminiCommand,
+  type ExecuteOptions as GeminiExecuteOptions,
+  type ExecuteResult as GeminiExecuteResult,
+} from './gemini/execute';
 
 /**
  * Options for loading messages from an AI CLI session.
@@ -68,7 +74,10 @@ export async function loadMessages(
         projectPath: options.projectPath || process.cwd(),
       });
     case 'gemini':
-      throw new Error('Gemini loader not yet implemented');
+      return loadGeminiMessages({
+        sessionId: options.sessionId,
+        projectPath: options.projectPath || process.cwd(),
+      });
     case 'cursor':
       throw new Error('Cursor loader not yet implemented');
     default: {
@@ -169,14 +178,14 @@ export interface ExecuteOptions {
  */
 export async function execute<T = unknown>(
   options: ExecuteOptions,
-): Promise<ClaudeExecuteResult<T> | CodexExecuteResult<T>> {
+): Promise<ClaudeExecuteResult<T> | CodexExecuteResult<T> | GeminiExecuteResult<T>> {
   switch (options.tool) {
     case 'claude':
       return await executeClaudeCommand<T>(options as ClaudeExecuteOptions);
     case 'codex':
       return await executeCodexCommand<T>(options as CodexExecuteOptions);
     case 'gemini':
-      throw new Error('Gemini execute not yet implemented');
+      return await executeGeminiCommand<T>(options as GeminiExecuteOptions);
     case 'cursor':
       throw new Error('Cursor execute not yet implemented');
     default: {
@@ -195,6 +204,7 @@ export { extractTextContent } from './types/unified';
 export { extractJSON } from './utils/extractJson';
 export { detectCli as detectClaudeCli } from './claude/detectCli';
 export { detectCli as detectCodexCli } from './codex/detectCli';
+export { detectCli as detectGeminiCli } from './gemini/detectCli';
 export {
   getCapabilities,
   type AgentType,
@@ -219,3 +229,10 @@ export type {
   OnStdoutData as CodexOnStdoutData,
   CodexPermissionMode,
 } from './codex/execute';
+
+// Re-export Gemini execute types
+export type {
+  ExecuteOptions as GeminiExecuteOptions,
+  ExecuteResult as GeminiExecuteResult,
+  GeminiPermissionMode,
+} from './gemini/execute';

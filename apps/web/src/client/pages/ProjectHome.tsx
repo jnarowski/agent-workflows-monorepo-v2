@@ -14,8 +14,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
-  CardAction,
 } from "@/client/components/ui/card";
 import { Button } from "@/client/components/ui/button";
 import {
@@ -25,7 +23,6 @@ import {
   FileText,
   Pencil,
 } from "lucide-react";
-import { Badge } from "@/client/components/ui/badge";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";

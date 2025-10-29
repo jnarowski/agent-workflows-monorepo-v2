@@ -57,7 +57,7 @@ export async function handleSessionSendMessage(
   });
 
   // Process image uploads
-  const { imagePaths, tempImageDir } = await processImageUploads(
+  const { imagePaths } = await processImageUploads(
     data.images,
     sessionData.projectPath,
     sessionId

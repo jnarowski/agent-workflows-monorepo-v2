@@ -1,5 +1,6 @@
 import { detectCli as detectClaudeCli } from '../claude/detectCli.js';
 import { detectCli as detectCodexCli } from '../codex/detectCli.js';
+import { detectCli as detectGeminiCli } from '../gemini/detectCli.js';
 
 /**
  * Agent type representing supported AI CLI tools.
@@ -62,8 +63,11 @@ const AGENT_CAPABILITIES_MAP: Record<
   },
   gemini: {
     supportsSlashCommands: false,
-    supportsModels: false,
-    models: [],
+    supportsModels: true,
+    models: [
+      { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
+      { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
+    ],
   },
 };
 
@@ -102,19 +106,26 @@ export async function getCapabilities(
 
   switch (agentName) {
     case 'claude':
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       cliPath = await detectClaudeCli();
       break;
     case 'codex':
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       cliPath = await detectCodexCli();
       break;
-    case 'cursor':
     case 'gemini':
+      cliPath = detectGeminiCli();
+      break;
+    case 'cursor':
       // No detection available yet
       cliPath = null;
       break;
     default: {
+      // Exhaustive check - this should never be reached
       const _exhaustive: never = agentName;
-      throw new Error(`Unknown agent type: ${_exhaustive}`);
+      // Use void to suppress unused variable warning
+      void _exhaustive;
+      throw new Error(`Unknown agent type: ${String(agentName)}`);
     }
   }
 

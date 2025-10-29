@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { execute } from './execute.js';
 import * as spawnModule from '../utils/spawn.js';
 import type { SpawnResult } from '../utils/spawn.js';
@@ -99,7 +99,7 @@ function mockSpawnWithOutput(output: string, result?: Partial<SpawnResult>) {
  * Asserts that spawnProcess was called with expected arguments
  */
 function expectSpawnCalledWith(expectedArgs: string[], expectedTimeout?: number) {
-  const spawnSpy = spawnModule.spawnProcess as any;
+  const spawnSpy = spawnModule.spawnProcess as Mock;
   expect(spawnSpy).toHaveBeenCalled();
   const callArgs = spawnSpy.mock.calls[0];
   const [command, options] = callArgs!;

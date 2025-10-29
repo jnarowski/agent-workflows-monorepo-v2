@@ -34,8 +34,6 @@ const allAgents: Array<{
 }> = [
   { id: 'claude', name: 'Claude Code' },
   { id: 'codex', name: 'OpenAI Codex' },
-  { id: 'gemini', name: 'Google Gemini' },
-  { id: 'cursor', name: 'Cursor' },
 ];
 
 export function NewSessionButton({

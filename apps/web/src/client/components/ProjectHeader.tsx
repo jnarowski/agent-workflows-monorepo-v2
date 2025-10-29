@@ -8,7 +8,7 @@ import {
   FileText,
   ChevronDown,
   GitBranch,
-  Settings,
+  ChevronRight,
 } from "lucide-react";
 import { Separator } from "@/client/components/ui/separator";
 import { SidebarTrigger } from "@/client/components/ui/sidebar";
@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/client/components/ui/dropdown-menu";
 import type { SessionResponse } from "@/shared/types";
-import { AgentIcon } from "@/client/components/AgentIcon";
+import { SessionHeader } from "@/client/components/SessionHeader";
 import { GitOperationsModal } from "@/client/components/GitOperationsModal";
 
 interface ProjectHeaderProps {
@@ -34,11 +34,6 @@ export function ProjectHeader({ projectId, projectName, projectPath, currentBran
   const navigate = useNavigate();
   const location = useLocation();
   const [gitModalOpen, setGitModalOpen] = useState(false);
-
-  // Truncate session name to 50 characters
-  const truncatedSessionName = currentSession?.name && currentSession.name.length > 50
-    ? currentSession.name.slice(0, 50) + "..."
-    : currentSession?.name;
 
   // Define navigation items
   const navItems = useMemo(
@@ -85,19 +80,15 @@ export function ProjectHeader({ projectId, projectName, projectPath, currentBran
           <div className="flex flex-col gap-1 min-w-0">
             <div className="text-base font-medium truncate">{projectName}</div>
             {currentBranch && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <button
+                onClick={() => setGitModalOpen(true)}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                title="Git operations"
+              >
                 <GitBranch className="h-3 w-3" />
                 <span className="truncate">{currentBranch}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-4 w-4 p-0 hover:bg-muted/50"
-                  onClick={() => setGitModalOpen(true)}
-                  title="Git operations"
-                >
-                  <Settings className="h-3 w-3" />
-                </Button>
-              </div>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
             )}
           </div>
         </div>
@@ -150,13 +141,8 @@ export function ProjectHeader({ projectId, projectName, projectPath, currentBran
         </DropdownMenu>
       </div>
 
-      {/* Session name bar - separate div below header */}
-      {currentSession && (
-        <div className="flex items-center gap-1.5 px-4 md:px-6 py-1.5 text-xs text-muted-foreground bg-muted/30 border-b">
-          <AgentIcon agent={currentSession.agent} className="h-3.5 w-3.5" />
-          <span className="truncate">{truncatedSessionName}</span>
-        </div>
-      )}
+      {/* Session header - separate component below main header */}
+      {currentSession && <SessionHeader session={currentSession} />}
 
       {/* Git Operations Modal */}
       <GitOperationsModal

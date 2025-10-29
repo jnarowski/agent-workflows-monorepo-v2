@@ -1,19 +1,11 @@
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { MoreHorizontal, Pencil } from "lucide-react";
 import type { SessionResponse } from "@/shared/types";
 import { cn } from "@/client/lib/utils";
 import { AgentIcon } from "@/client/components/AgentIcon";
 import { useSidebar } from "@/client/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/client/components/ui/dropdown-menu";
 import { useState } from "react";
-import { SessionDialog } from "./SessionDialog";
-import { useUpdateSession } from "../hooks/useAgentSessions";
+import { SessionDropdownMenu } from "./SessionDropdownMenu";
 
 interface SessionListItemProps {
   session: SessionResponse;
@@ -42,8 +34,6 @@ export function SessionListItem({
   const { isMobile, setOpenMobile } = useSidebar();
   const [isHovered, setIsHovered] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const updateSessionMutation = useUpdateSession();
 
   const timeAgo = formatDistanceToNow(new Date(created_at), {
     addSuffix: true,
@@ -60,17 +50,6 @@ export function SessionListItem({
     }
   };
 
-  const handleEdit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsMenuOpen(false);
-    setEditDialogOpen(true);
-  };
-
-  const handleUpdateSession = async (sessionId: string, name: string) => {
-    await updateSessionMutation.mutateAsync({ id: sessionId, name });
-  };
-
   return (
     <div
       className="relative group"
@@ -81,13 +60,12 @@ export function SessionListItem({
         to={`/projects/${projectId}/session/${id}`}
         onClick={handleClick}
         className={cn(
-          "block px-2 py-2 rounded-md transition-colors hover:bg-accent overflow-hidden relative",
-          isActive && "bg-accent"
+          "block px-2 py-2 rounded-t-md overflow-hidden relative border-b transition-all",
+          isActive
+            ? "border-b-primary/30 border-b font-semibold"
+            : "border-b-border/30"
         )}
       >
-        {isActive && (
-          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary rounded-r" />
-        )}
         <div className="flex items-start gap-2 min-w-0">
           <AgentIcon
             agent={session.agent}
@@ -97,10 +75,7 @@ export function SessionListItem({
             )}
           />
           <div className="space-y-1 min-w-0 flex-1">
-            <div
-              className="text-sm font-normal leading-none truncate"
-              title={displayName}
-            >
+            <div className="text-sm leading-none truncate" title={displayName}>
               {truncatedName}
             </div>
             <div className="flex items-center justify-between text-sm md:text-xs text-muted-foreground gap-2">
@@ -114,37 +89,12 @@ export function SessionListItem({
       {/* Hover menu */}
       {(isHovered || isMenuOpen) && (
         <div className="absolute right-2 top-2 z-50">
-          <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <DropdownMenuTrigger
-              className={cn(
-                "h-6 w-6 flex items-center justify-center rounded-md transition-colors",
-                "bg-background/95 backdrop-blur-sm hover:bg-accent",
-                "border border-border/50",
-                "focus:outline-none focus:ring-2 focus:ring-primary"
-              )}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="z-50">
-              <DropdownMenuItem onClick={handleEdit}>
-                <Pencil className="h-4 w-4" />
-                <span>Edit</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <SessionDropdownMenu
+            session={session}
+            onMenuOpenChange={setIsMenuOpen}
+          />
         </div>
       )}
-
-      <SessionDialog
-        open={editDialogOpen}
-        onOpenChange={setEditDialogOpen}
-        session={session}
-        onUpdateSession={handleUpdateSession}
-      />
     </div>
   );
 }
