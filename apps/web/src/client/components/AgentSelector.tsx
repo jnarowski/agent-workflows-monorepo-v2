@@ -1,5 +1,4 @@
 import { AgentIcon } from "@/client/components/AgentIcon";
-import { Label } from "@/client/components/ui/label";
 import type { AgentType } from "@/shared/types/agent.types";
 import { cn } from "@/client/lib/utils";
 import { useSettings } from "@/client/hooks/useSettings";
@@ -28,15 +27,12 @@ const agents: Array<{
     description: "OpenAI Codex - Code generation and understanding",
     status: "available",
   },
-  {
-    id: "gemini",
-    name: "Google Gemini",
-    description: "Google Gemini - Multimodal AI assistant",
-    status: "coming-soon",
-  },
 ];
 
-const installInstructions: Record<AgentType, { command?: string; url?: string; message?: string }> = {
+const installInstructions: Record<
+  AgentType,
+  { command?: string; url?: string; message?: string }
+> = {
   claude: {
     url: "https://docs.claude.com/en/docs/claude-code/setup",
   },
@@ -64,7 +60,8 @@ export function AgentSelector({
         const capabilities = settings?.agents[agent.id];
         const isInstalled = capabilities?.installed ?? true; // Default to true if capabilities not loaded
         const isAvailable = agent.status === "available" && isInstalled;
-        const isDisabled = disabled || agent.status === "coming-soon" || !isInstalled;
+        const isDisabled =
+          disabled || agent.status === "coming-soon" || !isInstalled;
         const instructions = installInstructions[agent.id];
 
         return (
@@ -81,13 +78,10 @@ export function AgentSelector({
               "flex w-full items-start space-x-3 rounded-lg border p-3 text-left transition-colors",
               // Background color changes when not installed
               !isInstalled && agent.status === "available" && "bg-muted/30",
-              (agent.status === "coming-soon" || !isInstalled) && "opacity-50 cursor-not-allowed",
-              isAvailable &&
-                !disabled &&
-                "cursor-pointer hover:bg-accent",
-              value === agent.id &&
-                isAvailable &&
-                "border-primary bg-accent",
+              (agent.status === "coming-soon" || !isInstalled) &&
+                "opacity-50 cursor-not-allowed",
+              isAvailable && !disabled && "cursor-pointer hover:bg-accent",
+              value === agent.id && isAvailable && "border-primary bg-accent",
               disabled && "cursor-not-allowed opacity-60"
             )}
           >
@@ -118,14 +112,19 @@ export function AgentSelector({
                   </span>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">{agent.description}</p>
+              <p className="text-xs text-muted-foreground">
+                {agent.description}
+              </p>
 
               {/* Installation instructions below description */}
               {!isInstalled && agent.status === "available" && (
                 <div className="text-xs text-muted-foreground">
                   {instructions.command && (
                     <span>
-                      Install: <code className="text-xs font-mono bg-muted px-1 py-0.5 rounded">{instructions.command}</code>
+                      Install:{" "}
+                      <code className="text-xs font-mono bg-muted px-1 py-0.5 rounded">
+                        {instructions.command}
+                      </code>
                     </span>
                   )}
                   {instructions.url && (
@@ -142,9 +141,9 @@ export function AgentSelector({
                       </a>
                     </span>
                   )}
-                  {instructions.message && !instructions.command && !instructions.url && (
-                    <span>{instructions.message}</span>
-                  )}
+                  {instructions.message &&
+                    !instructions.command &&
+                    !instructions.url && <span>{instructions.message}</span>}
                 </div>
               )}
             </div>

@@ -1,58 +1,39 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/client/stores/index";
-import { useSyncProjects } from "@/client/pages/projects/hooks/useProjects";
+import { useSyncProjects, projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import { useSettings } from "@/client/hooks/useSettings";
 import { AppSidebar } from "@/client/components/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/client/components/ui/sidebar";
-import {
-  shouldSyncProjects,
-  markProjectsSynced,
-} from "@/client/lib/projectSync";
 
 function ProtectedLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const user = useAuthStore((state) => state.user);
-  const syncProjects = useSyncProjects();
+  const queryClient = useQueryClient();
 
   // Load settings early so they're available for all protected routes
   // Settings are cached by TanStack Query (5-minute stale time)
   useSettings();
 
-  // Track if sync has been initiated to prevent duplicate calls in React Strict Mode
-  const syncInitiatedRef = useRef(false);
+  // Sync projects from Claude CLI on mount
+  // TanStack Query handles caching automatically (5-minute stale time)
+  const { data: syncResult, isSuccess } = useSyncProjects();
 
-  // Sync projects from Claude CLI on mount (only if needed based on localStorage)
+  // Invalidate projects list when sync completes successfully
   useEffect(() => {
-    // Skip if already initiated (handles React Strict Mode double-invocation)
-    if (syncInitiatedRef.current) {
-      return;
-    }
+    if (isSuccess && syncResult) {
+      // Invalidate projects list to show newly synced projects
+      queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: projectKeys.withSessions() });
 
-    if (shouldSyncProjects(user?.id)) {
       if (import.meta.env.DEV) {
-        console.log("Syncing projects from Claude CLI...");
-      }
-
-      // Mark as initiated immediately to prevent duplicate calls
-      syncInitiatedRef.current = true;
-
-      // syncProjects.mutate(undefined, {
-      //   onSuccess: () => {
-      //     markProjectsSynced(user?.id);
-      //   },
-      //   onError: () => {
-      //     // Reset ref on error so user can retry
-      //     syncInitiatedRef.current = false;
-      //   },
-      // });
-    } else {
-      if (import.meta.env.DEV) {
-        console.log("Skipping project sync - recently synced");
+        console.log(
+          `Projects synced: ${syncResult.projectsImported} imported, ${syncResult.projectsUpdated} updated`
+        );
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array = run once on mount
+  }, [isSuccess, syncResult]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

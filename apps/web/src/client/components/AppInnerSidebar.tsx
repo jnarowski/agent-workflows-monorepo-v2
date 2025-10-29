@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useEffect, type MouseEvent } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { useActiveProject } from "@/client/hooks/navigation";
 import {
   ChevronRight,
@@ -11,6 +13,7 @@ import {
   Edit,
   EyeOff,
   Eye,
+  RefreshCw,
 } from "lucide-react";
 import {
   Sidebar,
@@ -36,9 +39,16 @@ import {
   CollapsibleTrigger,
 } from "@/client/components/ui/collapsible";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/client/components/ui/tooltip";
+import {
   useProjectsWithSessions,
   useToggleProjectHidden,
   useToggleProjectStarred,
+  projectKeys,
 } from "@/client/pages/projects/hooks/useProjects";
 import { SessionListItem } from "@/client/pages/projects/sessions/components/SessionListItem";
 import { NewSessionButton } from "@/client/pages/projects/sessions/components/NewSessionButton";
@@ -59,9 +69,11 @@ export function AppInnerSidebar({
 }: AppInnerSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const { projectId: activeProjectIdFromHook } = useActiveProject();
   const { data: projectsData, isLoading, error } = useProjectsWithSessions();
   const { isMobile } = useSidebar();
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Get the current session ID from the URL
   const sessionMatch = location.pathname.match(/\/session\/([^/]+)/);
@@ -174,6 +186,29 @@ export function AppInnerSidebar({
     setEditDialogOpen(true);
   };
 
+  const handleSyncProjects = async () => {
+    setIsSyncing(true);
+    try {
+      // Invalidate the sync query to force a refetch
+      await queryClient.invalidateQueries({ queryKey: projectKeys.sync() });
+
+      // Get the sync result from cache after invalidation completes
+      const syncResult = queryClient.getQueryData(projectKeys.sync());
+
+      if (syncResult && typeof syncResult === 'object' && 'projectsImported' in syncResult && 'projectsUpdated' in syncResult) {
+        toast.success(
+          `Projects synced: ${syncResult.projectsImported} imported, ${syncResult.projectsUpdated} updated`
+        );
+      } else {
+        toast.success("Projects synced successfully");
+      }
+    } catch {
+      toast.error("Failed to sync projects");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   // Ensure active project is open on mount or when activeProjectId changes
   useEffect(() => {
     if (activeProjectId && !openProjects.includes(activeProjectId)) {
@@ -213,20 +248,19 @@ export function AppInnerSidebar({
                                   : project.name}
                               </span>
                             </div>
-                            <ChevronRight
-                              className={`ml-auto shrink-0 transition-transform ${
-                                isOpen ? "rotate-90" : ""
-                              }`}
-                            />
+                            {!isOpen && (
+                              <ChevronRight className="ml-auto shrink-0" />
+                            )}
                           </CollapsibleTrigger>
                         </SidebarMenuButton>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <SidebarMenuAction showOnHover>
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">More</span>
-                            </SidebarMenuAction>
-                          </DropdownMenuTrigger>
+                        {isOpen && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <SidebarMenuAction className="mr-1">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">More</span>
+                              </SidebarMenuAction>
+                            </DropdownMenuTrigger>
                           <DropdownMenuContent
                             className="w-48 rounded-lg"
                             side={isMobile ? "bottom" : "right"}
@@ -264,6 +298,7 @@ export function AppInnerSidebar({
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
+                        )}
                         <CollapsibleContent>
                           <div className="ml-0 space-y-0.5 py-1">
                             {isActive &&
@@ -321,7 +356,29 @@ export function AppInnerSidebar({
           </SidebarGroup>
         )}
         <SidebarGroup>
-          <SidebarGroupLabel>All Projects</SidebarGroupLabel>
+          <div className="flex items-center justify-between px-2 py-1.5">
+            <SidebarGroupLabel className="flex-1">All Projects</SidebarGroupLabel>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleSyncProjects}
+                    disabled={isSyncing}
+                    className="inline-flex items-center justify-center h-6 w-6 rounded-md hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    aria-label="Sync projects from Claude CLI"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-[200px]">
+                  <p className="text-xs">Sync projects from Claude CLI</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Imports projects from ~/.claude/projects
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           {isLoading && (
             <div className="px-2 py-1 text-sm text-muted-foreground">
               Loading projects...
@@ -355,20 +412,19 @@ export function AppInnerSidebar({
                                 : project.name}
                             </span>
                           </div>
-                          <ChevronRight
-                            className={`ml-auto shrink-0 transition-transform ${
-                              isOpen ? "rotate-90" : ""
-                            }`}
-                          />
+                          {!isOpen && (
+                            <ChevronRight className="ml-auto shrink-0" />
+                          )}
                         </CollapsibleTrigger>
                       </SidebarMenuButton>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <SidebarMenuAction showOnHover>
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">More</span>
-                          </SidebarMenuAction>
-                        </DropdownMenuTrigger>
+                      {isOpen && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <SidebarMenuAction className="mr-1">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">More</span>
+                            </SidebarMenuAction>
+                          </DropdownMenuTrigger>
                         <DropdownMenuContent
                           className="w-48 rounded-lg"
                           side={isMobile ? "bottom" : "right"}
@@ -415,6 +471,7 @@ export function AppInnerSidebar({
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
+                      )}
                       <CollapsibleContent>
                         <div className="ml-0 space-y-0.5 py-1">
                           {isActive &&
@@ -506,20 +563,19 @@ export function AppInnerSidebar({
                                     : project.name}
                                 </span>
                               </div>
-                              <ChevronRight
-                                className={`ml-auto shrink-0 transition-transform ${
-                                  isOpen ? "rotate-90" : ""
-                                }`}
-                              />
+                              {!isOpen && (
+                                <ChevronRight className="ml-auto shrink-0" />
+                              )}
                             </CollapsibleTrigger>
                           </SidebarMenuButton>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <SidebarMenuAction showOnHover>
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">More</span>
-                              </SidebarMenuAction>
-                            </DropdownMenuTrigger>
+                          {isOpen && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <SidebarMenuAction className="mr-1">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">More</span>
+                                </SidebarMenuAction>
+                              </DropdownMenuTrigger>
                             <DropdownMenuContent
                               className="w-48 rounded-lg"
                               side={isMobile ? "bottom" : "right"}
@@ -575,6 +631,7 @@ export function AppInnerSidebar({
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
+                          )}
                           <CollapsibleContent>
                             <div className="ml-0 space-y-0.5">
                               {isActive &&

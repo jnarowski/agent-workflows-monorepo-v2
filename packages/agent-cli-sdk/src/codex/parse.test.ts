@@ -317,7 +317,7 @@ describe('parse - Streaming Format (item.completed)', () => {
 
       const message = parse(jsonl);
       expect(message?._original).toBeDefined();
-      expect((message?._original as any).type).toBe('item.completed');
+      expect((message?._original as { type?: string })?.type).toBe('item.completed');
     });
   });
 });

@@ -1,6 +1,6 @@
 # Agent CLI SDK Examples
 
-This directory contains examples demonstrating how to use the `agent-cli-sdk` package with both Claude Code and OpenAI Codex.
+This directory contains examples demonstrating how to use the `agent-cli-sdk` package with Claude Code, OpenAI Codex, and Gemini.
 
 ## Examples
 
@@ -30,6 +30,16 @@ Located in `examples/codex/`:
 - **[permission-modes.ts](./codex/permission-modes.ts)** - Demonstrates different permission modes (default, plan, acceptEdits, bypassPermissions)
 - **[load-session.ts](./codex/load-session.ts)** - Load and analyze a Codex session from disk
 
+### Gemini Examples
+
+Located in `examples/gemini/`:
+
+- **[basic-execute.ts](./gemini/basic-execute.ts)** - Simple example showing how to run a basic Gemini command
+- **[json-extraction.ts](./gemini/json-extraction.ts)** - Extract structured JSON data from Gemini's responses
+- **[streaming-callbacks.ts](./gemini/streaming-callbacks.ts)** - Monitor stdout/stderr streams in real-time
+- **[error-handling.ts](./gemini/error-handling.ts)** - Handle timeouts, quota errors, and CLI detection failures
+- **[session-continuation.ts](./gemini/session-continuation.ts)** - ⚠️ Demonstrates Gemini's limitation: NO session continuation support
+
 ## Running Examples
 
 All examples are executable TypeScript files. You can run them directly with `tsx`:
@@ -42,6 +52,10 @@ tsx examples/claude/json-extraction.ts
 # Run Codex examples
 tsx examples/codex/basic-execute.ts
 tsx examples/codex/permission-modes.ts
+
+# Run Gemini examples
+tsx examples/gemini/basic-execute.ts
+tsx examples/gemini/session-continuation.ts
 
 # Or make them executable and run directly
 chmod +x examples/claude/basic-execute.ts
@@ -63,6 +77,12 @@ Make sure you have:
 3. The `agent-cli-sdk` package built (`pnpm build`)
 4. `tsx` installed (or use `ts-node`)
 
+### For Gemini Examples
+1. Gemini CLI installed and configured
+2. Set `GEMINI_CLI_PATH` environment variable (if not in PATH)
+3. The `agent-cli-sdk` package built (`pnpm build`)
+4. `tsx` installed (or use `ts-node`)
+
 ```bash
 # Install tsx globally if needed
 npm install -g tsx
@@ -70,13 +90,14 @@ npm install -g tsx
 # Or use with pnpm
 pnpm install -g tsx
 
-# Set Codex CLI path (if needed)
+# Set CLI paths (if needed)
 export CODEX_CLI_PATH=/path/to/codex
+export GEMINI_CLI_PATH=/path/to/gemini
 ```
 
 ## API Overview
 
-The unified API works with both Claude Code and OpenAI Codex using the same interface:
+The unified API works with Claude Code, OpenAI Codex, and Gemini using the same interface:
 
 ```typescript
 import { execute } from '@repo/agent-cli-sdk';
@@ -105,7 +126,21 @@ const codexResult = await execute({
   }
 });
 
-// Result structure (same for both tools)
+// Use with Gemini
+const geminiResult = await execute({
+  tool: 'gemini',
+  prompt: 'Your prompt here',
+  json: true,
+  verbose: false,
+  onStdout: (chunk) => {
+    // Monitor stdout in real-time
+  },
+  onStderr: (chunk) => {
+    // Monitor stderr (including quota errors)
+  }
+});
+
+// Result structure (same for all tools)
 console.log(result.success);    // boolean - whether command succeeded
 console.log(result.exitCode);   // number - process exit code
 console.log(result.sessionId);  // string - session/thread ID
@@ -198,6 +233,24 @@ const result2 = await execute({
   prompt: 'What is my name?',
   sessionId: result1.sessionId, // Codex automatically continues
 });
+```
+
+**⚠️ Gemini (NO session continuation support):**
+```typescript
+const result1 = await execute({
+  tool: 'gemini',
+  prompt: 'My name is Tony',
+});
+
+// ⚠️ This creates a NEW session - Gemini will NOT remember
+const result2 = await execute({
+  tool: 'gemini',
+  prompt: 'What is my name?',
+  sessionId: result1.sessionId, // Ignored by Gemini CLI
+  resume: true, // Also ignored
+});
+
+// result2.sessionId !== result1.sessionId (each call gets new session)
 ```
 
 ### Permission Modes (Codex)

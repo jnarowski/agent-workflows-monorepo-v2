@@ -338,7 +338,7 @@ function mapPermissionMode(mode: CodexPermissionMode): string[] {
  */
 function extractSessionId(events: CodexEvent[]): string {
   // Codex uses thread.started event with thread_id
-  const threadStartedEvent = events.find((e) => e.type === 'thread.started') as any;
+  const threadStartedEvent = events.find((e) => e.type === 'thread.started') as { thread_id?: string } | undefined;
 
   if (threadStartedEvent?.thread_id) {
     return threadStartedEvent.thread_id;

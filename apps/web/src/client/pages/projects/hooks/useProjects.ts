@@ -27,6 +27,7 @@ export const projectKeys = {
   details: () => [...projectKeys.all, "detail"] as const,
   detail: (id: string) => [...projectKeys.details(), id] as const,
   readme: (id: string) => [...projectKeys.detail(id), "readme"] as const,
+  sync: () => [...projectKeys.all, "sync"] as const,
 };
 
 /**
@@ -251,9 +252,26 @@ async function syncProjects(): Promise<SyncProjectsResponse> {
 }
 
 /**
- * Hook to sync projects from Claude CLI
+ * Hook to sync projects from Claude CLI (automatic with 5-minute caching)
+ * This hook uses TanStack Query's native caching to prevent unnecessary syncs.
  */
-export function useSyncProjects(): UseMutationResult<
+export function useSyncProjects(): UseQueryResult<SyncProjectsResponse, Error> {
+  return useQuery({
+    queryKey: projectKeys.sync(),
+    queryFn: () => syncProjects(),
+    staleTime: 5 * 60 * 1000, // 5 minutes - won't refetch within this window
+    gcTime: 10 * 60 * 1000,    // 10 minutes - keep in cache
+    refetchOnMount: false,      // Don't auto-refetch on component mount
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    retry: 1,                   // Only retry once on failure
+  });
+}
+
+/**
+ * Hook to manually sync projects from Claude CLI (bypasses cache)
+ * Use this for a "Sync Now" button or manual refresh action.
+ */
+export function useSyncProjectsMutation(): UseMutationResult<
   SyncProjectsResponse,
   Error,
   void
@@ -263,6 +281,9 @@ export function useSyncProjects(): UseMutationResult<
   return useMutation({
     mutationFn: () => syncProjects(),
     onSuccess: (data) => {
+      // Update the sync query cache with fresh data
+      queryClient.setQueryData(projectKeys.sync(), data);
+
       // Invalidate projects list and projects-with-sessions to trigger refetch
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() });
       queryClient.invalidateQueries({ queryKey: projectKeys.withSessions() });
