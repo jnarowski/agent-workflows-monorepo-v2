@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import { parse } from './parse.js';
 import type {
   UnifiedToolUseBlock,
@@ -7,7 +10,11 @@ import type {
   UnifiedTextBlock,
 } from '../types/unified.js';
 
-describe('parse', () => {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const FIXTURES_PATH = join(__dirname, '../../tests/fixtures/codex/individual');
+
+describe('parse - Streaming Format (item.completed)', () => {
   describe('item.completed - reasoning', () => {
     it('should transform reasoning to thinking block', () => {
       const jsonl = JSON.stringify({
@@ -312,5 +319,166 @@ describe('parse', () => {
       expect(message?._original).toBeDefined();
       expect((message?._original as any).type).toBe('item.completed');
     });
+  });
+});
+
+describe('parse - Persisted Format (response_item)', () => {
+  describe('response_item - message', () => {
+    it('should parse user message from fixture', () => {
+      const fixture = readFileSync(join(FIXTURES_PATH, 'response-message-user.jsonl'), 'utf-8').trim();
+      const message = parse(fixture);
+
+      expect(message).not.toBeNull();
+      expect(message?.role).toBe('user');
+      expect(message?.content).toHaveLength(1);
+      expect(message?.content[0].type).toBe('text');
+      expect((message?.content[0] as UnifiedTextBlock).text).toContain('environment_context');
+    });
+
+    it('should parse assistant message from fixture', () => {
+      const fixture = readFileSync(join(FIXTURES_PATH, 'response-message-assistant.jsonl'), 'utf-8').trim();
+      const message = parse(fixture);
+
+      expect(message).not.toBeNull();
+      expect(message?.role).toBe('assistant');
+      expect(message?.content).toHaveLength(1);
+      expect(message?.content[0].type).toBe('text');
+      expect((message?.content[0] as UnifiedTextBlock).text).toContain('TeamSheet');
+    });
+
+    it('should set tool to "codex"', () => {
+      const fixture = readFileSync(join(FIXTURES_PATH, 'response-message-assistant.jsonl'), 'utf-8').trim();
+      const message = parse(fixture);
+      expect(message?.tool).toBe('codex');
+    });
+
+    it('should parse timestamp correctly', () => {
+      const fixture = readFileSync(join(FIXTURES_PATH, 'response-message-assistant.jsonl'), 'utf-8').trim();
+      const message = parse(fixture);
+      expect(message?.timestamp).toBeGreaterThan(0);
+      expect(message?.timestamp).toBe(new Date('2025-09-25T01:28:40.413Z').getTime());
+    });
+  });
+
+  describe('response_item - reasoning', () => {
+    it('should parse reasoning from fixture', () => {
+      const fixture = readFileSync(join(FIXTURES_PATH, 'response-reasoning.jsonl'), 'utf-8').trim();
+      const message = parse(fixture);
+
+      expect(message).not.toBeNull();
+      expect(message?.role).toBe('assistant');
+      expect(message?.content).toHaveLength(1);
+      expect(message?.content[0].type).toBe('thinking');
+      expect((message?.content[0] as UnifiedThinkingBlock).thinking).toBe('**Assessing environment and read-only constraints**');
+    });
+  });
+
+  describe('response_item - function_call', () => {
+    it('should transform shell function_call to Bash tool_use from fixture', () => {
+      const fixture = readFileSync(join(FIXTURES_PATH, 'function-shell-bash.jsonl'), 'utf-8').trim();
+      const message = parse(fixture);
+
+      expect(message).not.toBeNull();
+      expect(message?.role).toBe('assistant');
+      expect(message?.content).toHaveLength(1);
+
+      const toolUse = message?.content[0] as UnifiedToolUseBlock;
+      expect(toolUse.type).toBe('tool_use');
+      expect(toolUse.name).toBe('Bash'); // Transformed from "shell"
+      expect(toolUse.input).toHaveProperty('command');
+      // Should extract actual command from array format
+      expect(toolUse.input.command).toBe('rg "TeamSheet"');
+    });
+
+    it('should use call_id as message id', () => {
+      const fixture = readFileSync(join(FIXTURES_PATH, 'function-shell-bash.jsonl'), 'utf-8').trim();
+      const message = parse(fixture);
+
+      expect(message?.id).toBe('call_1mb2zpo3ma4hy4OjTDz9oNpC');
+    });
+  });
+
+  describe('response_item - function_call_output', () => {
+    it('should extract output and exit_code from fixture', () => {
+      const fixture = readFileSync(join(FIXTURES_PATH, 'function-output-error.jsonl'), 'utf-8').trim();
+      const message = parse(fixture);
+
+      expect(message).not.toBeNull();
+      expect(message?.role).toBe('assistant');
+      expect(message?.content).toHaveLength(1);
+
+      const toolResult = message?.content[0] as UnifiedToolResultBlock;
+      expect(toolResult.type).toBe('tool_result');
+      expect(toolResult.tool_use_id).toBe('call_1mb2zpo3ma4hy4OjTDz9oNpC');
+      // Should extract from JSON wrapper
+      expect(toolResult.content).toContain('TeamSheet');
+      expect(toolResult.is_error).toBe(false); // exit_code === 0
+    });
+  });
+});
+
+describe('parse - Persisted Format (event_msg)', () => {
+  describe('event_msg - agent_message', () => {
+    it('should parse agent_message from fixture', () => {
+      const fixture = readFileSync(join(FIXTURES_PATH, 'event-agent-message.jsonl'), 'utf-8').trim();
+      const message = parse(fixture);
+
+      expect(message).not.toBeNull();
+      expect(message?.role).toBe('assistant');
+      expect(message?.content).toHaveLength(1);
+      expect(message?.content[0].type).toBe('text');
+      expect((message?.content[0] as UnifiedTextBlock).text).toContain('TeamSheet');
+    });
+  });
+
+  describe('event_msg - agent_reasoning', () => {
+    it('should parse agent_reasoning from fixture', () => {
+      const fixture = readFileSync(join(FIXTURES_PATH, 'event-agent-reasoning.jsonl'), 'utf-8').trim();
+      const message = parse(fixture);
+
+      expect(message).not.toBeNull();
+      expect(message?.role).toBe('assistant');
+      expect(message?.content).toHaveLength(1);
+      expect(message?.content[0].type).toBe('thinking');
+      expect((message?.content[0] as UnifiedThinkingBlock).thinking).toBe('**Assessing environment and read-only constraints**');
+    });
+  });
+
+  describe('event_msg - user_message', () => {
+    it('should parse user_message from fixture', () => {
+      const fixture = readFileSync(join(FIXTURES_PATH, 'event-user-message.jsonl'), 'utf-8').trim();
+      const message = parse(fixture);
+
+      expect(message).not.toBeNull();
+      expect(message?.role).toBe('user');
+      expect(message?.content).toHaveLength(1);
+      expect(message?.content[0].type).toBe('text');
+      expect((message?.content[0] as UnifiedTextBlock).text).toContain('Context from my IDE setup');
+    });
+  });
+
+  describe('event_msg - token_count', () => {
+    it('should return null for token_count from fixture', () => {
+      const fixture = readFileSync(join(FIXTURES_PATH, 'event-token-count.jsonl'), 'utf-8').trim();
+      const message = parse(fixture);
+
+      expect(message).toBeNull();
+    });
+  });
+});
+
+describe('parse - Metadata Events', () => {
+  it('should return null for session_meta from fixture', () => {
+    const fixture = readFileSync(join(FIXTURES_PATH, 'session-meta.jsonl'), 'utf-8').trim();
+    const message = parse(fixture);
+
+    expect(message).toBeNull();
+  });
+
+  it('should return null for turn_context from fixture', () => {
+    const fixture = readFileSync(join(FIXTURES_PATH, 'turn-context.jsonl'), 'utf-8').trim();
+    const message = parse(fixture);
+
+    expect(message).toBeNull();
   });
 });

@@ -10,13 +10,19 @@
 // ============================================================================
 
 export type CodexEvent =
+  // Streaming format (item.completed)
   | ThreadStartedEvent
   | TurnStartedEvent
   | TurnCompletedEvent
   | TurnFailedEvent
   | ItemStartedEvent
   | ItemCompletedEvent
-  | ErrorEvent;
+  | ErrorEvent
+  // Persisted format (response_item, event_msg)
+  | ResponseItemEvent
+  | EventMessageEvent
+  | SessionMetaEvent
+  | TurnContextEvent;
 
 export interface ThreadStartedEvent {
   type: 'thread.started';
@@ -93,5 +99,107 @@ export interface FileChangeItem {
     kind: 'add' | 'modify' | 'delete';
   }>;
   status: 'in_progress' | 'completed' | 'failed';
+}
+
+// ============================================================================
+// Persisted Format - response_item events
+// ============================================================================
+// These events are saved in session files (~/.codex/sessions/YYYY/MM/DD/*.jsonl)
+
+export interface ResponseItemEvent {
+  timestamp: string;
+  type: 'response_item';
+  payload: ResponseItemPayload;
+}
+
+export type ResponseItemPayload =
+  | ResponseItemMessage
+  | ResponseItemReasoning
+  | ResponseItemFunctionCall
+  | ResponseItemFunctionCallOutput;
+
+export interface ResponseItemMessage {
+  type: 'message';
+  role: 'user' | 'assistant';
+  content: Array<{
+    type: 'input_text' | 'output_text';
+    text: string;
+  }>;
+}
+
+export interface ResponseItemReasoning {
+  type: 'reasoning';
+  summary: Array<{
+    type: 'summary_text';
+    text: string;
+  }>;
+  content: null;
+  encrypted_content: string;
+}
+
+export interface ResponseItemFunctionCall {
+  type: 'function_call';
+  name: string;
+  arguments: string; // JSON string
+  call_id: string;
+}
+
+export interface ResponseItemFunctionCallOutput {
+  type: 'function_call_output';
+  call_id: string;
+  output: string; // JSON string: {output, metadata}
+}
+
+// ============================================================================
+// Persisted Format - event_msg events
+// ============================================================================
+// Supplementary events in session files
+
+export interface EventMessageEvent {
+  timestamp: string;
+  type: 'event_msg';
+  payload: EventMessagePayload;
+}
+
+export type EventMessagePayload =
+  | { type: 'agent_message'; message: string }
+  | { type: 'agent_reasoning'; text: string }
+  | { type: 'user_message'; message: string; kind: string }
+  | { type: 'token_count'; info: unknown; rate_limits: unknown };
+
+// ============================================================================
+// Persisted Format - Metadata events
+// ============================================================================
+// These events are ignored during parsing (return null)
+
+export interface SessionMetaEvent {
+  timestamp: string;
+  type: 'session_meta';
+  payload: {
+    id: string;
+    timestamp: string;
+    cwd: string;
+    originator: string;
+    cli_version: string;
+    instructions: string | null;
+    git?: {
+      commit_hash: string;
+      branch: string;
+      repository_url: string;
+    };
+  };
+}
+
+export interface TurnContextEvent {
+  timestamp: string;
+  type: 'turn_context';
+  payload: {
+    cwd: string;
+    approval_policy: string;
+    sandbox_policy: { mode: string };
+    model: string;
+    effort: string;
+    summary: string;
+  };
 }
 
