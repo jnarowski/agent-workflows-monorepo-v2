@@ -96,7 +96,7 @@ describe('generateSessionName', () => {
       expect(vi.mocked(generateText)).toHaveBeenCalledWith(
         expect.objectContaining({
           model: expect.objectContaining({
-            modelId: 'claude-3-5-sonnet-20241022',
+            modelId: 'claude-3-5-sonnet-latest',
             provider: 'anthropic',
           }),
           system: expect.stringContaining('You create concise 3-5 word names'),

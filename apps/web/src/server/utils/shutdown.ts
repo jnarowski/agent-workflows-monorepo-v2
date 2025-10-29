@@ -40,10 +40,7 @@ export async function setupGracefulShutdown(
       fastify.log.info('Fastify server closed');
 
       // 3. Cleanup WebSocket sessions and temp image directories
-      let sessionCount = 0;
-      for (const [sessionId] of activeSessions.entries()) {
-        sessionCount++;
-      }
+      const sessionCount = activeSessions.size;
 
       if (sessionCount > 0) {
         fastify.log.info({ count: sessionCount }, 'Cleaning up active sessions...');

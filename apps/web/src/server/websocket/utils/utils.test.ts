@@ -5,8 +5,14 @@ import { cleanupTempDir } from "./cleanup.js";
 import { WebSocketMetrics } from "./metrics.js";
 import fs from "fs/promises";
 import { EventEmitter } from "events";
+import type { WebSocket } from "@fastify/websocket";
 
-// Mock WebSocket implementation
+// Mock WebSocket implementation that matches the interface
+interface MockWebSocketInstance extends WebSocket {
+  lastMessage: string | null;
+  sentMessages: string[];
+}
+
 class MockWebSocket extends EventEmitter {
   lastMessage: string | null = null;
   sentMessages: string[] = [];
@@ -18,17 +24,22 @@ class MockWebSocket extends EventEmitter {
   }
 }
 
+// Helper to create a mock socket with proper typing
+function createMockSocket(): MockWebSocketInstance {
+  return new MockWebSocket() as unknown as MockWebSocketInstance;
+}
+
 describe("WebSocket Utilities", () => {
   describe("sendMessage", () => {
     test("sends JSON message to socket", () => {
-      const socket = new MockWebSocket() as any;
+      const socket = createMockSocket();
       sendMessage(socket, "test.event", { foo: "bar" });
 
       expect(socket.lastMessage).toBe('{"type":"test.event","data":{"foo":"bar"}}');
     });
 
     test("handles complex data structures", () => {
-      const socket = new MockWebSocket() as any;
+      const socket = createMockSocket();
       const complexData = {
         nested: { value: 123 },
         array: [1, 2, 3],

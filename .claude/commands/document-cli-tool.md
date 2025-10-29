@@ -18,7 +18,7 @@ Comprehensive research and documentation of an AI CLI tool's capabilities, outpu
 - Test edge cases and failure modes
 - Compare capabilities to Claude Code and Cursor CLI
 - Focus on technical details needed for SDK integration
-- Save all findings to `.agent/docs/${cli-name}-cli.md` (uppercase CLI name)
+- Save all findings to `.agent/docs/${cli-name}.md` (lowercase cli name)
 
 ## Workflow
 

@@ -331,8 +331,10 @@ describe('parse - Persisted Format (response_item)', () => {
       expect(message).not.toBeNull();
       expect(message?.role).toBe('user');
       expect(message?.content).toHaveLength(1);
-      expect(message?.content[0].type).toBe('text');
-      expect((message?.content[0] as UnifiedTextBlock).text).toContain('environment_context');
+      const firstContent = message?.content[0];
+      expect(firstContent).toBeDefined();
+      expect(typeof firstContent !== 'string' && firstContent?.type).toBe('text');
+      expect((firstContent as UnifiedTextBlock).text).toContain('environment_context');
     });
 
     it('should parse assistant message from fixture', () => {
@@ -342,8 +344,10 @@ describe('parse - Persisted Format (response_item)', () => {
       expect(message).not.toBeNull();
       expect(message?.role).toBe('assistant');
       expect(message?.content).toHaveLength(1);
-      expect(message?.content[0].type).toBe('text');
-      expect((message?.content[0] as UnifiedTextBlock).text).toContain('TeamSheet');
+      const firstContent = message?.content[0];
+      expect(firstContent).toBeDefined();
+      expect(typeof firstContent !== 'string' && firstContent?.type).toBe('text');
+      expect((firstContent as UnifiedTextBlock).text).toContain('TeamSheet');
     });
 
     it('should set tool to "codex"', () => {
@@ -368,8 +372,10 @@ describe('parse - Persisted Format (response_item)', () => {
       expect(message).not.toBeNull();
       expect(message?.role).toBe('assistant');
       expect(message?.content).toHaveLength(1);
-      expect(message?.content[0].type).toBe('thinking');
-      expect((message?.content[0] as UnifiedThinkingBlock).thinking).toBe('**Assessing environment and read-only constraints**');
+      const firstContent = message?.content[0];
+      expect(firstContent).toBeDefined();
+      expect(typeof firstContent !== 'string' && firstContent?.type).toBe('thinking');
+      expect((firstContent as UnifiedThinkingBlock).thinking).toBe('**Assessing environment and read-only constraints**');
     });
   });
 
@@ -426,8 +432,10 @@ describe('parse - Persisted Format (event_msg)', () => {
       expect(message).not.toBeNull();
       expect(message?.role).toBe('assistant');
       expect(message?.content).toHaveLength(1);
-      expect(message?.content[0].type).toBe('text');
-      expect((message?.content[0] as UnifiedTextBlock).text).toContain('TeamSheet');
+      const firstContent = message?.content[0];
+      expect(firstContent).toBeDefined();
+      expect(typeof firstContent !== 'string' && firstContent?.type).toBe('text');
+      expect((firstContent as UnifiedTextBlock).text).toContain('TeamSheet');
     });
   });
 
@@ -439,8 +447,10 @@ describe('parse - Persisted Format (event_msg)', () => {
       expect(message).not.toBeNull();
       expect(message?.role).toBe('assistant');
       expect(message?.content).toHaveLength(1);
-      expect(message?.content[0].type).toBe('thinking');
-      expect((message?.content[0] as UnifiedThinkingBlock).thinking).toBe('**Assessing environment and read-only constraints**');
+      const firstContent = message?.content[0];
+      expect(firstContent).toBeDefined();
+      expect(typeof firstContent !== 'string' && firstContent?.type).toBe('thinking');
+      expect((firstContent as UnifiedThinkingBlock).thinking).toBe('**Assessing environment and read-only constraints**');
     });
   });
 
@@ -452,8 +462,10 @@ describe('parse - Persisted Format (event_msg)', () => {
       expect(message).not.toBeNull();
       expect(message?.role).toBe('user');
       expect(message?.content).toHaveLength(1);
-      expect(message?.content[0].type).toBe('text');
-      expect((message?.content[0] as UnifiedTextBlock).text).toContain('Context from my IDE setup');
+      const firstContent = message?.content[0];
+      expect(firstContent).toBeDefined();
+      expect(typeof firstContent !== 'string' && firstContent?.type).toBe('text');
+      expect((firstContent as UnifiedTextBlock).text).toContain('Context from my IDE setup');
     });
   });
 
