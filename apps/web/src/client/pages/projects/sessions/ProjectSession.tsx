@@ -2,10 +2,7 @@ import { useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChatInterface } from "./components/ChatInterface";
-import {
-  ChatPromptInput,
-  type ChatPromptInputHandle,
-} from "./components/ChatPromptInput";
+import { ChatPromptInput } from "./components/ChatPromptInput";
 import { ConnectionStatusBanner } from "./components/ConnectionStatusBanner";
 import { useSessionWebSocket } from "./hooks/useSessionWebSocket";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
@@ -18,21 +15,43 @@ import { useNavigationStore } from "@/client/stores/index";
 import { api } from "@/client/lib/api-client";
 import type { ToolResultBlock } from "@/shared/types/message.types";
 import { sessionKeys } from "./hooks/useAgentSessions";
+import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import { generateUUID } from "@/client/lib/utils";
+import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
+import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 
 export default function ProjectSession() {
   const navigate = useNavigate();
   const location = useLocation();
-  const params = useParams<{ sessionId?: string }>();
+  const params = useParams<{ sessionId: string }>();
   const { projectId } = useActiveProject();
+
+  // Get project and session names for title
+  const { data: projects } = useProjectsWithSessions();
+  const project = projects?.find((p) => p.id === projectId);
+  const currentSession = useSessionStore((s) => s.session);
+
+  useDocumentTitle(
+    project?.name && currentSession?.name
+      ? `${currentSession.name} - ${project.name} | Agent Workflows`
+      : project?.name
+      ? `Chat - ${project.name} | Agent Workflows`
+      : undefined
+  );
   const setActiveSession = useNavigationStore((s) => s.setActiveSession);
   const initialMessageSentRef = useRef(false);
   const loadSessionInitiatedRef = useRef(false);
   const queryClient = useQueryClient();
-  const chatInputRef = useRef<ChatPromptInputHandle>(null);
 
-  // Get sessionId from URL params (will be undefined for /session/new route)
-  const sessionId = params.sessionId || null;
+  // Get sessionId from URL params (required for this route)
+  const sessionId = params.sessionId;
+
+  // Redirect to new session if no sessionId (shouldn't happen with proper routing)
+  useEffect(() => {
+    if (!sessionId && projectId) {
+      navigate(`/projects/${projectId}/session/new`, { replace: true });
+    }
+  }, [sessionId, projectId, navigate]);
 
   // Get session from store
   const session = useSessionStore((s) => s.session);
@@ -43,9 +62,8 @@ export default function ProjectSession() {
   const setStreaming = useSessionStore((s) => s.setStreaming);
   const totalTokens = useSessionStore(selectTotalTokens);
 
-  // App-wide WebSocket hook for sending messages during session creation
+  // App-wide WebSocket hook for connection status
   const {
-    sendMessage: globalSendMessage,
     isConnected: globalIsConnected,
     readyState,
     isReady,
@@ -68,10 +86,8 @@ export default function ProjectSession() {
 
   // Load session when sessionId changes
   useEffect(() => {
-    // Skip loading if no sessionId (we're on /session/new route)
+    // Skip loading if no sessionId or projectId
     if (!sessionId || !projectId) {
-      // Always clear session when navigating to /new
-      clearSession();
       return;
     }
 
@@ -88,12 +104,14 @@ export default function ProjectSession() {
       // Initialize session in store without fetching from server (only if not already initialized)
       if (currentSessionId !== sessionId) {
         clearSession();
+        // Get current agent from store
+        const currentAgent = useSessionStore.getState().getAgent();
         // Manually initialize the session store for this new session
         useSessionStore.setState({
           sessionId: sessionId,
           session: {
             id: sessionId,
-            agent: "claude", // Default to claude
+            agent: currentAgent, // Use agent from store
             messages: [],
             isStreaming: false,
             metadata: null,
@@ -163,17 +181,6 @@ export default function ProjectSession() {
     initialMessageSentRef.current = false;
   }, [sessionId]);
 
-  // Focus chat input when navigating to /session/new
-  useEffect(() => {
-    if (!sessionId) {
-      // Small delay to ensure DOM is ready
-      const timeoutId = setTimeout(() => {
-        chatInputRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [sessionId]);
-
   // Handle initial message from query parameter
   useEffect(() => {
     if (!sessionId || initialMessageSentRef.current) {
@@ -224,64 +231,11 @@ export default function ProjectSession() {
         message: message.substring(0, 100),
         imagesCount: images?.length || 0,
         sessionId,
-        isFirstMessage: session?.isFirstMessage,
       });
     }
 
-    if (!projectId) {
-      console.error("[ProjectSession] No projectId available");
-      return;
-    }
-
-    // If no sessionId, we're on /session/new - create session first then redirect
-    if (!sessionId) {
-      if (import.meta.env.DEV) {
-        console.log("[ProjectSession] No sessionId - creating new session");
-      }
-
-      try {
-        // Create session via API
-        const { data: newSession } = await api.post<{ data: { id: string } }>(
-          `/api/projects/${projectId}/sessions`,
-          { sessionId: generateUUID() }
-        );
-
-        // Invalidate sessions query to update sidebar immediately
-        queryClient.invalidateQueries({
-          queryKey: sessionKeys.byProject(projectId),
-        });
-
-        // Convert images to base64 if present
-        const imagePaths = images ? await handleImageUpload(images) : undefined;
-
-        // Get permission mode from form
-        const getPermissionMode = useSessionStore.getState().getPermissionMode;
-        const permissionMode = getPermissionMode();
-
-        // Immediately send message via app-wide WebSocket (before navigation)
-        // This starts the assistant processing right away
-        // New session = resume: false (no prior messages)
-        globalSendMessage(`session.${newSession.id}.send_message`, {
-          message,
-          images: imagePaths,
-          config: {
-            resume: false,
-            sessionId: newSession.id,
-            permissionMode,
-          },
-        });
-
-        // Navigate to the new session with query parameter
-        // Query param signals: message already sent, just display it
-        navigate(
-          `/projects/${projectId}/session/${newSession.id}?query=${encodeURIComponent(message)}`,
-          {
-            replace: true,
-          }
-        );
-      } catch (error) {
-        console.error("[ProjectSession] Error creating session:", error);
-      }
+    if (!projectId || !sessionId) {
+      console.error("[ProjectSession] No projectId or sessionId available");
       return;
     }
 
@@ -394,13 +348,13 @@ export default function ProjectSession() {
 
       {/* Fixed Input Container at Bottom */}
       <div className="md:pb-4 md:px-4">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-4xl space-y-4">
           <ChatPromptInput
-            ref={chatInputRef}
             onSubmit={handleSubmit}
             disabled={inputDisabled}
             isStreaming={session?.isStreaming || false}
             totalTokens={totalTokens}
+            agent={session?.agent}
           />
         </div>
       </div>

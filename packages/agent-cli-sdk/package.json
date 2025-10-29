@@ -21,7 +21,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
-    "extract-claude-fixtures": "tsx scripts/extract-claude-fixtures.ts"
+    "test:e2e:claude": "vitest run --config vitest.e2e.config.ts tests/e2e/claude",
+    "test:e2e:codex": "vitest run --config vitest.e2e.config.ts tests/e2e/codex",
+    "extract-claude-fixtures": "tsx scripts/extract-claude-fixtures.ts",
+    "extract-gemini-fixtures": "node --import tsx scripts/extract-gemini-fixtures.ts"
   },
   "keywords": [
     "ai",
@@ -49,7 +52,8 @@
   "dependencies": {
     "boxen": "^8.0.1",
     "chalk": "^5.3.0",
-    "cross-spawn": "^7.0.6"
+    "cross-spawn": "^7.0.6",
+    "glob": "^11.0.3"
   },
   "peerDependencies": {
     "zod": "^4.0.0 || ^3.0.0"

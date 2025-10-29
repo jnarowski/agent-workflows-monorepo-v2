@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/client/stores/index";
 import { LoginForm } from "@/client/pages/auth/components/LoginForm";
+import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
 import type { FormEvent } from "react";
 
 function Login() {
+  useDocumentTitle("Login | Agent Workflows");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);

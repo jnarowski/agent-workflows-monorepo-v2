@@ -1,6 +1,6 @@
 # Agent CLI SDK Examples
 
-This directory contains examples demonstrating how to use the `agent-cli-sdk` package.
+This directory contains examples demonstrating how to use the `agent-cli-sdk` package with both Claude Code and OpenAI Codex.
 
 ## Examples
 
@@ -8,34 +8,60 @@ This directory contains examples demonstrating how to use the `agent-cli-sdk` pa
 
 - **[loaders/load-claude-session.ts](./loaders/load-claude-session.ts)** - Load and inspect messages from a saved Claude session
 
-### Execute Command Examples
+### Claude Code Examples
 
-- **[basic-execute.ts](./basic-execute.ts)** - Simple example showing how to run a basic Claude command
-- **[json-extraction.ts](./json-extraction.ts)** - Extract structured JSON data from Claude's responses
-- **[streaming-callbacks.ts](./streaming-callbacks.ts)** - Process events and messages in real-time using callbacks
-- **[session-continuation.ts](./session-continuation.ts)** - Maintain context across multiple executions using session IDs
-- **[error-handling.ts](./error-handling.ts)** - Handle timeouts, errors, and session resumption after failures (demonstrates result-based error pattern)
+Located in `examples/claude/`:
+
+- **[basic-execute.ts](./claude/basic-execute.ts)** - Simple example showing how to run a basic Claude command
+- **[json-extraction.ts](./claude/json-extraction.ts)** - Extract structured JSON data from Claude's responses
+- **[streaming-callbacks.ts](./claude/streaming-callbacks.ts)** - Process events and messages in real-time using callbacks
+- **[session-continuation.ts](./claude/session-continuation.ts)** - Maintain context across multiple executions using session IDs
+- **[error-handling.ts](./claude/error-handling.ts)** - Handle timeouts, errors, and session resumption after failures
+
+### OpenAI Codex Examples
+
+Located in `examples/codex/`:
+
+- **[basic-execute.ts](./codex/basic-execute.ts)** - Simple example showing how to run a basic Codex command
+- **[json-extraction.ts](./codex/json-extraction.ts)** - Extract structured JSON data from Codex's responses
+- **[streaming-callbacks.ts](./codex/streaming-callbacks.ts)** - Process events and messages in real-time using callbacks
+- **[session-continuation.ts](./codex/session-continuation.ts)** - Maintain context across multiple executions using thread IDs
+- **[error-handling.ts](./codex/error-handling.ts)** - Handle timeouts, errors, and CLI detection failures
+- **[permission-modes.ts](./codex/permission-modes.ts)** - Demonstrates different permission modes (default, plan, acceptEdits, bypassPermissions)
+- **[load-session.ts](./codex/load-session.ts)** - Load and analyze a Codex session from disk
 
 ## Running Examples
 
 All examples are executable TypeScript files. You can run them directly with `tsx`:
 
 ```bash
-# Run any example from the package root
-tsx examples/basic-execute.ts
+# Run Claude Code examples from the package root
+tsx examples/claude/basic-execute.ts
+tsx examples/claude/json-extraction.ts
+
+# Run Codex examples
+tsx examples/codex/basic-execute.ts
+tsx examples/codex/permission-modes.ts
 
 # Or make them executable and run directly
-chmod +x examples/basic-execute.ts
-./examples/basic-execute.ts
+chmod +x examples/claude/basic-execute.ts
+./examples/claude/basic-execute.ts
 ```
 
 ## Prerequisites
 
 Make sure you have:
 
+### For Claude Code Examples
 1. Claude CLI installed and configured
 2. The `agent-cli-sdk` package built (`pnpm build`)
 3. `tsx` installed (or use `ts-node`)
+
+### For Codex Examples
+1. OpenAI Codex CLI installed and configured
+2. Set `CODEX_CLI_PATH` environment variable (if not in PATH)
+3. The `agent-cli-sdk` package built (`pnpm build`)
+4. `tsx` installed (or use `ts-node`)
 
 ```bash
 # Install tsx globally if needed
@@ -43,16 +69,20 @@ npm install -g tsx
 
 # Or use with pnpm
 pnpm install -g tsx
+
+# Set Codex CLI path (if needed)
+export CODEX_CLI_PATH=/path/to/codex
 ```
 
 ## API Overview
 
-The new API uses a result-based pattern (no exceptions for timeouts/errors):
+The unified API works with both Claude Code and OpenAI Codex using the same interface:
 
 ```typescript
 import { execute } from '@repo/agent-cli-sdk';
 
-const result = await execute({
+// Use with Claude Code
+const claudeResult = await execute({
   tool: 'claude',
   prompt: 'Your prompt here',
   json: true,        // Enable JSON extraction
@@ -63,10 +93,22 @@ const result = await execute({
   }
 });
 
-// Result structure
+// Use with OpenAI Codex
+const codexResult = await execute({
+  tool: 'codex',
+  prompt: 'Your prompt here',
+  permissionMode: 'default', // Control file operations
+  json: true,
+  verbose: false,
+  onEvent: ({ raw, event, message }) => {
+    // Same callback interface for both tools
+  }
+});
+
+// Result structure (same for both tools)
 console.log(result.success);    // boolean - whether command succeeded
 console.log(result.exitCode);   // number - process exit code
-console.log(result.sessionId);  // string - Claude session ID
+console.log(result.sessionId);  // string - session/thread ID
 console.log(result.duration);   // number - execution time in ms
 console.log(result.messages);   // UnifiedMessage[] - all messages
 console.log(result.data);       // T | string - extracted data or text
@@ -122,38 +164,58 @@ await execute({
 
 ### Session Continuation
 
-Maintain context across multiple executions using session IDs and resume:
+Maintain context across multiple executions using session IDs:
 
+**Claude Code (requires resume flag):**
 ```typescript
 import { randomUUID } from 'crypto';
 
-// Create a session with a specific ID
 const sessionId = randomUUID();
 
-// First execution - creates new session
 const result1 = await execute({
+  tool: 'claude',
   prompt: 'My name is Tony',
   sessionId,
-  tool: 'claude'
 });
 
-// Resume the session - Claude remembers previous context
 const result2 = await execute({
+  tool: 'claude',
   prompt: 'What is my name?',
   sessionId: result1.sessionId,
-  resume: true, // Resume the existing session
-  tool: 'claude'
+  resume: true, // Must set resume: true for Claude
 });
-// Claude will remember "Tony" from the previous message!
+```
 
-// Continue with more questions
-const result3 = await execute({
-  prompt: 'Spell my name backwards',
-  sessionId: result2.sessionId,
-  resume: true,
-  tool: 'claude'
+**OpenAI Codex (automatic continuation):**
+```typescript
+const result1 = await execute({
+  tool: 'codex',
+  prompt: 'My name is Tony',
 });
-// All three executions share the same session context
+
+const result2 = await execute({
+  tool: 'codex',
+  prompt: 'What is my name?',
+  sessionId: result1.sessionId, // Codex automatically continues
+});
+```
+
+### Permission Modes (Codex)
+
+Codex supports different permission modes for controlling file operations:
+
+```typescript
+// Default: workspace-write sandbox
+await execute({ tool: 'codex', permissionMode: 'default' });
+
+// Plan mode: read-only analysis
+await execute({ tool: 'codex', permissionMode: 'plan' });
+
+// Accept edits: auto-accept file changes
+await execute({ tool: 'codex', permissionMode: 'acceptEdits' });
+
+// Bypass all permissions (DANGEROUS - use only in isolated environments)
+await execute({ tool: 'codex', dangerouslySkipPermissions: true });
 ```
 
 ## Example Output

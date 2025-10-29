@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useMemo, type ComponentProps } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, FolderOpen, Info } from "lucide-react";
+import { Home } from "lucide-react";
 import { useAuthStore } from "@/client/stores/index";
 
 import { Sidebar, useSidebar } from "@/client/components/ui/sidebar";

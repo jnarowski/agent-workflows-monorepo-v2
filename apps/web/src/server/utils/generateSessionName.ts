@@ -32,7 +32,7 @@ export async function generateSessionName(
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
   if (!apiKey) {
-    console.warn("ANTHROPIC_API_KEY not set, using default session name");
+    // Silently return default - this is an optional feature
     return "Untitled Session";
   }
 
@@ -46,7 +46,7 @@ export async function generateSessionName(
 
     // Generate session name using AI
     const result = await generateText({
-      model: anthropic("claude-3-5-sonnet-20241022"),
+      model: anthropic("claude-3-5-sonnet-latest"),
       system: `You create concise 3-5 word names for chat sessions. You MUST follow these rules strictly:
 
 Rules:

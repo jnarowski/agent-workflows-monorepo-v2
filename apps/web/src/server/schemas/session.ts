@@ -19,6 +19,7 @@ export const agentSessionMetadataSchema = z.object({
  */
 export const createSessionSchema = z.object({
   sessionId: z.string().min(1),
+  agent: z.enum(['claude', 'codex', 'cursor', 'gemini']).optional().default('claude'),
 });
 
 /**

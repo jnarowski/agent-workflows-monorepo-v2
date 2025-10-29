@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/client/stores/index";
 import { useSyncProjects } from "@/client/pages/projects/hooks/useProjects";
+import { useSettings } from "@/client/hooks/useSettings";
 import { AppSidebar } from "@/client/components/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/client/components/ui/sidebar";
 import {
@@ -13,6 +14,10 @@ function ProtectedLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
   const syncProjects = useSyncProjects();
+
+  // Load settings early so they're available for all protected routes
+  // Settings are cached by TanStack Query (5-minute stale time)
+  useSettings();
 
   // Track if sync has been initiated to prevent duplicate calls in React Strict Mode
   const syncInitiatedRef = useRef(false);
@@ -32,15 +37,15 @@ function ProtectedLayout() {
       // Mark as initiated immediately to prevent duplicate calls
       syncInitiatedRef.current = true;
 
-      syncProjects.mutate(undefined, {
-        onSuccess: () => {
-          markProjectsSynced(user?.id);
-        },
-        onError: () => {
-          // Reset ref on error so user can retry
-          syncInitiatedRef.current = false;
-        },
-      });
+      // syncProjects.mutate(undefined, {
+      //   onSuccess: () => {
+      //     markProjectsSynced(user?.id);
+      //   },
+      //   onError: () => {
+      //     // Reset ref on error so user can retry
+      //     syncInitiatedRef.current = false;
+      //   },
+      // });
     } else {
       if (import.meta.env.DEV) {
         console.log("Skipping project sync - recently synced");

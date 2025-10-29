@@ -128,15 +128,17 @@ export async function sessionRoutes(fastify: FastifyInstance) {
         projectId: request.params.id,
         userId,
         sessionId: request.body.sessionId,
+        agent: request.body.agent || 'claude',
       }, 'Creating session');
 
       const session = await createSession(
         request.params.id,
         userId,
-        request.body.sessionId
+        request.body.sessionId,
+        request.body.agent
       );
 
-      fastify.log.info({ sessionId: session.id }, 'Session created successfully');
+      fastify.log.info({ sessionId: session.id, agent: session.agent }, 'Session created successfully');
 
       return reply.code(201).send({ data: session });
     }

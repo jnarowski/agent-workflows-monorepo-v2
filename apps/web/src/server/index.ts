@@ -14,7 +14,7 @@ import { dirname, join } from 'path';
 import { existsSync } from 'fs';
 import { Prisma } from '@prisma/client';
 import { registerRoutes } from '@/server/routes';
-import { registerWebSocket, activeSessions } from '@/server/websocket';
+import { registerWebSocket, activeSessions, reconnectionManager } from '@/server/websocket/index';
 import { registerShellRoute } from '@/server/routes/shell';
 import { authPlugin } from '@/server/plugins/auth';
 import { setupGracefulShutdown } from '@/server/utils/shutdown';
@@ -268,7 +268,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   });
 
   // Setup graceful shutdown handlers
-  setupGracefulShutdown(server, activeSessions);
+  await setupGracefulShutdown(server, activeSessions, reconnectionManager);
 
   console.log('');
   console.log('🚀 Fastify server running at:');

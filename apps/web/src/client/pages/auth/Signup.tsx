@@ -2,8 +2,10 @@ import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/client/stores/index";
 import { SignupForm } from "@/client/pages/auth/components/SignupForm";
+import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
 
 function Signup() {
+  useDocumentTitle("Sign Up | Agent Workflows");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

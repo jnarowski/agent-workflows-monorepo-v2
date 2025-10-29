@@ -35,14 +35,14 @@ pnpm format          # Format with Prettier
 
 ## Architecture Overview
 
-This is a TypeScript SDK for orchestrating AI-powered CLI tools (currently Claude Code only, with planned support for Codex/Gemini/Cursor). The SDK provides a unified API for executing AI CLI commands programmatically and loading/parsing session histories.
+This is a TypeScript SDK for orchestrating AI-powered CLI tools (Claude Code and OpenAI Codex, with planned support for Gemini/Cursor). The SDK provides a unified API for executing AI CLI commands programmatically and loading/parsing session histories.
 
 ### Core Components
 
 **Main Entry Point** (`src/index.ts`)
 
 - Exports unified `loadMessages()` and `execute()` functions
-- Routes to tool-specific implementations (currently only Claude)
+- Routes to tool-specific implementations (Claude, Codex)
 - Uses exhaustive type checking pattern for tool selection
 
 **Claude Implementation** (`src/claude/`)
@@ -52,6 +52,14 @@ This is a TypeScript SDK for orchestrating AI-powered CLI tools (currently Claud
 - `parse.ts`: Converts Claude JSONL events to UnifiedMessage format
 - `detectCli.ts`: Detects Claude CLI installation path
 - `types.ts`: Claude-specific types and events
+
+**Codex Implementation** (`src/codex/`)
+
+- `execute.ts`: Spawns Codex CLI process, monitors JSONL output streams, handles callbacks
+- `loadSession.ts`: Reads session files from `~/.codex/sessions/YYYY/MM/DD/rollout-{timestamp}-{uuid}.jsonl`
+- `parse.ts`: Converts Codex JSONL events to UnifiedMessage format (transforms `function_call` to `tool_use`, etc.)
+- `detectCli.ts`: Detects Codex CLI installation path
+- `types.ts`: Codex-specific types and events
 
 **Unified Types** (`src/types/unified.ts`)
 
@@ -68,33 +76,43 @@ This is a TypeScript SDK for orchestrating AI-powered CLI tools (currently Claud
 ### Data Flow
 
 1. **Execute Flow**:
-   - User calls `execute()` → routes to `executeClaudeCommand()`
-   - Spawns Claude CLI with args built from options
+   - User calls `execute()` → routes to `executeClaudeCommand()` or `executeCodexCommand()`
+   - Spawns respective CLI with args built from options
    - Streams JSONL output line-by-line via `spawnProcess()`
-   - Each line parsed by `parse()` into UnifiedMessage
+   - Each line parsed by tool-specific `parse()` into UnifiedMessage
    - Callbacks invoked with events/messages in real-time
    - Returns ExecuteResult with messages, session ID, extracted data
 
 2. **Load Session Flow**:
-   - User calls `loadMessages()` → routes to `loadClaudeSession()`
-   - Reads `~/.claude/projects/{encoded-path}/{sessionId}.jsonl`
-   - Parses each line with `parse()`, filters nulls, sorts by timestamp
+   - User calls `loadMessages()` → routes to `loadClaudeSession()` or `loadCodexSession()`
+   - Reads from tool-specific session paths:
+     - Claude: `~/.claude/projects/{encoded-path}/{sessionId}.jsonl`
+     - Codex: `~/.codex/sessions/YYYY/MM/DD/rollout-{timestamp}-{uuid}.jsonl`
+   - Parses each line with tool-specific `parse()`, filters nulls, sorts by timestamp
    - Returns UnifiedMessage array
 
 ### Key Patterns
 
-**JSONL Streaming Parser**: The execute function uses line buffering to handle streaming JSONL output from Claude CLI without blocking.
+**JSONL Streaming Parser**: The execute function uses line buffering to handle streaming JSONL output from CLI tools without blocking.
 
-**Unified Message Format**: All AI CLI outputs are normalized to UnifiedMessage with typed content blocks, enabling tool-agnostic processing.
+**Unified Message Format**: All AI CLI outputs are normalized to UnifiedMessage with typed content blocks, enabling tool-agnostic processing. Codex-specific formats are automatically transformed:
+- `function_call` → `tool_use`
+- `function_call_output` → `tool_result`
+- `input_text`/`output_text` → `text`
+- Tool names normalized (e.g., `shell` → `Bash`)
 
-**Permission Modes**: Claude execution supports safety modes:
+**Permission Modes**: Both CLI tools support safety modes with unified semantics:
 
 - `default`: Standard mode with permission prompts
 - `plan`: Read-only analysis mode
 - `acceptEdits`: Auto-accepts file edits
 - `bypassPermissions`: Dangerous mode for isolated environments
 
-**Session ID Encoding**: Claude encodes project paths by replacing `/` with `-` (e.g., `/Users/john/project` → `-Users-john-project`)
+Internal flags differ per tool but are abstracted by the SDK.
+
+**Session Storage**:
+- **Claude**: Encodes project paths by replacing `/` with `-` (e.g., `/Users/john/project` → `-Users-john-project`)
+- **Codex**: Uses date-based directory structure with UUID-based session IDs from `session_meta` events
 
 ## Testing Strategy
 
@@ -103,19 +121,32 @@ This is a TypeScript SDK for orchestrating AI-powered CLI tools (currently Claud
 - Test parsing logic, CLI detection, JSON extraction, spawn utilities
 - Fast, no external dependencies
 
-**E2E Tests** (`tests/e2e/claude/`):
+**E2E Tests** (`tests/e2e/`):
 
-- `basic.test.ts`: Basic command execution
-- `json.test.ts`: JSON extraction
-- `resume.test.ts`: Session resumption
-- Run sequentially (singleFork: true) to avoid conflicts
-- Long timeout (180s) for real Claude CLI interactions
+- **Claude** (`tests/e2e/claude/`):
+  - `basic.test.ts`: Basic command execution
+  - `json.test.ts`: JSON extraction
+  - `resume.test.ts`: Session resumption
 
-**Fixtures** (`tests/fixtures/claude/`):
+- **Codex** (`tests/e2e/codex/`):
+  - `basic.test.ts`: Basic command execution
+  - `json.test.ts`: JSON extraction
+  - `load-session.test.ts`: Session loading
 
-- Individual tool JSONL examples (bash, read, write, edit, etc.)
-- Full session examples for integration testing
-- Generated via `extract-claude-fixtures` script
+- All E2E tests run sequentially (singleFork: true) to avoid conflicts
+- Long timeout (180s) for real CLI interactions
+
+**Fixtures** (`tests/fixtures/`):
+
+- **Claude** (`tests/fixtures/claude/`):
+  - Individual tool JSONL examples (bash, read, write, edit, etc.)
+  - Full session examples for integration testing
+  - Generated via `extract-claude-fixtures` script
+
+- **Codex** (`tests/fixtures/codex/`):
+  - Sample JSONL files demonstrating Codex event format
+  - Contains `function_call`, `reasoning`, `session_meta` events
+  - Used to test Codex-to-unified transformations
 
 ## TypeScript Configuration
 

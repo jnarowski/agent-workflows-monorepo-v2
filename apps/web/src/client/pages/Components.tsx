@@ -7,8 +7,10 @@ import { useState } from "react";
 import { DiffViewer } from "@/client/components/DiffViewer";
 import { AgentLoadingIndicator } from "@/client/pages/projects/sessions/components/AgentLoadingIndicator";
 import { Button } from "@/client/components/ui/button";
+import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
 
 export default function Components() {
+  useDocumentTitle("Components | Agent Workflows");
   const [isLoadingIndicatorActive, setIsLoadingIndicatorActive] =
     useState(false);
 

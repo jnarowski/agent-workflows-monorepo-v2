@@ -45,7 +45,7 @@ describe('generateSessionName', () => {
       expect(vi.mocked(generateText)).not.toHaveBeenCalled();
     });
 
-    it('should log warning when API key is not set', async () => {
+    it('should not log warning when API key is not set (silent fallback)', async () => {
       delete process.env.ANTHROPIC_API_KEY;
       const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -53,9 +53,8 @@ describe('generateSessionName', () => {
         userPrompt: 'Fix authentication bug',
       });
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        'ANTHROPIC_API_KEY not set, using default session name'
-      );
+      // Should NOT log warning - this is a silent optional feature
+      expect(consoleWarnSpy).not.toHaveBeenCalled();
 
       consoleWarnSpy.mockRestore();
     });
@@ -97,7 +96,7 @@ describe('generateSessionName', () => {
       expect(vi.mocked(generateText)).toHaveBeenCalledWith(
         expect.objectContaining({
           model: expect.objectContaining({
-            modelId: 'claude-3-5-sonnet-20241022',
+            modelId: 'claude-3-5-sonnet-latest',
             provider: 'anthropic',
           }),
           system: expect.stringContaining('You create concise 3-5 word names'),

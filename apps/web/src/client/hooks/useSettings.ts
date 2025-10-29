@@ -6,12 +6,28 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/client/lib/api-client';
 
+type AgentType = 'claude' | 'codex' | 'gemini' | 'cursor';
+
+interface ModelInfo {
+  id: string;
+  name: string;
+}
+
+interface AgentCapabilities {
+  supportsSlashCommands: boolean;
+  supportsModels: boolean;
+  models: ModelInfo[];
+  installed: boolean;
+  cliPath?: string;
+}
+
 interface Settings {
   features: {
     aiEnabled: boolean;
     gitEnabled: boolean;
     ghCliEnabled: boolean;
   };
+  agents: Record<AgentType, AgentCapabilities>;
   version: string;
 }
 
@@ -45,4 +61,12 @@ export function useIsAiEnabled() {
 export function useIsGhCliEnabled() {
   const { data: settings } = useSettings();
   return settings?.features.ghCliEnabled ?? false;
+}
+
+/**
+ * Get capabilities for a specific agent
+ */
+export function useAgentCapabilities(agentType: AgentType) {
+  const { data: settings } = useSettings();
+  return settings?.agents[agentType];
 }

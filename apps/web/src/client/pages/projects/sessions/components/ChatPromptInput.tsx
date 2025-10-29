@@ -6,6 +6,11 @@ import {
   PromptInputAttachments,
   PromptInputBody,
   type PromptInputMessage,
+  PromptInputModelSelect,
+  PromptInputModelSelectContent,
+  PromptInputModelSelectItem,
+  PromptInputModelSelectTrigger,
+  PromptInputModelSelectValue,
   PromptInputPermissionModeSelect,
   PromptInputPermissionModeSelectContent,
   PromptInputPermissionModeSelectItem,
@@ -19,6 +24,7 @@ import {
   PromptInputTools,
   usePromptInputController,
 } from "@/client/components/ai-elements/PromptInput";
+import { useAgentCapabilities } from "@/client/hooks/useSettings";
 import { ChatPromptInputFiles } from "./ChatPromptInputFiles";
 import { ChatPromptInputSlashCommands } from "./ChatPromptInputSlashCommands";
 import {
@@ -27,10 +33,12 @@ import {
   useState,
   forwardRef,
   useImperativeHandle,
+  useMemo,
 } from "react";
 import { useNavigationStore } from "@/client/stores/navigationStore";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import type { ClaudePermissionMode } from "@repo/agent-cli-sdk";
+import type { AgentType } from "@/shared/types/agent.types";
 import { useActiveProject } from "@/client/hooks/navigation/useActiveProject";
 import {
   insertAtCursor,
@@ -75,6 +83,7 @@ interface ChatPromptInputProps {
   isStreaming?: boolean;
   totalTokens?: number; // Total session tokens
   currentMessageTokens?: number; // Current message tokens (to be added)
+  agent?: AgentType; // Override agent (for /new page before session is created)
 }
 
 export interface ChatPromptInputHandle {
@@ -93,6 +102,7 @@ const ChatPromptInputInner = forwardRef<
       isStreaming: externalIsStreaming = false,
       totalTokens,
       currentMessageTokens,
+      agent: agentProp,
     },
     ref
   ) => {
@@ -110,9 +120,34 @@ const ChatPromptInputInner = forwardRef<
     const { activeProjectId } = useNavigationStore();
     const { project } = useActiveProject();
 
-    // Session store for permission modes
+    // Session store for permission modes, model, and agent type
     const permissionMode = useSessionStore((s) => s.form.permissionMode);
     const setPermissionMode = useSessionStore((s) => s.setPermissionMode);
+    const model = useSessionStore((s) => s.form.model);
+    const setModel = useSessionStore((s) => s.setModel);
+    const sessionAgent = useSessionStore((s) => s.session?.agent);
+    const formAgent = useSessionStore((s) => s.form.agent);
+
+    // Use agent prop if provided, otherwise fall back to session agent, then form agent
+    const agent = agentProp || sessionAgent || formAgent;
+
+    // Get agent capabilities from settings (with fallback while loading)
+    const capabilities = useAgentCapabilities(agent) ?? {
+      supportsSlashCommands: false,
+      supportsModels: false,
+      models: [],
+    };
+
+    // Use first model as default if no model selected or current model invalid
+    const currentModel = useMemo(() => {
+      if (capabilities.models.length === 0) return "";
+
+      // Check if stored model is valid for current agent
+      const isValidModel = model && capabilities.models.some(m => m.id === model);
+
+      // Use stored model if valid, otherwise use first available model
+      return isValidModel ? model : capabilities.models[0].id;
+    }, [model, capabilities.models, agent]);
 
     // Handle permission mode change
     const handlePermissionModeChange = (mode: ClaudePermissionMode) => {
@@ -246,7 +281,7 @@ const ChatPromptInputInner = forwardRef<
         // Submit immediately with current files
         handleSubmit({
           text: newText,
-          files: controller.attachments.files
+          files: controller.attachments.files,
         });
       } else {
         // Focus textarea and position cursor after command
@@ -354,7 +389,7 @@ const ChatPromptInputInner = forwardRef<
               "border-green-500 md:has-[[data-slot=input-group-control]:focus-visible]:border-green-500",
             permissionMode === "acceptEdits" &&
               "border-purple-500 md:has-[[data-slot=input-group-control]:focus-visible]:border-purple-500",
-            permissionMode === "reject" &&
+            permissionMode === "bypassPermissions" &&
               "border-red-500 md:has-[[data-slot=input-group-control]:focus-visible]:border-red-500"
           )}
         >
@@ -379,16 +414,34 @@ const ChatPromptInputInner = forwardRef<
                 onFileRemove={handleFileRemove}
                 textareaValue={text}
               />
-              <ChatPromptInputSlashCommands
-                open={isSlashMenuOpen}
-                onOpenChange={setIsSlashMenuOpen}
-                projectId={activeProjectId}
-                onCommandSelect={handleCommandSelect}
-              />
+              {/* Slash commands - only for agents that support them */}
+              {capabilities.supportsSlashCommands && (
+                <ChatPromptInputSlashCommands
+                  open={isSlashMenuOpen}
+                  onOpenChange={setIsSlashMenuOpen}
+                  projectId={activeProjectId}
+                  onCommandSelect={handleCommandSelect}
+                />
+              )}
               <PromptInputSpeechButton
                 onTranscriptionChange={controller.textInput.setInput}
                 textareaRef={textareaRef}
               />
+              {/* Model selector - only for agents that support model selection */}
+              {capabilities.models.length > 0 && (
+                <PromptInputModelSelect value={currentModel} onValueChange={setModel}>
+                  <PromptInputModelSelectTrigger>
+                    <PromptInputModelSelectValue />
+                  </PromptInputModelSelectTrigger>
+                  <PromptInputModelSelectContent>
+                    {capabilities.models.map((m) => (
+                      <PromptInputModelSelectItem key={m.id} value={m.id}>
+                        {m.name}
+                      </PromptInputModelSelectItem>
+                    ))}
+                  </PromptInputModelSelectContent>
+                </PromptInputModelSelect>
+              )}
               <PromptInputPermissionModeSelect
                 onValueChange={handlePermissionModeChange}
                 value={permissionMode}

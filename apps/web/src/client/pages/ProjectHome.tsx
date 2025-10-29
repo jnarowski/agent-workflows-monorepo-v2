@@ -1,18 +1,50 @@
+import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useProjectsWithSessions, useProjectReadme } from "@/client/pages/projects/hooks/useProjects";
+import {
+  useProjectsWithSessions,
+  useProjectReadme,
+} from "@/client/pages/projects/hooks/useProjects";
 import { SessionListItem } from "@/client/pages/projects/sessions/components/SessionListItem";
+import { NewSessionButton } from "@/client/pages/projects/sessions/components/NewSessionButton";
+import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
 import { Skeleton } from "@/client/components/ui/skeleton";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/client/components/ui/card";
-import { FolderOpen, Calendar, MessageSquare, FileText } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+  CardAction,
+} from "@/client/components/ui/card";
+import { Button } from "@/client/components/ui/button";
+import {
+  FolderOpen,
+  Calendar,
+  MessageSquare,
+  FileText,
+  Pencil,
+} from "lucide-react";
+import { Badge } from "@/client/components/ui/badge";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
 
 export default function ProjectHome() {
   const { id } = useParams<{ id: string }>();
   const { data: projectsData, isLoading } = useProjectsWithSessions();
   const project = projectsData?.find((p) => p.id === id);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  useDocumentTitle(
+    project?.name ? `${project.name} | Agent Workflows` : undefined
+  );
   const sessions = project?.sessions || [];
-  const { data: readme, isLoading: isLoadingReadme, error: readmeError } = useProjectReadme(id!);
+  const {
+    data: readme,
+    isLoading: isLoadingReadme,
+    error: readmeError,
+  } = useProjectReadme(id!);
 
   if (isLoading) {
     return (
@@ -34,54 +66,71 @@ export default function ProjectHome() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">{project.name}</h1>
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-3xl font-bold">{project.name}</h1>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setEditDialogOpen(true)}
+            className="shrink-0"
+          >
+            <Pencil className="h-4 w-4 mr-2" />
+            Edit
+          </Button>
+        </div>
         {project.description && (
           <p className="text-muted-foreground mt-2">{project.description}</p>
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Project Path</CardTitle>
-            <FolderOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-muted-foreground break-all font-mono">
-              {project.path}
+      <Card>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                Project Path
+              </div>
+              <div className="text-xs text-muted-foreground break-all font-mono">
+                {project.path}
+              </div>
             </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Created</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-muted-foreground">
-              {new Date(project.created_at).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                Created
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {new Date(project.created_at).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Recent Sessions Section */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div>
             <CardTitle className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5" />
               Recent Sessions
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="mt-1">
               Your most recent chat sessions
             </CardDescription>
           </div>
+          <NewSessionButton
+            projectId={id!}
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs"
+          />
         </CardHeader>
         <CardContent>
           {!sessions || sessions.length === 0 ? (
@@ -91,9 +140,10 @@ export default function ProjectHome() {
           ) : (
             <div className="space-y-1">
               {sessions
-                .sort((a, b) =>
-                  new Date(b.metadata.lastMessageAt).getTime() -
-                  new Date(a.metadata.lastMessageAt).getTime()
+                .sort(
+                  (a, b) =>
+                    new Date(b.metadata.lastMessageAt).getTime() -
+                    new Date(a.metadata.lastMessageAt).getTime()
                 )
                 .slice(0, 10)
                 .map((session) => (
@@ -141,6 +191,12 @@ export default function ProjectHome() {
           ) : null}
         </CardContent>
       </Card>
+
+      <ProjectDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        project={project}
+      />
     </div>
   );
 }

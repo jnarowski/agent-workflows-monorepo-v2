@@ -160,13 +160,27 @@ export async function syncProjectSessions(
     const files = await fs.readdir(projectSessionsDir);
     const jsonlFiles = files.filter((file) => file.endsWith('.jsonl'));
 
-    // Fetch all existing sessions for this project in one query
-    const dbSessions = await prisma.agentSession.findMany({
-      where: { projectId },
+    // Fetch all existing Claude sessions for this project
+    // Only sync Claude sessions - other agents (Codex, Cursor, Gemini) have different storage locations
+    const dbClaudeSessions = await prisma.agentSession.findMany({
+      where: {
+        projectId,
+        agent: 'claude',
+      },
     });
 
-    const existingSessionsMap = new Map(
-      dbSessions.map((session) => [session.id, session])
+    // Also fetch IDs of all sessions (any agent) to avoid unique constraint violations
+    const allSessionIds = await prisma.agentSession.findMany({
+      where: { projectId },
+      select: { id: true },
+    });
+
+    const existingClaudeSessionsMap = new Map(
+      dbClaudeSessions.map((session) => [session.id, session])
+    );
+
+    const allExistingSessionIds = new Set(
+      allSessionIds.map((session) => session.id)
     );
 
     const jsonlSessionIds = new Set<string>();
@@ -192,14 +206,20 @@ export async function syncProjectSessions(
         // Parse JSONL file to extract metadata
         const metadata = await parseJSONLFile(filePath);
 
-        if (existingSessionsMap.has(sessionId)) {
-          // Prepare update
+        if (existingClaudeSessionsMap.has(sessionId)) {
+          // Update existing Claude session
           sessionsToUpdate.push({
             id: sessionId,
             metadata: metadata as any,
           });
+        } else if (allExistingSessionIds.has(sessionId)) {
+          // Session exists but as a different agent type - skip to avoid conflict
+          // (This can happen if the same session ID is used across different agents)
+          console.warn(
+            `Skipping session ${sessionId} - exists as different agent type`
+          );
         } else {
-          // Prepare create with agent field
+          // Create new Claude session
           sessionsToCreate.push({
             id: sessionId,
             projectId,
@@ -238,8 +258,9 @@ export async function syncProjectSessions(
       updated = sessionsToUpdate.length;
     }
 
-    // Batch delete orphaned sessions
-    const orphanedSessionIds = dbSessions
+    // Batch delete orphaned Claude sessions (only)
+    // Other agent types are not checked since they have different storage locations
+    const orphanedSessionIds = dbClaudeSessions
       .filter((session) => !jsonlSessionIds.has(session.id))
       .map((session) => session.id);
 
@@ -287,6 +308,7 @@ export async function getSessionsByProject(
     userId: session.userId,
     name: session.name ?? undefined,
     agent: session.agent,
+    cli_session_id: session.cli_session_id ?? undefined,
     metadata: session.metadata as AgentSessionMetadata,
     created_at: session.created_at,
     updated_at: session.updated_at,
@@ -329,10 +351,14 @@ export async function getSessionMessages(sessionId: string, userId: string): Pro
     throw new Error('Unauthorized access to session');
   }
 
+  // Use cli_session_id if available (CLI-generated ID), otherwise fall back to database ID
+  // This allows loading sessions for both Claude and Codex using their native session IDs
+  const cliSessionId = session.cli_session_id || sessionId;
+
   // Use SDK to load session messages
   const messages = await loadMessages({
     tool: session.agent,
-    sessionId,
+    sessionId: cliSessionId,
     projectPath: session.project.path
   });
 
@@ -345,12 +371,14 @@ export async function getSessionMessages(sessionId: string, userId: string): Pro
  * @param projectId - Project ID
  * @param userId - User ID
  * @param sessionId - Pre-generated session UUID
+ * @param agent - Agent type (defaults to 'claude')
  * @returns Created session
  */
 export async function createSession(
   projectId: string,
   userId: string,
-  sessionId: string
+  sessionId: string,
+  agent: AgentType = 'claude'
 ): Promise<SessionResponse> {
   // Initialize with empty metadata
   const metadata: AgentSessionMetadata = {
@@ -365,6 +393,7 @@ export async function createSession(
       id: sessionId,
       projectId,
       userId,
+      agent,
       metadata: metadata as any,
     },
   });
@@ -375,6 +404,7 @@ export async function createSession(
     userId: session.userId,
     name: session.name ?? undefined,
     agent: session.agent,
+    cli_session_id: session.cli_session_id ?? undefined,
     metadata: metadata,
     created_at: session.created_at,
     updated_at: session.updated_at,
@@ -418,6 +448,7 @@ export async function updateSessionMetadata(
       userId: updatedSession.userId,
       name: updatedSession.name ?? undefined,
       agent: updatedSession.agent,
+      cli_session_id: updatedSession.cli_session_id ?? undefined,
       metadata: updatedMetadata,
       created_at: updatedSession.created_at,
       updated_at: updatedSession.updated_at,
@@ -469,6 +500,7 @@ export async function updateSessionName(
       userId: updatedSession.userId,
       name: updatedSession.name ?? undefined,
       agent: updatedSession.agent,
+      cli_session_id: updatedSession.cli_session_id ?? undefined,
       metadata: updatedSession.metadata as AgentSessionMetadata,
       created_at: updatedSession.created_at,
       updated_at: updatedSession.updated_at,

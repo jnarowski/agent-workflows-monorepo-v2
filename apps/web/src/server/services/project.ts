@@ -5,7 +5,10 @@ import type {
   CreateProjectInput,
   UpdateProjectInput,
 } from "@/server/schemas/project";
-import type { Project, ProjectWithSessions } from "@/shared/types/project.types";
+import type {
+  Project,
+  ProjectWithSessions,
+} from "@/shared/types/project.types";
 import type { SessionResponse } from "@/shared/types/agent-session.types";
 import { getCurrentBranch } from "@/server/services/git.service";
 
@@ -31,7 +34,10 @@ function transformSession(prismaSession: any): SessionResponse {
  * @param prismaProject - Raw project from Prisma
  * @param currentBranch - Optional git branch (fetched separately)
  */
-function transformProject(prismaProject: any, currentBranch?: string | null): Project {
+function transformProject(
+  prismaProject: any,
+  currentBranch?: string | null
+): Project {
   return {
     id: prismaProject.id,
     name: prismaProject.name,
@@ -49,10 +55,15 @@ function transformProject(prismaProject: any, currentBranch?: string | null): Pr
  * @param prismaProject - Raw project from Prisma with sessions
  * @param currentBranch - Optional git branch (fetched separately)
  */
-function transformProjectWithSessions(prismaProject: any, currentBranch?: string | null): ProjectWithSessions {
+function transformProjectWithSessions(
+  prismaProject: any,
+  currentBranch?: string | null
+): ProjectWithSessions {
   return {
     ...transformProject(prismaProject, currentBranch),
-    sessions: prismaProject.sessions ? prismaProject.sessions.map(transformSession) : [],
+    sessions: prismaProject.sessions
+      ? prismaProject.sessions.map(transformSession)
+      : [],
   };
 }
 
@@ -78,7 +89,7 @@ export async function getAllProjects(options?: {
       include: {
         sessions: {
           orderBy: {
-            updated_at: "desc",
+            created_at: "desc",
           },
           take: sessionLimit,
           select: {

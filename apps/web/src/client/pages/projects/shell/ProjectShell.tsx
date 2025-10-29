@@ -2,9 +2,15 @@ import { Terminal } from "@/client/pages/projects/shell/components/Terminal";
 import { ShellControls } from "@/client/pages/projects/shell/components/ShellControls";
 import { useShell } from "@/client/pages/projects/shell/contexts/ShellContext";
 import { useActiveProject } from "@/client/hooks/navigation";
+import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
+import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 
 export default function ProjectShell() {
   const { projectId } = useActiveProject();
+  const { data: projects } = useProjectsWithSessions();
+  const project = projects?.find((p) => p.id === projectId);
+
+  useDocumentTitle(project?.name ? `Terminal - ${project.name} | Agent Workflows` : undefined);
   const { getSession } = useShell();
 
   const sessionId = `shell-${projectId}`;

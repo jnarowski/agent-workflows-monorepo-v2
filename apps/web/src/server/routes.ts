@@ -5,6 +5,7 @@ import { sessionRoutes } from "@/server/routes/sessions";
 import { slashCommandsRoutes } from "@/server/routes/slash-commands";
 import { gitRoutes } from "@/server/routes/git";
 import { settingsRoutes } from "@/server/routes/settings";
+import { registerWebSocketRoutes } from "@/server/routes/websocket";
 
 export async function registerRoutes(fastify: FastifyInstance) {
   // Register auth routes
@@ -24,6 +25,9 @@ export async function registerRoutes(fastify: FastifyInstance) {
 
   // Register settings routes
   await fastify.register(settingsRoutes);
+
+  // Register websocket metrics routes
+  await fastify.register(registerWebSocketRoutes);
 
   // Health check endpoint
   fastify.get("/api/health", async () => {
