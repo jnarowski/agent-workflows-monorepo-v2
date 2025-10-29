@@ -78,9 +78,6 @@ export default function ProjectHome() {
             Edit
           </Button>
         </div>
-        {project.description && (
-          <p className="text-muted-foreground mt-2">{project.description}</p>
-        )}
       </div>
 
       <Card>
