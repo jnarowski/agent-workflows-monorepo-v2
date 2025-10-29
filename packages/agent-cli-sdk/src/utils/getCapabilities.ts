@@ -1,3 +1,6 @@
+import { detectCli as detectClaudeCli } from '../claude/detectCli.js';
+import { detectCli as detectCodexCli } from '../codex/detectCli.js';
+
 /**
  * Agent type representing supported AI CLI tools.
  */
@@ -23,12 +26,19 @@ export interface AgentCapabilities {
   supportsModels: boolean;
   /** Available models for this agent */
   models: ModelInfo[];
+  /** Whether the agent CLI is installed on the system */
+  installed: boolean;
+  /** Path to the CLI executable (if installed) */
+  cliPath?: string;
 }
 
 /**
- * Map of agent capabilities by agent type.
+ * Map of static agent capabilities by agent type (without install detection).
  */
-const AGENT_CAPABILITIES_MAP: Record<AgentType, AgentCapabilities> = {
+const AGENT_CAPABILITIES_MAP: Record<
+  AgentType,
+  Omit<AgentCapabilities, 'installed' | 'cliPath'>
+> = {
   claude: {
     supportsSlashCommands: true,
     supportsModels: true,
@@ -58,16 +68,21 @@ const AGENT_CAPABILITIES_MAP: Record<AgentType, AgentCapabilities> = {
 };
 
 /**
- * Get capability flags for a specific AI CLI tool.
+ * Get capability flags for a specific AI CLI tool, including installation detection.
  *
  * @param agentName - The name of the AI CLI tool
- * @returns Capability flags for the specified tool
+ * @returns Promise resolving to capability flags including install status
  *
  * @example
  * ```typescript
  * import { getCapabilities } from '@repo/agent-cli-sdk';
  *
- * const caps = getCapabilities('claude');
+ * const caps = await getCapabilities('claude');
+ *
+ * if (caps.installed) {
+ *   console.log(`Claude CLI found at: ${caps.cliPath}`);
+ * }
+ *
  * if (caps.supportsSlashCommands) {
  *   // Show slash command UI
  * }
@@ -77,6 +92,35 @@ const AGENT_CAPABILITIES_MAP: Record<AgentType, AgentCapabilities> = {
  * }
  * ```
  */
-export function getCapabilities(agentName: AgentType): AgentCapabilities {
-  return AGENT_CAPABILITIES_MAP[agentName];
+export async function getCapabilities(
+  agentName: AgentType,
+): Promise<AgentCapabilities> {
+  const staticCapabilities = AGENT_CAPABILITIES_MAP[agentName];
+
+  // Detect CLI installation based on agent type
+  let cliPath: string | null = null;
+
+  switch (agentName) {
+    case 'claude':
+      cliPath = await detectClaudeCli();
+      break;
+    case 'codex':
+      cliPath = await detectCodexCli();
+      break;
+    case 'cursor':
+    case 'gemini':
+      // No detection available yet
+      cliPath = null;
+      break;
+    default: {
+      const _exhaustive: never = agentName;
+      throw new Error(`Unknown agent type: ${_exhaustive}`);
+    }
+  }
+
+  return {
+    ...staticCapabilities,
+    installed: cliPath !== null,
+    cliPath: cliPath ?? undefined,
+  };
 }

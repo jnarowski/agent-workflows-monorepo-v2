@@ -27,25 +27,36 @@ export async function settingsRoutes(fastify: FastifyInstance) {
   /**
    * GET /api/settings
    * Get application settings and feature flags
+   * Requires authentication to prepare for user-specific configuration
    */
-  fastify.get('/api/settings', async (request, reply) => {
-    const ghInstalled = await checkGhInstalled();
+  fastify.get(
+    '/api/settings',
+    {
+      preHandler: fastify.authenticate,
+    },
+    async (request, reply) => {
+      const userId = request.user!.id;
+      const ghInstalled = await checkGhInstalled();
 
-    const settings = {
-      features: {
-        aiEnabled: !!process.env.ANTHROPIC_API_KEY,
-        gitEnabled: true, // Git operations are always available
-        ghCliEnabled: ghInstalled, // GitHub CLI for PR creation
-      },
-      agents: {
-        claude: getCapabilities('claude'),
-        codex: getCapabilities('codex'),
-        cursor: getCapabilities('cursor'),
-        gemini: getCapabilities('gemini'),
-      },
-      version: '0.1.0',
-    };
+      fastify.log.info({ userId }, 'Fetching settings');
 
-    return reply.send(buildSuccessResponse(settings));
-  });
+      const settings = {
+        features: {
+          aiEnabled: !!process.env.ANTHROPIC_API_KEY,
+          gitEnabled: true, // Git operations are always available
+          ghCliEnabled: ghInstalled, // GitHub CLI for PR creation
+        },
+        agents: {
+          claude: await getCapabilities('claude'),
+          codex: await getCapabilities('codex'),
+          cursor: await getCapabilities('cursor'),
+          gemini: await getCapabilities('gemini'),
+        },
+        version: '0.1.0',
+        // Future: Add user-specific preferences here
+      };
+
+      return reply.send(buildSuccessResponse(settings));
+    }
+  );
 }
