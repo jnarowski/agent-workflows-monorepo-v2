@@ -227,7 +227,7 @@ export function GitOperationsModal({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Git Operations</DialogTitle>
             <DialogDescription>
