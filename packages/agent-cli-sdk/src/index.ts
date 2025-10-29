@@ -102,6 +102,8 @@ export interface ExecuteOptions {
   continue?: boolean;
   /** Permission mode for file operations and command execution (Claude only) */
   permissionMode?: 'default' | 'plan' | 'acceptEdits' | 'bypassPermissions';
+  /** Model to use for the AI CLI tool (e.g., 'claude-sonnet-4-5-20250929', 'gpt-5-codex') */
+  model?: string;
   /** Images to include with the prompt (Claude only) */
   images?: Array<{ path: string }>;
   /**
@@ -193,6 +195,12 @@ export { extractTextContent } from './types/unified';
 export { extractJSON } from './utils/extractJson';
 export { detectCli as detectClaudeCli } from './claude/detectCli';
 export { detectCli as detectCodexCli } from './codex/detectCli';
+export {
+  getCapabilities,
+  type AgentType,
+  type AgentCapabilities,
+  type ModelInfo,
+} from './utils/getCapabilities';
 
 // Re-export Claude execute types
 export type {

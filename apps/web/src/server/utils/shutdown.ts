@@ -1,60 +1,61 @@
 import type { FastifyInstance } from 'fastify';
 import { prisma } from '@/shared/prisma';
-import type { ActiveSessionData } from '@/server/websocket.types';
-import fs from 'fs/promises';
+import type { ActiveSessionsManager } from '@/server/websocket/utils/active-sessions';
+import type { ReconnectionManager } from '@/server/websocket/utils/reconnection';
 
 /**
  * Setup graceful shutdown handlers for SIGINT and SIGTERM signals.
  * Ensures clean shutdown of WebSocket connections, server, and database.
  *
  * @param fastify - Fastify server instance
- * @param activeSessions - Map of active WebSocket sessions
+ * @param activeSessions - Active sessions manager
+ * @param reconnectionManager - Reconnection manager
  *
  * @example
  * ```ts
  * import { setupGracefulShutdown } from '@/server/utils/shutdown';
- * import { activeSessions } from '@/server/websocket';
+ * import { activeSessions, reconnectionManager } from '@/server/websocket';
  *
  * await server.listen({ port: 3456 });
- * setupGracefulShutdown(server, activeSessions);
+ * setupGracefulShutdown(server, activeSessions, reconnectionManager);
  * ```
  */
 export async function setupGracefulShutdown(
   fastify: FastifyInstance,
-  activeSessions: Map<string, ActiveSessionData>
+  activeSessions: ActiveSessionsManager,
+  reconnectionManager: ReconnectionManager
 ): Promise<void> {
   const shutdown = async (signal: string) => {
     fastify.log.info({ signal }, 'Received shutdown signal, starting graceful shutdown...');
 
     try {
-      // 1. Close Fastify server (stops accepting new connections)
+      // 1. Cancel all reconnection timers
+      fastify.log.info('Cancelling reconnection timers...');
+      reconnectionManager.cancelAll();
+      fastify.log.info('Reconnection timers cancelled');
+
+      // 2. Close Fastify server (stops accepting new connections)
       fastify.log.info('Closing Fastify server...');
       await fastify.close();
       fastify.log.info('Fastify server closed');
 
-      // 2. Cleanup WebSocket sessions and temp image directories
-      if (activeSessions.size > 0) {
-        fastify.log.info({ count: activeSessions.size }, 'Cleaning up active sessions...');
+      // 3. Cleanup WebSocket sessions and temp image directories
+      let sessionCount = 0;
+      for (const [sessionId] of activeSessions.entries()) {
+        sessionCount++;
+      }
 
-        for (const [sessionId, sessionData] of activeSessions.entries()) {
+      if (sessionCount > 0) {
+        fastify.log.info({ count: sessionCount }, 'Cleaning up active sessions...');
+
+        for (const [sessionId] of activeSessions.entries()) {
           try {
-            // Note: WebSocket connections are managed separately and will be closed automatically
-
-            // Cleanup temp image directory if it exists
-            if (sessionData.tempImageDir) {
-              try {
-                await fs.rm(sessionData.tempImageDir, { recursive: true, force: true });
-                fastify.log.debug({ sessionId, tempImageDir: sessionData.tempImageDir }, 'Cleaned up temp image directory');
-              } catch (err) {
-                fastify.log.warn({ sessionId, tempImageDir: sessionData.tempImageDir, err }, 'Failed to cleanup temp image directory');
-              }
-            }
+            await activeSessions.cleanup(sessionId, fastify.log);
           } catch (err) {
             fastify.log.warn({ sessionId, err }, 'Error cleaning up session');
           }
         }
 
-        activeSessions.clear();
         fastify.log.info('All sessions cleaned up');
       }
 

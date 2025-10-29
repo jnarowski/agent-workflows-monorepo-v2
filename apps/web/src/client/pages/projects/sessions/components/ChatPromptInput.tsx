@@ -6,6 +6,11 @@ import {
   PromptInputAttachments,
   PromptInputBody,
   type PromptInputMessage,
+  PromptInputModelSelect,
+  PromptInputModelSelectContent,
+  PromptInputModelSelectItem,
+  PromptInputModelSelectTrigger,
+  PromptInputModelSelectValue,
   PromptInputPermissionModeSelect,
   PromptInputPermissionModeSelectContent,
   PromptInputPermissionModeSelectItem,
@@ -19,6 +24,7 @@ import {
   PromptInputTools,
   usePromptInputController,
 } from "@/client/components/ai-elements/PromptInput";
+import { useAgentCapabilities } from "@/client/hooks/useSettings";
 import { ChatPromptInputFiles } from "./ChatPromptInputFiles";
 import { ChatPromptInputSlashCommands } from "./ChatPromptInputSlashCommands";
 import {
@@ -31,6 +37,7 @@ import {
 import { useNavigationStore } from "@/client/stores/navigationStore";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import type { ClaudePermissionMode } from "@repo/agent-cli-sdk";
+import type { AgentType } from "@/shared/types/agent.types";
 import { useActiveProject } from "@/client/hooks/navigation/useActiveProject";
 import {
   insertAtCursor,
@@ -75,6 +82,7 @@ interface ChatPromptInputProps {
   isStreaming?: boolean;
   totalTokens?: number; // Total session tokens
   currentMessageTokens?: number; // Current message tokens (to be added)
+  agent?: AgentType; // Override agent (for /new page before session is created)
 }
 
 export interface ChatPromptInputHandle {
@@ -93,6 +101,7 @@ const ChatPromptInputInner = forwardRef<
       isStreaming: externalIsStreaming = false,
       totalTokens,
       currentMessageTokens,
+      agent: agentProp,
     },
     ref
   ) => {
@@ -110,10 +119,22 @@ const ChatPromptInputInner = forwardRef<
     const { activeProjectId } = useNavigationStore();
     const { project } = useActiveProject();
 
-    // Session store for permission modes and agent type
+    // Session store for permission modes, model, and agent type
     const permissionMode = useSessionStore((s) => s.form.permissionMode);
     const setPermissionMode = useSessionStore((s) => s.setPermissionMode);
-    const agent = useSessionStore((s) => s.session?.agent);
+    const model = useSessionStore((s) => s.form.model);
+    const setModel = useSessionStore((s) => s.setModel);
+    const sessionAgent = useSessionStore((s) => s.session?.agent);
+
+    // Use agent prop if provided, otherwise fall back to session agent
+    const agent = agentProp || sessionAgent || "claude";
+
+    // Get agent capabilities from settings (with fallback while loading)
+    const capabilities = useAgentCapabilities(agent) ?? {
+      supportsSlashCommands: false,
+      supportsModels: false,
+      models: [],
+    };
 
     // Handle permission mode change
     const handlePermissionModeChange = (mode: ClaudePermissionMode) => {
@@ -247,7 +268,7 @@ const ChatPromptInputInner = forwardRef<
         // Submit immediately with current files
         handleSubmit({
           text: newText,
-          files: controller.attachments.files
+          files: controller.attachments.files,
         });
       } else {
         // Focus textarea and position cursor after command
@@ -380,19 +401,41 @@ const ChatPromptInputInner = forwardRef<
                 onFileRemove={handleFileRemove}
                 textareaValue={text}
               />
-              <ChatPromptInputSlashCommands
-                open={isSlashMenuOpen}
-                onOpenChange={setIsSlashMenuOpen}
-                projectId={activeProjectId}
-                onCommandSelect={handleCommandSelect}
-              />
+              {/* Slash commands - only for agents that support them */}
+              {capabilities.supportsSlashCommands && (
+                <ChatPromptInputSlashCommands
+                  open={isSlashMenuOpen}
+                  onOpenChange={setIsSlashMenuOpen}
+                  projectId={activeProjectId}
+                  onCommandSelect={handleCommandSelect}
+                />
+              )}
               {/* Speech button - Claude only for now */}
-              {agent === 'claude' && (
+              {agent === "claude" && (
                 <PromptInputSpeechButton
                   onTranscriptionChange={controller.textInput.setInput}
                   textareaRef={textareaRef}
                 />
               )}
+              {/* Model selector - only for agents that support model selection */}
+              {capabilities.supportsModels &&
+                capabilities.models.length > 0 && (
+                  <PromptInputModelSelect
+                    value={model}
+                    onValueChange={setModel}
+                  >
+                    <PromptInputModelSelectTrigger>
+                      <PromptInputModelSelectValue />
+                    </PromptInputModelSelectTrigger>
+                    <PromptInputModelSelectContent>
+                      {capabilities.models.map((m) => (
+                        <PromptInputModelSelectItem key={m.id} value={m.id}>
+                          {m.name}
+                        </PromptInputModelSelectItem>
+                      ))}
+                    </PromptInputModelSelectContent>
+                  </PromptInputModelSelect>
+                )}
               <PromptInputPermissionModeSelect
                 onValueChange={handlePermissionModeChange}
                 value={permissionMode}
