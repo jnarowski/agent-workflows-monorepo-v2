@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AgentSelector } from '@/client/components/AgentSelector';
 import {
@@ -10,7 +9,7 @@ import {
   DialogTitle,
 } from '@/client/components/ui/dialog';
 import { Button } from '@/client/components/ui/button';
-import type { AgentType } from '@/shared/types/agent.types';
+import { useSessionStore } from '@/client/pages/projects/sessions/stores/sessionStore';
 
 interface NewSessionDialogProps {
   open: boolean;
@@ -24,11 +23,12 @@ export function NewSessionDialog({
   projectId,
 }: NewSessionDialogProps) {
   const navigate = useNavigate();
-  const [selectedAgent, setSelectedAgent] = useState<AgentType>('claude');
+  const agent = useSessionStore((s) => s.form.agent);
+  const setAgent = useSessionStore((s) => s.setAgent);
 
   const handleCreate = () => {
-    // Navigate to new session page with agent param
-    navigate(`/projects/${projectId}/session/new?agent=${selectedAgent}`);
+    // Navigate to new session page (agent already in store)
+    navigate(`/projects/${projectId}/session/new`);
     onOpenChange(false);
   };
 
@@ -45,8 +45,8 @@ export function NewSessionDialog({
 
         <div className="py-4">
           <AgentSelector
-            value={selectedAgent}
-            onChange={setSelectedAgent}
+            value={agent}
+            onChange={setAgent}
           />
         </div>
 

@@ -6,6 +6,7 @@ import AuthLayout from "@/client/layouts/AuthLayout";
 import ProjectDetailLayout from "@/client/layouts/ProjectDetailLayout";
 import Projects from "@/client/pages/Projects";
 import ProjectHome from "@/client/pages/ProjectHome";
+import NewSession from "@/client/pages/projects/sessions/NewSession";
 import ProjectSession from "@/client/pages/projects/sessions/ProjectSession";
 import ProjectShell from "@/client/pages/projects/shell/ProjectShell";
 import ProjectFiles from "@/client/pages/projects/files/ProjectFiles";
@@ -44,7 +45,7 @@ function App() {
                   path="chat"
                   element={<Navigate to="session/new" replace />}
                 />
-                <Route path="session/new" element={<ProjectSession />} />
+                <Route path="session/new" element={<NewSession />} />
                 <Route path="session/:sessionId" element={<ProjectSession />} />
                 <Route path="shell" element={<ProjectShell />} />
                 <Route path="files" element={<ProjectFiles />} />

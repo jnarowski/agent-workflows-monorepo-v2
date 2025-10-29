@@ -11,6 +11,7 @@ import { Plus, ChevronDown } from "lucide-react";
 import { useSidebar } from "@/client/components/ui/sidebar";
 import { AgentIcon } from "@/client/components/AgentIcon";
 import type { AgentType } from "@/shared/types/agent.types";
+import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 
 interface NewSessionButtonProps {
   projectId: string;
@@ -33,10 +34,12 @@ export function NewSessionButton({
 }: NewSessionButtonProps) {
   const navigate = useNavigate();
   const { isMobile, setOpenMobile } = useSidebar();
+  const setAgent = useSessionStore((s) => s.setAgent);
 
   const handleCreateSession = (agent: AgentType = 'claude') => {
-    // Navigate to new session page with agent param
-    navigate(`/projects/${projectId}/session/new?agent=${agent}`);
+    // Set agent in store, then navigate
+    setAgent(agent);
+    navigate(`/projects/${projectId}/session/new`);
     // Close mobile menu when creating a new session
     if (isMobile) {
       setOpenMobile(false);

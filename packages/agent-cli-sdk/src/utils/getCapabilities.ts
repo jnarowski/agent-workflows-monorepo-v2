@@ -33,8 +33,8 @@ const AGENT_CAPABILITIES_MAP: Record<AgentType, AgentCapabilities> = {
     supportsSlashCommands: true,
     supportsModels: true,
     models: [
-      { id: 'claude-opus-4-20250514', name: 'Opus 4.1' },
       { id: 'claude-sonnet-4-5-20250929', name: 'Sonnet 4.5' },
+      { id: 'claude-opus-4-20250514', name: 'Opus 4.1' },
     ],
   },
   codex: {

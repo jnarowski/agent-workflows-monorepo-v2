@@ -1,0 +1,158 @@
+import { useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  ChatPromptInput,
+  type ChatPromptInputHandle,
+} from "./components/ChatPromptInput";
+import { ConnectionStatusBanner } from "./components/ConnectionStatusBanner";
+import { useWebSocket } from "@/client/hooks/useWebSocket";
+import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
+import { useActiveProject } from "@/client/hooks/navigation";
+import { api } from "@/client/lib/api-client";
+import { sessionKeys } from "./hooks/useAgentSessions";
+import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
+import { generateUUID } from "@/client/lib/utils";
+import { AgentSelector } from "@/client/components/AgentSelector";
+import { useSettings } from "@/client/hooks/useSettings";
+
+export default function NewSession() {
+  const navigate = useNavigate();
+  const { projectId } = useActiveProject();
+  const queryClient = useQueryClient();
+  const chatInputRef = useRef<ChatPromptInputHandle>(null);
+
+  // Get agent from store
+  const agent = useSessionStore((s) => s.form.agent);
+  const setAgent = useSessionStore((s) => s.setAgent);
+
+  // Get settings for debug
+  const { data: settings } = useSettings();
+
+  // App-wide WebSocket hook for sending messages during session creation
+  const {
+    sendMessage: globalSendMessage,
+    isConnected: globalIsConnected,
+    readyState,
+    isReady,
+    connectionAttempts,
+    reconnect,
+  } = useWebSocket();
+
+  // Auto-focus input on mount
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      chatInputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  const handleSubmit = async (message: string, images?: File[]) => {
+    if (!projectId) {
+      console.error("[NewSession] No projectId available");
+      return;
+    }
+
+    try {
+      // Get current agent from store
+      const agent = useSessionStore.getState().getAgent();
+
+      // Create session via API
+      const { data: newSession } = await api.post<{ data: { id: string } }>(
+        `/api/projects/${projectId}/sessions`,
+        { sessionId: generateUUID(), agent }
+      );
+
+      // Invalidate sessions query to update sidebar immediately
+      queryClient.invalidateQueries({
+        queryKey: sessionKeys.byProject(projectId),
+      });
+
+      // Also invalidate projectsWithSessions which is used by the sidebar
+      queryClient.invalidateQueries({
+        queryKey: projectKeys.withSessions(),
+      });
+
+      // Convert images to base64 if present
+      const imagePaths = images ? await handleImageUpload(images) : undefined;
+
+      // Get permission mode from form
+      const getPermissionMode = useSessionStore.getState().getPermissionMode;
+      const permissionMode = getPermissionMode();
+
+      // Immediately send message via app-wide WebSocket (before navigation)
+      // This starts the assistant processing right away
+      // New session = resume: false (no prior messages)
+      globalSendMessage(`session.${newSession.id}.send_message`, {
+        message,
+        images: imagePaths,
+        config: {
+          resume: false,
+          sessionId: newSession.id,
+          permissionMode,
+        },
+      });
+
+      // Navigate to the new session with query parameter
+      // Query param signals: message already sent, just display it
+      navigate(
+        `/projects/${projectId}/session/${newSession.id}?query=${encodeURIComponent(message)}`,
+        {
+          replace: true,
+        }
+      );
+    } catch (error) {
+      console.error("[NewSession] Error creating session:", error);
+    }
+  };
+
+  const handleImageUpload = async (files: File[]): Promise<string[]> => {
+    // Convert File objects to base64 data URLs for WebSocket transmission
+    return Promise.all(
+      files.map(
+        (file) =>
+          new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          })
+      )
+    );
+  };
+
+  return (
+    <div className="absolute inset-0 flex flex-col overflow-hidden">
+      {/* Connection status banner */}
+      <ConnectionStatusBanner
+        sessionId={null}
+        readyState={readyState}
+        isReady={isReady}
+        connectionAttempts={connectionAttempts}
+        onReconnect={reconnect}
+      />
+
+      {/* Empty state - chat starts here */}
+      <div className="flex-1 flex items-center justify-center p-4 overflow-auto">
+        <div className="text-center space-y-4 max-w-2xl w-full">
+          <h2 className="text-2xl font-semibold">Start a New Session</h2>
+          <AgentSelector value={agent} onChange={setAgent} />
+        </div>
+      </div>
+
+      {/* Fixed Input Container at Bottom */}
+      <div className="md:pb-4 md:px-4">
+        <div className="mx-auto max-w-4xl space-y-4">
+          <ChatPromptInput
+            ref={chatInputRef}
+            onSubmit={handleSubmit}
+            disabled={!globalIsConnected}
+            isStreaming={false}
+            totalTokens={0}
+            agent={agent}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

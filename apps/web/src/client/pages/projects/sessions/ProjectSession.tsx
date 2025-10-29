@@ -1,11 +1,8 @@
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChatInterface } from "./components/ChatInterface";
-import {
-  ChatPromptInput,
-  type ChatPromptInputHandle,
-} from "./components/ChatPromptInput";
+import { ChatPromptInput } from "./components/ChatPromptInput";
 import { ConnectionStatusBanner } from "./components/ConnectionStatusBanner";
 import { useSessionWebSocket } from "./hooks/useSessionWebSocket";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
@@ -20,37 +17,26 @@ import type { ToolResultBlock } from "@/shared/types/message.types";
 import { sessionKeys } from "./hooks/useAgentSessions";
 import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import { generateUUID } from "@/client/lib/utils";
-import { AgentSelector } from "@/client/components/AgentSelector";
-import type { AgentType } from "@/shared/types/agent.types";
 
 export default function ProjectSession() {
   const navigate = useNavigate();
   const location = useLocation();
-  const params = useParams<{ sessionId?: string }>();
+  const params = useParams<{ sessionId: string }>();
   const { projectId } = useActiveProject();
   const setActiveSession = useNavigationStore((s) => s.setActiveSession);
   const initialMessageSentRef = useRef(false);
   const loadSessionInitiatedRef = useRef(false);
   const queryClient = useQueryClient();
-  const chatInputRef = useRef<ChatPromptInputHandle>(null);
 
-  // Get sessionId from URL params (will be undefined for /session/new route)
-  const sessionId = params.sessionId || null;
+  // Get sessionId from URL params (required for this route)
+  const sessionId = params.sessionId;
 
-  // Get agent from query params, default to claude
-  const searchParams = new URLSearchParams(location.search);
-  const agentFromUrl = (searchParams.get("agent") as AgentType) || "claude";
-
-  // Local state for selected agent (only used when sessionId is null)
-  const [selectedAgent, setSelectedAgent] = useState<AgentType>(agentFromUrl);
-
-  // Sync selectedAgent when URL query param changes
+  // Redirect to new session if no sessionId (shouldn't happen with proper routing)
   useEffect(() => {
-    if (!sessionId && agentFromUrl !== selectedAgent) {
-      setSelectedAgent(agentFromUrl);
+    if (!sessionId && projectId) {
+      navigate(`/projects/${projectId}/session/new`, { replace: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentFromUrl, sessionId]);
+  }, [sessionId, projectId, navigate]);
 
   // Get session from store
   const session = useSessionStore((s) => s.session);
@@ -61,9 +47,8 @@ export default function ProjectSession() {
   const setStreaming = useSessionStore((s) => s.setStreaming);
   const totalTokens = useSessionStore(selectTotalTokens);
 
-  // App-wide WebSocket hook for sending messages during session creation
+  // App-wide WebSocket hook for connection status
   const {
-    sendMessage: globalSendMessage,
     isConnected: globalIsConnected,
     readyState,
     isReady,
@@ -86,10 +71,8 @@ export default function ProjectSession() {
 
   // Load session when sessionId changes
   useEffect(() => {
-    // Skip loading if no sessionId (we're on /session/new route)
+    // Skip loading if no sessionId or projectId
     if (!sessionId || !projectId) {
-      // Always clear session when navigating to /new
-      clearSession();
       return;
     }
 
@@ -106,13 +89,14 @@ export default function ProjectSession() {
       // Initialize session in store without fetching from server (only if not already initialized)
       if (currentSessionId !== sessionId) {
         clearSession();
-        // Use selectedAgent from local state
+        // Get current agent from store
+        const currentAgent = useSessionStore.getState().getAgent();
         // Manually initialize the session store for this new session
         useSessionStore.setState({
           sessionId: sessionId,
           session: {
             id: sessionId,
-            agent: selectedAgent, // Use selected agent from local state
+            agent: currentAgent, // Use agent from store
             messages: [],
             isStreaming: false,
             metadata: null,
@@ -182,17 +166,6 @@ export default function ProjectSession() {
     initialMessageSentRef.current = false;
   }, [sessionId]);
 
-  // Focus chat input when navigating to /session/new
-  useEffect(() => {
-    if (!sessionId) {
-      // Small delay to ensure DOM is ready
-      const timeoutId = setTimeout(() => {
-        chatInputRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [sessionId]);
-
   // Handle initial message from query parameter
   useEffect(() => {
     if (!sessionId || initialMessageSentRef.current) {
@@ -243,72 +216,11 @@ export default function ProjectSession() {
         message: message.substring(0, 100),
         imagesCount: images?.length || 0,
         sessionId,
-        isFirstMessage: session?.isFirstMessage,
       });
     }
 
-    if (!projectId) {
-      console.error("[ProjectSession] No projectId available");
-      return;
-    }
-
-    // If no sessionId, we're on /session/new - create session first then redirect
-    if (!sessionId) {
-      if (import.meta.env.DEV) {
-        console.log("[ProjectSession] No sessionId - creating new session");
-      }
-
-      try {
-        // Use selectedAgent from local state (can be changed on /new page)
-        const agent = selectedAgent;
-
-        // Create session via API
-        const { data: newSession } = await api.post<{ data: { id: string } }>(
-          `/api/projects/${projectId}/sessions`,
-          { sessionId: generateUUID(), agent }
-        );
-
-        // Invalidate sessions query to update sidebar immediately
-        queryClient.invalidateQueries({
-          queryKey: sessionKeys.byProject(projectId),
-        });
-
-        // Also invalidate projectsWithSessions which is used by the sidebar
-        queryClient.invalidateQueries({
-          queryKey: projectKeys.withSessions(),
-        });
-
-        // Convert images to base64 if present
-        const imagePaths = images ? await handleImageUpload(images) : undefined;
-
-        // Get permission mode from form
-        const getPermissionMode = useSessionStore.getState().getPermissionMode;
-        const permissionMode = getPermissionMode();
-
-        // Immediately send message via app-wide WebSocket (before navigation)
-        // This starts the assistant processing right away
-        // New session = resume: false (no prior messages)
-        globalSendMessage(`session.${newSession.id}.send_message`, {
-          message,
-          images: imagePaths,
-          config: {
-            resume: false,
-            sessionId: newSession.id,
-            permissionMode,
-          },
-        });
-
-        // Navigate to the new session with query parameter
-        // Query param signals: message already sent, just display it
-        navigate(
-          `/projects/${projectId}/session/${newSession.id}?query=${encodeURIComponent(message)}`,
-          {
-            replace: true,
-          }
-        );
-      } catch (error) {
-        console.error("[ProjectSession] Error creating session:", error);
-      }
+    if (!projectId || !sessionId) {
+      console.error("[ProjectSession] No projectId or sessionId available");
       return;
     }
 
@@ -422,22 +334,12 @@ export default function ProjectSession() {
       {/* Fixed Input Container at Bottom */}
       <div className="md:pb-4 md:px-4">
         <div className="mx-auto max-w-4xl space-y-4">
-          {/* Agent selector - only show on /new page */}
-          {!sessionId && (
-            <div>
-              <AgentSelector
-                value={selectedAgent}
-                onChange={setSelectedAgent}
-              />
-            </div>
-          )}
-
           <ChatPromptInput
-            ref={chatInputRef}
             onSubmit={handleSubmit}
             disabled={inputDisabled}
             isStreaming={session?.isStreaming || false}
             totalTokens={totalTokens}
+            agent={session?.agent}
           />
         </div>
       </div>

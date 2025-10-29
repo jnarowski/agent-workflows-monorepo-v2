@@ -145,6 +145,8 @@ export type LoadingState = "idle" | "loading" | "loaded" | "error";
  */
 export interface FormState {
   permissionMode: ClaudePermissionMode;
+  agent: AgentType;
+  model: string;
 }
 
 /**
@@ -189,6 +191,14 @@ export interface SessionStore {
   // Permission mode actions
   setPermissionMode: (mode: ClaudePermissionMode) => void;
   getPermissionMode: () => ClaudePermissionMode;
+
+  // Agent selection actions
+  setAgent: (agent: AgentType) => void;
+  getAgent: () => AgentType;
+
+  // Model selection actions
+  setModel: (model: string) => void;
+  getModel: () => string;
 }
 
 /**
@@ -200,6 +210,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   session: null,
   form: {
     permissionMode: "acceptEdits",
+    agent: "claude",
+    model: "",
   },
 
   // Load session from server
@@ -466,6 +478,38 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   getPermissionMode: () => {
     const state = get();
     return state.form.permissionMode;
+  },
+
+  // Set agent in form
+  setAgent: (agent: AgentType) => {
+    set((state) => ({
+      form: {
+        ...state.form,
+        agent,
+      },
+    }));
+  },
+
+  // Get agent from form
+  getAgent: () => {
+    const state = get();
+    return state.form.agent;
+  },
+
+  // Set model in form
+  setModel: (model: string) => {
+    set((state) => ({
+      form: {
+        ...state.form,
+        model,
+      },
+    }));
+  },
+
+  // Get model from form
+  getModel: () => {
+    const state = get();
+    return state.form.model;
   },
 }));
 

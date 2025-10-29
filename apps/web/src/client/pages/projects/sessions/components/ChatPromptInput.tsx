@@ -33,6 +33,7 @@ import {
   useState,
   forwardRef,
   useImperativeHandle,
+  useMemo,
 } from "react";
 import { useNavigationStore } from "@/client/stores/navigationStore";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
@@ -125,9 +126,10 @@ const ChatPromptInputInner = forwardRef<
     const model = useSessionStore((s) => s.form.model);
     const setModel = useSessionStore((s) => s.setModel);
     const sessionAgent = useSessionStore((s) => s.session?.agent);
+    const formAgent = useSessionStore((s) => s.form.agent);
 
-    // Use agent prop if provided, otherwise fall back to session agent
-    const agent = agentProp || sessionAgent || "claude";
+    // Use agent prop if provided, otherwise fall back to session agent, then form agent
+    const agent = agentProp || sessionAgent || formAgent;
 
     // Get agent capabilities from settings (with fallback while loading)
     const capabilities = useAgentCapabilities(agent) ?? {
@@ -135,6 +137,17 @@ const ChatPromptInputInner = forwardRef<
       supportsModels: false,
       models: [],
     };
+
+    // Use first model as default if no model selected or current model invalid
+    const currentModel = useMemo(() => {
+      if (capabilities.models.length === 0) return "";
+
+      // Check if stored model is valid for current agent
+      const isValidModel = model && capabilities.models.some(m => m.id === model);
+
+      // Use stored model if valid, otherwise use first available model
+      return isValidModel ? model : capabilities.models[0].id;
+    }, [model, capabilities.models, agent]);
 
     // Handle permission mode change
     const handlePermissionModeChange = (mode: ClaudePermissionMode) => {
@@ -376,7 +389,7 @@ const ChatPromptInputInner = forwardRef<
               "border-green-500 md:has-[[data-slot=input-group-control]:focus-visible]:border-green-500",
             permissionMode === "acceptEdits" &&
               "border-purple-500 md:has-[[data-slot=input-group-control]:focus-visible]:border-purple-500",
-            permissionMode === "reject" &&
+            permissionMode === "bypassPermissions" &&
               "border-red-500 md:has-[[data-slot=input-group-control]:focus-visible]:border-red-500"
           )}
         >
@@ -410,32 +423,25 @@ const ChatPromptInputInner = forwardRef<
                   onCommandSelect={handleCommandSelect}
                 />
               )}
-              {/* Speech button - Claude only for now */}
-              {agent === "claude" && (
-                <PromptInputSpeechButton
-                  onTranscriptionChange={controller.textInput.setInput}
-                  textareaRef={textareaRef}
-                />
-              )}
+              <PromptInputSpeechButton
+                onTranscriptionChange={controller.textInput.setInput}
+                textareaRef={textareaRef}
+              />
               {/* Model selector - only for agents that support model selection */}
-              {capabilities.supportsModels &&
-                capabilities.models.length > 0 && (
-                  <PromptInputModelSelect
-                    value={model}
-                    onValueChange={setModel}
-                  >
-                    <PromptInputModelSelectTrigger>
-                      <PromptInputModelSelectValue />
-                    </PromptInputModelSelectTrigger>
-                    <PromptInputModelSelectContent>
-                      {capabilities.models.map((m) => (
-                        <PromptInputModelSelectItem key={m.id} value={m.id}>
-                          {m.name}
-                        </PromptInputModelSelectItem>
-                      ))}
-                    </PromptInputModelSelectContent>
-                  </PromptInputModelSelect>
-                )}
+              {capabilities.models.length > 0 && (
+                <PromptInputModelSelect value={currentModel} onValueChange={setModel}>
+                  <PromptInputModelSelectTrigger>
+                    <PromptInputModelSelectValue />
+                  </PromptInputModelSelectTrigger>
+                  <PromptInputModelSelectContent>
+                    {capabilities.models.map((m) => (
+                      <PromptInputModelSelectItem key={m.id} value={m.id}>
+                        {m.name}
+                      </PromptInputModelSelectItem>
+                    ))}
+                  </PromptInputModelSelectContent>
+                </PromptInputModelSelect>
+              )}
               <PromptInputPermissionModeSelect
                 onValueChange={handlePermissionModeChange}
                 value={permissionMode}
