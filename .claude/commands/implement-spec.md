@@ -15,8 +15,12 @@ Follow the `Workflow` steps in the exact order to implement the spec then `Repor
 ## Instructions
 
 - If $specNameOrPath is a file path set $spec_path to $specNameOrPath
-- If $specNameOrPath is not a file path $spec_path to `.agent/specs/${feature-name}-spec.md`
-- If $spec_path file is not present, stop IMMEDIATELY and let the user know that the file wasn't found and you cannot continue
+- If $specNameOrPath is not a file path, search for the spec in this order:
+  1. Check `.agent/specs/todo/${feature-name}-spec.md`
+  2. Check `.agent/specs/done/${feature-name}-spec.md`
+  3. Check `.agent/specs/${feature-name}-spec.md` (legacy flat structure)
+  4. If spec number provided (e.g., "17"), search for `*-${number}-*-spec.md` in todo/, done/, and root
+- If $spec_path file is not present after searching all locations, stop IMMEDIATELY and let the user know that the file wasn't found and you cannot continue
 
 ## Task Tracking Requirements
 

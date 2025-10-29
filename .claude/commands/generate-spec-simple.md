@@ -1,21 +1,22 @@
 ---
 description: Generate implementation spec and write to numbered spec file
-argument-hint: [number-or-feature-name]
+argument-hint: [number-or-feature-name] [format]
 ---
 
 # Generate Simple Implementation Spec
 
-Generate a well-structured implementation spec and save it to `.agent/specs/[number]-[feature]-spec.md` with automatic numbering.
+Generate a well-structured implementation spec and save it to `.agent/specs/[number]-[feature]-spec.md` (or `.json`) with automatic numbering.
 
 ## Variables
 
 - $numberOrFeatureName: $1 (required) - Either a spec number (e.g., `17`) OR a feature name (e.g., `auth-improvements`)
+- $format: $2 (optional) - Output format: `markdown` (default) or `json`
 
 ## Instructions
 
 - **IMPORTANT**: Use your reasoning model - THINK HARD about feature requirements, design, and implementation approach
 - Auto-detect whether $1 is a number or feature name
-- If number: Scan `.agent/specs/` to find next available number
+- If number: Scan `.agent/specs/todo/` and `.agent/specs/done/` to find next available number
 - If feature name: Auto-increment to next spec number
 - Normalize feature name (lowercase, hyphenated) for the filename
 - Replace ALL `<placeholders>` with specific details relevant to that section
@@ -25,6 +26,7 @@ Generate a well-structured implementation spec and save it to `.agent/specs/[num
 - Include comprehensive verification covering build, tests, linting, and manual checks
 - Add E2E test tasks if feature has UI
 - Keep acceptance criteria measurable
+- If $format is not provided, default to "markdown"
 
 ## Workflow
 
@@ -33,7 +35,7 @@ Generate a well-structured implementation spec and save it to `.agent/specs/[num
      - Use that exact number
      - Infer feature name from conversation context or ask user
    - If $numberOrFeatureName is a feature name (e.g., `auth-improvements`):
-     - Scan `.agent/specs/` directory
+     - Scan `.agent/specs/todo/` and `.agent/specs/done/` directories
      - Find highest numbered spec (e.g., `17-agent-cli-sdk-1.0-refactor-spec.md` → 17)
      - Use next number (18)
      - Use provided feature name
@@ -45,7 +47,9 @@ Generate a well-structured implementation spec and save it to `.agent/specs/[num
 
 3. **Clarification** (if needed):
    - If unclear about implementation approach, ask questions ONE AT A TIME
+   - Don't use the Question tool
    - Use this template:
+
      ```md
      **Question**: [Your question]
      **Suggestions**:
@@ -61,15 +65,19 @@ Generate a well-structured implementation spec and save it to `.agent/specs/[num
    - Skip sections only if truly not applicable
 
 5. **Write File**:
-   - Write to: `.agent/specs/[number]-${featureName}-spec.md`
-   - Example: `.agent/specs/18-auth-improvements-spec.md`
+   - If $format is "json": Write to `.agent/specs/todo/[number]-${featureName}-spec.json`
+   - Otherwise: Write to `.agent/specs/todo/[number]-${featureName}-spec.md`
+   - Example (markdown): `.agent/specs/todo/18-auth-improvements-spec.md`
+   - Example (json): `.agent/specs/todo/18-auth-improvements-spec.json`
 
 ## Template
+
+### Markdown Template
 
 ```md
 # [Feature Name]
 
-**Status**: Draft
+**Status**: draft
 **Created**: [YYYY-MM-DD]
 **Package**: [package name or app name]
 **Estimated Effort**: [X-Y hours]
@@ -262,6 +270,69 @@ Execute these commands to verify the feature works correctly:
 
 ```
 
+### JSON Template
+
+When $format is "json", generate a JSON file with this structure (output raw JSON without markdown code fences):
+
+```json
+{
+  "featureName": "[feature-name]",
+  "specNumber": "[number]",
+  "status": "draft",
+  "created": "[YYYY-MM-DD]",
+  "package": "[package name or app name]",
+  "estimatedEffort": "[X-Y hours]",
+  "overview": "[2-3 sentences describing what this feature does and why it's valuable]",
+  "userStory": {
+    "asA": "[user type]",
+    "iWantTo": "[action/goal]",
+    "soThat": "[benefit/value]"
+  },
+  "technicalApproach": "[Brief description of implementation strategy]",
+  "keyDesignDecisions": [
+    { "decision": "[Decision 1]", "rationale": "[Rationale]" }
+  ],
+  "architecture": {
+    "fileStructure": "[relevant file/directory structure]",
+    "integrationPoints": [
+      {
+        "subsystem": "[Subsystem 1]",
+        "changes": [
+          { "file": "[file.ts]", "description": "[what changes]" }
+        ]
+      }
+    ]
+  },
+  "implementationDetails": [
+    {
+      "name": "[Component/Module Name]",
+      "description": "[Detailed description]",
+      "keyPoints": ["[Important detail 1]", "[Important detail 2]"]
+    }
+  ],
+  "files": {
+    "new": [{ "path": "[filepath]", "purpose": "[purpose]" }],
+    "modified": [{ "path": "[filepath]", "changes": "[what changes]" }]
+  },
+  "testingStrategy": {
+    "unitTests": [{ "file": "[test-file.test.ts]", "description": "[what it tests]" }],
+    "integrationTests": "[Description]",
+    "e2eTests": [{ "file": "[e2e-test.test.ts]", "description": "[what it tests]" }]
+  },
+  "successCriteria": ["[requirement 1]", "[requirement 2]"],
+  "validation": {
+    "automated": [{ "command": "[build command]", "expected": "[output]" }],
+    "manual": [{ "step": "Start application: `[command]`" }],
+    "featureSpecific": ["[Specific verification step]"]
+  },
+  "implementationNotes": [{ "title": "[Note Title]", "details": "[Details]" }],
+  "dependencies": ["[dependency 1]"],
+  "timeline": [{ "task": "[Task group 1]", "estimatedTime": "X hours" }],
+  "references": ["[Link to docs]"],
+  "nextSteps": ["[First step]", "[Second step]"]
+}
+```
+
 ## Formatting Rules
 
 1. **Dates**: Use ISO format (YYYY-MM-DD)
@@ -278,48 +349,90 @@ Execute these commands to verify the feature works correctly:
 
 /generate-spec-simple 18
 
-```
+````
 Uses number 18, asks user for feature name or infers from context
 
 **Example 2: Using feature name (auto-increment)**
-```
-
+```bash
 /generate-spec-simple auth-improvements
+````
 
-```
-Scans directory, finds highest number is 17, creates: `.agent/specs/18-auth-improvements-spec.md`
+Scans todo/ and done/ directories, finds highest number is 17, creates: `.agent/specs/todo/18-auth-improvements-spec.md`
 
 **Example 3: Using feature name with hyphens**
-```
 
+```bash
 /generate-spec-simple websocket-reconnect-improvements
-
 ```
-Auto-increments number, creates: `.agent/specs/18-websocket-reconnect-improvements-spec.md`
+
+Auto-increments number, creates: `.agent/specs/todo/18-websocket-reconnect-improvements-spec.md`
+
+**Example 4: Using JSON format**
+
+```bash
+/generate-spec-simple auth-improvements json
+```
+
+Creates: `.agent/specs/todo/18-auth-improvements-spec.json`
+
+**Example 5: Using spec number with JSON format**
+
+```bash
+/generate-spec-simple 18 json
+```
+
+Uses number 18, creates JSON spec file
 
 ## Common Pitfalls
 
-- **Wrong directory**: Always write to `.agent/specs/`, not `.agents/specs/` (no 's')
-- **Number collisions**: Check existing files before writing to avoid overwriting
+- **Wrong directory**: Always write to `.agent/specs/todo/`, not `.agent/specs/` or `.agents/specs/`
+- **Number collisions**: Check existing files in both todo/ and done/ before writing to avoid overwriting
 - **Generic placeholders**: Replace all `<placeholders>` with actual content
 - **Ambiguous input**: If input could be either number or feature name, prefer treating it as feature name (e.g., "17" is a number, "v17-migration" is a feature name)
+- **Status field**: Use lowercase status values: `draft`, `ready`, `in-progress`, `review`, `completed`
 
 ## Report
 
-After successfully creating the spec file:
+### JSON Format
+
+**IMPORTANT**: If $format is "json", return raw JSON output (no ```json code fences, no markdown):
+
+```json
+{
+  "success": true,
+  "spec_path": ".agent/specs/todo/[number]-[feature]-spec.json",
+  "spec_number": "[number]",
+  "feature_name": "[feature-name]",
+  "format": "json",
+  "files_to_create": ["[filepath1]", "[filepath2]"],
+  "files_to_modify": ["[filepath3]", "[filepath4]"],
+  "next_command": "/implement-spec [number]"
+}
+```
+
+**JSON Field Descriptions:**
+
+- `success`: Always true if spec generation completed
+- `spec_path`: Path to the generated spec file
+- `spec_number`: The spec number used
+- `feature_name`: Normalized feature name (lowercase, hyphenated)
+- `format`: Output format used ("json" or "markdown")
+- `files_to_create`: Array of new files to be created
+- `files_to_modify`: Array of existing files to be modified
+- `next_command`: Suggested next command to run
+
+### Text Format
+
+Otherwise, provide this human-readable information:
 
 1. Report the full path to the created file
 2. Display the spec number used
-3. Suggest next steps (e.g., "Run `/implement-spec 18` to begin implementation")
+3. Suggest next steps
 
 **Format:**
 
-```
-
-✓ Created spec file: .agent/specs/[number]-[feature]-spec.md
+```text
+✓ Created spec file: .agent/specs/todo/[number]-[feature]-spec.md
 
 Next: /implement-spec [number]
-
-```
-
 ```

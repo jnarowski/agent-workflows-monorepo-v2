@@ -88,8 +88,8 @@ export type PermissionMode = 'default' | 'plan' | 'acceptEdits' | 'bypassPermiss
 // claude/execute.ts, codex/execute.ts, gemini/execute.ts
 import type { PermissionMode } from '../types/permissions.js';
 
-// Keep type alias for backwards compatibility
-export type ClaudePermissionMode = PermissionMode;
+// Remove old type definitions (ClaudePermissionMode, CodexPermissionMode, GeminiPermissionMode)
+// Use PermissionMode directly everywhere - no backwards compatibility aliases
 ```
 
 **Export from main index:**
@@ -114,17 +114,32 @@ export type { PermissionMode } from './types/permissions.js';
 const content = await fs.readFile(sessionPath, 'utf-8');
 // ^ Throws if not found
 
-// After
+// After - wrap ONLY the fs.readFile() call
+let content: string;
 try {
-  const content = await fs.readFile(sessionPath, 'utf-8');
-  // ... parsing logic
+  content = await fs.readFile(sessionPath, 'utf-8');
 } catch (error) {
   if (error.code === 'ENOENT') {
     return [];
   }
   throw error;
 }
+
+// Parsing logic stays outside try-catch
+// If data is corrupt, let it throw - that's a real error
+const events = parseSessionFile(content);
+return events;
 ```
+
+### Phase 1 Validation
+
+**After completing all Phase 1 fixes, run:**
+```bash
+cd packages/agent-cli-sdk
+pnpm check
+```
+
+This runs: lint + type-check + tests. All must pass before proceeding to Phase 2.
 
 ## Phase 2: Extract Proven Utilities (~1 day)
 
@@ -216,10 +231,12 @@ const result = await spawnProcess(cliPath, args, {
     lineBuffer.add(chunk);
     options.onStdout?.({ raw: rawOutput, events, messages });
   }
+  // Note: We do NOT call lineBuffer.flush() - keep it simple
+  // The flush() method exists for edge cases but isn't used in normal flow
 });
 ```
 
-**Tests:** `packages/agent-cli-sdk/src/utils/lineBuffer.test.ts`
+**Tests:** `packages/agent-cli-sdk/src/utils/lineBuffer.test.ts` (full implementation required)
 
 ### 2.2 Create Generic CLI Detection Utility
 
@@ -325,7 +342,7 @@ export async function detectCli(): Promise<string | null> {
 }
 ```
 
-**Tests:** `packages/agent-cli-sdk/src/utils/cliDetection.test.ts`
+**Tests:** `packages/agent-cli-sdk/src/utils/cliDetection.test.ts` (full implementation required)
 
 ### 2.3 Create Permission Mode to Flags Helper
 
@@ -382,7 +399,7 @@ const args = [
 ];
 ```
 
-**Tests:** `packages/agent-cli-sdk/src/utils/argBuilding.test.ts`
+**Tests:** `packages/agent-cli-sdk/src/utils/argBuilding.test.ts` (full implementation required)
 
 ### 2.4 Create Session ID Extraction Helper
 
@@ -435,6 +452,16 @@ pnpm test
 pnpm test:e2e  # Verify real CLI integration still works
 ```
 
+### Phase 2 Validation
+
+**After completing all Phase 2 utilities and refactoring, run:**
+```bash
+cd packages/agent-cli-sdk
+pnpm check
+```
+
+This runs: lint + type-check + tests. All must pass before proceeding to Phase 3.
+
 ## Phase 3: Types & Documentation (~1 day)
 
 ### 3.1 Create Base Execute Options Interface
@@ -442,6 +469,8 @@ pnpm test:e2e  # Verify real CLI integration still works
 **New file:** `packages/agent-cli-sdk/src/types/execute.ts`
 ```typescript
 import type { PermissionMode } from './permissions.js';
+
+import type { UnifiedMessage } from './unified.js';
 
 /**
  * Base options shared across all execute functions
@@ -461,6 +490,15 @@ export interface BaseExecuteOptions {
 
   /** Timeout in milliseconds */
   timeout?: number;
+
+  /** Callback for parsed events */
+  onEvent?: (data: { raw: string; event: unknown; message: UnifiedMessage | null }) => void;
+
+  /** Callback for stdout data */
+  onStdout?: (data: string) => void;
+
+  /** Callback for stderr data */
+  onStderr?: (data: string) => void;
 }
 ```
 
@@ -514,7 +552,8 @@ Each tool (Claude, Codex, Gemini) implements tool-specific logic while sharing c
 
 - **Package name:** Standardized to `@repo/agent-cli-sdk` (removed `-two` suffix)
 - **Permission types:** Consolidated to single `PermissionMode` type
-  - `ClaudePermissionMode`, `CodexPermissionMode`, `GeminiPermissionMode` are now aliases
+  - Removed `ClaudePermissionMode`, `CodexPermissionMode`, `GeminiPermissionMode`
+  - Use `PermissionMode` directly everywhere (no backwards compatibility aliases)
 - **detectCli():** All detection functions are now async (must use `await`)
 - **loadSession():** Gemini now returns `[]` instead of throwing on missing session (consistent with Claude/Codex)
 
@@ -551,6 +590,16 @@ See git history for pre-1.0 changes.
   "version": "1.0.0"
 }
 ```
+
+### Phase 3 Validation
+
+**After completing all Phase 3 documentation and version bump, run:**
+```bash
+cd packages/agent-cli-sdk
+pnpm check
+```
+
+This final validation ensures all changes are working correctly before release.
 
 ## Testing Strategy
 
@@ -617,4 +666,12 @@ pnpm exec tsx examples/gemini/basic.ts
 - Philosophy: Extract clear wins, keep some duplication for readability
 - Only utilities that meet criteria: 2+ duplicates, 20+ lines
 - No over-abstraction - pure utility functions only
-- Maintain backwards compatibility where possible (use type aliases)
+- No backwards compatibility - this is 1.0, breaking changes are acceptable
+
+## Implementation Decisions (from Q&A)
+
+1. **Line buffer flush():** Don't call it in execute functions - keep it simple. Method exists for edge cases only.
+2. **loadSession error handling:** Wrap ONLY `fs.readFile()` in try-catch, not parsing logic. Missing file = `[]`, corrupt file = throw.
+3. **BaseExecuteOptions callbacks:** Include `onEvent`, `onStdout`, `onStderr` - they're common across all tools.
+4. **Type aliases:** NO backwards compatibility aliases. Remove old types, use `PermissionMode` directly.
+5. **Test files:** Write FULL test implementations for all 4 new utility functions.

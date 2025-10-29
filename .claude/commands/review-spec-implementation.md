@@ -9,7 +9,7 @@ Reviews a previous agent's implementation work by comparing the provided spec fi
 
 ## Variables
 
-- $specFilePath: $1 (required) - Path to the spec file to review against (e.g., `.agent/specs/feature-name.md`)
+- $specFilePath: $1 (required) - Path to the spec file to review against (e.g., `.agent/specs/todo/feature-name.md` or `.agent/specs/done/feature-name.md`)
 - $format: $2 (optional) - Output format: "text" or "json" (defaults to "text" if not provided)
 - $max-reviews: 3 - This is a constant (maximum review iterations allowed)
 
@@ -81,7 +81,11 @@ Use these guidelines to determine what issues to document:
 
 1. **Validate Inputs**
 
-   - Verify spec file exists at `$specFilePath`
+   - If $specFilePath is not a full file path, search for the spec in this order:
+     1. Check `.agent/specs/todo/${feature-name}-spec.md`
+     2. Check `.agent/specs/done/${feature-name}-spec.md`
+     3. Check `.agent/specs/${feature-name}-spec.md` (legacy flat structure)
+   - Verify spec file exists at resolved path
    - Determine main branch (main/master) using `git branch` or git config
    - **Auto-detect review iteration:**
      - Scan spec file for existing "Review Findings" sections
