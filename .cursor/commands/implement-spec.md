@@ -1,6 +1,6 @@
 ---
 description: Implements a feature based on provided context or spec file
-argument-hint: [specNameOrPath, format]
+argument-hint: [numberOrNameOrPath, format]
 ---
 
 # Implement
@@ -9,14 +9,29 @@ Follow the `Workflow` steps in the exact order to implement the spec then `Repor
 
 ## Variables
 
-- $specNameOrPath: $1 (provide a spec name like "config-sync-cli" or a full file path `.agent/specs/config-sync-cli-spec.md`)
+- $numberOrNameOrPath: $1 (provide a spec number like "17", a feature name like "config-sync-cli", or a full file path `.agent/specs/todo/17-config-sync-cli-spec.md`)
 - $format: $2 (optional) - Output format: "text" or "json" (defaults to "text" if not provided)
 
 ## Instructions
 
-- If $specNameOrPath is a file path set $spec_path to $specNameOrPath
-- If $specNameOrPath is not a file path $spec_path to `.agent/specs/${feature-name}-spec.md`
-- If $spec_path file is not present, stop IMMEDIATELY and let the user know that the file wasn't found and you cannot continue
+### Parse Arguments
+
+1. **If $numberOrNameOrPath is a number** (e.g., `17`, `18`):
+   - Search for spec file with that number in `.agent/specs/todo/` first
+   - If not found, search in `.agent/specs/done/`
+   - Pattern: `[number]-*-spec.md` or `[number]-*-spec.json`
+   - Set $spec_path to the found file
+
+2. **If $numberOrNameOrPath is a full file path** (contains `/` or starts with `.`):
+   - Set $spec_path to $numberOrNameOrPath directly
+
+3. **If $numberOrNameOrPath is a feature name** (e.g., `config-sync-cli`):
+   - Set $spec_path to `.agent/specs/todo/${feature-name}-spec.md`
+
+4. **If $spec_path file is not present**:
+   - Stop IMMEDIATELY
+   - Let the user know that the file wasn't found and you cannot continue
+   - If a number was provided, list available specs in both todo/ and done/ directories
 
 ## Task Tracking Requirements
 
@@ -129,3 +144,35 @@ Otherwise, provide this human-readable information to the user:
 
 - Summarize the work you've just done in a concise bullet point list.
 - Report the files and total lines changed with `git diff --stat`
+
+## Examples
+
+**Example 1: Using spec number**
+```bash
+/implement-spec 17
+```
+Searches for `17-*-spec.md` in `.agent/specs/todo/`, then `.agent/specs/done/`
+
+**Example 2: Using feature name**
+```bash
+/implement-spec config-sync-cli
+```
+Looks for `.agent/specs/todo/config-sync-cli-spec.md`
+
+**Example 3: Using full file path**
+```bash
+/implement-spec .agent/specs/todo/17-config-sync-cli-spec.md
+```
+Uses the exact path provided
+
+**Example 4: JSON output format**
+```bash
+/implement-spec 17 json
+```
+Implements spec 17 and returns JSON report
+
+**Example 5: Feature name with JSON output**
+```bash
+/implement-spec config-sync-cli json
+```
+Implements feature and returns JSON report

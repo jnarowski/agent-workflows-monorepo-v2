@@ -11,5 +11,5 @@ export { execute } from './execute.js';
 export { detectCli } from './detectCli.js';
 
 export type { GeminiMessage, GeminiSession, GeminiToolCall, GeminiThought } from './types.js';
-export type { ExecuteOptions, ExecuteResult, GeminiPermissionMode } from './execute.js';
+export type { ExecuteOptions, ExecuteResult } from './execute.js';
 export type { LoadGeminiSessionOptions } from './loadSession.js';

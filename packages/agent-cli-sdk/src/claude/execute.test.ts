@@ -90,7 +90,7 @@ describe('execute', () => {
     // Ensure CLI path is set for tests
     process.env.CLAUDE_CLI_PATH = '/usr/local/bin/claude';
     // Mock detectCli to return a valid path by default
-    vi.mocked(detectCliModule.detectCli).mockReturnValue('/usr/local/bin/claude');
+    vi.mocked(detectCliModule.detectCli).mockResolvedValue('/usr/local/bin/claude');
   });
 
   it('should execute a simple command and parse messages', async () => {
@@ -128,7 +128,7 @@ describe('execute', () => {
 
   it('should throw error when Claude CLI is not found', async () => {
     // Arrange: Mock detectCli to return null
-    vi.mocked(detectCliModule.detectCli).mockReturnValue(null);
+    vi.mocked(detectCliModule.detectCli).mockResolvedValue(null);
 
     // Act & Assert
     await expect(execute({ prompt: 'test' })).rejects.toThrow(

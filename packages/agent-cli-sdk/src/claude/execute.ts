@@ -1,22 +1,15 @@
 import type { UnifiedMessage } from '../types/unified';
+import type { PermissionMode } from '../types/permissions.js';
 import { spawnProcess } from '../utils/spawn';
 import { extractJSON } from '../utils/extractJson';
 import { parse } from './parse';
 import { extractTextContent } from '../types/unified';
 import { detectCli } from './detectCli';
+import { createLineBuffer } from '../utils/lineBuffer.js';
 
 // ============================================================================
 // Types
 // ============================================================================
-
-/**
- * Permission mode for file operations and command execution:
- * - 'default': Standard mode with safety checks (asks permission before writes/edits/bash)
- * - 'plan': Read-only analysis mode (cannot modify files or execute commands)
- * - 'acceptEdits': Auto-accepts file modifications (bypasses edit prompts)
- * - 'bypassPermissions': No safety checks (dangerous, use only in isolated environments)
- */
-export type ClaudePermissionMode = 'default' | 'plan' | 'acceptEdits' | 'bypassPermissions';
 
 /**
  * Internal event types used by Claude CLI
@@ -86,7 +79,7 @@ export interface ExecuteOptions {
   /** Claude model to use (e.g., 'claude-3-5-sonnet-20241022') */
   model?: string;
   /** Permission mode for file operations and command execution */
-  permissionMode?: ClaudePermissionMode;
+  permissionMode?: PermissionMode;
   /** Dangerously skip all permission checks (use with extreme caution) */
   dangerouslySkipPermissions?: boolean;
   /** Enable streaming mode */
@@ -188,7 +181,7 @@ export interface ExecuteResult<T = string> {
  * ```
  */
 export async function execute<T = string>(options: ExecuteOptions): Promise<ExecuteResult<T>> {
-  const cliPath = detectCli();
+  const cliPath = await detectCli();
   if (!cliPath) {
     throw new Error('Claude CLI not found. Set CLAUDE_CLI_PATH or install Claude Code.');
   }
@@ -198,10 +191,14 @@ export async function execute<T = string>(options: ExecuteOptions): Promise<Exec
   // Spawn process with line-by-line parsing
   const messages: UnifiedMessage[] = [];
   const events: unknown[] = [];
-  let lineBuffer = '';
   let rawOutput = '';
   let stderr = '';
   const startTime = Date.now();
+
+  // Create line buffer for streaming JSONL
+  const lineBuffer = createLineBuffer((line) => {
+    processLine({ line, events, messages, options });
+  });
 
   try {
     const result = await spawnProcess(cliPath, {
@@ -211,13 +208,7 @@ export async function execute<T = string>(options: ExecuteOptions): Promise<Exec
       verbose: options.verbose,
       onStdout: (chunk) => {
         rawOutput += chunk;
-        lineBuffer += chunk;
-        const lines = lineBuffer.split('\n');
-        lineBuffer = lines.pop() || '';
-
-        for (const line of lines) {
-          processLine({ line, events, messages, options });
-        }
+        lineBuffer.add(chunk);
 
         // Call onStdout callback with accumulated data
         options.onStdout?.({

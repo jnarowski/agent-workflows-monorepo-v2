@@ -249,3 +249,20 @@ export function isMcpTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBl
 export function isSlashCommand(block: UnifiedContent): block is UnifiedSlashCommandBlock {
   return block.type === 'slash_command';
 }
+
+/**
+ * Extracts session ID from array of events
+ *
+ * @param events - Array of events with optional sessionId property
+ * @returns Session ID or 'unknown' if not found
+ */
+export function extractSessionIdFromEvents<T extends { sessionId?: string }>(
+  events: T[]
+): string {
+  for (const event of events) {
+    if (event.sessionId) {
+      return event.sessionId;
+    }
+  }
+  return 'unknown';
+}

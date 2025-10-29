@@ -14,6 +14,7 @@ import type {
   ToolName,
   UnifiedToolUseBlock,
 } from './unified';
+import { extractSessionIdFromEvents } from './unified';
 
 describe('Tool Input Types', () => {
   describe('BashToolInput', () => {
@@ -175,7 +176,7 @@ describe('Tool Input Types', () => {
     it('should match real JSONL data structure from sample-web-search.jsonl', () => {
       const input: GrepToolInput = {
         pattern: 'type.*Content|interface.*Content',
-        path: '/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk-two',
+        path: '/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/packages/agent-cli-sdk',
         output_mode: 'content',
         '-n': true,
       };
@@ -574,6 +575,107 @@ Do something else`,
         expect(typeof tool).toBe('string');
         expect(tool.length).toBeGreaterThan(0);
       });
+    });
+  });
+
+  describe('extractSessionIdFromEvents', () => {
+    it('should extract session ID from first event with sessionId', () => {
+      const events = [
+        { type: 'event1' },
+        { type: 'event2', sessionId: 'session-123' },
+        { type: 'event3', sessionId: 'session-456' },
+      ];
+
+      expect(extractSessionIdFromEvents(events)).toBe('session-123');
+    });
+
+    it('should return "unknown" if no events have sessionId', () => {
+      const events: { sessionId?: string }[] = [
+        {},
+        {},
+        {},
+      ];
+
+      expect(extractSessionIdFromEvents(events)).toBe('unknown');
+    });
+
+    it('should return "unknown" for empty array', () => {
+      expect(extractSessionIdFromEvents([])).toBe('unknown');
+    });
+
+    it('should handle events where sessionId is undefined', () => {
+      const events = [
+        { type: 'event1', sessionId: undefined },
+        { type: 'event2', sessionId: 'session-789' },
+      ];
+
+      expect(extractSessionIdFromEvents(events)).toBe('session-789');
+    });
+
+    it('should handle events where sessionId is empty string', () => {
+      const events = [
+        { type: 'event1', sessionId: '' },
+        { type: 'event2', sessionId: 'session-abc' },
+      ];
+
+      // Empty string is falsy, so it should skip to next
+      expect(extractSessionIdFromEvents(events)).toBe('session-abc');
+    });
+
+    it('should return first non-empty sessionId', () => {
+      const events = [
+        { type: 'event1' },
+        { type: 'event2', sessionId: 'first-session' },
+        { type: 'event3', sessionId: 'second-session' },
+      ];
+
+      expect(extractSessionIdFromEvents(events)).toBe('first-session');
+    });
+
+    it('should work with Claude-style events', () => {
+      interface ClaudeEvent {
+        type: string;
+        sessionId?: string;
+        data?: unknown;
+      }
+
+      const events: ClaudeEvent[] = [
+        { type: 'session_init', sessionId: 'claude-session-123' },
+        { type: 'message_start', data: {} },
+      ];
+
+      expect(extractSessionIdFromEvents(events)).toBe('claude-session-123');
+    });
+
+    it('should work with Codex-style events', () => {
+      interface CodexEvent {
+        event: string;
+        sessionId?: string;
+      }
+
+      const events: CodexEvent[] = [
+        { event: 'session_meta', sessionId: 'codex-session-456' },
+        { event: 'reasoning' },
+      ];
+
+      expect(extractSessionIdFromEvents(events)).toBe('codex-session-456');
+    });
+
+    it('should handle complex event objects with nested data', () => {
+      const events = [
+        {
+          type: 'complex',
+          data: { nested: 'value' },
+          metadata: { timestamp: 123 },
+        },
+        {
+          type: 'with-session',
+          sessionId: 'nested-session-789',
+          data: { complex: { nested: { deep: 'value' } } },
+        },
+      ];
+
+      expect(extractSessionIdFromEvents(events)).toBe('nested-session-789');
     });
   });
 });

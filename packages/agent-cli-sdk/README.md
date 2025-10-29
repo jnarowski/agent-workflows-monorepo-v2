@@ -1,4 +1,4 @@
-# @repo/agent-cli-sdk-two
+# @repo/agent-cli-sdk
 
 TypeScript SDK for orchestrating AI-powered CLI tools (Claude Code, OpenAI Codex) in development workflows.
 
@@ -15,13 +15,13 @@ TypeScript SDK for orchestrating AI-powered CLI tools (Claude Code, OpenAI Codex
 
 ```bash
 # Using pnpm (recommended for monorepos)
-pnpm add @repo/agent-cli-sdk-two
+pnpm add @repo/agent-cli-sdk
 
 # Using npm
-npm install @repo/agent-cli-sdk-two
+npm install @repo/agent-cli-sdk
 
 # Using yarn
-yarn add @repo/agent-cli-sdk-two
+yarn add @repo/agent-cli-sdk
 ```
 
 ## Requirements
@@ -39,7 +39,7 @@ yarn add @repo/agent-cli-sdk-two
 The SDK provides a unified interface that works with both Claude and Codex:
 
 ```typescript
-import { execute } from '@repo/agent-cli-sdk-two';
+import { execute } from '@repo/agent-cli-sdk';
 
 // Using Claude
 const claudeResult = await execute({
@@ -71,7 +71,7 @@ console.log('Final output:', claudeResult.data);
 Load message history from either Claude or Codex sessions:
 
 ```typescript
-import { loadMessages } from '@repo/agent-cli-sdk-two';
+import { loadMessages } from '@repo/agent-cli-sdk';
 
 // Load Claude session
 const claudeMessages = await loadMessages({
@@ -98,7 +98,7 @@ claudeMessages.forEach(msg => {
 Both Claude and Codex support automatic JSON extraction:
 
 ```typescript
-import { execute } from '@repo/agent-cli-sdk-two';
+import { execute } from '@repo/agent-cli-sdk';
 
 interface PackageInfo {
   name: string;
@@ -209,7 +209,7 @@ Detect the path to AI CLI executables.
 **Example:**
 
 ```typescript
-import { detectClaudeCli, detectCodexCli } from '@repo/agent-cli-sdk-two';
+import { detectClaudeCli, detectCodexCli } from '@repo/agent-cli-sdk';
 
 const claudePath = detectClaudeCli();
 if (claudePath) {
@@ -248,7 +248,7 @@ function extractJSON<T = unknown>(
 **Example:**
 
 ```typescript
-import { extractJSON } from '@repo/agent-cli-sdk-two';
+import { extractJSON } from '@repo/agent-cli-sdk';
 import { z } from 'zod';
 
 const text = 'Here is the data: {"name": "John", "age": 30}';
@@ -309,6 +309,50 @@ The SDK automatically transforms provider-specific formats into the unified form
 
 **Key Point:** Frontend components can consume both Claude and Codex messages identically without any modification.
 
+## Architecture
+
+The SDK uses a functional approach with reusable utilities and a unified type system that works across all AI CLI tools.
+
+### Core Principles
+
+- **Functional design** - Pure utility functions, no wrappers or base classes
+- **Unified types** - Single `UnifiedMessage` format across all tools
+- **Tool-specific implementation** - Each tool has its own execute/parse logic
+- **Shared utilities** - Common patterns extracted into reusable functions
+
+### Key Utilities
+
+**Line Buffering** (`utils/lineBuffer.ts`)
+- Handles incomplete lines in streaming JSONL output
+- Ensures complete lines before parsing
+- Used by Claude and Codex execute functions
+
+**CLI Detection** (`utils/cliDetection.ts`)
+- Generic pattern for finding installed CLIs
+- Checks environment variables, PATH, and common install locations
+- Used by all tool-specific detectCli functions
+
+**Arg Building** (`utils/argBuilding.ts`)
+- Converts options to CLI flags
+- Permission mode → CLI flags
+- Working directory → CLI flags
+
+**Type System** (`types/`)
+- `UnifiedMessage` - Standardized message format
+- `PermissionMode` - Shared permission types
+- `BaseExecuteOptions` - Common execute options pattern
+
+### Tool-Specific Implementations
+
+Each tool (Claude, Codex, Gemini) maintains its own:
+- `execute.ts` - CLI execution and output parsing
+- `loadSession.ts` - Session history loading
+- `parse.ts` - Tool-specific format → UnifiedMessage conversion
+- `detectCli.ts` - CLI installation detection
+- `types.ts` - Tool-specific type definitions
+
+The main `index.ts` routes to tool-specific implementations based on the `tool` parameter.
+
 ## Advanced Usage
 
 ### Permission Modes
@@ -316,7 +360,7 @@ The SDK automatically transforms provider-specific formats into the unified form
 Control how the CLI handles permission requests. Both Claude and Codex support permission modes with similar semantics:
 
 ```typescript
-import { execute } from '@repo/agent-cli-sdk-two';
+import { execute } from '@repo/agent-cli-sdk';
 
 // Claude permission modes
 const claudeResult = await execute({
@@ -482,7 +526,7 @@ See the [examples directory](./examples) for comprehensive usage examples:
 |----------|---------|--------------|---------------|-------|--------|
 | Claude   | ✅      | ✅           | ✅            | ✅    | Production |
 | Codex    | ✅      | ✅           | ✅            | ✅    | Production |
-| Gemini   | ❌      | ❌           | ❌            | ❌    | Planned |
+| Gemini   | 🟡      | 🟡           | ✅            | 🟡    | Experimental (70%) |
 | Cursor   | ❌      | ❌           | ❌            | ❌    | Planned |
 
 ## Current Limitations

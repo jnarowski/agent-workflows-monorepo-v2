@@ -94,7 +94,7 @@ describe('getCapabilities', () => {
 
   describe('gemini', () => {
     it('should return capabilities with install detection for gemini agent', async () => {
-      vi.mocked(detectGeminiCli).mockReturnValue('/usr/local/bin/gemini');
+      vi.mocked(detectGeminiCli).mockResolvedValue('/usr/local/bin/gemini');
 
       const caps = await getCapabilities('gemini');
 
@@ -114,7 +114,7 @@ describe('getCapabilities', () => {
     });
 
     it('should mark gemini as not installed when CLI not found', async () => {
-      vi.mocked(detectGeminiCli).mockReturnValue(null);
+      vi.mocked(detectGeminiCli).mockResolvedValue(null);
 
       const caps = await getCapabilities('gemini');
 

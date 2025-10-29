@@ -1,24 +1,16 @@
 import type { UnifiedMessage } from '../types/unified.js';
+import type { PermissionMode } from '../types/permissions.js';
 import { spawnProcess } from '../utils/spawn.js';
 import { extractJSON } from '../utils/extractJson.js';
 import { parse } from './parse.js';
 import { extractTextContent } from '../types/unified.js';
 import { detectCli } from './detectCli.js';
 import type { CodexEvent } from './types.js';
+import { createLineBuffer } from '../utils/lineBuffer.js';
 
 // ============================================================================
 // Types
 // ============================================================================
-
-/**
- * Permission mode for Codex file operations and command execution.
- * Maps to Codex's -a (approval) and -s (sandbox) flags.
- */
-export type CodexPermissionMode =
-  | 'default' // untrusted + workspace-write
-  | 'plan' // on-request + read-only
-  | 'acceptEdits' // on-failure + workspace-write
-  | 'bypassPermissions'; // never + danger-full-access
 
 /**
  * Data provided to the onEvent callback.
@@ -63,7 +55,7 @@ export interface ExecuteOptions {
   /** Codex model to use */
   model?: string;
   /** Permission mode for file operations and command execution */
-  permissionMode?: CodexPermissionMode;
+  permissionMode?: PermissionMode;
   /** Dangerously skip all permission checks (use with extreme caution) */
   dangerouslySkipPermissions?: boolean;
   /** Automatically extract and parse JSON from the response */
@@ -154,7 +146,7 @@ export interface ExecuteResult<T = string> {
  * ```
  */
 export async function execute<T = string>(options: ExecuteOptions): Promise<ExecuteResult<T>> {
-  const cliPath = detectCli();
+  const cliPath = await detectCli();
   if (!cliPath) {
     throw new Error('Codex CLI not found. Set CODEX_CLI_PATH or install Codex CLI.');
   }
@@ -164,10 +156,14 @@ export async function execute<T = string>(options: ExecuteOptions): Promise<Exec
   // Spawn process with line-by-line parsing
   const messages: UnifiedMessage[] = [];
   const events: CodexEvent[] = [];
-  let lineBuffer = '';
   let rawOutput = '';
   let stderr = '';
   const startTime = Date.now();
+
+  // Create line buffer for streaming JSONL
+  const lineBuffer = createLineBuffer((line) => {
+    processLine({ line, events, messages, options });
+  });
 
   try {
     const result = await spawnProcess(cliPath, {
@@ -177,13 +173,7 @@ export async function execute<T = string>(options: ExecuteOptions): Promise<Exec
       verbose: options.verbose,
       onStdout: (chunk) => {
         rawOutput += chunk;
-        lineBuffer += chunk;
-        const lines = lineBuffer.split('\n');
-        lineBuffer = lines.pop() || '';
-
-        for (const line of lines) {
-          processLine({ line, events, messages, options });
-        }
+        lineBuffer.add(chunk);
 
         // Call onStdout callback with accumulated data
         options.onStdout?.({
@@ -319,7 +309,7 @@ function buildArgs(options: ExecuteOptions): string[] {
 /**
  * Map permission mode to Codex flags.
  */
-function mapPermissionMode(mode: CodexPermissionMode): string[] {
+function mapPermissionMode(mode: PermissionMode): string[] {
   switch (mode) {
     case 'bypassPermissions':
       return ['--dangerously-bypass-approvals-and-sandbox'];

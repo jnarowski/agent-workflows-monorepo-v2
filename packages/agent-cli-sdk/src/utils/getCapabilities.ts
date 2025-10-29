@@ -106,15 +106,13 @@ export async function getCapabilities(
 
   switch (agentName) {
     case 'claude':
-      // eslint-disable-next-line @typescript-eslint/await-thenable
       cliPath = await detectClaudeCli();
       break;
     case 'codex':
-      // eslint-disable-next-line @typescript-eslint/await-thenable
       cliPath = await detectCodexCli();
       break;
     case 'gemini':
-      cliPath = detectGeminiCli();
+      cliPath = await detectGeminiCli();
       break;
     case 'cursor':
       // No detection available yet

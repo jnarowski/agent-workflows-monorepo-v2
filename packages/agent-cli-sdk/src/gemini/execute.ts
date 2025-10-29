@@ -19,6 +19,7 @@
  */
 
 import type { UnifiedMessage } from '../types/unified.js';
+import type { PermissionMode } from '../types/permissions.js';
 import { spawnProcess } from '../utils/spawn.js';
 import { extractJSON } from '../utils/extractJson.js';
 import { detectCli } from './detectCli.js';
@@ -26,11 +27,6 @@ import { detectCli } from './detectCli.js';
 // ============================================================================
 // Types
 // ============================================================================
-
-/**
- * Permission mode for Gemini file operations and command execution.
- */
-export type GeminiPermissionMode = 'default' | 'plan' | 'acceptEdits' | 'bypassPermissions';
 
 /**
  * Options for executing a Gemini CLI command.
@@ -59,7 +55,7 @@ export interface ExecuteOptions {
   /** Gemini model to use */
   model?: string;
   /** Permission mode for file operations and command execution */
-  permissionMode?: GeminiPermissionMode;
+  permissionMode?: PermissionMode;
   /** Automatically extract and parse JSON from the response */
   json?: boolean;
   /** Callback invoked with raw stdout data */
@@ -106,7 +102,7 @@ export interface ExecuteResult<T = string> {
  * @throws {Error} If Gemini CLI is not found
  */
 export async function execute<T = string>(options: ExecuteOptions): Promise<ExecuteResult<T>> {
-  const cliPath = detectCli();
+  const cliPath = await detectCli();
   if (!cliPath) {
     throw new Error('Gemini CLI not found. Set GEMINI_CLI_PATH or install Gemini CLI.');
   }
