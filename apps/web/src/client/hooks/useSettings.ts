@@ -17,6 +17,8 @@ interface AgentCapabilities {
   supportsSlashCommands: boolean;
   supportsModels: boolean;
   models: ModelInfo[];
+  installed: boolean;
+  cliPath?: string;
 }
 
 interface Settings {

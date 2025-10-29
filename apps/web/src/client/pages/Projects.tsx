@@ -15,8 +15,10 @@ import {
 import { FolderOpen, Plus, Calendar, FolderGit2, Info } from "lucide-react";
 import { useState } from "react";
 import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
+import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
 
 export default function Projects() {
+  useDocumentTitle("Projects | Agent Workflows");
   const navigate = useNavigate();
   const { data: projects, isLoading } = useProjectsWithSessions();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);

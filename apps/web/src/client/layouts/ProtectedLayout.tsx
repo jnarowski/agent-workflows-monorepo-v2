@@ -37,15 +37,15 @@ function ProtectedLayout() {
       // Mark as initiated immediately to prevent duplicate calls
       syncInitiatedRef.current = true;
 
-      syncProjects.mutate(undefined, {
-        onSuccess: () => {
-          markProjectsSynced(user?.id);
-        },
-        onError: () => {
-          // Reset ref on error so user can retry
-          syncInitiatedRef.current = false;
-        },
-      });
+      // syncProjects.mutate(undefined, {
+      //   onSuccess: () => {
+      //     markProjectsSynced(user?.id);
+      //   },
+      //   onError: () => {
+      //     // Reset ref on error so user can retry
+      //     syncInitiatedRef.current = false;
+      //   },
+      // });
     } else {
       if (import.meta.env.DEV) {
         console.log("Skipping project sync - recently synced");

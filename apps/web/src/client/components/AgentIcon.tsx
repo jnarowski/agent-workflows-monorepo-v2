@@ -1,7 +1,9 @@
 import type { AgentType } from "@/shared/types/agent.types";
 import { cn } from "@/client/lib/utils";
+import { useTheme } from "next-themes";
 import claudeSvg from "@/client/assets/icons/agents/claude.svg";
 import codexSvg from "@/client/assets/icons/agents/codex.svg";
+import codexWhiteSvg from "@/client/assets/icons/agents/codex-white.svg";
 import geminiSvg from "@/client/assets/icons/agents/gemini.svg";
 import cursorSvg from "@/client/assets/icons/agents/cursor.svg";
 
@@ -14,9 +16,25 @@ const ClaudeIcon = ({ className }: { className?: string }) => (
   <img src={claudeSvg} alt="Claude" className={className} />
 );
 
-const CodexIcon = ({ className }: { className?: string }) => (
-  <img src={codexSvg} alt="Codex" className={className} />
-);
+const CodexIcon = ({ className }: { className?: string }) => {
+  const { resolvedTheme, theme } = useTheme();
+
+  // Use resolvedTheme if available, fallback to checking theme or system preference
+  const isDark =
+    resolvedTheme === "dark" ||
+    theme === "dark" ||
+    (theme === "system" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+  // Using CSS filter to invert colors: brightness(0) makes it black, invert(1) makes it white
+  return (
+    <img
+      src={isDark ? codexWhiteSvg : codexSvg}
+      alt="Codex"
+      className={className}
+    />
+  );
+};
 
 const GeminiIcon = ({ className }: { className?: string }) => (
   <img src={geminiSvg} alt="Gemini" className={className} />

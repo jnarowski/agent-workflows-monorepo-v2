@@ -17,12 +17,27 @@ import type { ToolResultBlock } from "@/shared/types/message.types";
 import { sessionKeys } from "./hooks/useAgentSessions";
 import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import { generateUUID } from "@/client/lib/utils";
+import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
+import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 
 export default function ProjectSession() {
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams<{ sessionId: string }>();
   const { projectId } = useActiveProject();
+
+  // Get project and session names for title
+  const { data: projects } = useProjectsWithSessions();
+  const project = projects?.find((p) => p.id === projectId);
+  const currentSession = useSessionStore((s) => s.session);
+
+  useDocumentTitle(
+    project?.name && currentSession?.name
+      ? `${currentSession.name} - ${project.name} | Agent Workflows`
+      : project?.name
+      ? `Chat - ${project.name} | Agent Workflows`
+      : undefined
+  );
   const setActiveSession = useNavigationStore((s) => s.setActiveSession);
   const initialMessageSentRef = useRef(false);
   const loadSessionInitiatedRef = useRef(false);

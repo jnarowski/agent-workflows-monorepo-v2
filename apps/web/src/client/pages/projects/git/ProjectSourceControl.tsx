@@ -27,6 +27,7 @@ import {
 import { useProject } from "../hooks/useProjects";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
 
 export default function ProjectSourceControl() {
   const { id: projectId } = useParams<{ id: string }>();
@@ -34,6 +35,8 @@ export default function ProjectSourceControl() {
 
   // Fetch project to get path
   const { data: project } = useProject(projectId!);
+
+  useDocumentTitle(project?.name ? `Source Control - ${project.name} | Agent Workflows` : undefined);
   const projectPath = project?.path;
 
   // Fetch git status and branches

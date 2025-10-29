@@ -15,12 +15,19 @@ import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import { generateUUID } from "@/client/lib/utils";
 import { AgentSelector } from "@/client/components/AgentSelector";
 import { useSettings } from "@/client/hooks/useSettings";
+import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
+import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 
 export default function NewSession() {
   const navigate = useNavigate();
   const { projectId } = useActiveProject();
   const queryClient = useQueryClient();
   const chatInputRef = useRef<ChatPromptInputHandle>(null);
+
+  // Get project name for title
+  const { data: projects } = useProjectsWithSessions();
+  const project = projects?.find((p) => p.id === projectId);
+  useDocumentTitle(project?.name ? `New Session - ${project.name} | Agent Workflows` : undefined);
 
   // Get agent from store
   const agent = useSessionStore((s) => s.form.agent);
