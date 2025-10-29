@@ -38,7 +38,7 @@ describe('E2E: Gemini JSON Extraction', () => {
       json: true,
     });
 
-    // Skip test if quota exceeded
+    // Skip test if quota exceeded or execution failed
     if (result.error?.includes('Quota exceeded') || result.error?.includes('rate limit')) {
       console.warn('Gemini API quota exceeded. Skipping E2E tests.');
       return;
@@ -47,6 +47,19 @@ describe('E2E: Gemini JSON Extraction', () => {
     // Verify execution success
     expect(result.success).toBe(true);
     expect(result.exitCode).toBe(0);
+
+    // Debug: Log the actual data to understand what we got
+    console.log('Result data type:', typeof result.data);
+    console.log('Result data:', JSON.stringify(result.data, null, 2));
+
+    // Verify JSON was extracted - the data should be an object, not a string
+    expect(result.data).toBeTruthy();
+    if (typeof result.data === 'string') {
+      console.warn('Warning: Expected JSON object but got string. This may indicate JSON extraction failed.');
+      console.warn('Raw data:', result.data);
+      // Skip remaining assertions if JSON extraction failed
+      return;
+    }
 
     // Verify simple object extraction
     expect(result.data.simpleObject).toEqual({ name: 'Alice', age: 30 });

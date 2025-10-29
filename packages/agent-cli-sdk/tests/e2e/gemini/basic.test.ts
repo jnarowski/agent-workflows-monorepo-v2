@@ -6,7 +6,6 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { v4 as uuidv4 } from 'uuid';
 import { execute } from '../../../src/gemini/execute.js';
 import { detectCli } from '../../../src/gemini/detectCli.js';
 
@@ -23,7 +22,6 @@ describe('E2E: Basic Gemini CLI Execution', () => {
     const stdoutChunks: string[] = [];
     const stderrChunks: string[] = [];
     let closeExitCode: number | undefined;
-    let errorReceived: Error | undefined;
 
     // Single comprehensive test with all features
     const result = await execute({
@@ -41,9 +39,6 @@ describe('E2E: Basic Gemini CLI Execution', () => {
       onStderr: (chunk) => {
         stderrChunks.push(chunk);
         expect(typeof chunk).toBe('string');
-      },
-      onError: (error) => {
-        errorReceived = error;
       },
       onClose: (exitCode) => {
         closeExitCode = exitCode;
