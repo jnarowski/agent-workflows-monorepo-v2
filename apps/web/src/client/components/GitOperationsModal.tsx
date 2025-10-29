@@ -4,9 +4,8 @@
  */
 
 import { useState } from "react";
+import { BaseDialog } from "@/client/components/BaseDialog";
 import {
-  Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
@@ -226,14 +225,17 @@ export function GitOperationsModal({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Git Operations</DialogTitle>
-            <DialogDescription>
-              Quick access to common git operations
-            </DialogDescription>
-          </DialogHeader>
+      <BaseDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        contentProps={{ className: "sm:max-w-md" }}
+      >
+        <DialogHeader>
+          <DialogTitle>Git Operations</DialogTitle>
+          <DialogDescription>
+            Quick access to common git operations
+          </DialogDescription>
+        </DialogHeader>
 
           <div className="space-y-6 py-4">
             {/* Branch Operations */}
@@ -434,8 +436,7 @@ export function GitOperationsModal({
               </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+      </BaseDialog>
 
       {/* Create Branch Dialog */}
       <CreateBranchDialog

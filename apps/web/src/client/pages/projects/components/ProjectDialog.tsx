@@ -3,9 +3,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCreateProject, useUpdateProject } from "@/client/pages/projects/hooks/useProjects";
+import { BaseDialog } from "@/client/components/BaseDialog";
 import {
-  Dialog,
-  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -130,22 +129,25 @@ export function ProjectDialog({
   const mutationError = createMutation.error || updateMutation.error;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>
-            {isEditMode ? "Edit Project" : "Create Project"}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditMode
-              ? "Update your project information."
-              : "Enter the full path to your project folder to create a new project."}
-          </DialogDescription>
-        </DialogHeader>
+    <BaseDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      contentProps={{ className: "sm:max-w-[500px]" }}
+    >
+      <DialogHeader>
+        <DialogTitle>
+          {isEditMode ? "Edit Project" : "Create Project"}
+        </DialogTitle>
+        <DialogDescription>
+          {isEditMode
+            ? "Update your project information."
+            : "Enter the full path to your project folder to create a new project."}
+        </DialogDescription>
+      </DialogHeader>
 
-        <ErrorAlert error={mutationError?.message} className="mx-6 mt-4" />
+      <ErrorAlert error={mutationError?.message} className="mx-6 mt-4" />
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="path">Project Folder Path</Label>
             <Input
@@ -197,7 +199,6 @@ export function ProjectDialog({
             </LoadingButton>
           </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+    </BaseDialog>
   );
 }
