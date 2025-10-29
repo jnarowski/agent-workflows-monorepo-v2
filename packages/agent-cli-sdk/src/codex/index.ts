@@ -12,4 +12,4 @@ export { execute } from './execute.js';
 export { loadSession } from './loadSession.js';
 export { detectCli } from './detectCli.js';
 export type * from './types.js';
-export type { ExecuteOptions, ExecuteResult, CodexPermissionMode, OnEventData, OnStdoutData } from './execute.js';
+export type { ExecuteOptions, ExecuteResult, OnEventData, OnStdoutData } from './execute.js';

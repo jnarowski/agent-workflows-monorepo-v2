@@ -13,6 +13,7 @@ This is a **Turborepo monorepo** for agent workflow tools. The `web` app is a fu
   - Client imports: `@/client/*` (components, hooks, pages, contexts, etc.)
   - Server imports: `@/server/*` (routes, services, schemas, plugins, etc.)
   - Shared imports: `@/shared/*` (types, utilities, Prisma client)
+- **When creating modals, use `BaseDialog`** instead of raw `Dialog` + `DialogContent`
 
 ### useEffect Dependency Rules
 

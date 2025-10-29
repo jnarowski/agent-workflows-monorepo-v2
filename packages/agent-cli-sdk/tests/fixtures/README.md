@@ -5,7 +5,7 @@ This directory contains test fixtures extracted from real Claude Code conversati
 ## Prompt
 
 Write a tool to load all tests/fixtures/claude/full/\* into memory and then create individual fixtures like
-@packages/agent-cli-sdk-two/tests/fixtures/claude/exit-plan-mode.jsonl and @packages/agent-cli-sdk-two/tests/fixtures/claude/tool-questions.jsonl for each unique type of use-case?
+@packages/agent-cli-sdk/tests/fixtures/claude/exit-plan-mode.jsonl and @packages/agent-cli-sdk/tests/fixtures/claude/tool-questions.jsonl for each unique type of use-case?
 if there are different ways of using bash for instance, you could do tool-bash, tool-bash-array etc the goal here is to have simple samples for all types of behaviors found in claude code, tool usage etc
 
 ## Directory Structure

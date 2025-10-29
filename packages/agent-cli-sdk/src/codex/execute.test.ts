@@ -118,7 +118,7 @@ function expectSpawnCalledWith(expectedArgs: string[], expectedTimeout?: number)
 describe('execute', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(detectCliModule, 'detectCli').mockReturnValue('/usr/local/bin/codex');
+    vi.spyOn(detectCliModule, 'detectCli').mockResolvedValue('/usr/local/bin/codex');
   });
 
   it('should execute a simple command and parse messages', async () => {
@@ -487,7 +487,7 @@ describe('execute', () => {
   });
 
   it('should throw error if CLI not found', async () => {
-    vi.spyOn(detectCliModule, 'detectCli').mockReturnValue(null);
+    vi.spyOn(detectCliModule, 'detectCli').mockResolvedValue(null);
 
     await expect(execute({ prompt: 'test' })).rejects.toThrow(
       'Codex CLI not found'

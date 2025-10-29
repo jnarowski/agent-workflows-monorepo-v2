@@ -30,11 +30,11 @@ export async function spawnProcess(
 
   // Verbose logging
   if (options.verbose) {
-    console.log('[agent-cli-sdk-two:spawn] Spawning process');
-    console.log('[agent-cli-sdk-two:spawn] Command:', command);
-    console.log('[agent-cli-sdk-two:spawn] Args:', options.args);
-    console.log('[agent-cli-sdk-two:spawn] CWD:', options.cwd || process.cwd());
-    console.log('[agent-cli-sdk-two:spawn] Timeout:', options.timeout ? `${options.timeout}ms` : 'none');
+    console.log('[agent-cli-sdk:spawn] Spawning process');
+    console.log('[agent-cli-sdk:spawn] Command:', command);
+    console.log('[agent-cli-sdk:spawn] Args:', options.args);
+    console.log('[agent-cli-sdk:spawn] CWD:', options.cwd || process.cwd());
+    console.log('[agent-cli-sdk:spawn] Timeout:', options.timeout ? `${options.timeout}ms` : 'none');
   }
 
   return new Promise((resolve, reject) => {
@@ -82,9 +82,9 @@ export async function spawnProcess(
       };
 
       if (options.verbose) {
-        console.log('[agent-cli-sdk-two:spawn] Process completed');
-        console.log('[agent-cli-sdk-two:spawn] Exit code:', result.exitCode);
-        console.log('[agent-cli-sdk-two:spawn] Duration:', `${result.duration}ms`);
+        console.log('[agent-cli-sdk:spawn] Process completed');
+        console.log('[agent-cli-sdk:spawn] Exit code:', result.exitCode);
+        console.log('[agent-cli-sdk:spawn] Duration:', `${result.duration}ms`);
       }
 
       options.onClose?.(exitCode);

@@ -5,66 +5,116 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2025-01-XX
+## [1.0.0] - 2025-01-29
+
+### Breaking Changes
+
+- **Package name:** Standardized to `@repo/agent-cli-sdk` (removed `-two` suffix from all references)
+- **Permission types:** Consolidated to single `PermissionMode` type
+  - Removed `ClaudePermissionMode`, `CodexPermissionMode`, `GeminiPermissionMode`
+  - Use `PermissionMode` directly everywhere (no backwards compatibility aliases)
+- **detectCli():** All detection functions are now async and must use `await`
+  - Changed: `detectCli()` → `async detectCli()`
+  - Affects: `detectClaudeCli()`, `detectCodexCli()`, `detectGeminiCli()`
+- **loadSession():** Gemini now returns `[]` instead of throwing on missing session (consistent with Claude/Codex)
 
 ### Added
 
-- **Core API**: Unified interface for AI CLI tools with `execute()` and `loadMessages()` functions
-- **Claude Support**: Full implementation for Claude Code CLI integration
+- **Utility functions** for common patterns:
+  - `createLineBuffer()` - Handle streaming JSONL with line buffering
+  - `detectCliGeneric()` - Generic CLI detection pattern
+  - `permissionModeToFlags()` - Convert permission modes to CLI flags
+  - `workingDirToFlags()` - Convert working directory to CLI flags
+  - `extractSessionIdFromEvents()` - Extract session IDs from event arrays
+- **Type definitions:**
+  - `BaseExecuteOptions` - Documents common execute options pattern
+  - `BaseExecuteCallbacks` - Documents common callback pattern
+  - Exported from main index for public API
+- **Codex Support**: Full implementation for OpenAI Codex CLI integration
   - Session loading and parsing from JSONL files
   - Real-time command execution with callbacks
-  - Automatic CLI detection with fallback to environment variables
-- **Type Safety**: Complete TypeScript definitions with strict typing
-  - `UnifiedMessage` format for cross-tool compatibility
-  - Comprehensive content block types (text, thinking, tool_use, tool_result, slash_command)
-  - Generic type support for JSON extraction
-- **Session Management**: Load and parse historical Claude sessions
-  - Automatic timestamp sorting
-  - Message filtering and processing
-  - Support for slash commands and special content blocks
-- **JSON Extraction**: Smart JSON parsing from AI responses
-  - Multiple extraction strategies (direct parse, code blocks, regex)
-  - Optional Zod schema validation
-  - Generic type support for type-safe extraction
-- **Execution Features**:
-  - Real-time event streaming with callbacks
-  - Permission modes (default, plan, acceptEdits, bypassPermissions)
-  - Timeout support
-  - Verbose logging mode
-  - Session resumption and continuation
-  - Model selection
-  - Tool usage restrictions
-  - Image attachment support
-- **Token Usage Tracking**: Detailed usage statistics including cache tokens
-- **Cross-platform Support**: Works on macOS, Linux, and Windows
-- **Comprehensive Documentation**:
-  - Full API reference with JSDoc comments
-  - Usage examples for all major features
-  - Troubleshooting guide
-  - Development instructions
+  - Automatic CLI detection
+  - Unified message format transformation
+- **Comprehensive documentation:**
+  - Architecture section in README explaining design principles
+  - Updated CHANGELOG to track version history
+  - Documented all utility functions with JSDoc
+
+### Changed
+
+- **Gemini status:** Marked as experimental (70% complete) instead of planned
+- **Error handling:** Standardized across all tools
+  - All `loadSession()` functions return `[]` on missing session files
+  - Only throw on actual errors (corrupt data, permissions, etc.)
+- **CLI detection:** All detection functions now use shared `detectCliGeneric()` utility
+  - Reduced code duplication from ~50 lines per tool to ~20 lines
+  - Consistent detection strategy across all tools
+
+### Fixed
+
+- **Async/await consistency:** Fixed `getCapabilities()` awaiting non-async `detectCli()` functions
+- **Line buffering edge cases:** Improved handling of incomplete lines in streaming output
+- **Session loading:** Gemini no longer throws on missing session files
+- **Package naming:** Fixed all references from `@repo/agent-cli-sdk-two` to `@repo/agent-cli-sdk`
 
 ### Technical Details
 
-- **Node.js 22+** required
-- **Dependencies**:
-  - `boxen` (formatted output)
-  - `chalk` (colored output)
-  - `cross-spawn` (cross-platform process spawning)
-- **Peer Dependencies**:
-  - `zod` (optional, for schema validation)
-- **Build System**: bunchee for ESM output
-- **Testing**: Vitest with unit and E2E tests
-- **Package Size**: ~56KB
+**Code Reduction:**
+- Removed ~150-200 lines of duplicated code
+- Extracted 4 utility functions with comprehensive test coverage
+- Maintained tool-specific logic for clarity and readability
 
-### Known Limitations
+**Test Coverage:**
+- Added 69 new tests for utility functions
+- All 281 tests passing (unit + integration + E2E)
+- Full type-check and lint compliance
 
-- Claude Code CLI support only (Codex, Gemini, Cursor planned for future releases)
-- Node.js 22.0.0 or higher required
-- Automatic CLI detection works best on macOS and Linux
+**Philosophy:**
+- Medium abstraction bar: Only extract when duplicated 2+ times AND 20+ lines
+- Functional approach: Pure utility functions, no wrappers or base classes
+- Tool-specific clarity: Each tool maintains its own execute/parse logic
+
+**Provider Support:**
+- Claude Code: Production ready ✅
+- OpenAI Codex: Production ready ✅
+- Google Gemini: Experimental (70%) 🟡
+- Cursor AI: Planned ❌
 
 ### Migration Notes
 
-This is the initial 1.0.0 release. Future breaking changes will be documented here.
+**Breaking changes from 0.x to 1.0:**
+
+1. **Update imports:**
+   ```typescript
+   // Before (0.x)
+   import type { ClaudePermissionMode } from '@repo/agent-cli-sdk-two';
+
+   // After (1.0)
+   import type { PermissionMode } from '@repo/agent-cli-sdk';
+   ```
+
+2. **Async detection functions:**
+   ```typescript
+   // Before (0.x)
+   const path = detectClaudeCli();
+
+   // After (1.0)
+   const path = await detectClaudeCli();
+   ```
+
+3. **Gemini error handling:**
+   ```typescript
+   // Before (0.x) - would throw
+   try {
+     const messages = loadGeminiSession({ sessionId: 'missing' });
+   } catch (error) {
+     // Handle missing session
+   }
+
+   // After (1.0) - returns []
+   const messages = loadGeminiSession({ sessionId: 'missing' });
+   // messages === []
+   ```
 
 ---
 

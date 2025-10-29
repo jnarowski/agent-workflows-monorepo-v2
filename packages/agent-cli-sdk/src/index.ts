@@ -1,5 +1,5 @@
 /**
- * @repo/agent-cli-sdk-two
+ * @repo/agent-cli-sdk
  *
  * TypeScript SDK for orchestrating AI-powered CLI tools
  */
@@ -212,13 +212,16 @@ export {
   type ModelInfo,
 } from './utils/getCapabilities';
 
+// Re-export permission types
+export type { PermissionMode } from './types/permissions.js';
+export type { BaseExecuteOptions, BaseExecuteCallbacks } from './types/execute.js';
+
 // Re-export Claude execute types
 export type {
   ExecuteOptions as ClaudeExecuteOptions,
   ExecuteResult as ClaudeExecuteResult,
   OnEventData as ClaudeOnEventData,
   OnStdoutData as ClaudeOnStdoutData,
-  ClaudePermissionMode,
 } from './claude/execute';
 
 // Re-export Codex execute types
@@ -227,12 +230,10 @@ export type {
   ExecuteResult as CodexExecuteResult,
   OnEventData as CodexOnEventData,
   OnStdoutData as CodexOnStdoutData,
-  CodexPermissionMode,
 } from './codex/execute';
 
 // Re-export Gemini execute types
 export type {
   ExecuteOptions as GeminiExecuteOptions,
   ExecuteResult as GeminiExecuteResult,
-  GeminiPermissionMode,
 } from './gemini/execute';

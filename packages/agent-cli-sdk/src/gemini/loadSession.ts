@@ -30,8 +30,8 @@ export interface LoadGeminiSessionOptions {
  * Load Gemini session from disk and transform to unified format.
  *
  * @param options - Load options (projectPath, sessionId)
- * @returns Array of UnifiedMessage in Claude-compatible format
- * @throws Error if no session found or session file is invalid
+ * @returns Array of UnifiedMessage in Claude-compatible format, or empty array if session not found
+ * @throws Error if session file is corrupt or invalid JSON
  */
 export function loadSession(options: LoadGeminiSessionOptions = {}): UnifiedMessage[] {
   const projectPath = options.projectPath || process.cwd();
@@ -44,11 +44,22 @@ export function loadSession(options: LoadGeminiSessionOptions = {}): UnifiedMess
     : findMostRecentSession(sessionDir);
 
   if (!sessionFile) {
-    throw new Error(`No Gemini session found for project: ${projectPath}`);
+    return []; // Consistent with Claude/Codex: return empty array when no session found
   }
 
   // Read and parse session JSON
-  const sessionData = JSON.parse(fs.readFileSync(sessionFile, 'utf-8')) as GeminiSession;
+  let content: string;
+  try {
+    content = fs.readFileSync(sessionFile, 'utf-8');
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
+      return [];
+    }
+    throw error;
+  }
+
+  // Parsing logic stays outside try-catch - if data is corrupt, let it throw
+  const sessionData = JSON.parse(content) as GeminiSession;
 
   // Transform each Gemini message to Claude format
   return sessionData.messages.map((msg) => parse(msg));
