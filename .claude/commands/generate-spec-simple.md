@@ -20,6 +20,7 @@ Generate a well-structured implementation spec and save it to `.agent/specs/[num
 - If feature name: Auto-increment to next spec number
 - Normalize feature name (lowercase, hyphenated) for the filename
 - Replace ALL `<placeholders>` with specific details relevant to that section
+- **Create detailed step-by-step tasks** grouped logically (e.g., by phase, component, or feature area)
 - Order tasks by dependencies (foundation → core → integration)
 - Include specific file paths, not generic names
 - Make all commands copy-pasteable with expected outputs
@@ -153,6 +154,40 @@ So that [benefit/value]
 1. `[filepath]` - [what changes]
 2. `[filepath]` - [what changes]
 [... list all modified files]
+
+## Step by Step Tasks
+
+**IMPORTANT: Execute every step in order, top to bottom**
+
+### Task Group 1: [Task Group Name]
+
+<!-- prettier-ignore -->
+- [ ] [task-id] [Specific task description]
+  - [Implementation detail or note]
+  - File: `[specific filepath]`
+  - [Any commands to run]
+- [ ] [task-id] [Next specific task]
+  - [Implementation detail or note]
+  - File: `[specific filepath]`
+  - [Any commands to run]
+
+#### Completion Notes
+
+(This will be filled in by the agent implementing this task group)
+
+### Task Group 2: [Next Task Group Name]
+
+<!-- prettier-ignore -->
+- [ ] [task-id] [Specific task description]
+  - [Implementation detail or note]
+  - File: `[specific filepath]`
+  - [Any commands to run]
+
+#### Completion Notes
+
+(This will be filled in by the agent implementing this task group)
+
+[Continue with all task groups needed, grouped logically by phase or component]
 
 ## Testing Strategy
 
@@ -314,6 +349,22 @@ When $format is "json", generate a JSON file with this structure (output raw JSO
     "new": [{ "path": "[filepath]", "purpose": "[purpose]" }],
     "modified": [{ "path": "[filepath]", "changes": "[what changes]" }]
   },
+  "stepByStepTasks": [
+    {
+      "groupName": "[Task Group Name]",
+      "tasks": [
+        {
+          "id": "[task-id]",
+          "description": "[Specific task description]",
+          "details": "[Implementation detail or note]",
+          "file": "[specific filepath]",
+          "commands": "[Any commands to run]",
+          "completed": false
+        }
+      ],
+      "completionNotes": ""
+    }
+  ],
   "testingStrategy": {
     "unitTests": [{ "file": "[test-file.test.ts]", "description": "[what it tests]" }],
     "integrationTests": "[Description]",
