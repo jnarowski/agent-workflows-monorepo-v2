@@ -64,11 +64,7 @@ export interface ErrorEvent {
   message: string;
 }
 
-export type CodexItem =
-  | ReasoningItem
-  | AgentMessageItem
-  | CommandExecutionItem
-  | FileChangeItem;
+export type CodexItem = ReasoningItem | AgentMessageItem | CommandExecutionItem | FileChangeItem;
 
 export interface ReasoningItem {
   id: string;
@@ -202,4 +198,3 @@ export interface TurnContextEvent {
     summary: string;
   };
 }
-

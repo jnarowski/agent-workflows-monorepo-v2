@@ -18,15 +18,15 @@ import { detectCliGeneric } from '../utils/cliDetection.js';
  * ```
  */
 export async function detectCli(): Promise<string | null> {
-	return detectCliGeneric({
-		envVar: 'CODEX_CLI_PATH',
-		commandName: 'codex',
-		commonPaths: [
-			'/opt/homebrew/bin/codex', // Homebrew on Apple Silicon
-			'/usr/local/bin/codex', // Homebrew on Intel, or standard install
-			'/usr/bin/codex',
-			`${process.env.HOME}/.local/bin/codex`, // User local install
-			`${process.env.HOME}/bin/codex`,
-		],
-	});
+  return detectCliGeneric({
+    envVar: 'CODEX_CLI_PATH',
+    commandName: 'codex',
+    commonPaths: [
+      '/opt/homebrew/bin/codex', // Homebrew on Apple Silicon
+      '/usr/local/bin/codex', // Homebrew on Intel, or standard install
+      '/usr/bin/codex',
+      `${process.env.HOME}/.local/bin/codex`, // User local install
+      `${process.env.HOME}/bin/codex`,
+    ],
+  });
 }

@@ -18,35 +18,35 @@
  * buffer.flush();              // Emit any remaining data
  */
 export function createLineBuffer(onLine: (line: string) => void) {
-	let buffer = '';
+  let buffer = '';
 
-	return {
-		/**
-		 * Add a chunk of streaming data
-		 * Emits complete lines immediately, buffers incomplete lines
-		 */
-		add(chunk: string): void {
-			buffer += chunk;
-			const lines = buffer.split('\n');
-			buffer = lines.pop() || ''; // Keep last incomplete line
+  return {
+    /**
+     * Add a chunk of streaming data
+     * Emits complete lines immediately, buffers incomplete lines
+     */
+    add(chunk: string): void {
+      buffer += chunk;
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || ''; // Keep last incomplete line
 
-			for (const line of lines) {
-				if (line.trim()) {
-					// Skip empty lines
-					onLine(line);
-				}
-			}
-		},
+      for (const line of lines) {
+        if (line.trim()) {
+          // Skip empty lines
+          onLine(line);
+        }
+      }
+    },
 
-		/**
-		 * Flush any remaining buffered data
-		 * Call this when the stream ends to emit the final incomplete line
-		 */
-		flush(): void {
-			if (buffer.trim()) {
-				onLine(buffer);
-				buffer = '';
-			}
-		},
-	};
+    /**
+     * Flush any remaining buffered data
+     * Call this when the stream ends to emit the final incomplete line
+     */
+    flush(): void {
+      if (buffer.trim()) {
+        onLine(buffer);
+        buffer = '';
+      }
+    },
+  };
 }

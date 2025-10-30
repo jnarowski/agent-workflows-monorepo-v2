@@ -375,7 +375,9 @@ describe('parse - Persisted Format (response_item)', () => {
       const firstContent = message?.content[0];
       expect(firstContent).toBeDefined();
       expect(typeof firstContent !== 'string' && firstContent?.type).toBe('thinking');
-      expect((firstContent as UnifiedThinkingBlock).thinking).toBe('**Assessing environment and read-only constraints**');
+      expect((firstContent as UnifiedThinkingBlock).thinking).toBe(
+        '**Assessing environment and read-only constraints**'
+      );
     });
   });
 
@@ -450,7 +452,9 @@ describe('parse - Persisted Format (event_msg)', () => {
       const firstContent = message?.content[0];
       expect(firstContent).toBeDefined();
       expect(typeof firstContent !== 'string' && firstContent?.type).toBe('thinking');
-      expect((firstContent as UnifiedThinkingBlock).thinking).toBe('**Assessing environment and read-only constraints**');
+      expect((firstContent as UnifiedThinkingBlock).thinking).toBe(
+        '**Assessing environment and read-only constraints**'
+      );
     });
   });
 

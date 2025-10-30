@@ -47,7 +47,7 @@ describe('spawnProcess', () => {
     await expect(
       spawnProcess('nonexistent-command-xyz', {
         args: [],
-      }),
+      })
     ).rejects.toThrow();
   });
 
@@ -64,7 +64,7 @@ describe('spawnProcess', () => {
       spawnProcess('node', {
         args: ['-e', 'setTimeout(() => {}, 10000)'],
         timeout: 100,
-      }),
+      })
     ).rejects.toThrow('timeout');
   }, 500);
 

@@ -36,10 +36,7 @@ export interface AgentCapabilities {
 /**
  * Map of static agent capabilities by agent type (without install detection).
  */
-const AGENT_CAPABILITIES_MAP: Record<
-  AgentType,
-  Omit<AgentCapabilities, 'installed' | 'cliPath'>
-> = {
+const AGENT_CAPABILITIES_MAP: Record<AgentType, Omit<AgentCapabilities, 'installed' | 'cliPath'>> = {
   claude: {
     supportsSlashCommands: true,
     supportsModels: true,
@@ -96,9 +93,7 @@ const AGENT_CAPABILITIES_MAP: Record<
  * }
  * ```
  */
-export async function getCapabilities(
-  agentName: AgentType,
-): Promise<AgentCapabilities> {
+export async function getCapabilities(agentName: AgentType): Promise<AgentCapabilities> {
   const staticCapabilities = AGENT_CAPABILITIES_MAP[agentName];
 
   // Detect CLI installation based on agent type

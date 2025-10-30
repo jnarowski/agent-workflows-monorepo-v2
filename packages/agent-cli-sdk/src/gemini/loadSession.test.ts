@@ -20,7 +20,7 @@ describe('loadSession', () => {
     expect(messages[0]?.role).toBe('user');
 
     // Find assistant message
-    const assistantMsg = messages.find(m => m.role === 'assistant');
+    const assistantMsg = messages.find((m) => m.role === 'assistant');
     expect(assistantMsg).toBeDefined();
   });
 

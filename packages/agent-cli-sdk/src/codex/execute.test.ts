@@ -122,10 +122,7 @@ describe('execute', () => {
   });
 
   it('should execute a simple command and parse messages', async () => {
-    const output = createCodexOutput([
-      createThreadStarted('test-session-123'),
-      createAgentMessage('Hello'),
-    ]);
+    const output = createCodexOutput([createThreadStarted('test-session-123'), createAgentMessage('Hello')]);
 
     mockSpawnWithOutput(output);
 
@@ -147,10 +144,7 @@ describe('execute', () => {
   });
 
   it('should call onEvent callback for each parsed event', async () => {
-    const output = createCodexOutput([
-      createThreadStarted('test-session'),
-      createAgentMessage('Response'),
-    ]);
+    const output = createCodexOutput([createThreadStarted('test-session'), createAgentMessage('Response')]);
 
     mockSpawnWithOutput(output);
 
@@ -209,15 +203,7 @@ describe('execute', () => {
         sessionId: 'custom-session',
       });
 
-      expectSpawnCalledWith([
-        'exec',
-        '--json',
-        '-s',
-        'workspace-write',
-        'resume',
-        'custom-session',
-        'test',
-      ]);
+      expectSpawnCalledWith(['exec', '--json', '-s', 'workspace-write', 'resume', 'custom-session', 'test']);
     });
 
     it('should pass permissionMode "default" to CLI', async () => {
@@ -265,12 +251,7 @@ describe('execute', () => {
         permissionMode: 'bypassPermissions',
       });
 
-      expectSpawnCalledWith([
-        'exec',
-        '--json',
-        '--dangerously-bypass-approvals-and-sandbox',
-        'test',
-      ]);
+      expectSpawnCalledWith(['exec', '--json', '--dangerously-bypass-approvals-and-sandbox', 'test']);
     });
 
     it('should convert dangerouslySkipPermissions to bypass flag', async () => {
@@ -282,12 +263,7 @@ describe('execute', () => {
         dangerouslySkipPermissions: true,
       });
 
-      expectSpawnCalledWith([
-        'exec',
-        '--json',
-        '--dangerously-bypass-approvals-and-sandbox',
-        'test',
-      ]);
+      expectSpawnCalledWith(['exec', '--json', '--dangerously-bypass-approvals-and-sandbox', 'test']);
     });
 
     it('should pass workingDir to CLI', async () => {
@@ -358,10 +334,7 @@ describe('execute', () => {
     });
 
     it('should return text when JSON extraction fails', async () => {
-      const output = createCodexOutput([
-        createThreadStarted('test'),
-        createAgentMessage('This is not valid JSON'),
-      ]);
+      const output = createCodexOutput([createThreadStarted('test'), createAgentMessage('This is not valid JSON')]);
 
       mockSpawnWithOutput(output);
 
@@ -395,10 +368,7 @@ describe('execute', () => {
   });
 
   it('should call onStdout callback with accumulated data', async () => {
-    const output = createCodexOutput([
-      createThreadStarted('test'),
-      createAgentMessage('Response'),
-    ]);
+    const output = createCodexOutput([createThreadStarted('test'), createAgentMessage('Response')]);
 
     mockSpawnWithOutput(output);
 
@@ -443,10 +413,7 @@ describe('execute', () => {
   });
 
   it('should return text output by default (json: false)', async () => {
-    const output = createCodexOutput([
-      createThreadStarted('test'),
-      createAgentMessage('Plain text response'),
-    ]);
+    const output = createCodexOutput([createThreadStarted('test'), createAgentMessage('Plain text response')]);
 
     mockSpawnWithOutput(output);
 
@@ -473,10 +440,7 @@ describe('execute', () => {
 
   it('should call onStderr callback', async () => {
     const onStderr = vi.fn();
-    mockSpawnWithOutput(
-      createCodexOutput([createThreadStarted('test')]),
-      { stderr: 'Warning message' }
-    );
+    mockSpawnWithOutput(createCodexOutput([createThreadStarted('test')]), { stderr: 'Warning message' });
 
     await execute({
       prompt: 'test',
@@ -489,8 +453,6 @@ describe('execute', () => {
   it('should throw error if CLI not found', async () => {
     vi.spyOn(detectCliModule, 'detectCli').mockResolvedValue(null);
 
-    await expect(execute({ prompt: 'test' })).rejects.toThrow(
-      'Codex CLI not found'
-    );
+    await expect(execute({ prompt: 'test' })).rejects.toThrow('Codex CLI not found');
   });
 });

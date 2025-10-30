@@ -30,14 +30,14 @@ import path from 'node:path';
  * @returns Path to Gemini CLI executable, or null if not found
  */
 export async function detectCli(): Promise<string | null> {
-	return detectCliGeneric({
-		envVar: 'GEMINI_CLI_PATH',
-		commandName: 'gemini',
-		commonPaths: [
-			'/usr/local/bin/gemini',
-			// Note: Skipping glob pattern ~/.local/share/mise/installs/node/*/bin/gemini
-			// as detectCliGeneric doesn't support glob expansion
-			path.join(os.homedir(), '.npm-global', 'bin', 'gemini'),
-		],
-	});
+  return detectCliGeneric({
+    envVar: 'GEMINI_CLI_PATH',
+    commandName: 'gemini',
+    commonPaths: [
+      '/usr/local/bin/gemini',
+      // Note: Skipping glob pattern ~/.local/share/mise/installs/node/*/bin/gemini
+      // as detectCliGeneric doesn't support glob expansion
+      path.join(os.homedir(), '.npm-global', 'bin', 'gemini'),
+    ],
+  });
 }

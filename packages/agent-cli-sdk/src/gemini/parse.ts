@@ -130,10 +130,7 @@ function mapGeminiToolToClaude(geminiToolName: string): string {
 /**
  * Transform Gemini tool input to Claude tool input format
  */
-function transformToolInput(
-  geminiToolName: string,
-  geminiArgs: Record<string, unknown>
-): Record<string, unknown> {
+function transformToolInput(geminiToolName: string, geminiArgs: Record<string, unknown>): Record<string, unknown> {
   // Read file
   if (geminiToolName === 'read_file') {
     return {
