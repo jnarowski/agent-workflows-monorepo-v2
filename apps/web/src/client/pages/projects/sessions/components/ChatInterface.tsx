@@ -3,7 +3,6 @@
  * Displays conversation history with auto-scroll and WebSocket streaming support
  */
 
-import { useEffect, useRef } from "react";
 import { MessageCircle, AlertCircle, Loader2 } from "lucide-react";
 import { ChatSkeleton } from "./ChatSkeleton";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
@@ -11,6 +10,11 @@ import type { UIMessage } from "@/shared/types/message.types";
 import type { AgentType } from "@/shared/types/agent.types";
 import { MessageList } from "./session/MessageList";
 import { AgentLoadingIndicator } from "./AgentLoadingIndicator";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "@/client/components/ai-elements/conversation";
 
 interface ChatInterfaceProps {
   projectId: string;
@@ -38,30 +42,6 @@ export function ChatInterface({
   isStreaming = false,
   isLoadingHistory = false,
 }: ChatInterfaceProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const previousScrollHeight = useRef(0);
-
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    if (!containerRef.current || !messagesEndRef.current) return;
-
-    const container = containerRef.current;
-    const isNearBottom =
-      container.scrollHeight - container.scrollTop - container.clientHeight <
-      200;
-
-    // Only auto-scroll if user is already near the bottom
-    // This preserves manual scroll position
-    if (isNearBottom || previousScrollHeight.current === 0) {
-      messagesEndRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-      });
-    }
-
-    previousScrollHeight.current = container.scrollHeight;
-  }, [messages]);
 
   // Loading state
   if (isLoading) {
@@ -104,17 +84,18 @@ export function ChatInterface({
 
   // Messages list
   return (
-    <div
-      ref={containerRef}
-      className="h-full overflow-y-auto relative"
+    <Conversation
+      className="h-full"
       data-project-id={projectId}
       data-session-id={sessionId}
     >
-      <div className="chat-container max-w-4xl mx-auto px-4 py-8">
-        <MessageList messages={messages} />
-        <AgentLoadingIndicator isStreaming={isStreaming} />
-        <div ref={messagesEndRef} />
-      </div>
-    </div>
+      <ConversationContent>
+        <div className="chat-container max-w-4xl mx-auto">
+          <MessageList messages={messages} />
+          <AgentLoadingIndicator isStreaming={isStreaming} />
+        </div>
+      </ConversationContent>
+      <ConversationScrollButton />
+    </Conversation>
   );
 }

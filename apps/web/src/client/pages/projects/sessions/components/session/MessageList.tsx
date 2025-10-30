@@ -5,6 +5,7 @@
 
 import type { UIMessage } from "@/shared/types/message.types";
 import { MessageRenderer } from "./claude/MessageRenderer";
+import { DebugMessagePanel } from "./DebugMessagePanel";
 
 interface MessageListProps {
   messages: UIMessage[];
@@ -16,10 +17,15 @@ interface MessageListProps {
  */
 export function MessageList({ messages }: MessageListProps) {
   return (
-    <div className="space-y-2">
-      {messages.map((message) => (
-        <MessageRenderer key={message.id} message={message} />
-      ))}
-    </div>
+    <>
+      <div className="space-y-2">
+        {messages.map((message) => (
+          <MessageRenderer key={message.id} message={message} />
+        ))}
+      </div>
+
+      {/* Debug panel - only renders in development */}
+      <DebugMessagePanel messages={messages} />
+    </>
   );
 }
