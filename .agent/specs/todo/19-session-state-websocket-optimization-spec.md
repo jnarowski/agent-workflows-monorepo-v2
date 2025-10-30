@@ -149,7 +149,7 @@ No new files required.
 ### Task Group 1: Shared Types - Add SESSION_UPDATED Event Type
 
 <!-- prettier-ignore -->
-- [ ] Add SESSION_UPDATED constant to SessionEventTypes
+- [x] Add SESSION_UPDATED constant to SessionEventTypes
   - File: `apps/web/src/shared/websocket/types.ts`
   - Add to SessionEventTypes object:
     ```typescript
@@ -165,7 +165,7 @@ No new files required.
     } as const;
     ```
 
-- [ ] Add SessionUpdatedData interface
+- [x] Add SessionUpdatedData interface
   - File: `apps/web/src/shared/websocket/types.ts`
   - Add interface after existing data interfaces:
     ```typescript
@@ -179,7 +179,7 @@ No new files required.
     }
     ```
 
-- [ ] Add SESSION_UPDATED to SessionEvent discriminated union
+- [x] Add SESSION_UPDATED to SessionEvent discriminated union
   - File: `apps/web/src/shared/websocket/types.ts`
   - Add to SessionEvent type:
     ```typescript
@@ -193,12 +193,15 @@ No new files required.
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added `SESSION_UPDATED: 'session_updated'` to SessionEventTypes constant
+- Created `SessionUpdatedData` interface with all fields optional except `sessionId` to support partial updates
+- Added SESSION_UPDATED to SessionEvent discriminated union for exhaustive type checking
+- All changes follow existing Phoenix Channels pattern with consistent naming and structure
 
 ### Task Group 2: Backend - Broadcast session.updated Events After State Changes
 
 <!-- prettier-ignore -->
-- [ ] Broadcast session.updated when state changes to 'working'
+- [x] Broadcast session.updated when state changes to 'working'
   - Add after line 127 in handleSessionSendMessage()
   - File: `apps/web/src/server/websocket/handlers/session.handler.ts`
   - Import from shared types: `import { SessionEventTypes } from '@/shared/websocket';`
@@ -215,7 +218,7 @@ No new files required.
     });
     ```
 
-- [ ] Broadcast session.updated when state changes to 'idle'
+- [x] Broadcast session.updated when state changes to 'idle'
   - Add after line 202 in handleSessionSendMessage()
   - File: `apps/web/src/server/websocket/handlers/session.handler.ts`
   - Get updated session data from database if needed
@@ -232,7 +235,7 @@ No new files required.
     });
     ```
 
-- [ ] Broadcast session.updated when state changes to 'error'
+- [x] Broadcast session.updated when state changes to 'error'
   - Add after line 476 in handleExecutionFailure()
   - File: `apps/web/src/server/websocket/handlers/session.handler.ts`
   - Use broadcast utility:
@@ -250,12 +253,18 @@ No new files required.
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added `session.updated` broadcasts after all three state transitions (working, idle, error)
+- Added `session.updated` broadcast after session name generation (line 657-665)
+- Used existing `broadcast()` utility with `Channels.session(sessionId)` for proper channel-based routing
+- All broadcasts include minimal data: `sessionId`, `state`, `error_message`, `name`, and `updated_at` (ISO string)
+- Broadcasts occur immediately after database updates to ensure consistency
+- Error state broadcast includes the error message for client-side error display
+- Name broadcast enables real-time session name updates in UI without page reload
 
 ### Task Group 3: Frontend - Handle session.updated Events
 
 <!-- prettier-ignore -->
-- [ ] Add case for SESSION_UPDATED to handleEvent switch
+- [x] Add case for SESSION_UPDATED to handleEvent switch
   - File: `apps/web/src/client/pages/projects/sessions/hooks/useSessionWebSocket.ts`
   - Import projectKeys: `import { projectKeys } from '@/client/pages/projects/hooks/useProjects';`
   - Import type: `import type { ProjectWithSessions } from '@/client/pages/projects/hooks/useProjects';`
@@ -300,14 +309,20 @@ No new files required.
     }
     ```
 
-- [ ] Verify exhaustive checking still works
+- [x] Verify exhaustive checking still works
   - File: `apps/web/src/client/pages/projects/sessions/hooks/useSessionWebSocket.ts`
   - TypeScript should error if any SessionEvent cases are missing
   - The `default: const _exhaustive: never = event;` should catch any missed cases
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added SESSION_UPDATED case to handleEvent switch statement with direct cache updates
+- Imported `projectKeys` and `ProjectWithSessions` type for proper query cache manipulation
+- Used `queryClient.setQueryData()` to update React Query cache without triggering refetch
+- Implemented immutable updates with proper TypeScript typing
+- Used nullish coalescing (`??`) to merge partial updates with existing session data
+- Converted `updated_at` string to Date object for proper typing
+- Exhaustive type checking with `never` type still works - TypeScript will error if any SessionEvent cases are missing
 
 ## Testing Strategy
 

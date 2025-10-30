@@ -11,6 +11,8 @@ import {
 } from "@/shared/websocket";
 import { sessionKeys } from "./useAgentSessions";
 import { generateUUID } from "@/client/lib/utils";
+import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
+import type { ProjectWithSessions } from "@/shared/types/project.types";
 
 interface UseSessionWebSocketOptions {
   sessionId: string;
@@ -148,6 +150,44 @@ export function useSessionWebSocket({
           queryClient.invalidateQueries({
             queryKey: sessionKeys.byProject(projectIdRef.current),
           });
+          break;
+        }
+
+        case SessionEventTypes.SESSION_UPDATED: {
+          const data = event.data;
+          console.log("[useSessionWebSocket] session.updated received:", data);
+
+          // Update cached session data directly (no refetch)
+          queryClient.setQueryData<ProjectWithSessions[]>(
+            projectKeys.withSessions(),
+            (old) => {
+              if (!old) return old;
+
+              return old.map((project) => {
+                // Find project containing this session
+                if (project.id !== projectIdRef.current) return project;
+
+                // Update the matching session
+                return {
+                  ...project,
+                  sessions: project.sessions.map((session) =>
+                    session.id === sessionIdRef.current
+                      ? {
+                          ...session,
+                          state: data.state ?? session.state,
+                          error_message: data.error_message ?? session.error_message,
+                          metadata: data.metadata ?? session.metadata,
+                          name: data.name ?? session.name,
+                          updated_at: data.updated_at
+                            ? new Date(data.updated_at)
+                            : session.updated_at,
+                        }
+                      : session
+                  ),
+                };
+              });
+            }
+          );
           break;
         }
 

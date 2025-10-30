@@ -70,22 +70,28 @@ export default function ProjectHome() {
   return (
     <div className="p-4 md:p-6 space-y-4 md:space-y-6">
       <div>
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="text-2xl md:text-3xl font-bold leading-tight break-words">{project.name}</h1>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setEditDialogOpen(true)}
-            className="shrink-0 -mt-1"
-          >
-            <Pencil className="h-4 w-4 md:mr-2" />
-            <span className="hidden md:inline">Edit</span>
-          </Button>
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <h1 className="text-2xl md:text-3xl font-bold leading-tight break-words flex-1 min-w-0">{project.name}</h1>
+          <div className="flex items-center gap-1 shrink-0">
+            <NewSessionButton
+              projectId={id!}
+              variant="outline"
+              size="sm"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditDialogOpen(true)}
+            >
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </div>
         </div>
       </div>
 
       <Card>
-        <CardContent className="pt-4 md:pt-6">
+        <CardContent className="p-4 md:p-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-xs md:text-sm font-medium">
@@ -125,24 +131,14 @@ export default function ProjectHome() {
 
       {/* Recent Sessions Section */}
       <Card>
-        <CardHeader className="flex flex-col gap-4 pb-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                <MessageSquare className="h-5 w-5 shrink-0" />
-                <span className="truncate">Recent Sessions</span>
-              </CardTitle>
-              <CardDescription className="mt-1.5 text-xs md:text-sm">
-                Your most recent chat sessions
-              </CardDescription>
-            </div>
-          </div>
-          <NewSessionButton
-            projectId={id!}
-            variant="outline"
-            size="sm"
-            className="w-full text-sm"
-          />
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+            <MessageSquare className="h-5 w-5 shrink-0" />
+            <span className="truncate">Recent Sessions</span>
+          </CardTitle>
+          <CardDescription className="mt-1.5 text-xs md:text-sm">
+            Your most recent chat sessions
+          </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           {!sessions || sessions.length === 0 ? (

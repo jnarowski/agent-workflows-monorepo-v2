@@ -41,6 +41,7 @@ export const SessionEventTypes = {
   ERROR: "error",
   MESSAGE_COMPLETE: "message_complete",
   SEND_MESSAGE: "send_message",
+  SESSION_UPDATED: "session_updated",
   STREAM_OUTPUT: "stream_output",
   SUBSCRIBE: "subscribe",
   SUBSCRIBE_SUCCESS: "subscribe_success",
@@ -73,6 +74,15 @@ export interface SubscribeSuccessData {
   timestamp?: number;
 }
 
+export interface SessionUpdatedData {
+  sessionId: string;
+  state?: 'idle' | 'working' | 'error';
+  error_message?: string | null;
+  metadata?: Record<string, unknown>;
+  name?: string;
+  updated_at?: Date | string;
+}
+
 /**
  * Discriminated union for all session events
  * Enables exhaustive type checking with TypeScript's never type
@@ -93,6 +103,10 @@ export type SessionEvent =
   | {
       type: typeof SessionEventTypes.SUBSCRIBE_SUCCESS;
       data: SubscribeSuccessData;
+    }
+  | {
+      type: typeof SessionEventTypes.SESSION_UPDATED;
+      data: SessionUpdatedData;
     };
 
 // ============================================================================

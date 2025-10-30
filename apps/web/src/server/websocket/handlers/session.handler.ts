@@ -126,6 +126,17 @@ export async function handleSessionSendMessage(
     },
   });
 
+  // Broadcast session state update
+  broadcast(Channels.session(sessionId), {
+    type: SessionEventTypes.SESSION_UPDATED,
+    data: {
+      sessionId,
+      state: 'working',
+      error_message: null,
+      updated_at: new Date().toISOString(),
+    },
+  });
+
   // Execute agent command
   fastify.log.info(
     { sessionId, agent: session.agent, message: data.message },
@@ -198,6 +209,17 @@ export async function handleSessionSendMessage(
     data: {
       state: "idle",
       error_message: null,
+    },
+  });
+
+  // Broadcast session state update
+  broadcast(Channels.session(sessionId), {
+    type: SessionEventTypes.SESSION_UPDATED,
+    data: {
+      sessionId,
+      state: 'idle',
+      error_message: null,
+      updated_at: new Date().toISOString(),
     },
   });
 
@@ -475,6 +497,17 @@ async function handleExecutionFailure(
     },
   });
 
+  // Broadcast session state update
+  broadcast(Channels.session(sessionId), {
+    type: SessionEventTypes.SESSION_UPDATED,
+    data: {
+      sessionId,
+      state: 'error',
+      error_message: errorMessage,
+      updated_at: new Date().toISOString(),
+    },
+  });
+
   broadcast(Channels.session(sessionId), {
     type: SessionEventTypes.ERROR,
     data: {
@@ -620,6 +653,16 @@ async function generateAndStoreName(
       { sessionId, sessionName },
       "[WebSocket] Database updated successfully with session name"
     );
+
+    // Broadcast session name update
+    broadcast(Channels.session(sessionId), {
+      type: SessionEventTypes.SESSION_UPDATED,
+      data: {
+        sessionId,
+        name: sessionName,
+        updated_at: new Date().toISOString(),
+      },
+    });
 
     console.log("===== SESSION NAME STORED IN DATABASE =====");
     console.log("SessionId:", sessionId);
