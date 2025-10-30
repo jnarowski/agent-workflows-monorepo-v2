@@ -49,19 +49,17 @@ export function useSessionWebSocket({
    */
   const handleStreamOutput = useCallback(
     (data: { message?: UnifiedMessage }) => {
-      if (import.meta.env.DEV) {
-        console.log("[useSessionWebSocket] stream_output received:", {
-          hasMessage: Boolean(data.message),
-          messageId: data.message?.id,
-          messageRole: data.message?.role,
-          contentType: Array.isArray(data.message?.content) ? 'array' : typeof data.message?.content,
-          contentLength: Array.isArray(data.message?.content) ? data.message.content.length : 0,
-          contentBlockTypes: Array.isArray(data.message?.content)
-            ? data.message.content.map(b => b.type)
-            : [],
-          rawData: data,
-        });
-      }
+      console.log("[useSessionWebSocket] stream_output received:", {
+        hasMessage: Boolean(data.message),
+        messageId: data.message?.id,
+        messageRole: data.message?.role,
+        contentType: Array.isArray(data.message?.content) ? 'array' : typeof data.message?.content,
+        contentLength: Array.isArray(data.message?.content) ? data.message.content.length : 0,
+        contentBlockTypes: Array.isArray(data.message?.content)
+          ? data.message.content.map(b => b.type)
+          : [],
+        rawData: data,
+      });
 
       // SDK already provides clean UnifiedMessage
       if (data.message) {
@@ -74,26 +72,22 @@ export function useSessionWebSocket({
         }
 
         // Check for empty content blocks
-        if (import.meta.env.DEV) {
-          const emptyTextBlocks = msg.content.filter(
-            block => block.type === 'text' && (!block.text || block.text.trim() === '')
-          );
-          if (emptyTextBlocks.length > 0) {
-            console.warn("[useSessionWebSocket] Message contains", emptyTextBlocks.length, "empty text blocks:", emptyTextBlocks);
-          }
+        const emptyTextBlocks = msg.content.filter(
+          block => block.type === 'text' && (!block.text || block.text.trim() === '')
+        );
+        if (emptyTextBlocks.length > 0) {
+          console.warn("[useSessionWebSocket] Message contains", emptyTextBlocks.length, "empty text blocks:", emptyTextBlocks);
+        }
 
-          if (msg.content.length === 0) {
-            console.warn("[useSessionWebSocket] Message has EMPTY content array:", msg);
-          }
+        if (msg.content.length === 0) {
+          console.warn("[useSessionWebSocket] Message has EMPTY content array:", msg);
         }
 
         useSessionStore
           .getState()
           .updateStreamingMessage(msg.id, msg.content as UnifiedContent[]);
       } else {
-        if (import.meta.env.DEV) {
-          console.warn("[useSessionWebSocket] stream_output received without message:", data);
-        }
+        console.warn("[useSessionWebSocket] stream_output received without message:", data);
       }
     },
     []
@@ -104,16 +98,13 @@ export function useSessionWebSocket({
    */
   const handleMessageComplete = useCallback(
     (data: SessionMessageCompleteData) => {
-      if (import.meta.env.DEV) {
-        console.log("[useSessionWebSocket] message_complete received:", data);
-      }
+      console.log("[useSessionWebSocket] message_complete received:", data);
 
       // Get current session and messages
       const store = useSessionStore.getState();
       const session = store.session;
 
       if (!session?.messages.length) {
-        console.warn("[useSessionWebSocket] No messages to finalize");
         return;
       }
 
@@ -195,13 +186,6 @@ export function useSessionWebSocket({
   useEffect(() => {
     if (!sessionId) return;
 
-    if (import.meta.env.DEV) {
-      console.log(
-        "[useSessionWebSocket] Subscribing to session events:",
-        sessionId
-      );
-    }
-
     // Subscribe to session-specific events
     const streamEvent = `session.${sessionId}.stream_output`;
     const completeEvent = `session.${sessionId}.message_complete`;
@@ -213,12 +197,6 @@ export function useSessionWebSocket({
 
     // Cleanup subscriptions on unmount or sessionId change
     return () => {
-      if (import.meta.env.DEV) {
-        console.log(
-          "[useSessionWebSocket] Unsubscribing from session events:",
-          sessionId
-        );
-      }
       eventBus.off(streamEvent, handleStreamOutput);
       eventBus.off(completeEvent, handleMessageComplete);
       eventBus.off(errorEvent, handleError);
@@ -243,13 +221,6 @@ export function useSessionWebSocket({
           "[useSessionWebSocket] Cannot send message: no sessionId"
         );
         return;
-      }
-
-      if (import.meta.env.DEV) {
-        console.log(
-          "[useSessionWebSocket] Sending message for session:",
-          currentSessionId
-        );
       }
 
       // Send with flat event naming: session.{id}.send_message

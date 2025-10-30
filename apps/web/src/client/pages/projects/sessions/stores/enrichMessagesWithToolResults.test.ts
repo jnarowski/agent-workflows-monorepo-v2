@@ -104,7 +104,7 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
   }
 
   // Step 3: Enrich tool_use blocks and filter out tool_result blocks
-  return filteredMessages.map(msg => {
+  const enrichedMessages = filteredMessages.map(msg => {
     if (!Array.isArray(msg.content)) {
       return { ...msg, isStreaming: false };
     }
@@ -126,6 +126,15 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
       content: enrichedContent,
       isStreaming: false
     } as UIMessage;
+  });
+
+  // Step 4: Filter out messages with empty content arrays (tool_result-only messages after enrichment)
+  return enrichedMessages.filter(msg => {
+    // Keep messages with non-array content (edge case)
+    if (!Array.isArray(msg.content)) return true;
+
+    // Filter out empty content arrays (user messages with only tool_result blocks)
+    return msg.content.length > 0;
   });
 }
 
@@ -412,7 +421,7 @@ describe('enrichMessagesWithToolResults', () => {
     expect(enriched[0].isStreaming).toBe(false);
   });
 
-  it('should handle messages with empty content arrays', () => {
+  it('should filter out messages with empty content arrays', () => {
     const messages: UnifiedMessage[] = [
       {
         id: 'msg-1',
@@ -430,7 +439,8 @@ describe('enrichMessagesWithToolResults', () => {
 
     const enriched = enrichMessagesWithToolResults(messages);
 
-    // Empty content message should be kept (not a system message)
-    expect(enriched).toHaveLength(2);
+    // Empty content message should be filtered out (likely contained only tool_result blocks)
+    expect(enriched).toHaveLength(1);
+    expect(enriched[0].id).toBe('msg-2');
   });
 });

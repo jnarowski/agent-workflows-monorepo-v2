@@ -59,7 +59,13 @@ export function NewSessionButton({
   const handleCreateSession = (agent: AgentType) => {
     // Set agent in store, then navigate
     setAgent(agent);
-    navigate(`/projects/${projectId}/session/new`);
+
+    // Preserve current query parameters when navigating
+    const currentParams = new URLSearchParams(window.location.search);
+    const queryString = currentParams.toString();
+    const path = `/projects/${projectId}/session/new${queryString ? `?${queryString}` : ''}`;
+
+    navigate(path);
     // Close mobile menu when creating a new session
     if (isMobile) {
       setOpenMobile(false);

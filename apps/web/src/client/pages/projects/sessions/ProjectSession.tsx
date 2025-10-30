@@ -12,7 +12,6 @@ import {
 } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation";
 import { useNavigationStore } from "@/client/stores/index";
-import type { ToolResultBlock } from "@/shared/types/message.types";
 import { generateUUID } from "@/client/lib/utils";
 import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
 import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
@@ -93,11 +92,6 @@ export default function ProjectSession() {
     const queryParam = searchParams.get("query");
 
     if (queryParam) {
-      if (import.meta.env.DEV) {
-        console.log(
-          "[ProjectSession] Query param detected - skipping loadSession"
-        );
-      }
       // Initialize session in store without fetching from server (only if not already initialized)
       if (currentSessionId !== sessionId) {
         clearSession();
@@ -122,13 +116,6 @@ export default function ProjectSession() {
 
     // If this is a different session, handle the transition
     if (currentSessionId !== sessionId) {
-      if (import.meta.env.DEV) {
-        console.log("[ProjectSession] Session changed:", {
-          from: currentSessionId,
-          to: sessionId,
-        });
-      }
-
       // Clear previous session only if we're coming from a different session
       if (currentSessionId && currentSessionId !== sessionId) {
         clearSession();
@@ -139,19 +126,7 @@ export default function ProjectSession() {
       if (!session || session.id !== sessionId) {
         // Skip if already initiated (handles React Strict Mode double-invocation)
         if (loadSessionInitiatedRef.current) {
-          if (import.meta.env.DEV) {
-            console.log(
-              "[ProjectSession] Load already initiated, skipping duplicate call"
-            );
-          }
           return;
-        }
-
-        if (import.meta.env.DEV) {
-          console.log(
-            "[ProjectSession] Loading session from server:",
-            sessionId
-          );
         }
 
         // Mark as initiated immediately to prevent duplicate calls
@@ -162,12 +137,6 @@ export default function ProjectSession() {
           // Reset ref on error so user can retry
           loadSessionInitiatedRef.current = false;
         });
-      } else {
-        if (import.meta.env.DEV) {
-          console.log(
-            "[ProjectSession] Session already in store, skipping load"
-          );
-        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -188,11 +157,6 @@ export default function ProjectSession() {
     const queryParam = searchParams.get("query");
 
     if (queryParam) {
-      if (import.meta.env.DEV) {
-        console.log(
-          "[ProjectSession] Processing initial message from query parameter"
-        );
-      }
       initialMessageSentRef.current = true;
 
       try {
@@ -210,8 +174,11 @@ export default function ProjectSession() {
         // Set streaming state to show loading indicator
         setStreaming(true);
 
-        // Remove query parameter from URL
-        navigate(location.pathname, { replace: true });
+        // Remove only the query parameter, preserve others like debug
+        const searchParams = new URLSearchParams(location.search);
+        searchParams.delete('query');
+        const newSearch = searchParams.toString();
+        navigate(`${location.pathname}${newSearch ? `?${newSearch}` : ''}`, { replace: true });
       } catch (error) {
         console.error(
           "[ProjectSession] Error processing query parameter:",
@@ -223,14 +190,6 @@ export default function ProjectSession() {
   }, [sessionId, location.search]);
 
   const handleSubmit = async (message: string, images?: File[]) => {
-    if (import.meta.env.DEV) {
-      console.log("[ProjectSession] handleSubmit called:", {
-        message: message.substring(0, 100),
-        imagesCount: images?.length || 0,
-        sessionId,
-      });
-    }
-
     if (!projectId || !sessionId) {
       console.error("[ProjectSession] No projectId or sessionId available");
       return;
@@ -284,27 +243,6 @@ export default function ProjectSession() {
     );
   };
 
-  // Derive toolResults from messages
-  const toolResults = useMemo(() => {
-    const results = new Map<string, { content: string; is_error?: boolean }>();
-
-    if (!session?.messages) return results;
-
-    for (const message of session.messages) {
-      for (const block of message.content) {
-        if (block.type === "tool_result") {
-          const toolResultBlock = block as ToolResultBlock;
-          results.set(toolResultBlock.tool_use_id, {
-            content: toolResultBlock.content,
-            is_error: toolResultBlock.is_error,
-          });
-        }
-      }
-    }
-
-    return results;
-  }, [session?.messages]);
-
   // Determine if input should be blocked
   // Count assistant messages
   const assistantMessageCount =
@@ -336,7 +274,6 @@ export default function ProjectSession() {
           sessionId={sessionId || undefined}
           agent={session?.agent || "claude"}
           messages={session?.messages || []}
-          toolResults={toolResults}
           isLoading={session?.loadingState === "loading"}
           error={session?.error || null}
           isStreaming={session?.isStreaming || false}

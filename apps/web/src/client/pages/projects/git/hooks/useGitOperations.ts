@@ -17,6 +17,7 @@ import type {
   GitMergeResult,
 } from '@/shared/types/git.types';
 import { toast } from 'sonner';
+import { projectKeys } from '@/client/pages/projects/hooks/useProjects';
 
 // Query keys factory - centralized key management
 export const gitKeys = {
@@ -192,6 +193,8 @@ export function useCreateBranch() {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: gitKeys.branches(variables.path) });
       queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
+      // Invalidate projects query to update current_branch in ProjectHeader
+      queryClient.invalidateQueries({ queryKey: projectKeys.withSessions() });
       toast.success(`Branch created: ${data.name}`);
     },
     onError: (error: Error) => {
@@ -217,6 +220,8 @@ export function useSwitchBranch() {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: gitKeys.branches(variables.path) });
       queryClient.invalidateQueries({ queryKey: gitKeys.status(variables.path) });
+      // Invalidate projects query to update current_branch in ProjectHeader
+      queryClient.invalidateQueries({ queryKey: projectKeys.withSessions() });
       toast.success(`Switched to branch: ${data.name}`);
     },
     onError: (error: Error) => {

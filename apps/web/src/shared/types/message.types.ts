@@ -21,6 +21,7 @@ import type { UnifiedMessage, UnifiedToolUseBlock } from '@repo/agent-cli-sdk';
 
 export type UIMessage = UnifiedMessage & {
   isStreaming?: boolean;
+  _original?: UnifiedMessage; // Original message before enrichment (for debugging)
 };
 
 // Extended tool block with nested result

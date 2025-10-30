@@ -21,15 +21,10 @@ export function ContentBlockRenderer({
   block,
   className = "",
 }: ContentBlockRendererProps) {
-  // DEBUG: Log every block being rendered
-  if (import.meta.env.DEV) {
-    console.log("[ContentBlockRenderer] Rendering block:", block);
-  }
-
   switch (block.type) {
     case "text": {
       // DEBUG: Check for empty text blocks
-      if (import.meta.env.DEV && (!block.text || block.text.trim() === "")) {
+      if (!block.text || block.text.trim() === "") {
         console.warn(
           "[ContentBlockRenderer] EMPTY TEXT BLOCK DETECTED:",
           block
@@ -69,12 +64,6 @@ export function ContentBlockRenderer({
     case "tool_result":
       // Tool results are handled inline with tool_use blocks
       // We don't render them separately
-      if (import.meta.env.DEV) {
-        console.log(
-          "[ContentBlockRenderer] Skipping standalone tool_result block"
-        );
-      }
-
       return null;
 
     default: {

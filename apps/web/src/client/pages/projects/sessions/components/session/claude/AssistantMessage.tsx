@@ -4,7 +4,7 @@
  */
 
 import { AlertCircle } from "lucide-react";
-import type { UIMessage } from "@/shared/types/message.types";
+import type { UIMessage, EnrichedToolUseBlock } from "@/shared/types/message.types";
 import { ContentBlockRenderer } from "./ContentBlockRenderer";
 
 interface AssistantMessageProps {
