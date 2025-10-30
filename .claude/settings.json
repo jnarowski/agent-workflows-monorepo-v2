@@ -18,5 +18,6 @@
       "Bash(git push -f:*)",
       "Bash(rm -rf:*)"
     ]
-  }
+  },
+  "hooks": {}
 }

@@ -118,8 +118,8 @@ export function ProjectHeader({ projectId, projectName, projectPath, currentBran
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="md:hidden">
             <Button variant="outline" size="sm" className="gap-1">
-              <activeNavItem.icon className="h-4 w-4" />
-              <ChevronDown className="h-4 w-4" />
+              <activeNavItem.icon className="h-5 w-5" />
+              <ChevronDown className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">

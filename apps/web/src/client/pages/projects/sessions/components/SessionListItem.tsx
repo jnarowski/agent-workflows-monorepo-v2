@@ -53,8 +53,8 @@ export function SessionListItem({
   return (
     <div
       className="relative group"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => !isMobile && setIsHovered(true)}
+      onMouseLeave={() => !isMobile && setIsHovered(false)}
     >
       <Link
         to={`/projects/${projectId}/session/${id}`}
@@ -86,8 +86,8 @@ export function SessionListItem({
         </div>
       </Link>
 
-      {/* Hover menu */}
-      {(isHovered || isMenuOpen) && (
+      {/* Hover menu - hidden on mobile */}
+      {!isMobile && (isHovered || isMenuOpen) && (
         <div className="absolute right-2 top-2 z-50">
           <SessionDropdownMenu
             session={session}
