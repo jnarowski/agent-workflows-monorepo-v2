@@ -21,31 +21,10 @@ export function ContentBlockRenderer({
   block,
   className = "",
 }: ContentBlockRendererProps) {
-  // Enhanced logging with decision path
-  if (import.meta.env.DEV) {
-    const logData: Record<string, unknown> = {
-      type: block.type
-    };
-
-    if (block.type === 'text') {
-      logData.textLength = block.text?.length || 0;
-      logData.isEmpty = !block.text || block.text.trim() === '';
-    } else if (block.type === 'tool_use') {
-      const enrichedBlock = block as EnrichedToolUseBlock;
-      logData.toolName = block.name;
-      logData.hasResult = Boolean(enrichedBlock.result);
-    } else if (block.type === 'tool_result') {
-      logData.willBeSkipped = true;
-      logData.reason = 'Standalone tool_result blocks are filtered (nested in tool_use)';
-    }
-
-    console.log("[ContentBlockRenderer] Rendering block:", logData);
-  }
-
   switch (block.type) {
     case "text": {
       // DEBUG: Check for empty text blocks
-      if (import.meta.env.DEV && (!block.text || block.text.trim() === "")) {
+      if (!block.text || block.text.trim() === "") {
         console.warn(
           "[ContentBlockRenderer] EMPTY TEXT BLOCK DETECTED:",
           block
@@ -85,12 +64,6 @@ export function ContentBlockRenderer({
     case "tool_result":
       // Tool results are handled inline with tool_use blocks
       // We don't render them separately
-      if (import.meta.env.DEV) {
-        console.log(
-          "[ContentBlockRenderer] Skipping standalone tool_result block"
-        );
-      }
-
       return null;
 
     default: {

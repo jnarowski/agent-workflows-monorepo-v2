@@ -40,17 +40,6 @@ interface ToolBlockRendererProps {
 }
 
 export function ToolBlockRenderer({ toolName, input, result }: ToolBlockRendererProps) {
-  // Enhanced logging for debugging blank rows issue
-  if (import.meta.env.DEV) {
-    console.log('[ToolBlockRenderer] Rendering tool block:', {
-      toolName,
-      hasResult: Boolean(result),
-      resultType: result ? typeof result.content : 'none',
-      isError: result?.is_error,
-      inputKeys: Object.keys(input)
-    });
-  }
-
   switch (toolName) {
     case 'Read':
       return <ReadToolBlock input={input as ReadToolInput} result={result} />;

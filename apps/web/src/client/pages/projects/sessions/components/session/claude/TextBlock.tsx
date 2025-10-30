@@ -17,20 +17,13 @@ export function TextBlock({ text, className = "" }: TextBlockProps) {
     typeof text === "string" ? text : JSON.stringify(text, null, 2);
 
   // DEBUG: Log empty or whitespace-only text blocks
-  if (import.meta.env.DEV) {
-    if (!text || (typeof text === 'string' && text.trim() === '')) {
-      console.warn('[TextBlock] RENDERING EMPTY TEXT BLOCK:', {
-        text,
-        type: typeof text,
-        length: typeof text === 'string' ? text.length : 0,
-        safeText,
-      });
-    } else {
-      console.log('[TextBlock] Rendering text block:', {
-        textLength: safeText.length,
-        textPreview: safeText.substring(0, 100),
-      });
-    }
+  if (!text || (typeof text === 'string' && text.trim() === '')) {
+    console.warn('[TextBlock] RENDERING EMPTY TEXT BLOCK:', {
+      text,
+      type: typeof text,
+      length: typeof text === 'string' ? text.length : 0,
+      safeText,
+    });
   }
 
   return (

@@ -92,11 +92,6 @@ export default function ProjectSession() {
     const queryParam = searchParams.get("query");
 
     if (queryParam) {
-      if (import.meta.env.DEV) {
-        console.log(
-          "[ProjectSession] Query param detected - skipping loadSession"
-        );
-      }
       // Initialize session in store without fetching from server (only if not already initialized)
       if (currentSessionId !== sessionId) {
         clearSession();
@@ -121,13 +116,6 @@ export default function ProjectSession() {
 
     // If this is a different session, handle the transition
     if (currentSessionId !== sessionId) {
-      if (import.meta.env.DEV) {
-        console.log("[ProjectSession] Session changed:", {
-          from: currentSessionId,
-          to: sessionId,
-        });
-      }
-
       // Clear previous session only if we're coming from a different session
       if (currentSessionId && currentSessionId !== sessionId) {
         clearSession();
@@ -138,19 +126,7 @@ export default function ProjectSession() {
       if (!session || session.id !== sessionId) {
         // Skip if already initiated (handles React Strict Mode double-invocation)
         if (loadSessionInitiatedRef.current) {
-          if (import.meta.env.DEV) {
-            console.log(
-              "[ProjectSession] Load already initiated, skipping duplicate call"
-            );
-          }
           return;
-        }
-
-        if (import.meta.env.DEV) {
-          console.log(
-            "[ProjectSession] Loading session from server:",
-            sessionId
-          );
         }
 
         // Mark as initiated immediately to prevent duplicate calls
@@ -161,12 +137,6 @@ export default function ProjectSession() {
           // Reset ref on error so user can retry
           loadSessionInitiatedRef.current = false;
         });
-      } else {
-        if (import.meta.env.DEV) {
-          console.log(
-            "[ProjectSession] Session already in store, skipping load"
-          );
-        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -187,11 +157,6 @@ export default function ProjectSession() {
     const queryParam = searchParams.get("query");
 
     if (queryParam) {
-      if (import.meta.env.DEV) {
-        console.log(
-          "[ProjectSession] Processing initial message from query parameter"
-        );
-      }
       initialMessageSentRef.current = true;
 
       try {
@@ -225,14 +190,6 @@ export default function ProjectSession() {
   }, [sessionId, location.search]);
 
   const handleSubmit = async (message: string, images?: File[]) => {
-    if (import.meta.env.DEV) {
-      console.log("[ProjectSession] handleSubmit called:", {
-        message: message.substring(0, 100),
-        imagesCount: images?.length || 0,
-        sessionId,
-      });
-    }
-
     if (!projectId || !sessionId) {
       console.error("[ProjectSession] No projectId or sessionId available");
       return;

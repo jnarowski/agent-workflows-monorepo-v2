@@ -56,7 +56,7 @@ export function AssistantMessage({ message }: AssistantMessageProps) {
     if (block.type === 'text') {
       // Filter out empty or whitespace-only text blocks
       const isEmpty = !block.text || block.text.trim() === '';
-      if (import.meta.env.DEV && isEmpty) {
+      if (isEmpty) {
         console.warn('[AssistantMessage] Skipping empty text block in message:', message.id);
       }
       return !isEmpty;
@@ -64,25 +64,6 @@ export function AssistantMessage({ message }: AssistantMessageProps) {
     // Keep all non-text blocks (tool_use, thinking, etc.)
     return true;
   });
-
-  // Enhanced logging for debugging
-  if (import.meta.env.DEV && renderableContent.length > 0) {
-    const toolBlocks = renderableContent.filter(b => b.type === 'tool_use');
-    if (toolBlocks.length > 0) {
-      console.log('[AssistantMessage] Rendering message with tool blocks:', {
-        messageId: message.id,
-        isStreaming: message.isStreaming,
-        totalBlocks: renderableContent.length,
-        toolBlocks: toolBlocks.map(b => {
-          const toolBlock = b as EnrichedToolUseBlock;
-          return {
-            name: toolBlock.name,
-            hasResult: Boolean(toolBlock.result)
-          };
-        })
-      });
-    }
-  }
 
   // Don't render if no content after filtering
   if (renderableContent.length === 0) {
