@@ -42,7 +42,8 @@ export type UnifiedContent =
   | UnifiedThinkingBlock
   | UnifiedToolUseBlock
   | UnifiedToolResultBlock
-  | UnifiedSlashCommandBlock;
+  | UnifiedSlashCommandBlock
+  | UnifiedImageBlock;
 
 /**
  * Text content block.
@@ -73,6 +74,21 @@ export interface UnifiedSlashCommandBlock {
   message?: string;
   /** Optional command arguments */
   args?: string;
+}
+
+/**
+ * Image content block (base64-encoded image data).
+ */
+export interface UnifiedImageBlock {
+  type: 'image';
+  /** Base64-encoded image data */
+  source: {
+    type: 'base64';
+    /** Base64 string of the image data */
+    data: string;
+    /** MIME type of the image (e.g., 'image/png', 'image/jpeg') */
+    media_type: string;
+  };
 }
 
 // Tool input types

@@ -7,11 +7,12 @@ import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
 import { useCodeBlockTheme } from "@/client/utils/codeBlockTheme";
 import { ExpandButton } from "./ExpandButton";
 import type { TaskToolInput } from "@/shared/types/tool.types";
+import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 
 interface TaskToolBlockProps {
   input: TaskToolInput;
   result?: {
-    content: string;
+    content: string | UnifiedImageBlock;
     is_error?: boolean;
   };
 }

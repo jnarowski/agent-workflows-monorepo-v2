@@ -8,11 +8,12 @@ import { DiffViewer } from "@/client/components/DiffViewer";
 import { useCodeBlockTheme } from "@/client/utils/codeBlockTheme";
 import { ExpandButton } from "./ExpandButton";
 import type { EditToolInput } from "@/shared/types/tool.types";
+import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 
 interface EditToolBlockProps {
   input: EditToolInput;
   result?: {
-    content: string;
+    content: string | UnifiedImageBlock;
     is_error?: boolean;
   };
 }

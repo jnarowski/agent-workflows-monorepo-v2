@@ -26,12 +26,13 @@ import type {
   GrepToolInput,
   TaskToolInput,
 } from '@/shared/types/tool.types';
+import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 
 interface ToolBlockRendererProps {
   toolName: string;
   input: Record<string, unknown>;
   result?: {
-    content: string;
+    content: string | UnifiedImageBlock;
     is_error?: boolean;
   };
 }

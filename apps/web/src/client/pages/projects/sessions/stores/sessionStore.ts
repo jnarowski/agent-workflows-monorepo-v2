@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { UnifiedMessage, UnifiedContent, ClaudePermissionMode } from '@repo/agent-cli-sdk';
+import type { UnifiedMessage, UnifiedContent, UnifiedImageBlock, ClaudePermissionMode } from '@repo/agent-cli-sdk';
 import type { UIMessage } from '@/shared/types/message.types';
 import type {
   AgentSessionMetadata,
@@ -10,6 +10,38 @@ import { api } from "@/client/lib/api-client";
 import type { ProjectWithSessions } from "@/shared/types/project.types";
 import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import { isSystemMessage } from '@/shared/utils/message.utils';
+
+/**
+ * Helper function to parse tool result content and preserve image structure
+ *
+ * @param content - Raw tool result content (string or object)
+ * @returns Parsed content - either a string or UnifiedImageBlock for images
+ */
+function tryParseImageContent(content: unknown): string | UnifiedImageBlock {
+  // If already a string, try to parse it as JSON
+  if (typeof content === 'string') {
+    try {
+      const parsed = JSON.parse(content);
+      // Check if it's an array with an image object
+      if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.type === 'image') {
+        return parsed[0] as UnifiedImageBlock;
+      }
+      // Not an image, return stringified
+      return content;
+    } catch {
+      // Not valid JSON, return as-is
+      return content;
+    }
+  }
+
+  // If it's an array, check if first item is an image
+  if (Array.isArray(content) && content.length > 0 && content[0]?.type === 'image') {
+    return content[0] as UnifiedImageBlock;
+  }
+
+  // For any other type, stringify it
+  return JSON.stringify(content);
+}
 
 /**
  * Enrich messages by nesting tool_result blocks into their corresponding tool_use blocks
@@ -91,16 +123,14 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
   });
 
   // Step 2: Build lookup map of tool results
-  const resultMap = new Map<string, { content: string; is_error?: boolean }>();
+  const resultMap = new Map<string, { content: string | UnifiedImageBlock; is_error?: boolean }>();
 
   for (const message of filteredMessages) {
     if (Array.isArray(message.content)) {
       for (const block of message.content) {
         if (block.type === 'tool_result') {
           resultMap.set(block.tool_use_id, {
-            content: typeof block.content === 'string'
-              ? block.content
-              : JSON.stringify(block.content),
+            content: tryParseImageContent(block.content),
             is_error: block.is_error
           });
         }

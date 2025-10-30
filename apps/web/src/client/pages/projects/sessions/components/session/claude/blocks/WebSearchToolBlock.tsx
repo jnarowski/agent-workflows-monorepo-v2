@@ -5,11 +5,12 @@
 import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
 import { ToolResultRenderer } from "../tools/ToolResultRenderer";
 import type { WebSearchToolInput } from "@/shared/types/tool.types";
+import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 
 interface WebSearchToolBlockProps {
   input: WebSearchToolInput;
   result?: {
-    content: string;
+    content: string | UnifiedImageBlock;
     is_error?: boolean;
   };
 }

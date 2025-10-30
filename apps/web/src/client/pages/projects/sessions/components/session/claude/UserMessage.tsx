@@ -24,9 +24,11 @@ export function UserMessage({ message }: UserMessageProps) {
     (block) => block.type !== "tool_result"
   );
 
-  // If message only contains tool results (no other content), don't render
-  // Tool results are already shown inline with the assistant's tool_use blocks
-  if (renderableBlocks.length === 0 && toolResultBlocks.length > 0) {
+  // If message has no renderable content, don't render
+  // This includes:
+  // 1. Messages with only tool_result blocks (already shown inline with tool_use)
+  // 2. Messages with empty content arrays (e.g., image-only tool results)
+  if (renderableBlocks.length === 0) {
     return null;
   }
 
