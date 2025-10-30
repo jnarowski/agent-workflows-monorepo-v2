@@ -1,15 +1,23 @@
 import { describe, it, expect, vi } from 'vitest';
 import { WebSocketEventBus } from './WebSocketEventBus';
+import type { SessionEvent, GlobalEvent } from '@/shared/websocket';
+import { SessionEventTypes, GlobalEventTypes } from '@/shared/websocket';
 
-describe('WebSocketEventBus', () => {
-  it('should subscribe and emit events', () => {
+describe('WebSocketEventBus - Phoenix Channels Pattern', () => {
+  it('should subscribe to channel and receive events', () => {
     const bus = new WebSocketEventBus();
     const handler = vi.fn();
 
-    bus.on('test.event', handler);
-    bus.emit('test.event', { message: 'hello' });
+    bus.on('session:123', handler);
+    bus.emit('session:123', {
+      type: SessionEventTypes.STREAM_OUTPUT,
+      data: { message: 'hello', sessionId: '123' },
+    });
 
-    expect(handler).toHaveBeenCalledWith({ message: 'hello' });
+    expect(handler).toHaveBeenCalledWith({
+      type: SessionEventTypes.STREAM_OUTPUT,
+      data: { message: 'hello', sessionId: '123' },
+    });
     expect(handler).toHaveBeenCalledTimes(1);
   });
 
@@ -17,12 +25,21 @@ describe('WebSocketEventBus', () => {
     const bus = new WebSocketEventBus();
     const handler = vi.fn();
 
-    bus.on('test.event', handler);
-    bus.emit('test.event', 'first');
+    const event1: SessionEvent = {
+      type: SessionEventTypes.STREAM_OUTPUT,
+      data: { message: 'first', sessionId: '123' },
+    };
+    const event2: SessionEvent = {
+      type: SessionEventTypes.STREAM_OUTPUT,
+      data: { message: 'second', sessionId: '123' },
+    };
+
+    bus.on('session:123', handler);
+    bus.emit('session:123', event1);
     expect(handler).toHaveBeenCalledTimes(1);
 
-    bus.off('test.event', handler);
-    bus.emit('test.event', 'second');
+    bus.off('session:123', handler);
+    bus.emit('session:123', event2);
     expect(handler).toHaveBeenCalledTimes(1); // Still 1, not called again
   });
 
@@ -30,33 +47,50 @@ describe('WebSocketEventBus', () => {
     const bus = new WebSocketEventBus();
     const handler = vi.fn();
 
-    bus.once('test.event', handler);
-    bus.emit('test.event', 'first');
-    expect(handler).toHaveBeenCalledWith('first');
+    const event1: SessionEvent = {
+      type: SessionEventTypes.MESSAGE_COMPLETE,
+      data: { sessionId: '123', messageId: 'msg1' },
+    };
+    const event2: SessionEvent = {
+      type: SessionEventTypes.MESSAGE_COMPLETE,
+      data: { sessionId: '123', messageId: 'msg2' },
+    };
+
+    bus.once('session:123', handler);
+    bus.emit('session:123', event1);
+    expect(handler).toHaveBeenCalledWith(event1);
     expect(handler).toHaveBeenCalledTimes(1);
 
-    bus.emit('test.event', 'second');
+    bus.emit('session:123', event2);
     expect(handler).toHaveBeenCalledTimes(1); // Still 1, auto-unsubscribed
   });
 
-  it('should support multiple handlers for same event', () => {
+  it('should support multiple handlers on same channel', () => {
     const bus = new WebSocketEventBus();
     const handler1 = vi.fn();
     const handler2 = vi.fn();
 
-    bus.on('test.event', handler1);
-    bus.on('test.event', handler2);
-    bus.emit('test.event', 'data');
+    const event: GlobalEvent = {
+      type: GlobalEventTypes.CONNECTED,
+      data: { timestamp: Date.now() },
+    };
 
-    expect(handler1).toHaveBeenCalledWith('data');
-    expect(handler2).toHaveBeenCalledWith('data');
+    bus.on('global', handler1);
+    bus.on('global', handler2);
+    bus.emit('global', event);
+
+    expect(handler1).toHaveBeenCalledWith(event);
+    expect(handler2).toHaveBeenCalledWith(event);
   });
 
-  it('should not error when emitting to event with no handlers', () => {
+  it('should not error when emitting to channel with no handlers', () => {
     const bus = new WebSocketEventBus();
 
     expect(() => {
-      bus.emit('nonexistent.event', 'data');
+      bus.emit('nonexistent:channel', {
+        type: SessionEventTypes.ERROR,
+        data: { error: 'test', sessionId: 'none' },
+      });
     }).not.toThrow();
   });
 
@@ -64,11 +98,11 @@ describe('WebSocketEventBus', () => {
     const bus = new WebSocketEventBus();
     const handler = vi.fn();
 
-    bus.on('test.event', handler);
-    expect(bus.listenerCount('test.event')).toBe(1);
+    bus.on('session:123', handler);
+    expect(bus.listenerCount('session:123')).toBe(1);
 
-    bus.off('test.event', handler);
-    expect(bus.listenerCount('test.event')).toBe(0);
+    bus.off('session:123', handler);
+    expect(bus.listenerCount('session:123')).toBe(0);
   });
 
   it('should clear all listeners', () => {
@@ -76,17 +110,17 @@ describe('WebSocketEventBus', () => {
     const handler1 = vi.fn();
     const handler2 = vi.fn();
 
-    bus.on('event1', handler1);
-    bus.on('event2', handler2);
-    expect(bus.listenerCount('event1')).toBe(1);
-    expect(bus.listenerCount('event2')).toBe(1);
+    bus.on('session:123', handler1);
+    bus.on('global', handler2);
+    expect(bus.listenerCount('session:123')).toBe(1);
+    expect(bus.listenerCount('global')).toBe(1);
 
     bus.clear();
-    expect(bus.listenerCount('event1')).toBe(0);
-    expect(bus.listenerCount('event2')).toBe(0);
+    expect(bus.listenerCount('session:123')).toBe(0);
+    expect(bus.listenerCount('global')).toBe(0);
   });
 
-  it('should catch and log errors in handlers without stopping other handlers', () => {
+  it('should isolate errors in handlers without stopping other handlers', () => {
     const bus = new WebSocketEventBus();
     const errorHandler = vi.fn(() => {
       throw new Error('Handler error');
@@ -94,31 +128,50 @@ describe('WebSocketEventBus', () => {
     const successHandler = vi.fn();
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    bus.on('test.event', errorHandler);
-    bus.on('test.event', successHandler);
-    bus.emit('test.event', 'data');
+    const event: SessionEvent = {
+      type: SessionEventTypes.ERROR,
+      data: { error: 'test error', sessionId: '123' },
+    };
+
+    bus.on('session:123', errorHandler);
+    bus.on('session:123', successHandler);
+    bus.emit('session:123', event);
 
     expect(errorHandler).toHaveBeenCalled();
-    expect(successHandler).toHaveBeenCalledWith('data');
+    expect(successHandler).toHaveBeenCalledWith(event);
     expect(consoleSpy).toHaveBeenCalled();
 
     consoleSpy.mockRestore();
   });
 
-  it('should handle type-safe events', () => {
+  it('should handle type-safe session events', () => {
     const bus = new WebSocketEventBus();
+    const handler = vi.fn<[SessionEvent], void>();
 
-    interface TestData {
-      id: string;
-      value: number;
-    }
+    const event: SessionEvent = {
+      type: SessionEventTypes.STREAM_OUTPUT,
+      data: { message: 'test', sessionId: '123' },
+    };
 
-    const handler = vi.fn<[TestData], void>();
+    bus.on<SessionEvent>('session:123', handler);
+    bus.emit('session:123', event);
 
-    bus.on<TestData>('typed.event', handler);
-    bus.emit<TestData>('typed.event', { id: 'test', value: 42 });
+    expect(handler).toHaveBeenCalledWith(event);
+  });
 
-    expect(handler).toHaveBeenCalledWith({ id: 'test', value: 42 });
+  it('should handle type-safe global events', () => {
+    const bus = new WebSocketEventBus();
+    const handler = vi.fn<[GlobalEvent], void>();
+
+    const event: GlobalEvent = {
+      type: GlobalEventTypes.PING,
+      data: { timestamp: Date.now() },
+    };
+
+    bus.on<GlobalEvent>('global', handler);
+    bus.emit('global', event);
+
+    expect(handler).toHaveBeenCalledWith(event);
   });
 
   it('should return correct listener count', () => {
@@ -127,28 +180,76 @@ describe('WebSocketEventBus', () => {
     const handler2 = vi.fn();
     const handler3 = vi.fn();
 
-    expect(bus.listenerCount('test.event')).toBe(0);
+    expect(bus.listenerCount('session:123')).toBe(0);
 
-    bus.on('test.event', handler1);
-    expect(bus.listenerCount('test.event')).toBe(1);
+    bus.on('session:123', handler1);
+    expect(bus.listenerCount('session:123')).toBe(1);
 
-    bus.on('test.event', handler2);
-    bus.on('test.event', handler3);
-    expect(bus.listenerCount('test.event')).toBe(3);
+    bus.on('session:123', handler2);
+    bus.on('session:123', handler3);
+    expect(bus.listenerCount('session:123')).toBe(3);
 
-    bus.off('test.event', handler1);
-    expect(bus.listenerCount('test.event')).toBe(2);
+    bus.off('session:123', handler1);
+    expect(bus.listenerCount('session:123')).toBe(2);
   });
 
   it('should not add duplicate handlers', () => {
     const bus = new WebSocketEventBus();
     const handler = vi.fn();
 
-    bus.on('test.event', handler);
-    bus.on('test.event', handler); // Add same handler again
-    bus.emit('test.event', 'data');
+    const event: SessionEvent = {
+      type: SessionEventTypes.STREAM_OUTPUT,
+      data: { message: 'test', sessionId: '123' },
+    };
+
+    bus.on('session:123', handler);
+    bus.on('session:123', handler); // Add same handler again
+    bus.emit('session:123', event);
 
     // Should only be called once because Set deduplicates
     expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it('should track active channels', () => {
+    const bus = new WebSocketEventBus();
+    const handler1 = vi.fn();
+    const handler2 = vi.fn();
+
+    expect(bus.getActiveChannels()).toEqual([]);
+
+    bus.on('session:123', handler1);
+    bus.on('global', handler2);
+
+    const channels = bus.getActiveChannels();
+    expect(channels).toContain('session:123');
+    expect(channels).toContain('global');
+    expect(channels.length).toBe(2);
+
+    bus.off('session:123', handler1);
+    expect(bus.getActiveChannels()).toEqual(['global']);
+  });
+
+  it('should emit different event types to same channel', () => {
+    const bus = new WebSocketEventBus();
+    const handler = vi.fn();
+
+    bus.on<SessionEvent>('session:123', handler);
+
+    const event1: SessionEvent = {
+      type: SessionEventTypes.STREAM_OUTPUT,
+      data: { message: 'output', sessionId: '123' },
+    };
+
+    const event2: SessionEvent = {
+      type: SessionEventTypes.MESSAGE_COMPLETE,
+      data: { sessionId: '123', messageId: 'msg1' },
+    };
+
+    bus.emit('session:123', event1);
+    bus.emit('session:123', event2);
+
+    expect(handler).toHaveBeenCalledTimes(2);
+    expect(handler).toHaveBeenNthCalledWith(1, event1);
+    expect(handler).toHaveBeenNthCalledWith(2, event2);
   });
 });

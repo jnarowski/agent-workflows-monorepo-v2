@@ -395,10 +395,7 @@ function mapCodexToolToClaude(codexToolName: string): string {
 /**
  * Transform Codex tool input to Claude tool input format
  */
-function transformToolInput(
-  codexToolName: string,
-  codexInput: Record<string, unknown>
-): Record<string, unknown> {
+function transformToolInput(codexToolName: string, codexInput: Record<string, unknown>): Record<string, unknown> {
   // Shell/Bash transformation
   if (codexToolName === 'shell') {
     // Codex format: {"command": ["zsh", "-lc", "ls"], "workdir": ".", "timeout_ms": 120000}

@@ -3,18 +3,13 @@
  *
  * TypeScript interfaces for WebSocket message structures and data payloads.
  * Used by the WebSocket handler for type-safe message processing.
+ *
+ * NOTE: Most event types and constants are now defined in @/shared/websocket
+ * This file only contains server-specific types and re-exports shared types.
  */
 
-/**
- * Generic WebSocket message structure
- * All WebSocket messages follow this format with a type and data payload
- *
- * @template T - The type of the data payload
- */
-export interface WebSocketMessage<T = unknown> {
-  type: string;
-  data: T;
-}
+// Re-export all shared WebSocket types
+export * from '@/shared/websocket/index.js'
 
 /**
  * Payload for session send_message events
@@ -61,4 +56,29 @@ export interface ActiveSessionData {
   projectPath: string;
   userId: string;
   tempImageDir?: string;
+}
+
+/**
+ * Payload for subscribe messages
+ * Clients send this to subscribe to one or more channels
+ */
+export interface SubscribeMessageData {
+  channels: string[]; // Array of channel IDs (e.g., ["session:123", "project:456"])
+}
+
+/**
+ * Payload for unsubscribe messages
+ * Clients send this to unsubscribe from one or more channels
+ */
+export interface UnsubscribeMessageData {
+  channels: string[]; // Array of channel IDs to unsubscribe from
+}
+
+/**
+ * Payload for subscription error responses
+ * Sent when a subscription request fails (e.g., permission denied)
+ */
+export interface SubscriptionErrorData {
+  channelId: string; // Channel that was denied
+  reason: string; // Human-readable error message
 }

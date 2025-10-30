@@ -2,12 +2,13 @@
 
 **Status**: draft
 **Created**: 2025-10-30
+**Updated**: 2025-10-30
 **Package**: apps/web
-**Estimated Effort**: 3-4 hours
+**Estimated Effort**: 1-2 hours
 
 ## Overview
 
-Optimize session state updates by sending real-time WebSocket events instead of invalidating and refetching all projects. Currently, when a session state changes (idle → working → idle/error), the frontend invalidates the entire projects cache and refetches ALL projects with their sessions (~50-500 KB). This spec implements direct cache updates using WebSocket events, eliminating unnecessary API calls and improving real-time responsiveness.
+Optimize session state updates by sending real-time `session.updated` WebSocket events to enable direct cache updates in the frontend. Currently, session state changes trigger full project refetches via `queryClient.invalidateQueries()`. This spec implements a Phoenix Channels pattern where the backend broadcasts session state changes, and the frontend updates the React Query cache directly using `setQueryData()`, eliminating unnecessary API calls.
 
 ## User Story
 
@@ -17,17 +18,21 @@ So that I always know the current status of my agent sessions without delays or 
 
 ## Technical Approach
 
-Replace query invalidation with direct React Query cache updates triggered by WebSocket events. When session state changes on the backend, send a `session.{id}.updated` WebSocket message containing the updated session data. The frontend receives this event and directly updates the cached session within the `projectKeys.withSessions()` query, avoiding a full refetch.
+**Phoenix Channels Pattern**: Use the existing WebSocket infrastructure with Phoenix Channels pattern (channel-based subscriptions). The backend broadcasts `session.updated` events on the session channel (`session:{sessionId}`), and the frontend subscribes to these events via the EventBus.
+
+**Direct Cache Updates**: When the frontend receives `session.updated` events, use React Query's `setQueryData()` to directly update the cached session data, avoiding full API refetches.
 
 ## Key Design Decisions
 
-1. **Generic `session.updated` event**: Use a single event type for all session updates (state, metadata, name) instead of separate events for each field. This is more extensible and reduces event handler complexity.
+1. **Phoenix Channels Event Pattern**: Use the existing `SessionEventTypes.SESSION_UPDATED` event type (not implemented yet) following the Phoenix Channels discriminated union pattern. All events flow through the EventBus with channel-based routing.
 
-2. **Direct cache updates via `setQueryData`**: Update the React Query cache directly instead of invalidating. This provides instant UI updates without network round-trips.
+2. **Shared Type System**: Use types from `@/shared/websocket/` for consistency across client and server. Add `SESSION_UPDATED` to `SessionEventTypes` constant.
 
-3. **Revert default session state to 'idle'**: Sessions should start as 'idle' and only transition to 'working' when actively processing. The WebSocket handler already manages state transitions correctly.
+3. **Direct Cache Updates via `setQueryData`**: Update the React Query cache directly instead of invalidating. This provides instant UI updates without network round-trips.
 
-4. **Backward compatibility**: Keep existing query invalidation as fallback for cases where WebSocket update fails or session data is complex.
+4. **Backward Compatibility**: Keep existing `queryClient.invalidateQueries()` in `MESSAGE_COMPLETE` handler as fallback, but remove unnecessary invalidation calls that trigger full refetches.
+
+5. **Minimal Payload**: Only send changed fields in `session.updated` events (state, error_message, updated_at, etc.) to reduce bandwidth.
 
 ## Architecture
 
@@ -36,84 +41,94 @@ Replace query invalidation with direct React Query cache updates triggered by We
 ```
 apps/web/
 ├── src/
+│   ├── shared/
+│   │   └── websocket/
+│   │       ├── types.ts (add SESSION_UPDATED to SessionEventTypes)
+│   │       └── index.ts (re-export)
+│   │
 │   ├── server/
-│   │   ├── websocket/
-│   │   │   └── handlers/
-│   │   │       └── session.handler.ts (send session.updated events)
-│   │   ├── services/
-│   │   │   └── agentSession.ts (revert default state)
-│   │   └── websocket.types.ts (add SessionUpdatedData type)
+│   │   └── websocket/
+│   │       └── handlers/
+│   │           └── session.handler.ts (broadcast session.updated events)
 │   │
-│   ├── client/
-│   │   └── pages/
-│   │       └── projects/
-│   │           └── sessions/
-│   │               └── hooks/
-│   │                   └── useSessionWebSocket.ts (handle session.updated)
-│   │
-│   └── shared/
-│       └── types/
-│           └── agent-session.types.ts (existing SessionResponse type)
+│   └── client/
+│       └── pages/
+│           └── projects/
+│               └── sessions/
+│                   └── hooks/
+│                       └── useSessionWebSocket.ts (handle session.updated)
 ```
 
 ### Integration Points
 
-**Backend (WebSocket Handler)**:
-- `session.handler.ts` - Add `sendMessage()` calls after state changes
-- `websocket.types.ts` - Add `SessionUpdatedData` interface
+**Shared Types (`@/shared/websocket/`)**:
 
-**Backend (Services)**:
-- `agentSession.ts` - Revert default state to 'idle' (line 401)
+- `types.ts` - Add `SESSION_UPDATED` constant and `SessionUpdatedData` interface
+- Follows existing Phoenix Channels discriminated union pattern
+
+**Backend (WebSocket Handler)**:
+
+- `session.handler.ts` - Use `broadcast()` utility to send events on session channel
+- Add broadcasts after state changes (working, idle, error)
 
 **Frontend (WebSocket Hook)**:
-- `useSessionWebSocket.ts` - Add `handleSessionUpdated()` handler
-- Update cache with `queryClient.setQueryData()`
+
+- `useSessionWebSocket.ts` - Add case for `SessionEventTypes.SESSION_UPDATED`
+- Use `queryClient.setQueryData()` to update cached session
+- Remove unnecessary `invalidateQueries()` calls
 
 **Frontend (Query Keys)**:
+
 - `useProjects.ts` - Already exports `projectKeys.withSessions()`
 
 ## Implementation Details
 
-### 1. Backend WebSocket Events
+### 1. Shared Types - Add SESSION_UPDATED Event
 
-Send `session.{sessionId}.updated` events after every session state change in `session.handler.ts`.
-
-**Key Points**:
-- Send after setting state to 'working' (line 94)
-- Send after setting state to 'idle' (line 142)
-- Send after setting state to 'error' (line 346)
-- Include minimal data: `id`, `state`, `error_message`, `metadata`, `name`, `updated_at`
-- Use existing `sendMessage()` helper function
-
-### 2. Backend Type Definitions
-
-Add `SessionUpdatedData` interface to `websocket.types.ts` for type safety.
+Add new event type to `@/shared/websocket/types.ts` following the existing pattern.
 
 **Key Points**:
-- Extends partial `SessionResponse` type
-- All fields optional except `id` (allows partial updates)
-- Matches the data structure sent via WebSocket
 
-### 3. Frontend WebSocket Handler
+- Add `SESSION_UPDATED: 'session_updated'` to `SessionEventTypes` constant
+- Define `SessionUpdatedData` interface with optional fields
+- Add to `SessionEvent` discriminated union
+- All fields optional except `sessionId` (allows partial updates)
 
-Add event listener for `session.{sessionId}.updated` in `useSessionWebSocket.ts`.
+### 2. Backend - Broadcast session.updated Events
 
-**Key Points**:
-- Use `useCallback` to prevent unnecessary re-registrations
-- Update cache with `queryClient.setQueryData()`
-- Map over projects to find matching project
-- Map over sessions to find matching session
-- Merge updated data with existing session data
-- Handle case where project or session not found in cache
-
-### 4. Revert Default Session State
-
-Change default session state from 'working' back to 'idle' in `agentSession.ts`.
+Use existing `broadcast()` utility in `session.handler.ts` to send events.
 
 **Key Points**:
-- Line 401: Change `state: 'working'` to `state: 'idle'`
-- Sessions should only be 'working' when actively processing
-- WebSocket handler already manages transitions correctly
+
+- Broadcast after setting state to 'working' (line ~120-127)
+- Broadcast after setting state to 'idle' (line ~195-202)
+- Broadcast after setting state to 'error' (line ~469-476)
+- Use `Channels.session(sessionId)` for channel name
+- Include minimal data: `sessionId`, `state`, `error_message`, `updated_at`
+- Use existing `broadcast()` function (not `sendMessage()`)
+
+### 3. Frontend - Handle session.updated Events
+
+Add case to existing `handleEvent()` switch statement in `useSessionWebSocket.ts`.
+
+**Key Points**:
+
+- Add `case SessionEventTypes.SESSION_UPDATED:` to switch
+- Use `queryClient.setQueryData()` to update cache
+- Find project by `projectIdRef.current`
+- Map over sessions to update matching session
+- Merge updated data with existing session
+- Keep exhaustive checking with `never` type
+
+### 4. Frontend - Remove Unnecessary Invalidation
+
+Review and optimize query invalidation calls.
+
+**Key Points**:
+
+- Keep invalidation in `MESSAGE_COMPLETE` for metadata updates
+- Remove any redundant invalidation calls
+- Rely on `session.updated` events for state changes
 
 ## Files to Create/Modify
 
@@ -123,25 +138,40 @@ No new files required.
 
 ### Modified Files (3)
 
-1. `apps/web/src/server/websocket/handlers/session.handler.ts` - Add WebSocket `session.updated` events after state changes
-2. `apps/web/src/server/websocket.types.ts` - Add `SessionUpdatedData` interface
+1. `apps/web/src/shared/websocket/types.ts` - Add `SESSION_UPDATED` event type and data interface
+2. `apps/web/src/server/websocket/handlers/session.handler.ts` - Broadcast `session.updated` events after state changes
 3. `apps/web/src/client/pages/projects/sessions/hooks/useSessionWebSocket.ts` - Handle `session.updated` events with direct cache updates
 
 ## Step by Step Tasks
 
 **IMPORTANT: Execute every step in order, top to bottom**
 
-### Task Group 1: Backend - Add WebSocket Type Definitions
+### Task Group 1: Shared Types - Add SESSION_UPDATED Event Type
 
 <!-- prettier-ignore -->
-- [ ] session-ws-types Add `SessionUpdatedData` interface to websocket types
-  - Add interface extending partial SessionResponse
-  - File: `apps/web/src/server/websocket.types.ts`
-  - Add after existing interfaces:
+- [ ] Add SESSION_UPDATED constant to SessionEventTypes
+  - File: `apps/web/src/shared/websocket/types.ts`
+  - Add to SessionEventTypes object:
+    ```typescript
+    export const SessionEventTypes = {
+      STREAM_OUTPUT: 'stream_output',
+      MESSAGE_COMPLETE: 'message_complete',
+      ERROR: 'error',
+      SUBSCRIBE_SUCCESS: 'subscribe_success',
+      SEND_MESSAGE: 'send_message',
+      CANCEL: 'cancel',
+      SUBSCRIBE: 'subscribe',
+      SESSION_UPDATED: 'session_updated', // NEW
+    } as const;
+    ```
+
+- [ ] Add SessionUpdatedData interface
+  - File: `apps/web/src/shared/websocket/types.ts`
+  - Add interface after existing data interfaces:
     ```typescript
     export interface SessionUpdatedData {
-      id: string;
-      state?: SessionState;
+      sessionId: string;
+      state?: 'idle' | 'working' | 'error';
       error_message?: string | null;
       metadata?: Record<string, unknown>;
       name?: string;
@@ -149,82 +179,91 @@ No new files required.
     }
     ```
 
-#### Completion Notes
-
-(This will be filled in by the agent implementing this task group)
-
-### Task Group 2: Backend - Send WebSocket Events After State Changes
-
-<!-- prettier-ignore -->
-- [ ] session-ws-working Send `session.updated` event after setting state to 'working'
-  - Add after line 94 in handleSessionSendMessage()
-  - File: `apps/web/src/server/websocket/handlers/session.handler.ts`
-  - Add WebSocket message:
+- [ ] Add SESSION_UPDATED to SessionEvent discriminated union
+  - File: `apps/web/src/shared/websocket/types.ts`
+  - Add to SessionEvent type:
     ```typescript
-    sendMessage(socket, `session.${sessionId}.updated`, {
-      id: sessionId,
-      state: 'working',
-      error_message: null,
-      updated_at: new Date(),
-    } satisfies SessionUpdatedData);
-    ```
-
-- [ ] session-ws-idle Send `session.updated` event after setting state to 'idle'
-  - Add after line 142 in handleSessionSendMessage()
-  - File: `apps/web/src/server/websocket/handlers/session.handler.ts`
-  - Add WebSocket message:
-    ```typescript
-    sendMessage(socket, `session.${sessionId}.updated`, {
-      id: sessionId,
-      state: 'idle',
-      error_message: null,
-      metadata: session.metadata as Record<string, unknown>,
-      name: session.name,
-      updated_at: new Date(),
-    } satisfies SessionUpdatedData);
-    ```
-
-- [ ] session-ws-error Send `session.updated` event after setting state to 'error'
-  - Add after line 346 in handleExecutionFailure()
-  - File: `apps/web/src/server/websocket/handlers/session.handler.ts`
-  - Add WebSocket message:
-    ```typescript
-    sendMessage(socket, `session.${sessionId}.updated`, {
-      id: sessionId,
-      state: 'error',
-      error_message: errorMessage,
-      updated_at: new Date(),
-    } satisfies SessionUpdatedData);
+    export type SessionEvent =
+      | { type: typeof SessionEventTypes.STREAM_OUTPUT; data: StreamOutputData }
+      | { type: typeof SessionEventTypes.MESSAGE_COMPLETE; data: CompleteData }
+      | { type: typeof SessionEventTypes.ERROR; data: ErrorData }
+      | { type: typeof SessionEventTypes.SUBSCRIBE_SUCCESS; data: SubscribeSuccessData }
+      | { type: typeof SessionEventTypes.SESSION_UPDATED; data: SessionUpdatedData }; // NEW
     ```
 
 #### Completion Notes
 
 (This will be filled in by the agent implementing this task group)
 
-### Task Group 3: Backend - Revert Default Session State
+### Task Group 2: Backend - Broadcast session.updated Events After State Changes
 
 <!-- prettier-ignore -->
-- [ ] session-state-default Revert default session state to 'idle'
-  - Change line 401 in createSession()
-  - File: `apps/web/src/server/services/agentSession.ts`
-  - Change from `state: 'working'` to `state: 'idle'`
-  - Reason: Sessions should start idle, only go to 'working' when processing
+- [ ] Broadcast session.updated when state changes to 'working'
+  - Add after line 127 in handleSessionSendMessage()
+  - File: `apps/web/src/server/websocket/handlers/session.handler.ts`
+  - Import from shared types: `import { SessionEventTypes } from '@/shared/websocket';`
+  - Use broadcast utility:
+    ```typescript
+    broadcast(Channels.session(sessionId), {
+      type: SessionEventTypes.SESSION_UPDATED,
+      data: {
+        sessionId,
+        state: 'working',
+        error_message: null,
+        updated_at: new Date().toISOString(),
+      },
+    });
+    ```
+
+- [ ] Broadcast session.updated when state changes to 'idle'
+  - Add after line 202 in handleSessionSendMessage()
+  - File: `apps/web/src/server/websocket/handlers/session.handler.ts`
+  - Get updated session data from database if needed
+  - Use broadcast utility:
+    ```typescript
+    broadcast(Channels.session(sessionId), {
+      type: SessionEventTypes.SESSION_UPDATED,
+      data: {
+        sessionId,
+        state: 'idle',
+        error_message: null,
+        updated_at: new Date().toISOString(),
+      },
+    });
+    ```
+
+- [ ] Broadcast session.updated when state changes to 'error'
+  - Add after line 476 in handleExecutionFailure()
+  - File: `apps/web/src/server/websocket/handlers/session.handler.ts`
+  - Use broadcast utility:
+    ```typescript
+    broadcast(Channels.session(sessionId), {
+      type: SessionEventTypes.SESSION_UPDATED,
+      data: {
+        sessionId,
+        state: 'error',
+        error_message: errorMessage,
+        updated_at: new Date().toISOString(),
+      },
+    });
+    ```
 
 #### Completion Notes
 
 (This will be filled in by the agent implementing this task group)
 
-### Task Group 4: Frontend - Handle WebSocket Session Updates
+### Task Group 3: Frontend - Handle session.updated Events
 
 <!-- prettier-ignore -->
-- [ ] session-ws-handler Add `handleSessionUpdated` callback to process session updates
-  - Add after existing handlers in useSessionWebSocket.ts
+- [ ] Add case for SESSION_UPDATED to handleEvent switch
   - File: `apps/web/src/client/pages/projects/sessions/hooks/useSessionWebSocket.ts`
   - Import projectKeys: `import { projectKeys } from '@/client/pages/projects/hooks/useProjects';`
-  - Add handler:
+  - Import type: `import type { ProjectWithSessions } from '@/client/pages/projects/hooks/useProjects';`
+  - Add case after MESSAGE_COMPLETE case (around line 152):
     ```typescript
-    const handleSessionUpdated = useCallback((data: Partial<SessionResponse>) => {
-      console.log("[useSessionWebSocket] session.updated received:", data);
+    case SessionEventTypes.SESSION_UPDATED: {
+      const data = event.data;
+      console.log('[useSessionWebSocket] session.updated received:', data);
 
       // Update cached session data directly (no refetch)
       queryClient.setQueryData<ProjectWithSessions[]>(
@@ -232,46 +271,39 @@ No new files required.
         (old) => {
           if (!old) return old;
 
-          return old.map(project => {
+          return old.map((project) => {
             // Find project containing this session
             if (project.id !== projectIdRef.current) return project;
 
             // Update the matching session
             return {
               ...project,
-              sessions: project.sessions.map(session =>
+              sessions: project.sessions.map((session) =>
                 session.id === sessionIdRef.current
-                  ? { ...session, ...data, updated_at: new Date(data.updated_at || Date.now()) }
+                  ? {
+                      ...session,
+                      state: data.state ?? session.state,
+                      error_message: data.error_message ?? session.error_message,
+                      metadata: data.metadata ?? session.metadata,
+                      name: data.name ?? session.name,
+                      updated_at: data.updated_at
+                        ? new Date(data.updated_at)
+                        : session.updated_at,
+                    }
                   : session
               ),
             };
           });
         }
       );
-    }, [queryClient]);
+      break;
+    }
     ```
 
-- [ ] session-ws-listener Register event listener for `session.updated` events
-  - Add to existing useEffect in useSessionWebSocket.ts (around line 186)
+- [ ] Verify exhaustive checking still works
   - File: `apps/web/src/client/pages/projects/sessions/hooks/useSessionWebSocket.ts`
-  - Register listener:
-    ```typescript
-    const sessionUpdatedEvent = `session.${sessionId}.updated`;
-    eventBus.on(sessionUpdatedEvent, handleSessionUpdated);
-    ```
-  - Add cleanup in return statement:
-    ```typescript
-    eventBus.off(sessionUpdatedEvent, handleSessionUpdated);
-    ```
-
-- [ ] session-ws-remove-invalidation Remove redundant query invalidation
-  - Remove or comment out sessionKeys.byProject() invalidation
-  - File: `apps/web/src/client/pages/projects/sessions/hooks/useSessionWebSocket.ts`
-  - Line 145: Remove this line (it's a no-op since no queries use that key):
-    ```typescript
-    // queryClient.invalidateQueries({ queryKey: sessionKeys.byProject(projectIdRef.current) });
-    ```
-  - Keep projectKeys.withSessions() invalidation as fallback for message_complete
+  - TypeScript should error if any SessionEvent cases are missing
+  - The `default: const _exhaustive: never = event;` should catch any missed cases
 
 #### Completion Notes
 
@@ -321,39 +353,45 @@ Consider adding E2E test to verify real-time state updates:
 **`apps/web/tests/e2e/session-state-updates.test.ts`**:
 
 ```typescript
-test('session state updates in real-time via WebSocket', async ({ page }) => {
+test("session state updates in real-time via WebSocket", async ({ page }) => {
   // Navigate to project
-  await page.goto('/projects/test-project-id');
+  await page.goto("/projects/test-project-id");
 
   // Create session and send message
   await page.click('[data-testid="new-session-button"]');
-  await page.fill('[data-testid="chat-input"]', 'test message');
+  await page.fill('[data-testid="chat-input"]', "test message");
   await page.click('[data-testid="send-button"]');
 
   // Verify "Processing" badge appears immediately
-  await expect(page.locator('[data-testid="session-state-badge"]')).toContainText('Processing');
+  await expect(
+    page.locator('[data-testid="session-state-badge"]')
+  ).toContainText("Processing");
 
   // Wait for completion (timeout 30s)
-  await expect(page.locator('[data-testid="session-state-badge"]')).not.toBeVisible({ timeout: 30000 });
+  await expect(
+    page.locator('[data-testid="session-state-badge"]')
+  ).not.toBeVisible({ timeout: 30000 });
 
   // Verify no API calls to /api/projects were made (only WebSocket messages)
-  const apiCalls = page.requests().filter(req => req.url().includes('/api/projects'));
+  const apiCalls = page
+    .requests()
+    .filter((req) => req.url().includes("/api/projects"));
   expect(apiCalls.length).toBe(1); // Only initial load, no refetch
 });
 ```
 
 ## Success Criteria
 
-- [ ] Sessions start with 'idle' state (not 'working')
 - [ ] Session state changes trigger WebSocket `session.updated` events
 - [ ] Frontend receives events and updates cache directly without API calls
 - [ ] Sidebar session badges update instantly when state changes
-- [ ] No new API calls to `/api/projects` when session state changes
-- [ ] WebSocket events include all necessary session data (id, state, error_message, metadata, name, updated_at)
-- [ ] Type safety maintained with `SessionUpdatedData` interface
+- [ ] No new API calls to `/api/projects` when session state changes (except on MESSAGE_COMPLETE)
+- [ ] WebSocket events follow Phoenix Channels pattern with discriminated unions
+- [ ] Type safety maintained with `SessionUpdatedData` interface in shared types
+- [ ] Exhaustive type checking works in frontend switch statement
 - [ ] All existing functionality continues to work (backward compatible)
 - [ ] No console errors or warnings in browser
-- [ ] Performance improvement measurable (0 API calls vs 1 API call per state change)
+- [ ] Performance improvement measurable (0-1 API calls vs multiple API calls per state change)
 
 ## Validation
 
@@ -408,25 +446,39 @@ pnpm build
 
 ## Implementation Notes
 
-### 1. Query Invalidation as Fallback
+### 1. Phoenix Channels Pattern
 
-Keep the existing `queryClient.invalidateQueries({ queryKey: projectKeys.withSessions() })` call in the `handleMessageComplete` handler as a fallback. This ensures that if WebSocket updates fail or don't fire for any reason, the cache will still be refreshed when the message completes.
+This implementation follows the Phoenix Channels pattern already established in the WebSocket system:
+- **Channels**: Use `Channels.session(sessionId)` for routing
+- **Events**: Use discriminated unions from `SessionEventTypes`
+- **EventBus**: Subscribe via `eventBus.on<SessionEvent>(channel, handler)`
+- **Broadcasting**: Use `broadcast()` utility on backend, not `sendMessage()`
 
-### 2. Timestamp Handling
+For complete details, see: `.agent/docs/websockets.md`
 
-The `updated_at` field should be sent as an ISO string from the backend and converted to a Date object in the frontend. This ensures proper serialization over WebSocket and proper typing in the React Query cache.
+### 2. Query Invalidation as Fallback
 
-### 3. Partial Updates
+Keep the existing `queryClient.invalidateQueries({ queryKey: projectKeys.withSessions() })` call in the `MESSAGE_COMPLETE` handler as a fallback. This ensures that if WebSocket updates fail, the cache will still be refreshed when the message completes.
 
-The `SessionUpdatedData` interface uses all optional fields (except `id`) to support partial updates. This allows sending only the fields that changed, reducing payload size. The frontend merges the partial data with existing session data using the spread operator.
+### 3. Timestamp Handling
 
-### 4. Cache Immutability
+The `updated_at` field should be sent as an ISO string from the backend (`new Date().toISOString()`) and converted to a Date object in the frontend. This ensures proper serialization over WebSocket and proper typing in the React Query cache.
+
+### 4. Partial Updates
+
+The `SessionUpdatedData` interface uses all optional fields (except `sessionId`) to support partial updates. This allows sending only the fields that changed, reducing payload size. The frontend merges the partial data with existing session data using the nullish coalescing operator (`??`).
+
+### 5. Cache Immutability
 
 Always create new objects when updating the cache - never mutate existing objects. The implementation uses `map()` to create new arrays and spread operators to create new objects, ensuring React Query detects changes and triggers re-renders.
 
-### 5. Session Not Found Edge Case
+### 6. Exhaustive Type Checking
 
-If the session or project is not found in the cache when `handleSessionUpdated` runs, the handler returns the unchanged cache. This is safe because the session will appear on the next full refetch (e.g., on page refresh or manual query invalidation).
+The frontend switch statement uses TypeScript's exhaustive checking pattern with `never` type. When you add `SESSION_UPDATED` to the `SessionEvent` union, TypeScript will error until you add the corresponding case to the switch statement.
+
+### 7. Session Not Found Edge Case
+
+If the session or project is not found in the cache when the `SESSION_UPDATED` handler runs, the handler returns the unchanged cache. This is safe because the session will appear on the next full refetch (e.g., on page refresh or manual query invalidation).
 
 ## Dependencies
 
@@ -437,15 +489,13 @@ If the session or project is not found in the cache when `handleSessionUpdated` 
 
 ## Timeline
 
-| Task                                | Estimated Time |
-| ----------------------------------- | -------------- |
-| Backend - Add type definitions      | 15 minutes     |
-| Backend - Send WebSocket events     | 30 minutes     |
-| Backend - Revert default state      | 5 minutes      |
-| Frontend - Handle WebSocket updates | 1 hour         |
-| Testing - Manual integration tests  | 1 hour         |
-| Testing - Edge cases and cleanup    | 30 minutes     |
-| **Total**                           | **3-4 hours**  |
+| Task                                 | Estimated Time |
+| ------------------------------------ | -------------- |
+| Shared Types - Add SESSION_UPDATED   | 15 minutes     |
+| Backend - Broadcast session.updated  | 30 minutes     |
+| Frontend - Handle WebSocket updates  | 30 minutes     |
+| Testing - Manual integration tests   | 30 minutes     |
+| **Total**                            | **1-2 hours**  |
 
 ## References
 

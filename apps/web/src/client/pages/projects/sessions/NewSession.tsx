@@ -5,7 +5,6 @@ import {
   ChatPromptInput,
   type ChatPromptInputHandle,
 } from "./components/ChatPromptInput";
-import { ConnectionStatusBanner } from "./components/ConnectionStatusBanner";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation";
@@ -16,6 +15,7 @@ import { generateUUID } from "@/client/lib/utils";
 import { AgentSelector } from "@/client/components/AgentSelector";
 import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
 import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
+import { Channels } from "@/shared/websocket";
 
 export default function NewSession() {
   const navigate = useNavigate();
@@ -37,10 +37,6 @@ export default function NewSession() {
   const {
     sendMessage: globalSendMessage,
     isConnected: globalIsConnected,
-    readyState,
-    isReady,
-    connectionAttempts,
-    reconnect,
   } = useWebSocket();
 
   // Auto-focus input on mount
@@ -87,13 +83,16 @@ export default function NewSession() {
       // Immediately send message via app-wide WebSocket (before navigation)
       // This starts the assistant processing right away
       // New session = resume: false (no prior messages)
-      globalSendMessage(`session.${newSession.id}.send_message`, {
-        message,
-        images: imagePaths,
-        config: {
-          resume: false,
-          sessionId: newSession.id,
-          permissionMode,
+      globalSendMessage(Channels.session(newSession.id), {
+        type: 'send_message',
+        data: {
+          message,
+          images: imagePaths,
+          config: {
+            resume: false,
+            sessionId: newSession.id,
+            permissionMode,
+          },
         },
       });
 
@@ -130,15 +129,6 @@ export default function NewSession() {
 
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden">
-      {/* Connection status banner */}
-      <ConnectionStatusBanner
-        sessionId={null}
-        readyState={readyState}
-        isReady={isReady}
-        connectionAttempts={connectionAttempts}
-        onReconnect={reconnect}
-      />
-
       {/* Empty state - chat starts here */}
       <div className="flex-1 flex items-center justify-center p-4 overflow-auto">
         <div className="text-center space-y-4 max-w-2xl w-full">

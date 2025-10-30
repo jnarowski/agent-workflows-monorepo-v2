@@ -3,11 +3,12 @@ import { useEffect, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
-import type { UnifiedMessage, UnifiedContent } from "@repo/agent-cli-sdk";
-import type {
-  SessionMessageCompleteData,
-  SessionErrorData,
-} from "@/shared/types/websocket";
+import type { UnifiedContent } from "@repo/agent-cli-sdk";
+import {
+  Channels,
+  SessionEventTypes,
+  type SessionEvent,
+} from "@/shared/websocket";
 import { sessionKeys } from "./useAgentSessions";
 import { generateUUID } from "@/client/lib/utils";
 
@@ -17,7 +18,8 @@ interface UseSessionWebSocketOptions {
 }
 
 /**
- * Hook to manage WebSocket events for sessions
+ * Hook to manage WebSocket events for sessions using Phoenix Channels pattern
+ * Subscribes to session channel and handles events with exhaustive type checking
  * Uses the global WebSocketProvider connection and EventBus
  * All message state is managed by sessionStore
  */
@@ -44,173 +46,188 @@ export function useSessionWebSocket({
   }, [sessionId, projectId]);
 
   /**
-   * Handle stream_output events
-   * SDK already provides clean UnifiedMessage format - no transforms needed
+   * Handle SessionEvent with exhaustive type checking
    */
-  const handleStreamOutput = useCallback(
-    (data: { message?: UnifiedMessage }) => {
-      console.log("[useSessionWebSocket] stream_output received:", {
-        hasMessage: Boolean(data.message),
-        messageId: data.message?.id,
-        messageRole: data.message?.role,
-        contentType: Array.isArray(data.message?.content) ? 'array' : typeof data.message?.content,
-        contentLength: Array.isArray(data.message?.content) ? data.message.content.length : 0,
-        contentBlockTypes: Array.isArray(data.message?.content)
-          ? data.message.content.map(b => b.type)
-          : [],
-        rawData: data,
-      });
+  const handleEvent = useCallback(
+    (event: SessionEvent) => {
+      switch (event.type) {
+        case SessionEventTypes.STREAM_OUTPUT: {
+          const { message } = event.data;
 
-      // SDK already provides clean UnifiedMessage
-      if (data.message) {
-        const msg = data.message;
+          // SDK already provides clean UnifiedMessage
+          if (message) {
+            // Validate content before updating
+            if (!Array.isArray(message.content)) {
+              console.error(
+                "[useSessionWebSocket] Message content is not an array:",
+                message
+              );
+              return;
+            }
 
-        // Validate content before updating
-        if (!Array.isArray(msg.content)) {
-          console.error("[useSessionWebSocket] Message content is not an array:", msg);
-          return;
+            // Check for empty content blocks
+            const emptyTextBlocks = message.content.filter(
+              (block) =>
+                block.type === "text" &&
+                (!block.text || block.text.trim() === "")
+            );
+            if (emptyTextBlocks.length > 0) {
+              console.warn(
+                "[useSessionWebSocket] Message contains",
+                emptyTextBlocks.length,
+                "empty text blocks"
+              );
+            }
+
+            if (message.content.length === 0) {
+              console.warn(
+                "[useSessionWebSocket] Message has EMPTY content array"
+              );
+            }
+
+            useSessionStore
+              .getState()
+              .updateStreamingMessage(
+                message.id,
+                message.content as UnifiedContent[]
+              );
+          } else {
+            console.warn(
+              "[useSessionWebSocket] stream_output received without message"
+            );
+          }
+          break;
         }
 
-        // Check for empty content blocks
-        const emptyTextBlocks = msg.content.filter(
-          block => block.type === 'text' && (!block.text || block.text.trim() === '')
-        );
-        if (emptyTextBlocks.length > 0) {
-          console.warn("[useSessionWebSocket] Message contains", emptyTextBlocks.length, "empty text blocks:", emptyTextBlocks);
-        }
+        case SessionEventTypes.MESSAGE_COMPLETE: {
+          const data = event.data;
+          console.log("[useSessionWebSocket] message_complete received:", data);
 
-        if (msg.content.length === 0) {
-          console.warn("[useSessionWebSocket] Message has EMPTY content array:", msg);
-        }
+          // Get current session and messages
+          const store = useSessionStore.getState();
+          const session = store.session;
 
-        useSessionStore
-          .getState()
-          .updateStreamingMessage(msg.id, msg.content as UnifiedContent[]);
-      } else {
-        console.warn("[useSessionWebSocket] stream_output received without message:", data);
-      }
-    },
-    []
-  );
+          if (!session?.messages.length) {
+            return;
+          }
 
-  /**
-   * Handle message_complete events
-   */
-  const handleMessageComplete = useCallback(
-    (data: SessionMessageCompleteData) => {
-      console.log("[useSessionWebSocket] message_complete received:", data);
+          // If usage data is provided, attach it to the last assistant message
+          if (data.usage) {
+            const messages = [...session.messages];
+            const lastMessageIndex = messages.length - 1;
+            const lastMessage = messages[lastMessageIndex];
 
-      // Get current session and messages
-      const store = useSessionStore.getState();
-      const session = store.session;
+            if (lastMessage.role === "assistant") {
+              // Create updated message with usage data
+              messages[lastMessageIndex] = {
+                ...lastMessage,
+                usage: data.usage,
+                isStreaming: false,
+              };
 
-      if (!session?.messages.length) {
-        return;
-      }
+              // Update store with new messages array
+              useSessionStore.setState({
+                session: {
+                  ...session,
+                  messages,
+                  isStreaming: false,
+                },
+              });
+            }
+          } else {
+            // No usage data, just finalize the message
+            store.finalizeMessage(sessionIdRef.current);
+          }
 
-      // If usage data is provided, attach it to the last assistant message
-      if (data.usage) {
-        const messages = [...session.messages];
-        const lastMessageIndex = messages.length - 1;
-        const lastMessage = messages[lastMessageIndex];
+          // Update metadata if provided (for other fields like model, stop_reason)
+          if (data.metadata) {
+            store.updateMetadata(data.metadata);
+          }
 
-        if (lastMessage.role === "assistant") {
-          // Create updated message with usage data
-          messages[lastMessageIndex] = {
-            ...lastMessage,
-            usage: data.usage,
-            isStreaming: false,
-          };
-
-          // Update store with new messages array
-          useSessionStore.setState({
-            session: {
-              ...session,
-              messages,
-              isStreaming: false,
-            },
+          // Invalidate sessions query to update sidebar with new metadata
+          queryClient.invalidateQueries({
+            queryKey: sessionKeys.byProject(projectIdRef.current),
           });
+          break;
         }
-      } else {
-        // No usage data, just finalize the message
-        store.finalizeMessage(sessionIdRef.current);
-      }
 
-      // Update metadata if provided (for other fields like model, stop_reason)
-      if (data.metadata) {
-        store.updateMetadata(data.metadata);
-      }
+        case SessionEventTypes.ERROR: {
+          const data = event.data;
+          console.error(
+            "[useSessionWebSocket] Error from server:",
+            data.message,
+            data.error
+          );
 
-      // Invalidate sessions query to update sidebar with new metadata
-      queryClient.invalidateQueries({
-        queryKey: sessionKeys.byProject(projectIdRef.current),
-      });
+          // Add error message to store
+          useSessionStore.getState().addMessage({
+            id: generateUUID(),
+            role: "assistant",
+            content: [
+              {
+                type: "text",
+                text: `Error: ${data.message || data.error || "An error occurred"}\n\n${(data as any).details ? `Details: ${JSON.stringify((data as any).details, null, 2)}` : ""}`,
+              },
+            ],
+            timestamp: Date.now(),
+            isError: true,
+          });
+
+          // Set error in store
+          useSessionStore
+            .getState()
+            .setError(data.message || data.error || "An error occurred");
+          useSessionStore.getState().setStreaming(false);
+          break;
+        }
+
+        case SessionEventTypes.SUBSCRIBE_SUCCESS: {
+          console.log(
+            "[useSessionWebSocket] Successfully subscribed to session channel"
+          );
+          break;
+        }
+
+        default: {
+          // Exhaustive checking - TypeScript will error if we miss a case
+          const _exhaustive: never = event;
+          console.warn(
+            "[useSessionWebSocket] Unknown event type:",
+            _exhaustive
+          );
+        }
+      }
     },
     [queryClient]
   );
 
   /**
-   * Handle error events
-   */
-  const handleError = useCallback((data: SessionErrorData) => {
-    console.error(
-      "[useSessionWebSocket] Error from server:",
-      data.message,
-      data.error
-    );
-
-    // Add error message to store
-    useSessionStore.getState().addMessage({
-      id: generateUUID(),
-      role: "assistant",
-      content: [
-        {
-          type: "text",
-          text: `Error: ${data.message || data.error || "An error occurred"}\n\n${(data as any).details ? `Details: ${JSON.stringify((data as any).details, null, 2)}` : ""}`,
-        },
-      ],
-      timestamp: Date.now(),
-      isError: true,
-    });
-
-    // Set error in store
-    useSessionStore
-      .getState()
-      .setError(data.message || data.error || "An error occurred");
-    useSessionStore.getState().setStreaming(false);
-  }, []);
-
-  /**
-   * Subscribe to session events via EventBus
+   * Subscribe to session channel via EventBus (Phoenix Channels pattern)
    */
   useEffect(() => {
     if (!sessionId) return;
 
-    // Subscribe to session-specific events
-    const streamEvent = `session.${sessionId}.stream_output`;
-    const completeEvent = `session.${sessionId}.message_complete`;
-    const errorEvent = `session.${sessionId}.error`;
+    const channel = Channels.session(sessionId);
 
-    eventBus.on(streamEvent, handleStreamOutput);
-    eventBus.on(completeEvent, handleMessageComplete);
-    eventBus.on(errorEvent, handleError);
+    // Subscribe to session channel on backend
+    if (isConnected) {
+      sendWsMessage(channel, {
+        type: "subscribe" as const,
+        data: { sessionId },
+      });
+    }
+
+    // Subscribe to channel events via EventBus
+    eventBus.on<SessionEvent>(channel, handleEvent);
 
     // Cleanup subscriptions on unmount or sessionId change
     return () => {
-      eventBus.off(streamEvent, handleStreamOutput);
-      eventBus.off(completeEvent, handleMessageComplete);
-      eventBus.off(errorEvent, handleError);
+      eventBus.off(channel, handleEvent);
     };
-  }, [
-    sessionId,
-    eventBus,
-    handleStreamOutput,
-    handleMessageComplete,
-    handleError,
-  ]);
+  }, [sessionId, isConnected, eventBus, sendWsMessage, handleEvent]);
 
   /**
-   * Send a message via WebSocket
+   * Send a message via WebSocket using Phoenix Channels pattern
    */
   const sendMessage = useCallback(
     (message: string, images?: string[], config?: Record<string, any>) => {
@@ -223,11 +240,16 @@ export function useSessionWebSocket({
         return;
       }
 
-      // Send with flat event naming: session.{id}.send_message
-      sendWsMessage(`session.${currentSessionId}.send_message`, {
-        message,
-        images,
-        config,
+      const channel = Channels.session(currentSessionId);
+
+      // Send message event to session channel
+      sendWsMessage(channel, {
+        type: "send_message" as const,
+        data: {
+          message,
+          images,
+          config,
+        },
       });
     },
     [sendWsMessage]

@@ -7,17 +7,16 @@
  */
 
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { Copy, Check } from "lucide-react";
 import type { UIMessage } from "@/shared/types/message.types";
+import { useDebugMode } from "@/client/hooks/useDebugMode";
 
 interface DebugMessagePanelProps {
   messages: UIMessage[];
 }
 
 export function DebugMessagePanel({ messages }: DebugMessagePanelProps) {
-  const [searchParams] = useSearchParams();
-  const debugMode = searchParams.get('debug') === 'true';
+  const debugMode = useDebugMode();
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedMessageIndex, setSelectedMessageIndex] = useState<number | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);

@@ -6,12 +6,21 @@ import { prisma } from "@/shared/prisma";
 import { generateSessionName } from "@/server/utils/generateSessionName";
 import type { SessionSendMessageData } from "../types.js";
 import { sendMessage } from "../utils/send-message.js";
-import { extractId } from "../utils/extract-id.js";
 import { cleanupTempDir } from "../utils/cleanup.js";
 import { activeSessions } from "../utils/active-sessions.js";
 import { validateSessionOwnership } from "../services/session-validator.js";
 import { extractUsageFromEvents } from "../services/usage-extractor.js";
-import { executeAgentCommand, type AgentExecuteResult } from "../services/agent-executor.js";
+import {
+  executeAgentCommand,
+  type AgentExecuteResult,
+} from "../services/agent-executor.js";
+import { broadcast, subscribe } from "../utils/subscriptions.js";
+import {
+  SessionEventTypes,
+  GlobalEventTypes,
+  Channels,
+} from "@/shared/websocket";
+import { parseChannel } from "../utils/channels.js";
 
 // ============================================================================
 // Types
@@ -46,6 +55,26 @@ export async function handleSessionSendMessage(
   userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
+  console.log("========================================");
+  console.log("===== handleSessionSendMessage CALLED =====");
+  console.log("SessionId:", sessionId);
+  console.log("UserId:", userId);
+  console.log("Message:", data.message);
+  console.log("========================================");
+
+  fastify.log.info(
+    { sessionId, userId, message: data.message },
+    "[WebSocket] ===== handleSessionSendMessage ENTRY POINT ====="
+  );
+
+  // Auto-subscribe socket to session channel
+  const channel = Channels.session(sessionId);
+  subscribe(channel, socket);
+  fastify.log.debug(
+    { sessionId, channel },
+    "[WebSocket] Auto-subscribed to session channel"
+  );
+
   // Verify user owns session
   const session = await validateSessionOwnership(sessionId, userId);
   const projectPath = session.project.path;
@@ -65,9 +94,13 @@ export async function handleSessionSendMessage(
 
   // Validate agent is supported
   if (!isAgentSupported(session.agent)) {
-    sendMessage(socket, `session.${sessionId}.error`, {
-      error: `Agent type '${session.agent}' is not yet implemented`,
-      code: "UNSUPPORTED_AGENT",
+    broadcast(Channels.session(sessionId), {
+      type: SessionEventTypes.ERROR,
+      data: {
+        error: `Agent type '${session.agent}' is not yet implemented`,
+        sessionId,
+        code: "UNSUPPORTED_AGENT",
+      },
     });
     await cleanupSessionImages(sessionId, fastify.log);
     return;
@@ -88,12 +121,17 @@ export async function handleSessionSendMessage(
   await prisma.agentSession.update({
     where: { id: sessionId },
     data: {
-      state: 'working',
+      state: "working",
       error_message: null, // Clear any previous error
     },
   });
 
   // Execute agent command
+  fastify.log.info(
+    { sessionId, agent: session.agent, message: data.message },
+    "[WebSocket] About to execute agent command"
+  );
+
   const result = await executeAgentCommand({
     agent: session.agent as "claude" | "codex",
     prompt: data.message,
@@ -103,27 +141,49 @@ export async function handleSessionSendMessage(
     permissionMode: config.permissionMode,
     model: config.model,
     images:
-      imagePaths.length > 0
-        ? imagePaths.map((path) => ({ path }))
-        : undefined,
+      imagePaths.length > 0 ? imagePaths.map((path) => ({ path })) : undefined,
     onEvent: ({ message }) => {
       if (message && typeof message === "object" && message !== null) {
-        sendMessage(socket, `session.${sessionId}.stream_output`, {
-          message,
+        broadcast(Channels.session(sessionId), {
+          type: SessionEventTypes.STREAM_OUTPUT,
+          data: {
+            message,
+            sessionId,
+          },
         });
       }
     },
     logger: fastify.log,
   });
 
+  fastify.log.info(
+    { sessionId, success: result.success },
+    "[WebSocket] Agent command execution completed"
+  );
+
   // Handle execution failure
   if (!result.success) {
+    console.log("===== EXECUTION FAILED - SKIPPING POST-PROCESSING =====");
+    fastify.log.warn(
+      { sessionId, error: result.error },
+      "[WebSocket] Execution failed, skipping post-processing"
+    );
     await handleExecutionFailure(socket, sessionId, result, fastify);
     await cleanupSessionImages(sessionId, fastify.log);
     return;
   }
 
+  console.log("===== EXECUTION SUCCEEDED - PROCEEDING TO POST-PROCESSING =====");
+  fastify.log.info(
+    { sessionId },
+    "[WebSocket] Execution succeeded, proceeding to post-processing"
+  );
+
   // Post-processing: Store CLI session ID, generate name, extract usage
+  fastify.log.info(
+    { sessionId, existingSessionName: session.name, hasName: !!session.name },
+    "[WebSocket] Starting post-processing tasks"
+  );
   await performPostProcessingTasks(
     sessionId,
     session.name,
@@ -136,14 +196,19 @@ export async function handleSessionSendMessage(
   await prisma.agentSession.update({
     where: { id: sessionId },
     data: {
-      state: 'idle',
+      state: "idle",
       error_message: null,
     },
   });
 
   // Cleanup and complete
   await cleanupSessionImages(sessionId, fastify.log);
-  sendMessage(socket, `session.${sessionId}.message_complete`, {});
+  broadcast(Channels.session(sessionId), {
+    type: SessionEventTypes.MESSAGE_COMPLETE,
+    data: {
+      sessionId,
+    },
+  });
 }
 
 /**
@@ -153,17 +218,46 @@ export async function handleSessionSendMessage(
  * Currently returns an error indicating the feature is not yet implemented.
  */
 export async function handleSessionCancel(
-  socket: WebSocket,
+  _socket: WebSocket,
   sessionId: string,
   _data: unknown,
   _userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
   fastify.log.info({ sessionId }, "[WebSocket] Session cancel requested");
-  sendMessage(socket, `session.${sessionId}.error`, {
-    error: "Cancel functionality not implemented",
-    message: "Session cancellation is not yet implemented",
+  broadcast(Channels.session(sessionId), {
+    type: SessionEventTypes.ERROR,
+    data: {
+      error: "Cancel functionality not implemented",
+      sessionId,
+    },
   });
+}
+
+/**
+ * Handle session subscribe event
+ *
+ * Subscribes the WebSocket to the session's broadcast channel, enabling
+ * the client to receive real-time updates for this session.
+ * This is used for page reloads and passive session viewing.
+ */
+export async function handleSessionSubscribe(
+  socket: WebSocket,
+  sessionId: string,
+  userId: string,
+  fastify: FastifyInstance
+): Promise<void> {
+  // Validate session ownership
+  await validateSessionOwnership(sessionId, userId);
+
+  // Subscribe socket to session channel
+  const channel = Channels.session(sessionId);
+  subscribe(channel, socket);
+
+  fastify.log.info(
+    { sessionId, channel },
+    "[WebSocket] Client subscribed to session channel"
+  );
 }
 
 /**
@@ -174,22 +268,56 @@ export async function handleSessionCancel(
  */
 export async function handleSessionEvent(
   socket: WebSocket,
+  channel: string,
   type: string,
   data: unknown,
   userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
-  const sessionId = extractId(type, "session");
-  if (!sessionId) {
-    sendMessage(socket, "global.error", {
-      error: "Invalid session event type",
-      message: `Expected format: session.{id}.action, got: ${type}`,
+  console.log("========================================");
+  console.log("===== handleSessionEvent CALLED =====");
+  console.log("Channel:", channel);
+  console.log("Type:", type);
+  console.log("UserId:", userId);
+  console.log("========================================");
+
+  fastify.log.info(
+    { channel, type, userId },
+    "[WebSocket] handleSessionEvent router entry"
+  );
+
+  const parsed = parseChannel(channel);
+  const sessionId = parsed?.id;
+
+  fastify.log.info(
+    { parsed, sessionId, resource: parsed?.resource },
+    "[WebSocket] Parsed channel"
+  );
+
+  if (!sessionId || parsed?.resource !== "session") {
+    console.log("===== INVALID SESSION CHANNEL =====");
+    console.log("SessionId:", sessionId);
+    console.log("Resource:", parsed?.resource);
+    fastify.log.warn(
+      { sessionId, resource: parsed?.resource },
+      "[WebSocket] Invalid session channel"
+    );
+    sendMessage(socket, Channels.global(), {
+      type: GlobalEventTypes.ERROR,
+      data: {
+        error: "Invalid session channel",
+      },
     });
     return;
   }
 
   try {
-    if (type.endsWith(".send_message")) {
+    if (type === SessionEventTypes.SEND_MESSAGE) {
+      console.log("===== ROUTING TO handleSessionSendMessage =====");
+      fastify.log.info(
+        { sessionId, type },
+        "[WebSocket] Routing to handleSessionSendMessage"
+      );
       await handleSessionSendMessage(
         socket,
         sessionId,
@@ -197,27 +325,31 @@ export async function handleSessionEvent(
         userId,
         fastify
       );
-    } else if (type.endsWith(".cancel")) {
+    } else if (type === SessionEventTypes.CANCEL) {
       await handleSessionCancel(socket, sessionId, data, userId, fastify);
+    } else if (type === SessionEventTypes.SUBSCRIBE) {
+      await handleSessionSubscribe(socket, sessionId, userId, fastify);
     } else {
       // Unknown session action
-      sendMessage(socket, `session.${sessionId}.error`, {
-        error: "Unknown session action",
-        message: `Unknown action in event type: ${type}`,
+      broadcast(Channels.session(sessionId), {
+        type: SessionEventTypes.ERROR,
+        data: {
+          error: "Unknown session action",
+          sessionId,
+        },
       });
     }
   } catch (err: unknown) {
     fastify.log.error({ err, type, sessionId }, "Error handling session event");
     const errorMessage =
       err instanceof Error ? err.message : "Internal server error";
-    const errorStack = err instanceof Error ? err.stack : undefined;
-    const errorName = err instanceof Error ? err.name : undefined;
 
-    sendMessage(socket, `session.${sessionId}.error`, {
-      error: errorMessage,
-      message: errorMessage,
-      stack: errorStack,
-      name: errorName,
+    broadcast(Channels.session(sessionId), {
+      type: SessionEventTypes.ERROR,
+      data: {
+        error: errorMessage,
+        sessionId,
+      },
     });
   }
 }
@@ -300,9 +432,7 @@ function isAgentSupported(agent: string): boolean {
  *
  * @private
  */
-function parseExecutionConfig(
-  config: unknown
-): ExecutionConfig {
+function parseExecutionConfig(config: unknown): ExecutionConfig {
   const configObj = config as Record<string, unknown> | undefined;
 
   return {
@@ -324,7 +454,7 @@ function parseExecutionConfig(
  * @private
  */
 async function handleExecutionFailure(
-  socket: WebSocket,
+  _socket: WebSocket,
   sessionId: string,
   result: AgentExecuteResult,
   fastify: FastifyInstance
@@ -340,15 +470,17 @@ async function handleExecutionFailure(
   await prisma.agentSession.update({
     where: { id: sessionId },
     data: {
-      state: 'error',
+      state: "error",
       error_message: errorMessage,
     },
   });
 
-  sendMessage(socket, `session.${sessionId}.error`, {
-    error: errorMessage,
-    message: errorMessage,
-    exitCode: result.exitCode,
+  broadcast(Channels.session(sessionId), {
+    type: SessionEventTypes.ERROR,
+    data: {
+      error: errorMessage,
+      sessionId,
+    },
   });
 }
 
@@ -369,12 +501,32 @@ async function performPostProcessingTasks(
   result: AgentExecuteResult,
   fastify: FastifyInstance
 ): Promise<void> {
+  fastify.log.info(
+    {
+      sessionId,
+      existingSessionName,
+      hasExistingName: !!existingSessionName,
+      willGenerateName: !existingSessionName,
+      userMessagePreview: userMessage.substring(0, 50),
+    },
+    "[WebSocket] performPostProcessingTasks called"
+  );
+
   // Store CLI session ID
   await storeCliSessionId(sessionId, result.sessionId, fastify.log);
 
   // Generate session name if needed
   if (!existingSessionName) {
+    fastify.log.info(
+      { sessionId },
+      "[WebSocket] No existing session name, will generate one"
+    );
     await generateAndStoreName(sessionId, userMessage, fastify.log);
+  } else {
+    fastify.log.info(
+      { sessionId, existingSessionName },
+      "[WebSocket] Session already has a name, skipping generation"
+    );
   }
 
   // Extract and log usage data
@@ -424,15 +576,40 @@ async function generateAndStoreName(
   userMessage: string,
   logger: FastifyBaseLogger
 ): Promise<void> {
+  logger.info(
+    { sessionId, userMessageLength: userMessage.length },
+    "[WebSocket] ===== ENTERED generateAndStoreName function ====="
+  );
+
   try {
     logger.info(
-      { sessionId, userPrompt: userMessage.substring(0, 100) },
-      "[WebSocket] Generating session name from first user message"
+      { sessionId, userPrompt: userMessage.substring(0, 100), fullPrompt: userMessage },
+      "[WebSocket] About to call generateSessionName"
     );
+
+    console.log("===== GENERATE SESSION NAME START =====");
+    console.log("SessionId:", sessionId);
+    console.log("User Message:", userMessage);
+    console.log("Message Length:", userMessage.length);
 
     const sessionName = await generateSessionName({
       userPrompt: userMessage,
     });
+
+    console.log("===== GENERATE SESSION NAME RESULT =====");
+    console.log("Generated Name:", sessionName);
+    console.log("Name Type:", typeof sessionName);
+    console.log("Name Length:", sessionName?.length);
+
+    logger.info(
+      { sessionId, sessionName, nameLength: sessionName?.length },
+      "[WebSocket] generateSessionName returned successfully"
+    );
+
+    logger.info(
+      { sessionId, sessionName },
+      "[WebSocket] About to update database with session name"
+    );
 
     await prisma.agentSession.update({
       where: { id: sessionId },
@@ -441,12 +618,25 @@ async function generateAndStoreName(
 
     logger.info(
       { sessionId, sessionName },
-      "[WebSocket] Session name generated successfully"
+      "[WebSocket] Database updated successfully with session name"
     );
+
+    console.log("===== SESSION NAME STORED IN DATABASE =====");
+    console.log("SessionId:", sessionId);
+    console.log("Final Name:", sessionName);
   } catch (err: unknown) {
     // Non-critical error - log and continue
-    logger.warn(
-      { err, sessionId },
+    console.error("===== ERROR IN generateAndStoreName =====");
+    console.error("Error:", err);
+    console.error("SessionId:", sessionId);
+
+    logger.error(
+      {
+        err,
+        sessionId,
+        errorMessage: err instanceof Error ? err.message : String(err),
+        errorStack: err instanceof Error ? err.stack : undefined
+      },
       "[WebSocket] Failed to generate session name (non-critical)"
     );
   }

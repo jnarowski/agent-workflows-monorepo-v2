@@ -348,19 +348,29 @@ describe('parser', () => {
         expect(block.name).toBe('AskUserQuestion');
         expect(block.input.questions).toBeDefined();
         expect(Array.isArray(block.input.questions)).toBe(true);
-        expect(block.input.questions).toHaveLength(3);
+
+        // Type assertion after verifying the tool name
+        const questions = block.input.questions as Array<{
+          question: string;
+          header: string;
+          multiSelect: boolean;
+          options: Array<{ label: string; description: string }>;
+        }>;
+        expect(questions).toHaveLength(3);
 
         // Verify first question (multiSelect: false)
-        const firstQuestion = block.input.questions[0];
-        expect(firstQuestion.question).toBe('Which framework should we use?');
-        expect(firstQuestion.header).toBe('Framework');
-        expect(firstQuestion.multiSelect).toBe(false);
-        expect(firstQuestion.options).toHaveLength(3);
+        const firstQuestion = questions[0];
+        expect(firstQuestion).toBeDefined();
+        expect(firstQuestion?.question).toBe('Which framework should we use?');
+        expect(firstQuestion?.header).toBe('Framework');
+        expect(firstQuestion?.multiSelect).toBe(false);
+        expect(firstQuestion?.options).toHaveLength(3);
 
         // Verify third question (multiSelect: true)
-        const thirdQuestion = block.input.questions[2];
-        expect(thirdQuestion.multiSelect).toBe(true);
-        expect(thirdQuestion.header).toBe('Features');
+        const thirdQuestion = questions[2];
+        expect(thirdQuestion).toBeDefined();
+        expect(thirdQuestion?.multiSelect).toBe(true);
+        expect(thirdQuestion?.header).toBe('Features');
       }
     });
 

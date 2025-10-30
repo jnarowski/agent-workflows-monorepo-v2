@@ -145,6 +145,10 @@ describe('Git Service', () => {
 
   describe('createAndSwitchBranch', () => {
     it('should create and switch to new branch', async () => {
+      // Mock status to indicate no uncommitted changes
+      (mockGit.status as MockedFunction<() => Promise<StatusResult>>).mockResolvedValue({
+        files: [],
+      } as StatusResult);
       (mockGit.checkoutLocalBranch as MockedFunction<(name: string) => Promise<void>>).mockResolvedValue();
 
       const result = await createAndSwitchBranch('/test/path', 'feature/new');
@@ -154,6 +158,10 @@ describe('Git Service', () => {
     });
 
     it('should create branch from specific base', async () => {
+      // Mock status to indicate no uncommitted changes
+      (mockGit.status as MockedFunction<() => Promise<StatusResult>>).mockResolvedValue({
+        files: [],
+      } as StatusResult);
       (mockGit.checkout as MockedFunction<(branch: string) => Promise<void>>).mockResolvedValue();
       (mockGit.checkoutLocalBranch as MockedFunction<(name: string) => Promise<void>>).mockResolvedValue();
 

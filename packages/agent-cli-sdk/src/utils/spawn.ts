@@ -22,10 +22,7 @@ export interface SpawnResult {
 /**
  * Spawns a process and returns stdout/stderr with optional callbacks
  */
-export async function spawnProcess(
-  command: string,
-  options: SpawnOptions,
-): Promise<SpawnResult> {
+export async function spawnProcess(command: string, options: SpawnOptions): Promise<SpawnResult> {
   const startTime = Date.now();
 
   // Verbose logging

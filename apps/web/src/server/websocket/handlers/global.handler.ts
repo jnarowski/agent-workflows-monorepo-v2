@@ -1,19 +1,161 @@
 import type { WebSocket } from "@fastify/websocket";
 import type { FastifyInstance } from "fastify";
+import type {
+  SubscribeMessageData,
+  UnsubscribeMessageData,
+} from "../types.js";
+import { GlobalEventTypes, Channels } from "@/shared/websocket/index.js";
+import { subscribe, unsubscribe } from "../utils/subscriptions.js";
+import { validateChannelAccess } from "../utils/permissions.js";
+import { sendMessage } from "../utils/send-message.js";
 
 /**
- * Handle global events (global.*)
- * Currently stubbed - for future global functionality like ping/pong
+ * Handle global events on the global channel
  */
 export async function handleGlobalEvent(
-  _socket: WebSocket,
+  socket: WebSocket,
+  channel: string,
   type: string,
-  _data: unknown,
-  _userId: string,
+  data: unknown,
+  userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
-  fastify.log.info(
+  // Handle ping/pong heartbeat
+  if (type === GlobalEventTypes.PING || type === "ping") {
+    sendMessage(socket, Channels.global(), {
+      type: GlobalEventTypes.PONG,
+      data: { timestamp: Date.now() },
+    });
+    return;
+  }
+
+  // Handle subscription events
+  if (type === "subscribe") {
+    await handleSubscribe(socket, data as SubscribeMessageData, userId, fastify);
+    return;
+  }
+
+  if (type === "unsubscribe") {
+    await handleUnsubscribe(socket, data as UnsubscribeMessageData, fastify);
+    return;
+  }
+
+  // Unknown global event
+  fastify.log.debug(
     { type },
     "[WebSocket] Global event received (no handler)"
   );
+}
+
+/**
+ * Handle subscribe request
+ */
+async function handleSubscribe(
+  socket: WebSocket,
+  data: SubscribeMessageData,
+  userId: string,
+  fastify: FastifyInstance
+): Promise<void> {
+  const { channels } = data;
+
+  if (!Array.isArray(channels)) {
+    sendMessage(socket, Channels.global(), {
+      type: GlobalEventTypes.SUBSCRIPTION_ERROR,
+      data: {
+        channel: "",
+        error: "Invalid subscribe request: channels must be an array",
+      },
+    });
+    return;
+  }
+
+  const subscribedChannels: string[] = [];
+  const deniedChannels: Array<{ channelId: string; reason: string }> = [];
+
+  // Validate and subscribe to each channel
+  for (const channelId of channels) {
+    const validation = await validateChannelAccess(channelId, userId);
+
+    if (validation.allowed) {
+      subscribe(channelId, socket);
+      subscribedChannels.push(channelId);
+      fastify.log.info(
+        { userId, channelId },
+        "[WebSocket] User subscribed to channel"
+      );
+    } else {
+      deniedChannels.push({
+        channelId,
+        reason: validation.reason || "Access denied",
+      });
+      fastify.log.warn(
+        { userId, channelId, reason: validation.reason },
+        "[WebSocket] Subscription denied"
+      );
+    }
+  }
+
+  // Send success response for subscribed channels
+  if (subscribedChannels.length > 0) {
+    for (const channel of subscribedChannels) {
+      sendMessage(socket, Channels.global(), {
+        type: GlobalEventTypes.SUBSCRIPTION_SUCCESS,
+        data: {
+          channel,
+        },
+      });
+    }
+  }
+
+  // Send error responses for denied channels
+  for (const { channelId, reason } of deniedChannels) {
+    sendMessage(socket, Channels.global(), {
+      type: GlobalEventTypes.SUBSCRIPTION_ERROR,
+      data: {
+        channel: channelId,
+        error: reason,
+      },
+    });
+  }
+}
+
+/**
+ * Handle unsubscribe request
+ */
+async function handleUnsubscribe(
+  socket: WebSocket,
+  data: UnsubscribeMessageData,
+  fastify: FastifyInstance
+): Promise<void> {
+  const { channels } = data;
+
+  if (!Array.isArray(channels)) {
+    sendMessage(socket, Channels.global(), {
+      type: GlobalEventTypes.SUBSCRIPTION_ERROR,
+      data: {
+        channel: "",
+        error: "Invalid unsubscribe request: channels must be an array",
+      },
+    });
+    return;
+  }
+
+  // Unsubscribe from each channel
+  for (const channelId of channels) {
+    unsubscribe(channelId, socket);
+    fastify.log.info(
+      { channelId },
+      "[WebSocket] Socket unsubscribed from channel"
+    );
+  }
+
+  // Send confirmation for each channel
+  for (const channel of channels) {
+    sendMessage(socket, Channels.global(), {
+      type: GlobalEventTypes.SUBSCRIPTION_SUCCESS,
+      data: {
+        channel,
+      },
+    });
+  }
 }

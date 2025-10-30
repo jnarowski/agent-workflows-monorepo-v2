@@ -1,9 +1,20 @@
 import { useNavigate } from "react-router-dom";
 import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 import { Skeleton } from "@/client/components/ui/skeleton";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/client/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/client/components/ui/card";
 import { Button } from "@/client/components/ui/button";
 import { Badge } from "@/client/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/client/components/ui/tooltip";
 import {
   Empty,
   EmptyContent,
@@ -16,6 +27,7 @@ import { FolderOpen, Plus, Calendar, FolderGit2, Info } from "lucide-react";
 import { useState } from "react";
 import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
 import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
+import { truncatePath } from "@/client/lib/utils";
 
 export default function Projects() {
   useDocumentTitle("Projects | Agent Workflows");
@@ -51,8 +63,8 @@ export default function Projects() {
             </EmptyMedia>
             <EmptyTitle>No Projects Yet</EmptyTitle>
             <EmptyDescription>
-              Get started by creating your first project. Projects help you organize
-              your AI workflows, chat sessions, and files in one place.
+              Get started by creating your first project. Projects help you
+              organize your AI workflows, chat sessions, and files in one place.
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
@@ -68,7 +80,9 @@ export default function Projects() {
                   <ul className="list-disc list-inside space-y-1">
                     <li>Projects can contain multiple chat sessions</li>
                     <li>Each project has its own file explorer and terminal</li>
-                    <li>Use projects to separate different codebases or workflows</li>
+                    <li>
+                      Use projects to separate different codebases or workflows
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -99,27 +113,6 @@ export default function Projects() {
         </Button>
       </div>
 
-      {/* Tool Instructions Section */}
-      <Card className="border-dashed">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Info className="h-5 w-5 text-muted-foreground" />
-            <CardTitle className="text-base">Getting Started</CardTitle>
-          </div>
-          <CardDescription>
-            Quick tips to help you work with projects
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          <ul className="list-disc list-inside space-y-1">
-            <li><strong>Chat Sessions:</strong> Create and manage AI chat sessions for each project</li>
-            <li><strong>File Explorer:</strong> Browse and edit project files directly in the browser</li>
-            <li><strong>Terminal:</strong> Access a shell terminal for running commands in your project directory</li>
-            <li><strong>Slash Commands:</strong> Use <code className="px-1 py-0.5 bg-muted rounded text-xs">/</code> in chat to execute custom commands</li>
-          </ul>
-        </CardContent>
-      </Card>
-
       {/* Projects Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => (
@@ -138,26 +131,35 @@ export default function Projects() {
                 )}
               </div>
               <CardTitle className="mt-3">{project.name}</CardTitle>
-              {project.description && (
-                <CardDescription className="line-clamp-2">
-                  {project.description}
-                </CardDescription>
-              )}
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Calendar className="h-3 w-3" />
                 <span>
-                  {new Date(project.created_at).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
+                  {new Date(project.created_at).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
                   })}
                 </span>
               </div>
-              <div className="mt-2 text-xs text-muted-foreground font-mono truncate">
-                {project.path}
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="mt-2 text-xs text-muted-foreground font-mono truncate cursor-help">
+                      {truncatePath(
+                        project.path,
+                        typeof window !== "undefined" && window.innerWidth < 768
+                          ? 30
+                          : 50
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-md break-all">
+                    <p className="font-mono text-xs">{project.path}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </CardContent>
           </Card>
         ))}

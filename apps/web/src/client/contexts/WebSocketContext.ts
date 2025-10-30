@@ -1,12 +1,13 @@
 import { createContext } from 'react';
 import type { WebSocketEventBus } from '@/client/lib/WebSocketEventBus';
-import type { ReadyState } from '@/shared/types/websocket';
+import type { ReadyState } from '@/shared/websocket';
+import type { ChannelEvent } from '@/shared/websocket';
 
 /**
  * WebSocket context interface
  */
 export interface WebSocketContextValue {
-  sendMessage: (type: string, data: unknown) => void;
+  sendMessage: (channel: string, event: ChannelEvent) => void;
   readyState: ReadyState;
   isConnected: boolean;
   isReady: boolean;

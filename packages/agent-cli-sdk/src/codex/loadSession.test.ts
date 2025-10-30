@@ -44,7 +44,7 @@ describe('loadSession', () => {
         }
 
         // Verify all messages have required fields
-        messages.forEach(msg => {
+        messages.forEach((msg) => {
           expect(msg.id).toBeDefined();
           expect(msg.role).toBeDefined();
           expect(msg.content).toBeDefined();
@@ -80,7 +80,7 @@ describe('loadSession', () => {
       const messages = await loadSession({ sessionId });
 
       // All returned messages should be non-null
-      expect(messages.every(msg => msg !== null)).toBe(true);
+      expect(messages.every((msg) => msg !== null)).toBe(true);
     } finally {
       if (originalCodexHome !== undefined) {
         process.env.CODEX_HOME = originalCodexHome;

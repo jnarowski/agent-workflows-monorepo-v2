@@ -12,17 +12,22 @@ import { WebSocketContext, type WebSocketContextValue } from '@/client/contexts/
  *
  * @example
  * ```tsx
+ * import { Channels } from '@/shared/websocket';
  * const { sendMessage, isConnected, eventBus } = useWebSocket();
  *
- * // Subscribe to events
+ * // Subscribe to events (use Channels helper for type safety)
  * useEffect(() => {
- *   const handler = (data) => console.log('Received:', data);
- *   eventBus.on('session.123.stream_output', handler);
- *   return () => eventBus.off('session.123.stream_output', handler);
+ *   const channel = Channels.session('123');
+ *   const handler = (event) => console.log('Received:', event);
+ *   eventBus.on(channel, handler);
+ *   return () => eventBus.off(channel, handler);
  * }, [eventBus]);
  *
- * // Send messages
- * sendMessage('session.123.send_message', { message: 'Hello' });
+ * // Send messages (Phoenix Channels format: channel, type, data)
+ * sendMessage(Channels.session('123'), {
+ *   type: 'send_message',
+ *   data: { message: 'Hello' }
+ * });
  * ```
  */
 export const useWebSocket = (): WebSocketContextValue => {

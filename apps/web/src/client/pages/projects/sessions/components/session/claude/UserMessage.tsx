@@ -3,10 +3,7 @@
  * Bordered box design for better scannability
  */
 
-import type {
-  UIMessage,
-  UnifiedToolResultBlock,
-} from "@/shared/types/message.types";
+import type { UIMessage } from "@/shared/types/message.types";
 import { ContentBlockRenderer } from "./ContentBlockRenderer";
 
 interface UserMessageProps {

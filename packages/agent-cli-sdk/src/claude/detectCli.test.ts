@@ -31,7 +31,7 @@ describe('detectCli', () => {
     const { exec } = await import('node:child_process');
     vi.mocked(exec).mockImplementation((() => {
       throw new Error('Command not found');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any);
   });
 
@@ -67,7 +67,7 @@ describe('detectCli', () => {
     const { exec } = await import('node:child_process');
     vi.mocked(exec).mockImplementation(((_cmd: string, callback: (error: null, result: { stdout: string }) => void) => {
       callback(null, { stdout: `${testPath}\n` });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any);
     vi.mocked(fs.existsSync).mockReturnValue(true);
 
@@ -83,7 +83,7 @@ describe('detectCli', () => {
     const { exec } = await import('node:child_process');
     vi.mocked(exec).mockImplementation(((_cmd: string, callback: (error: null, result: { stdout: string }) => void) => {
       callback(null, { stdout: `claude: aliased to ${testPath}\n` });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any);
     vi.mocked(fs.existsSync).mockImplementation((path) => path === testPath);
 

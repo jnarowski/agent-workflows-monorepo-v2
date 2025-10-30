@@ -31,11 +31,11 @@ function createMockSocket(): MockWebSocketInstance {
 
 describe("WebSocket Utilities", () => {
   describe("sendMessage", () => {
-    test("sends JSON message to socket", () => {
+    test("sends JSON message to socket with Phoenix Channels format", () => {
       const socket = createMockSocket();
-      sendMessage(socket, "test.event", { foo: "bar" });
+      sendMessage(socket, "session:123", { type: "test.event", data: { foo: "bar" } });
 
-      expect(socket.lastMessage).toBe('{"type":"test.event","data":{"foo":"bar"}}');
+      expect(socket.lastMessage).toBe('{"channel":"session:123","type":"test.event","data":{"foo":"bar"}}');
     });
 
     test("handles complex data structures", () => {
@@ -46,10 +46,11 @@ describe("WebSocket Utilities", () => {
         nullValue: null,
       };
 
-      sendMessage(socket, "complex.event", complexData);
+      sendMessage(socket, "session:456", { type: "complex.event", data: complexData });
 
       const parsed = JSON.parse(socket.lastMessage!);
       expect(parsed).toEqual({
+        channel: "session:456",
         type: "complex.event",
         data: complexData,
       });

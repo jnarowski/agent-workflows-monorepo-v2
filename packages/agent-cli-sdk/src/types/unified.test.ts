@@ -30,8 +30,7 @@ describe('Tool Input Types', () => {
 
     it('should match real JSONL data structure', () => {
       const input: BashToolInput = {
-        command:
-          'find . -maxdepth 3 -type f -name "*.json" -o -name "*.md" -o -name "*.ts" -o -name "*.js" | head -50',
+        command: 'find . -maxdepth 3 -type f -name "*.json" -o -name "*.md" -o -name "*.ts" -o -name "*.js" | head -50',
         description: 'List key files in the project',
       };
 
@@ -65,8 +64,7 @@ describe('Tool Input Types', () => {
 
     it('should match real JSONL data structure', () => {
       const input: ReadToolInput = {
-        file_path:
-          '/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/package.json',
+        file_path: '/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2/package.json',
       };
 
       expect(input).toBeDefined();
@@ -299,8 +297,7 @@ describe('Tool Input Types', () => {
               },
               {
                 label: 'Right of ⌘J kbd',
-                description:
-                  'The + button moves completely to the right, after the ⌘J keyboard shortcut indicator',
+                description: 'The + button moves completely to the right, after the ⌘J keyboard shortcut indicator',
               },
             ],
           },
@@ -471,11 +468,7 @@ Do something else`,
     });
 
     it('should accept MCP tool names', () => {
-      const mcpTools: ToolName[] = [
-        'mcp__happy__change_title',
-        'mcp__custom__tool',
-        'mcp__any__name',
-      ];
+      const mcpTools: ToolName[] = ['mcp__happy__change_title', 'mcp__custom__tool', 'mcp__any__name'];
 
       mcpTools.forEach((tool) => {
         expect(tool).toContain('mcp__');
@@ -636,11 +629,7 @@ Do something else`,
     });
 
     it('should return "unknown" if no events have sessionId', () => {
-      const events: { sessionId?: string }[] = [
-        {},
-        {},
-        {},
-      ];
+      const events: { sessionId?: string }[] = [{}, {}, {}];
 
       expect(extractSessionIdFromEvents(events)).toBe('unknown');
     });
@@ -699,10 +688,7 @@ Do something else`,
         sessionId?: string;
       }
 
-      const events: CodexEvent[] = [
-        { event: 'session_meta', sessionId: 'codex-session-456' },
-        { event: 'reasoning' },
-      ];
+      const events: CodexEvent[] = [{ event: 'session_meta', sessionId: 'codex-session-456' }, { event: 'reasoning' }];
 
       expect(extractSessionIdFromEvents(events)).toBe('codex-session-456');
     });

@@ -34,9 +34,7 @@ interface LoadSessionOptions {
  * console.log(`Loaded ${messages.length} messages`);
  * ```
  */
-export async function loadSession(
-  options: LoadSessionOptions
-): Promise<UnifiedMessage[]> {
+export async function loadSession(options: LoadSessionOptions): Promise<UnifiedMessage[]> {
   const { sessionId, projectPath } = options;
 
   console.log('[CodexLoadSession] Starting session load', {
@@ -64,10 +62,8 @@ export async function loadSession(
       totalLines: lines.length,
     });
 
-    const parsedMessages = lines.map(line => parse(line));
-    const validMessages = parsedMessages.filter(
-      (msg): msg is UnifiedMessage => msg !== null
-    );
+    const parsedMessages = lines.map((line) => parse(line));
+    const validMessages = parsedMessages.filter((msg): msg is UnifiedMessage => msg !== null);
     const messages = validMessages.sort((a, b) => a.timestamp - b.timestamp);
 
     console.log('[CodexLoadSession] Parsed messages', {

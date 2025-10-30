@@ -132,7 +132,7 @@ describe('execute', () => {
 
     // Act & Assert
     await expect(execute({ prompt: 'test' })).rejects.toThrow(
-      'Claude CLI not found. Set CLAUDE_CLI_PATH or install Claude Code.',
+      'Claude CLI not found. Set CLAUDE_CLI_PATH or install Claude Code.'
     );
   });
 
@@ -290,15 +290,7 @@ describe('execute', () => {
 
       await execute({ prompt: 'test', permissionMode: 'plan' });
 
-      expectSpawnCalledWith([
-        '-p',
-        '--permission-mode',
-        'plan',
-        '--output-format',
-        'stream-json',
-        '--verbose',
-        'test',
-      ]);
+      expectSpawnCalledWith(['-p', '--permission-mode', 'plan', '--output-format', 'stream-json', '--verbose', 'test']);
     });
 
     it('should pass permissionMode "bypassPermissions" to CLI', async () => {
@@ -530,9 +522,7 @@ describe('execute', () => {
   });
 
   it('should handle non-zero exit code', async () => {
-    const mockOutput = createClaudeOutput([
-      { type: 'system', subtype: 'init', session_id: 'test-123', cwd: '/test' },
-    ]);
+    const mockOutput = createClaudeOutput([{ type: 'system', subtype: 'init', session_id: 'test-123', cwd: '/test' }]);
 
     mockSpawnWithOutput(mockOutput, { exitCode: 1, stderr: 'Something went wrong' });
 
@@ -544,9 +534,7 @@ describe('execute', () => {
   });
 
   it('should call onStderr callback', async () => {
-    const mockOutput = createClaudeOutput([
-      { type: 'system', subtype: 'init', session_id: 'test-123', cwd: '/test' },
-    ]);
+    const mockOutput = createClaudeOutput([{ type: 'system', subtype: 'init', session_id: 'test-123', cwd: '/test' }]);
 
     mockSpawnWithOutput(mockOutput, { stderr: 'Warning: something happened' });
 
@@ -557,9 +545,7 @@ describe('execute', () => {
   });
 
   it('should call onClose callback', async () => {
-    const mockOutput = createClaudeOutput([
-      { type: 'system', subtype: 'init', session_id: 'test-123', cwd: '/test' },
-    ]);
+    const mockOutput = createClaudeOutput([{ type: 'system', subtype: 'init', session_id: 'test-123', cwd: '/test' }]);
 
     mockSpawnWithOutput(mockOutput, { exitCode: 0 });
 
@@ -696,9 +682,7 @@ describe('execute', () => {
   });
 
   it('should include error message when command fails without stderr', async () => {
-    const mockOutput = createClaudeOutput([
-      { type: 'system', subtype: 'init', session_id: 'test-123', cwd: '/test' },
-    ]);
+    const mockOutput = createClaudeOutput([{ type: 'system', subtype: 'init', session_id: 'test-123', cwd: '/test' }]);
 
     mockSpawnWithOutput(mockOutput, { exitCode: 1, stderr: '' });
 

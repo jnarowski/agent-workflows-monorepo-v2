@@ -61,14 +61,17 @@ apps/web/
 ### Integration Points
 
 **Database Layer (Prisma)**:
+
 - `prisma/schema.prisma` - Add SessionState enum and state/error_message fields
 
 **Backend Services**:
+
 - `agentSession.ts` - Initialize state on creation, handle sync
 - `session.handler.ts` - Manage state transitions during execution
 - `sessions.ts` - Update Zod response schemas
 
 **Frontend UI**:
+
 - `SessionListItem.tsx` - Display state badge
 - `SessionStateBadge.tsx` - New badge component with error tooltips
 
@@ -79,6 +82,7 @@ apps/web/
 Add SessionState enum and two new fields to AgentSession model:
 
 **Schema Changes**:
+
 ```prisma
 enum SessionState {
   idle      // Ready for new messages
@@ -95,6 +99,7 @@ model AgentSession {
 ```
 
 **Key Points**:
+
 - Default state is `idle` for new and existing sessions
 - `error_message` is nullable (null when no error)
 - Enum provides type safety at database and application level
@@ -104,14 +109,17 @@ model AgentSession {
 Update session creation and sync to handle new fields:
 
 **Session Creation** (`agentSession.ts:createSession`):
+
 - Set initial `state: SessionState.idle`
 - Set initial `error_message: null`
 
 **Session Sync** (`agentSession.ts:syncProjectSessions`):
+
 - Existing sessions default to `idle` state
 - Clear any stale error messages during sync
 
 **Key Points**:
+
 - All new sessions start in idle state
 - Migration handles existing sessions automatically
 - Sync operation ensures consistency
@@ -121,6 +129,7 @@ Update session creation and sync to handle new fields:
 Update the session message handler to manage state lifecycle:
 
 **State Transitions**:
+
 1. **On `send_message` received**:
    - Set `state = SessionState.working`
    - Clear `error_message = null` (new attempt)
@@ -134,6 +143,7 @@ Update the session message handler to manage state lifecycle:
    - Capture `error_message` from AgentExecuteResult
 
 **Key Points**:
+
 - State updates happen in database immediately
 - Error messages captured from agent-executor service
 - Clearing error_message on new attempts allows retry tracking
@@ -143,19 +153,22 @@ Update the session message handler to manage state lifecycle:
 Create a reusable badge component to display session state:
 
 **Visual Design**:
+
 - **Idle**: No badge (default, clean UI)
 - **Working**: Animated spinner + "Processing" badge (blue)
 - **Error**: Red "Error" badge with tooltip showing error message
 
 **Component Props**:
+
 ```typescript
 interface SessionStateBadgeProps {
-  state: 'idle' | 'working' | 'error';
+  state: "idle" | "working" | "error";
   errorMessage?: string | null;
 }
 ```
 
 **Key Points**:
+
 - Use shadcn/ui Badge and Tooltip components
 - Spinner icon from lucide-react
 - Truncate long error messages in tooltip
@@ -166,11 +179,13 @@ interface SessionStateBadgeProps {
 Update SessionListItem to display the state badge:
 
 **Integration**:
+
 - Add SessionStateBadge next to session name
 - Pass session.state and session.error_message props
 - Maintain existing layout and styling
 
 **Key Points**:
+
 - Badge should not interfere with existing click handlers
 - Responsive layout (stack on mobile if needed)
 - Error tooltips should be readable
@@ -332,6 +347,7 @@ Update SessionListItem to display the state badge:
 ### Integration Tests
 
 **Manual Integration Testing**:
+
 1. Create new session → verify state = idle
 2. Send message → verify state = working during execution
 3. Complete successfully → verify state = idle, error_message = null
@@ -341,6 +357,7 @@ Update SessionListItem to display the state badge:
 ### E2E Tests (Optional Future Enhancement)
 
 Could add E2E test to verify full lifecycle:
+
 - Create session
 - Execute message
 - Verify state transitions in UI
@@ -416,6 +433,7 @@ Consider truncating very long error messages in the database or UI to prevent ex
 ### 2. State Query Optimization
 
 If querying by state becomes common (e.g., "show all working sessions"), add an index:
+
 ```prisma
 @@index([state])
 ```
@@ -431,6 +449,7 @@ Existing sessions without state will get `idle` as default after migration. This
 ### 5. Future Enhancements
 
 Possible future additions:
+
 - Filter sessions by state in UI
 - Show state history/timeline
 - Add "cancelled" state for manually stopped executions
@@ -443,14 +462,14 @@ Possible future additions:
 
 ## Timeline
 
-| Task                          | Estimated Time |
-|-------------------------------|----------------|
-| Database schema + migration   | 30 minutes     |
-| Backend service updates       | 30 minutes     |
-| WebSocket state management    | 45 minutes     |
-| Frontend badge component      | 45 minutes     |
-| Testing and validation        | 30 minutes     |
-| **Total**                     | **2-3 hours**  |
+| Task                        | Estimated Time |
+| --------------------------- | -------------- |
+| Database schema + migration | 30 minutes     |
+| Backend service updates     | 30 minutes     |
+| WebSocket state management  | 45 minutes     |
+| Frontend badge component    | 45 minutes     |
+| Testing and validation      | 30 minutes     |
+| **Total**                   | **2-3 hours**  |
 
 ## References
 

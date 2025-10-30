@@ -7,20 +7,20 @@ import type { PermissionMode } from '../types/permissions.js';
  * @returns Array of CLI flags
  */
 export function permissionModeToFlags(mode?: PermissionMode): string[] {
-	if (!mode || mode === 'default') {
-		return [];
-	}
+  if (!mode || mode === 'default') {
+    return [];
+  }
 
-	switch (mode) {
-		case 'plan':
-			return ['--plan'];
-		case 'acceptEdits':
-			return ['--accept-edits'];
-		case 'bypassPermissions':
-			return ['--bypass-permissions'];
-		default:
-			return [];
-	}
+  switch (mode) {
+    case 'plan':
+      return ['--plan'];
+    case 'acceptEdits':
+      return ['--accept-edits'];
+    case 'bypassPermissions':
+      return ['--bypass-permissions'];
+    default:
+      return [];
+  }
 }
 
 /**
@@ -30,5 +30,5 @@ export function permissionModeToFlags(mode?: PermissionMode): string[] {
  * @returns Array of CLI flags
  */
 export function workingDirToFlags(cwd?: string): string[] {
-	return cwd ? ['--cwd', cwd] : [];
+  return cwd ? ['--cwd', cwd] : [];
 }

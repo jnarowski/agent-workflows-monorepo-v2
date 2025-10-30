@@ -1,6 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ShellProvider } from "@/client/pages/projects/shell/contexts/ShellContext";
 import { WebSocketProvider } from "@/client/providers/WebSocketProvider";
+import { ConnectionStatusBanner } from "@/client/components/ConnectionStatusBanner";
+import { WebSocketDevTools } from "@/client/components/WebSocketDevTools";
+import { useWebSocket } from "@/client/hooks/useWebSocket";
 import ProtectedLayout from "@/client/layouts/ProtectedLayout";
 import AuthLayout from "@/client/layouts/AuthLayout";
 import ProjectDetailLayout from "@/client/layouts/ProjectDetailLayout";
@@ -15,45 +18,61 @@ import Login from "@/client/pages/auth/Login";
 import Signup from "@/client/pages/auth/Signup";
 import Components from "@/client/pages/Components";
 
+function AppContent() {
+  const { readyState, connectionAttempts, reconnect } = useWebSocket();
+
+  return (
+    <>
+      <ConnectionStatusBanner
+        readyState={readyState}
+        connectionAttempts={connectionAttempts}
+        onReconnect={reconnect}
+      />
+      <ShellProvider>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/components" element={<Components />} />
+
+          {/* Auth routes */}
+          <Route element={<AuthLayout />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+          </Route>
+
+          {/* Protected routes */}
+          <Route element={<ProtectedLayout />}>
+            {/* Root redirect to projects */}
+            <Route index element={<Navigate to="/projects" replace />} />
+
+            {/* Projects list */}
+            <Route path="/projects" element={<Projects />} />
+
+            {/* Project detail with nested routes */}
+            <Route path="/projects/:id" element={<ProjectDetailLayout />}>
+              <Route index element={<ProjectHome />} />
+              <Route
+                path="chat"
+                element={<Navigate to="session/new" replace />}
+              />
+              <Route path="session/new" element={<NewSession />} />
+              <Route path="session/:sessionId" element={<ProjectSession />} />
+              <Route path="shell" element={<ProjectShell />} />
+              <Route path="files" element={<ProjectFiles />} />
+              <Route path="source-control" element={<ProjectSourceControl />} />
+            </Route>
+          </Route>
+        </Routes>
+      </ShellProvider>
+      <WebSocketDevTools />
+    </>
+  );
+}
+
 function App() {
   return (
     <BrowserRouter>
       <WebSocketProvider>
-        <ShellProvider>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/components" element={<Components />} />
-
-            {/* Auth routes */}
-            <Route element={<AuthLayout />}>
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-            </Route>
-
-            {/* Protected routes */}
-            <Route element={<ProtectedLayout />}>
-              {/* Root redirect to projects */}
-              <Route index element={<Navigate to="/projects" replace />} />
-
-              {/* Projects list */}
-              <Route path="/projects" element={<Projects />} />
-
-              {/* Project detail with nested routes */}
-              <Route path="/projects/:id" element={<ProjectDetailLayout />}>
-                <Route index element={<ProjectHome />} />
-                <Route
-                  path="chat"
-                  element={<Navigate to="session/new" replace />}
-                />
-                <Route path="session/new" element={<NewSession />} />
-                <Route path="session/:sessionId" element={<ProjectSession />} />
-                <Route path="shell" element={<ProjectShell />} />
-                <Route path="files" element={<ProjectFiles />} />
-                <Route path="source-control" element={<ProjectSourceControl />} />
-              </Route>
-            </Route>
-          </Routes>
-        </ShellProvider>
+        <AppContent />
       </WebSocketProvider>
     </BrowserRouter>
   );

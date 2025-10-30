@@ -23,13 +23,13 @@ export function SessionHeader({ session }: SessionHeaderProps) {
       <div className="flex items-center gap-2 min-w-0">
         <AgentIcon agent={session.agent} className="h-3.5 w-3.5 shrink-0" />
         <span className="truncate">{truncatedSessionName}</span>
+      </div>
+
+      <div className="flex items-center gap-2 shrink-0">
         <SessionStateBadge
           state={session.state}
           errorMessage={session.error_message}
         />
-      </div>
-
-      <div className="shrink-0">
         <SessionDropdownMenu session={session} />
       </div>
     </div>

@@ -59,9 +59,7 @@ export interface LoadMessagesOptions {
  * });
  * ```
  */
-export async function loadMessages(
-  options: LoadMessagesOptions
-): Promise<UnifiedMessage[]> {
+export async function loadMessages(options: LoadMessagesOptions): Promise<UnifiedMessage[]> {
   switch (options.tool) {
     case 'claude':
       return await loadClaudeMessages({
@@ -119,20 +117,12 @@ export interface ExecuteOptions {
    * Callback invoked for each event received from the CLI.
    * Provides raw JSONL line, parsed event, and unified message.
    */
-  onEvent?: (data: {
-    raw: string;
-    event: unknown;
-    message: UnifiedMessage | null;
-  }) => void;
+  onEvent?: (data: { raw: string; event: unknown; message: UnifiedMessage | null }) => void;
   /**
    * Callback invoked with accumulated output data.
    * Provides raw output, all events, and all messages so far.
    */
-  onStdout?: (data: {
-    raw: string;
-    events: unknown[];
-    messages: UnifiedMessage[];
-  }) => void;
+  onStdout?: (data: { raw: string; events: unknown[]; messages: UnifiedMessage[] }) => void;
   /** Callback invoked when stderr data is received */
   onStderr?: (chunk: string) => void;
   /** Callback invoked when an error occurs */
@@ -177,7 +167,7 @@ export interface ExecuteOptions {
  * ```
  */
 export async function execute<T = unknown>(
-  options: ExecuteOptions,
+  options: ExecuteOptions
 ): Promise<ClaudeExecuteResult<T> | CodexExecuteResult<T> | GeminiExecuteResult<T>> {
   switch (options.tool) {
     case 'claude':
@@ -205,12 +195,7 @@ export { extractJSON } from './utils/extractJson';
 export { detectCli as detectClaudeCli } from './claude/detectCli';
 export { detectCli as detectCodexCli } from './codex/detectCli';
 export { detectCli as detectGeminiCli } from './gemini/detectCli';
-export {
-  getCapabilities,
-  type AgentType,
-  type AgentCapabilities,
-  type ModelInfo,
-} from './utils/getCapabilities';
+export { getCapabilities, type AgentType, type AgentCapabilities, type ModelInfo } from './utils/getCapabilities';
 
 // Re-export permission types
 export type { PermissionMode } from './types/permissions.js';
@@ -233,7 +218,4 @@ export type {
 } from './codex/execute';
 
 // Re-export Gemini execute types
-export type {
-  ExecuteOptions as GeminiExecuteOptions,
-  ExecuteResult as GeminiExecuteResult,
-} from './gemini/execute';
+export type { ExecuteOptions as GeminiExecuteOptions, ExecuteResult as GeminiExecuteResult } from './gemini/execute';

@@ -70,28 +70,30 @@ describe("SessionStore", () => {
         },
       ];
 
-      // Mock first API call to get sessions list
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          data: [{
-            id: sessionId,
-            agent: "claude",
-            projectId,
-            name: "Test Session"
-          }]
-        }),
-      });
+      // Mock queryClient with cached session data
+      const mockQueryClient = {
+        getQueryData: vi.fn().mockReturnValue([
+          {
+            id: projectId,
+            sessions: [{
+              id: sessionId,
+              agent: "claude" as const,
+              projectId,
+              name: "Test Session",
+              metadata: {},
+            }]
+          }
+        ])
+      };
 
-      // Mock second API call to get messages
+      // Mock API call to get messages
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => ({ data: mockMessages }),
       });
 
-      await loadSession(sessionId, projectId);
+      await loadSession(sessionId, projectId, mockQueryClient);
 
       const state = useSessionStore.getState();
       expect(state.sessionId).toBe(sessionId);
@@ -103,28 +105,30 @@ describe("SessionStore", () => {
       const sessionId = "test-session-id";
       const projectId = "test-project-id";
 
-      // Mock first API call to get sessions list (succeeds)
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          data: [{
-            id: sessionId,
-            agent: "claude",
-            projectId,
-            name: "Test Session"
-          }]
-        }),
-      });
+      // Mock queryClient with cached session data
+      const mockQueryClient = {
+        getQueryData: vi.fn().mockReturnValue([
+          {
+            id: projectId,
+            sessions: [{
+              id: sessionId,
+              agent: "claude" as const,
+              projectId,
+              name: "Test Session",
+              metadata: {},
+            }]
+          }
+        ])
+      };
 
-      // Mock second API call to get messages (404 response)
+      // Mock API call to get messages (404 response)
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         status: 404,
         json: async () => ({}),
       });
 
-      await loadSession(sessionId, projectId);
+      await loadSession(sessionId, projectId, mockQueryClient);
 
       const state = useSessionStore.getState();
       expect(state.sessionId).toBe(sessionId);
@@ -439,27 +443,30 @@ describe("SessionStore", () => {
         },
       ];
 
-      // Mock API calls
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          data: [{
-            id: sessionId,
-            agent: "claude",
-            projectId,
-            name: "Test Session"
-          }]
-        }),
-      });
+      // Mock queryClient with cached session data
+      const mockQueryClient = {
+        getQueryData: vi.fn().mockReturnValue([
+          {
+            id: projectId,
+            sessions: [{
+              id: sessionId,
+              agent: "claude" as const,
+              projectId,
+              name: "Test Session",
+              metadata: {},
+            }]
+          }
+        ])
+      };
 
+      // Mock API call to get messages
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => ({ data: mockMessages }),
       });
 
-      await loadSession(sessionId, projectId);
+      await loadSession(sessionId, projectId, mockQueryClient);
 
       const state = useSessionStore.getState();
       // Should only have 1 message (the "Hello" message)
@@ -487,27 +494,30 @@ describe("SessionStore", () => {
         },
       ];
 
-      // Mock API calls
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          data: [{
-            id: sessionId,
-            agent: "claude",
-            projectId,
-            name: "Test Session"
-          }]
-        }),
-      });
+      // Mock queryClient with cached session data
+      const mockQueryClient = {
+        getQueryData: vi.fn().mockReturnValue([
+          {
+            id: projectId,
+            sessions: [{
+              id: sessionId,
+              agent: "claude" as const,
+              projectId,
+              name: "Test Session",
+              metadata: {},
+            }]
+          }
+        ])
+      };
 
+      // Mock API call to get messages
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => ({ data: mockMessages }),
       });
 
-      await loadSession(sessionId, projectId);
+      await loadSession(sessionId, projectId, mockQueryClient);
 
       const state = useSessionStore.getState();
       // Should only have 1 message (the real user message)
@@ -532,27 +542,30 @@ describe("SessionStore", () => {
         },
       ];
 
-      // Mock API calls
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          data: [{
-            id: sessionId,
-            agent: "claude",
-            projectId,
-            name: "Test Session"
-          }]
-        }),
-      });
+      // Mock queryClient with cached session data
+      const mockQueryClient = {
+        getQueryData: vi.fn().mockReturnValue([
+          {
+            id: projectId,
+            sessions: [{
+              id: sessionId,
+              agent: "claude" as const,
+              projectId,
+              name: "Test Session",
+              metadata: {},
+            }]
+          }
+        ])
+      };
 
+      // Mock API call to get messages
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => ({ data: mockMessages }),
       });
 
-      await loadSession(sessionId, projectId);
+      await loadSession(sessionId, projectId, mockQueryClient);
 
       const state = useSessionStore.getState();
       // Should keep the message because not all blocks are system messages
@@ -576,27 +589,30 @@ describe("SessionStore", () => {
         },
       ];
 
-      // Mock API calls
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          data: [{
-            id: sessionId,
-            agent: "claude",
-            projectId,
-            name: "Test Session"
-          }]
-        }),
-      });
+      // Mock queryClient with cached session data
+      const mockQueryClient = {
+        getQueryData: vi.fn().mockReturnValue([
+          {
+            id: projectId,
+            sessions: [{
+              id: sessionId,
+              agent: "claude" as const,
+              projectId,
+              name: "Test Session",
+              metadata: {},
+            }]
+          }
+        ])
+      };
 
+      // Mock API call to get messages
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => ({ data: mockMessages }),
       });
 
-      await loadSession(sessionId, projectId);
+      await loadSession(sessionId, projectId, mockQueryClient);
 
       const state = useSessionStore.getState();
       // Should keep the message because it has tool content

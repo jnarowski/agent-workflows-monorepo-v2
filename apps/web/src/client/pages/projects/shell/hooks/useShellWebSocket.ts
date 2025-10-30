@@ -1,6 +1,12 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useShell } from "@/client/pages/projects/shell/contexts/ShellContext";
 import { getAuthToken } from '@/client/lib/auth';
+import {
+  ShellEventTypes,
+  type ShellEvent,
+  isShellEvent
+} from '@/shared/websocket';
+import { calculateReconnectDelay } from '@/client/lib/reconnectionStrategy';
 
 interface UseShellWebSocketOptions {
   sessionId: string;
@@ -10,11 +16,42 @@ interface UseShellWebSocketOptions {
   onExit?: (exitCode: number, signal?: number) => void;
 }
 
-interface ShellWebSocketMessage {
-  type: string;
-  [key: string]: unknown;
-}
-
+/**
+ * Hook to manage WebSocket connection for shell/terminal sessions using Phoenix Channels pattern.
+ *
+ * **Why Shell Uses a Separate WebSocket:**
+ *
+ * The shell WebSocket connection is intentionally separate from the global WebSocketProvider
+ * for several important architectural reasons:
+ *
+ * 1. **Protocol Requirements**: PTY (pseudo-terminal) streams require high-frequency,
+ *    low-latency bidirectional communication. Unlike session chat which sends occasional
+ *    messages, terminal I/O can send hundreds of events per second (keystroke echo, output
+ *    streaming, escape sequences).
+ *
+ * 2. **Lifecycle Management**: Shell sessions are ephemeral - they spawn on demand and die
+ *    when the terminal exits. This lifecycle is independent of the main WebSocket connection
+ *    which should persist across page navigations.
+ *
+ * 3. **Isolation Benefits**: If a shell process crashes or hangs, it won't affect the main
+ *    application WebSocket. Session chat, file operations, and other features remain functional
+ *    even if a terminal session has issues.
+ *
+ * 4. **Optimization**: Terminal data doesn't need the same processing pipeline as session
+ *    events. No message enrichment, tool matching, or complex state management required -
+ *    just raw PTY I/O forwarding.
+ *
+ * **Shared Patterns:**
+ *
+ * While the connection is separate, this hook shares architectural patterns with the main
+ * WebSocket system:
+ * - Uses ShellEventTypes constants (no magic strings)
+ * - Exhaustive type checking with discriminated unions
+ * - Shared reconnection strategy (calculateReconnectDelay)
+ * - Same authentication mechanism (JWT in query params)
+ *
+ * For complete details on the WebSocket architecture, see: `.agent/docs/websockets.md`
+ */
 export function useShellWebSocket({
   sessionId,
   projectId,
@@ -62,58 +99,85 @@ export function useShellWebSocket({
         // Send init message to spawn shell
         ws.send(
           JSON.stringify({
-            type: 'init',
-            projectId,
-            cols,
-            rows,
+            type: ShellEventTypes.INIT,
+            data: {
+              projectId,
+              cols,
+              rows,
+            },
           })
         );
       };
 
       ws.onmessage = (event) => {
         try {
-          const message = JSON.parse(event.data) as ShellWebSocketMessage;
+          const parsed = JSON.parse(event.data);
 
-          switch (message.type) {
-            case 'initialized':
+          // Validate it's a shell event
+          if (!isShellEvent(parsed)) {
+            console.warn('[Shell] Received non-shell event:', parsed);
+            return;
+          }
+
+          const shellEvent = parsed as ShellEvent;
+
+          // Handle event with exhaustive type checking
+          switch (shellEvent.type) {
+            case ShellEventTypes.INIT: {
+              const { shellId } = shellEvent.data;
               if (import.meta.env.DEV) {
-                console.log('[Shell] Session initialized:', message.sessionId);
+                console.log('[Shell] Session initialized:', shellId);
               }
-              updateSession(sessionId, {
-                sessionId: message.sessionId as string,
-              });
+              updateSession(sessionId, { sessionId: shellId });
               updateSessionStatus(sessionId, 'connected');
               break;
+            }
 
-            case 'output':
-              if (onOutput && typeof message.data === 'string') {
-                onOutput(message.data);
+            case ShellEventTypes.OUTPUT: {
+              const { data } = shellEvent.data;
+              if (onOutput) {
+                onOutput(data);
               }
               break;
+            }
 
-            case 'exit':
+            case ShellEventTypes.EXIT: {
+              const { code } = shellEvent.data;
               if (import.meta.env.DEV) {
-                console.log('[Shell] Process exited:', message);
+                console.log('[Shell] Process exited:', { code });
               }
               if (onExit) {
-                onExit(
-                  message.exitCode as number,
-                  message.signal as number | undefined
-                );
+                // onExit expects exitCode and signal, but we only have code
+                onExit(code, undefined);
               }
               break;
+            }
 
-            case 'error':
-              console.error('[Shell] Error:', message.message);
-              updateSessionStatus(
-                sessionId,
-                'error',
-                message.message as string
-              );
+            case ShellEventTypes.ERROR: {
+              const { error } = shellEvent.data;
+              console.error('[Shell] Error:', error);
+              updateSessionStatus(sessionId, 'error', error);
               break;
+            }
 
-            default:
-              console.warn('[Shell] Unknown message type:', message.type);
+            case ShellEventTypes.RESIZE: {
+              // Resize acknowledgment - can be used for logging if needed
+              if (import.meta.env.DEV) {
+                console.log('[Shell] Resize acknowledged');
+              }
+              break;
+            }
+
+            case ShellEventTypes.INPUT: {
+              // Input echo/acknowledgment - typically not needed on client
+              break;
+            }
+
+            default: {
+              // Exhaustive checking - TypeScript will error if we miss a case
+              const _exhaustive: never = shellEvent;
+              console.warn('[Shell] Unknown event type:', _exhaustive);
+            }
           }
         } catch (error) {
           console.error('[Shell] Failed to parse message:', error);
@@ -143,7 +207,7 @@ export function useShellWebSocket({
           reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS
         ) {
           reconnectAttemptsRef.current++;
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
+          const delay = calculateReconnectDelay(reconnectAttemptsRef.current);
           if (import.meta.env.DEV) {
             console.log(
               `[Shell] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS})`
@@ -177,8 +241,8 @@ export function useShellWebSocket({
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(
         JSON.stringify({
-          type: 'input',
-          data,
+          type: ShellEventTypes.INPUT,
+          data: { data },
         })
       );
     }
@@ -188,9 +252,8 @@ export function useShellWebSocket({
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(
         JSON.stringify({
-          type: 'resize',
-          cols,
-          rows,
+          type: ShellEventTypes.RESIZE,
+          data: { cols, rows },
         })
       );
     }

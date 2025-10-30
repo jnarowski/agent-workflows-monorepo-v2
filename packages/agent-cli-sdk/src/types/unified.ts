@@ -207,8 +207,8 @@ export function extractTextContent(message: UnifiedMessage): string {
   }
 
   return message.content
-    .filter(block => block.type === 'text')
-    .map(block => {
+    .filter((block) => block.type === 'text')
+    .map((block) => {
       if (block.type === 'text') {
         return block.text;
       }
@@ -242,19 +242,27 @@ export function isGrepTool(block: UnifiedToolUseBlock): block is UnifiedToolUseB
   return block.name === 'Grep';
 }
 
-export function isTodoWriteTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: TodoWriteToolInput } {
+export function isTodoWriteTool(
+  block: UnifiedToolUseBlock
+): block is UnifiedToolUseBlock & { input: TodoWriteToolInput } {
   return block.name === 'TodoWrite';
 }
 
-export function isWebSearchTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: WebSearchToolInput } {
+export function isWebSearchTool(
+  block: UnifiedToolUseBlock
+): block is UnifiedToolUseBlock & { input: WebSearchToolInput } {
   return block.name === 'WebSearch';
 }
 
-export function isAskUserQuestionTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: AskUserQuestionToolInput } {
+export function isAskUserQuestionTool(
+  block: UnifiedToolUseBlock
+): block is UnifiedToolUseBlock & { input: AskUserQuestionToolInput } {
   return block.name === 'AskUserQuestion';
 }
 
-export function isExitPlanModeTool(block: UnifiedToolUseBlock): block is UnifiedToolUseBlock & { input: ExitPlanModeToolInput } {
+export function isExitPlanModeTool(
+  block: UnifiedToolUseBlock
+): block is UnifiedToolUseBlock & { input: ExitPlanModeToolInput } {
   return block.name === 'ExitPlanMode';
 }
 
@@ -272,9 +280,7 @@ export function isSlashCommand(block: UnifiedContent): block is UnifiedSlashComm
  * @param events - Array of events with optional sessionId property
  * @returns Session ID or 'unknown' if not found
  */
-export function extractSessionIdFromEvents<T extends { sessionId?: string }>(
-  events: T[]
-): string {
+export function extractSessionIdFromEvents<T extends { sessionId?: string }>(events: T[]): string {
   for (const event of events) {
     if (event.sessionId) {
       return event.sessionId;

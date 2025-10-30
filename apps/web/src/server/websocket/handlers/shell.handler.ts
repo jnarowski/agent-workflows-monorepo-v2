@@ -1,24 +1,30 @@
 import type { WebSocket } from "@fastify/websocket";
 import type { FastifyInstance } from "fastify";
 import { sendMessage } from "../utils/send-message.js";
-import { extractId } from "../utils/extract-id.js";
+import { Channels, GlobalEventTypes, ShellEventTypes, parseChannel } from "@/shared/websocket";
 
 /**
- * Handle shell events (shell.{id}.action)
+ * Handle shell events on shell channels (shell:id)
  * Currently stubbed - shell functionality not yet implemented
  */
 export async function handleShellEvent(
   socket: WebSocket,
+  channel: string,
   type: string,
   _data: unknown,
   _userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
-  const shellId = extractId(type, "shell");
-  if (!shellId) {
-    sendMessage(socket, "global.error", {
-      error: "Invalid shell event type",
-      message: `Expected format: shell.{id}.action, got: ${type}`,
+  const parsed = parseChannel(channel);
+  const shellId = parsed?.id;
+
+  if (!shellId || parsed?.resource !== "shell") {
+    sendMessage(socket, Channels.global(), {
+      type: GlobalEventTypes.ERROR,
+      data: {
+        error: "Invalid shell channel",
+        message: `Expected format: shell:id, got: ${channel}`,
+      },
     });
     return;
   }
@@ -28,8 +34,12 @@ export async function handleShellEvent(
     { type, shellId },
     "[WebSocket] Shell event received (not implemented yet)"
   );
-  sendMessage(socket, `shell.${shellId}.error`, {
-    error: "Shell functionality not implemented",
-    message: "Shell/terminal features are not yet implemented",
+  sendMessage(socket, Channels.shell(shellId), {
+    type: ShellEventTypes.ERROR,
+    data: {
+      error: "Shell functionality not implemented",
+      message: "Shell/terminal features are not yet implemented",
+      sessionId: shellId,
+    },
   });
 }
