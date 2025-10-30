@@ -31,7 +31,7 @@ export function SessionListItem({
   isActive = false,
 }: SessionListItemProps) {
   const { id, metadata, created_at } = session;
-  const { firstMessagePreview, messageCount } = metadata;
+  const { messageCount } = metadata;
   const { isMobile, setOpenMobile } = useSidebar();
   const [isHovered, setIsHovered] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);

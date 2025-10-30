@@ -19,13 +19,12 @@ import Signup from "@/client/pages/auth/Signup";
 import Components from "@/client/pages/Components";
 
 function AppContent() {
-  const { readyState, isReady, connectionAttempts, reconnect } = useWebSocket();
+  const { readyState, connectionAttempts, reconnect } = useWebSocket();
 
   return (
     <>
       <ConnectionStatusBanner
         readyState={readyState}
-        isReady={isReady}
         connectionAttempts={connectionAttempts}
         onReconnect={reconnect}
       />

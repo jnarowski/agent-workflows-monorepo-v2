@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChatInterface } from "./components/ChatInterface";
@@ -58,13 +58,7 @@ export default function ProjectSession() {
   const totalTokens = useSessionStore(selectTotalTokens);
 
   // App-wide WebSocket hook for connection status
-  const {
-    isConnected: globalIsConnected,
-    readyState,
-    isReady,
-    connectionAttempts,
-    reconnect,
-  } = useWebSocket();
+  const { isConnected: globalIsConnected } = useWebSocket();
 
   // WebSocket hook (subscribes to session events)
   const { sendMessage: wsSendMessage } = useSessionWebSocket({

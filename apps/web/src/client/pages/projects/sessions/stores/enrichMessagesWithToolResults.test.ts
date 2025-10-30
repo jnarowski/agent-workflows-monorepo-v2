@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import type { UnifiedMessage } from '@repo/agent-cli-sdk';
+import type { UnifiedMessage, UnifiedImageBlock } from '@repo/agent-cli-sdk';
 import type { UIMessage } from '@/shared/types/message.types';
 
 // Import the private function for testing by accessing it through the store module
@@ -15,7 +15,7 @@ import type { UIMessage } from '@/shared/types/message.types';
  * Helper function to parse tool result content and preserve image structure
  * (Re-implemented from sessionStore.ts for testing)
  */
-function tryParseImageContent(content: unknown): string | any {
+function tryParseImageContent(content: unknown): string | UnifiedImageBlock {
   // If already a string, try to parse it as JSON
   if (typeof content === 'string') {
     try {
@@ -88,7 +88,7 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
   });
 
   // Step 2: Build lookup map of tool results
-  const resultMap = new Map<string, { content: string | any; is_error?: boolean }>();
+  const resultMap = new Map<string, { content: string | UnifiedImageBlock; is_error?: boolean }>();
 
   for (const message of filteredMessages) {
     if (Array.isArray(message.content)) {
@@ -239,7 +239,7 @@ describe('enrichMessagesWithToolResults', () => {
     expect(enriched).toHaveLength(1);
 
     // Tool_use should have nested result
-    const toolUse = enriched[0].content.find((b: any) => b.type === 'tool_use');
+    const toolUse = enriched[0]?.content.find((b) => b.type === 'tool_use');
     expect(toolUse).toBeDefined();
     expect(toolUse?.result).toEqual({
       content: 'export const foo = "bar";',
@@ -287,9 +287,11 @@ describe('enrichMessagesWithToolResults', () => {
 
     const enriched = enrichMessagesWithToolResults(messages);
 
-    const toolUse = enriched[0].content.find((b: any) => b.type === 'tool_use');
+    const toolUse = enriched[0]?.content.find((b) => b.type === 'tool_use');
     expect(toolUse?.result.content).toEqual(imageData);
-    expect(toolUse?.result.content.type).toBe('image');
+    if (toolUse?.result && typeof toolUse.result.content !== 'string') {
+      expect(toolUse.result.content.type).toBe('image');
+    }
   });
 
   it('should handle error tool results', () => {
@@ -324,7 +326,7 @@ describe('enrichMessagesWithToolResults', () => {
 
     const enriched = enrichMessagesWithToolResults(messages);
 
-    const toolUse = enriched[0].content.find((b: any) => b.type === 'tool_use');
+    const toolUse = enriched[0]?.content.find((b) => b.type === 'tool_use');
     expect(toolUse?.result).toEqual({
       content: 'File not found',
       is_error: true
@@ -399,8 +401,8 @@ describe('enrichMessagesWithToolResults', () => {
 
     const enriched = enrichMessagesWithToolResults(messages);
 
-    const toolUse1 = enriched[0].content.find((b: any) => b.id === 'tool_1');
-    const toolUse2 = enriched[0].content.find((b: any) => b.id === 'tool_2');
+    const toolUse1 = enriched[0]?.content.find((b) => b.type === 'tool_use' && b.id === 'tool_1');
+    const toolUse2 = enriched[0]?.content.find((b) => b.type === 'tool_use' && b.id === 'tool_2');
 
     expect(toolUse1?.result.content).toBe('content A');
     expect(toolUse2?.result.content).toBe('content B');

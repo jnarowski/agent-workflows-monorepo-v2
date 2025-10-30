@@ -3,7 +3,7 @@
  * Validates image rendering, loading states, and error handling
  */
 
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 import { ImageBlock } from './ImageBlock';
@@ -50,7 +50,7 @@ describe('ImageBlock', () => {
   });
 
   it('should show image when loaded successfully', async () => {
-    const { container } = render(<ImageBlock image={mockImageBlock} />);
+    render(<ImageBlock image={mockImageBlock} />);
 
     const img = screen.getByRole('img', { hidden: true }) as HTMLImageElement;
 

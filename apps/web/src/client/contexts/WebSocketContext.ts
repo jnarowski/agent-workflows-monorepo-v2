@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 import type { WebSocketEventBus } from '@/client/lib/WebSocketEventBus';
-import type { ReadyState } from '@/shared/types/websocket';
+import type { ReadyState } from '@/shared/websocket';
 import type { ChannelEvent } from '@/shared/websocket';
 
 /**

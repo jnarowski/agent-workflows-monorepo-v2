@@ -32,12 +32,7 @@ export function WebSocketDevTools() {
   const [channelFilter, setChannelFilter] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'messages' | 'subscriptions' | 'metrics'>('messages');
   const messageLogRef = useRef<MessageLogEntry[]>([]);
-  const { eventBus, reconnect, readyState, isConnected, isReady } = useWebSocket();
-
-  // Only render in dev mode
-  if (!import.meta.env.DEV) {
-    return null;
-  }
+  const { eventBus, reconnect, isConnected, isReady } = useWebSocket();
 
   // Keyboard shortcut to toggle (Ctrl+Shift+W or Cmd+Shift+W)
   useEffect(() => {
@@ -106,6 +101,11 @@ export function WebSocketDevTools() {
     const date = new Date(timestamp);
     return date.toLocaleTimeString('en-US', { hour12: false, millisecond: true });
   };
+
+  // Only render in dev mode
+  if (!import.meta.env.DEV) {
+    return null;
+  }
 
   // Render latency graph (simple sparkline)
   const renderLatencyGraph = () => {

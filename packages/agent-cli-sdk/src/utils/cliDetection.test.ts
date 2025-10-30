@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { detectCliGeneric } from './cliDetection.js';
 import type { CliDetectionConfig } from './cliDetection.js';
 import { exec } from 'node:child_process';
+import type { ExecException } from 'node:child_process';
 import { existsSync } from 'node:fs';
 
 // Mock modules
@@ -22,6 +23,9 @@ describe('detectCliGeneric', () => {
 		commandName: 'testcli',
 		commonPaths: ['/usr/local/bin/testcli', '/opt/homebrew/bin/testcli'],
 	};
+
+	type ExecCallback = (error: ExecException | null, result?: { stdout: string; stderr: string }) => void;
+	type MockReturn = ReturnType<typeof exec>;
 
 	beforeEach(() => {
 		// Reset all mocks before each test
@@ -49,10 +53,9 @@ describe('detectCliGeneric', () => {
 		it('should skip environment variable if path does not exist', async () => {
 			process.env.TEST_CLI_PATH = '/nonexistent/path/testcli';
 			mockExistsSync.mockReturnValueOnce(false); // env path doesn't exist
-			mockExec.mockImplementation((_cmd, callback: any) => {
-				callback(new Error('not found'));
-				return {} as any;
-				return {} as any;
+			mockExec.mockImplementation((_cmd, callback: ExecCallback) => {
+				callback(new Error('not found') as ExecException);
+				return {} as MockReturn;
 			});
 			mockExistsSync.mockReturnValue(false); // common paths don't exist
 
@@ -62,10 +65,9 @@ describe('detectCliGeneric', () => {
 		});
 
 		it('should skip environment variable if not set', async () => {
-			mockExec.mockImplementation((_cmd, callback: any) => {
+			mockExec.mockImplementation((_cmd, callback: ExecCallback) => {
 				callback(null, { stdout: '/usr/bin/testcli\n', stderr: '' });
-				return {} as any;
-				return {} as any;
+				return {} as MockReturn;
 			});
 			mockExistsSync.mockReturnValue(true);
 
@@ -80,10 +82,10 @@ describe('detectCliGeneric', () => {
 			const originalPlatform = process.platform;
 			Object.defineProperty(process, 'platform', { value: 'darwin' });
 
-			mockExec.mockImplementation((cmd, callback: any) => {
+			mockExec.mockImplementation((cmd, callback: ExecCallback) => {
 				expect(cmd).toBe('which testcli');
 				callback(null, { stdout: '/usr/bin/testcli\n', stderr: '' });
-				return {} as any;
+				return {} as MockReturn;
 			});
 			mockExistsSync.mockReturnValue(true);
 
@@ -98,14 +100,14 @@ describe('detectCliGeneric', () => {
 			const originalPlatform = process.platform;
 			Object.defineProperty(process, 'platform', { value: 'win32' });
 
-			mockExec.mockImplementation((cmd, callback: any) => {
+			mockExec.mockImplementation((cmd, callback: ExecCallback) => {
 				expect(cmd).toBe('where testcli');
 				callback(null, {
 					stdout: 'C:\\Program Files\\testcli.exe\n',
 					stderr: '',
 				});
-				return {} as any;
-				return {} as any;
+				return {} as MockReturn;
+				return {} as MockReturn;
 			});
 			mockExistsSync.mockReturnValue(true);
 
@@ -117,12 +119,12 @@ describe('detectCliGeneric', () => {
 		});
 
 		it('should handle multiple paths from which/where command', async () => {
-			mockExec.mockImplementation((_cmd, callback: any) => {
+			mockExec.mockImplementation((_cmd, callback: ExecCallback) => {
 				callback(null, {
 					stdout: '/usr/bin/testcli\n/usr/local/bin/testcli\n',
 					stderr: '',
 				});
-				return {} as any;
+				return {} as MockReturn;
 			});
 			mockExistsSync.mockReturnValue(true);
 
@@ -132,9 +134,9 @@ describe('detectCliGeneric', () => {
 		});
 
 		it('should skip which/where if command fails', async () => {
-			mockExec.mockImplementation((_cmd, callback: any) => {
+			mockExec.mockImplementation((_cmd, callback: ExecCallback) => {
 				callback(new Error('command not found'));
-				return {} as any;
+				return {} as MockReturn;
 			});
 			mockExistsSync.mockReturnValueOnce(true); // First common path exists
 
@@ -144,9 +146,9 @@ describe('detectCliGeneric', () => {
 		});
 
 		it('should skip which/where if path does not exist', async () => {
-			mockExec.mockImplementation((_cmd, callback: any) => {
+			mockExec.mockImplementation((_cmd, callback: ExecCallback) => {
 				callback(null, { stdout: '/nonexistent/testcli\n', stderr: '' });
-				return {} as any;
+				return {} as MockReturn;
 			});
 			mockExistsSync
 				.mockReturnValueOnce(false) // which path doesn't exist
@@ -158,9 +160,9 @@ describe('detectCliGeneric', () => {
 		});
 
 		it('should skip which/where if stdout is empty', async () => {
-			mockExec.mockImplementation((_cmd, callback: any) => {
+			mockExec.mockImplementation((_cmd, callback: ExecCallback) => {
 				callback(null, { stdout: '', stderr: '' });
-				return {} as any;
+				return {} as MockReturn;
 			});
 			mockExistsSync.mockReturnValueOnce(true); // First common path exists
 
@@ -172,9 +174,9 @@ describe('detectCliGeneric', () => {
 
 	describe('Strategy 3: Common paths', () => {
 		it('should check common paths in order', async () => {
-			mockExec.mockImplementation((_cmd, callback: any) => {
-				callback(new Error('not found'));
-				return {} as any;
+			mockExec.mockImplementation((_cmd, callback: ExecCallback) => {
+				callback(new Error('not found') as ExecException);
+				return {} as MockReturn;
 			});
 			mockExistsSync
 				.mockReturnValueOnce(false) // First path doesn't exist
@@ -188,9 +190,9 @@ describe('detectCliGeneric', () => {
 		});
 
 		it('should return first existing common path', async () => {
-			mockExec.mockImplementation((_cmd, callback: any) => {
-				callback(new Error('not found'));
-				return {} as any;
+			mockExec.mockImplementation((_cmd, callback: ExecCallback) => {
+				callback(new Error('not found') as ExecException);
+				return {} as MockReturn;
 			});
 			mockExistsSync.mockReturnValue(true); // All paths exist
 
@@ -200,9 +202,9 @@ describe('detectCliGeneric', () => {
 		});
 
 		it('should return null if no common paths exist', async () => {
-			mockExec.mockImplementation((_cmd, callback: any) => {
-				callback(new Error('not found'));
-				return {} as any;
+			mockExec.mockImplementation((_cmd, callback: ExecCallback) => {
+				callback(new Error('not found') as ExecException);
+				return {} as MockReturn;
 			});
 			mockExistsSync.mockReturnValue(false);
 
@@ -217,9 +219,9 @@ describe('detectCliGeneric', () => {
 				commonPaths: [],
 			};
 
-			mockExec.mockImplementation((_cmd, callback: any) => {
-				callback(new Error('not found'));
-				return {} as any;
+			mockExec.mockImplementation((_cmd, callback: ExecCallback) => {
+				callback(new Error('not found') as ExecException);
+				return {} as MockReturn;
 			});
 
 			const result = await detectCliGeneric(config);
@@ -232,9 +234,9 @@ describe('detectCliGeneric', () => {
 		it('should prioritize environment variable over which command', async () => {
 			process.env.TEST_CLI_PATH = '/custom/path/testcli';
 			mockExistsSync.mockReturnValue(true);
-			mockExec.mockImplementation((_cmd, callback: any) => {
+			mockExec.mockImplementation((_cmd, callback: ExecCallback) => {
 				callback(null, { stdout: '/usr/bin/testcli\n', stderr: '' });
-				return {} as any;
+				return {} as MockReturn;
 			});
 
 			const result = await detectCliGeneric(baseConfig);
@@ -244,9 +246,9 @@ describe('detectCliGeneric', () => {
 		});
 
 		it('should prioritize which command over common paths', async () => {
-			mockExec.mockImplementation((_cmd, callback: any) => {
+			mockExec.mockImplementation((_cmd, callback: ExecCallback) => {
 				callback(null, { stdout: '/usr/bin/testcli\n', stderr: '' });
-				return {} as any;
+				return {} as MockReturn;
 			});
 			mockExistsSync.mockReturnValue(true);
 
@@ -264,9 +266,9 @@ describe('detectCliGeneric', () => {
 				.mockReturnValueOnce(false) // first common path doesn't exist
 				.mockReturnValueOnce(true); // second common path exists
 
-			mockExec.mockImplementation((_cmd, callback: any) => {
+			mockExec.mockImplementation((_cmd, callback: ExecCallback) => {
 				callback(null, { stdout: '/nonexistent2/testcli\n', stderr: '' });
-				return {} as any;
+				return {} as MockReturn;
 			});
 
 			const result = await detectCliGeneric(baseConfig);
@@ -283,10 +285,10 @@ describe('detectCliGeneric', () => {
 				commonPaths: [],
 			};
 
-			mockExec.mockImplementation((cmd, callback: any) => {
+			mockExec.mockImplementation((cmd, callback: ExecCallback) => {
 				expect(cmd).toContain('test-cli-v2');
 				callback(null, { stdout: '/usr/bin/test-cli-v2\n', stderr: '' });
-				return {} as any;
+				return {} as MockReturn;
 			});
 			mockExistsSync.mockReturnValue(true);
 
@@ -305,9 +307,9 @@ describe('detectCliGeneric', () => {
 		});
 
 		it('should trim whitespace from which command output', async () => {
-			mockExec.mockImplementation((_cmd, callback: any) => {
+			mockExec.mockImplementation((_cmd, callback: ExecCallback) => {
 				callback(null, { stdout: '  /usr/bin/testcli  \n\n', stderr: '' });
-				return {} as any;
+				return {} as MockReturn;
 			});
 			mockExistsSync.mockReturnValue(true);
 

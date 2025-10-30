@@ -37,10 +37,6 @@ export default function NewSession() {
   const {
     sendMessage: globalSendMessage,
     isConnected: globalIsConnected,
-    readyState,
-    isReady,
-    connectionAttempts,
-    reconnect,
   } = useWebSocket();
 
   // Auto-focus input on mount

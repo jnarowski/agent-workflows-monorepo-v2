@@ -62,6 +62,7 @@ export async function validateSessionAccess(
  */
 export async function validateProjectAccess(
   projectId: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   userId: string
 ): Promise<boolean> {
   try {

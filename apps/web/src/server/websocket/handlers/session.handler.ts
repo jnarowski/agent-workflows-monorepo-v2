@@ -6,14 +6,21 @@ import { prisma } from "@/shared/prisma";
 import { generateSessionName } from "@/server/utils/generateSessionName";
 import type { SessionSendMessageData } from "../types.js";
 import { sendMessage } from "../utils/send-message.js";
-import { extractId } from "../utils/extract-id.js";
 import { cleanupTempDir } from "../utils/cleanup.js";
 import { activeSessions } from "../utils/active-sessions.js";
 import { validateSessionOwnership } from "../services/session-validator.js";
 import { extractUsageFromEvents } from "../services/usage-extractor.js";
-import { executeAgentCommand, type AgentExecuteResult } from "../services/agent-executor.js";
+import {
+  executeAgentCommand,
+  type AgentExecuteResult,
+} from "../services/agent-executor.js";
 import { broadcast, subscribe } from "../utils/subscriptions.js";
-import { SessionEventTypes, GlobalEventTypes, Channels, parseChannel } from "@/shared/websocket";
+import {
+  SessionEventTypes,
+  GlobalEventTypes,
+  Channels,
+} from "@/shared/websocket";
+import { parseChannel } from "../utils/channels.js";
 
 // ============================================================================
 // Types
@@ -102,7 +109,7 @@ export async function handleSessionSendMessage(
   await prisma.agentSession.update({
     where: { id: sessionId },
     data: {
-      state: 'working',
+      state: "working",
       error_message: null, // Clear any previous error
     },
   });
@@ -117,9 +124,7 @@ export async function handleSessionSendMessage(
     permissionMode: config.permissionMode,
     model: config.model,
     images:
-      imagePaths.length > 0
-        ? imagePaths.map((path) => ({ path }))
-        : undefined,
+      imagePaths.length > 0 ? imagePaths.map((path) => ({ path })) : undefined,
     onEvent: ({ message }) => {
       if (message && typeof message === "object" && message !== null) {
         broadcast(Channels.session(sessionId), {
@@ -154,7 +159,7 @@ export async function handleSessionSendMessage(
   await prisma.agentSession.update({
     where: { id: sessionId },
     data: {
-      state: 'idle',
+      state: "idle",
       error_message: null,
     },
   });
@@ -246,7 +251,7 @@ export async function handleSessionEvent(
   }
 
   try {
-    if (type === "send_message" || type === SessionEventTypes.SEND_MESSAGE) {
+    if (type === SessionEventTypes.SEND_MESSAGE) {
       await handleSessionSendMessage(
         socket,
         sessionId,
@@ -254,9 +259,9 @@ export async function handleSessionEvent(
         userId,
         fastify
       );
-    } else if (type === "cancel") {
+    } else if (type === SessionEventTypes.CANCEL) {
       await handleSessionCancel(socket, sessionId, data, userId, fastify);
-    } else if (type === "subscribe") {
+    } else if (type === SessionEventTypes.SUBSCRIBE) {
       await handleSessionSubscribe(socket, sessionId, userId, fastify);
     } else {
       // Unknown session action
@@ -361,9 +366,7 @@ function isAgentSupported(agent: string): boolean {
  *
  * @private
  */
-function parseExecutionConfig(
-  config: unknown
-): ExecutionConfig {
+function parseExecutionConfig(config: unknown): ExecutionConfig {
   const configObj = config as Record<string, unknown> | undefined;
 
   return {
@@ -401,7 +404,7 @@ async function handleExecutionFailure(
   await prisma.agentSession.update({
     where: { id: sessionId },
     data: {
-      state: 'error',
+      state: "error",
       error_message: errorMessage,
     },
   });

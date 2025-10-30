@@ -134,7 +134,7 @@ function tryParseImageContent(content: unknown): string | UnifiedImageBlock {
  */
 function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] {
   // Step 1: Filter out messages with only system content
-  const filteredMessages = messages.filter((msg, index) => {
+  const filteredMessages = messages.filter((msg) => {
     const content = msg.content;
 
     // If content is a string, check if it's a system message
@@ -178,18 +178,18 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
   }
 
   // Step 3: Enrich tool_use blocks and filter out tool_result blocks
-  const enrichedMessages = filteredMessages.map((msg, msgIndex) => {
+  const enrichedMessages = filteredMessages.map((msg) => {
     // Capture original message for debugging (deep clone)
-    const _original: UnifiedMessage = import.meta.env.DEV
+    const _original: UnifiedMessage | undefined = import.meta.env.DEV
       ? JSON.parse(JSON.stringify(msg))
-      : undefined as any;
+      : undefined;
 
     if (!Array.isArray(msg.content)) {
       return { ...msg, isStreaming: false, _original };
     }
 
     const enrichedContent = msg.content
-      .map((block, blockIndex) => {
+      .map((block) => {
         // Nest result into tool_use block
         if (block.type === 'tool_use') {
           const result = resultMap.get(block.id);
@@ -198,7 +198,7 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
         return block;
       })
       // Filter out standalone tool_result blocks (now nested in tool_use)
-      .filter((block, blockIndex) => {
+      .filter((block) => {
         if (block.type === 'tool_result') {
           return false;
         }
@@ -437,9 +437,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       if (shouldUpdateLastMessage) {
         // Update existing streaming message with same ID immutably
         // Capture _original on first update (if not already set)
-        const _original = import.meta.env.DEV
+        const _original: UnifiedMessage | undefined = import.meta.env.DEV
           ? (lastMessage._original || JSON.parse(JSON.stringify(lastMessage)))
-          : undefined as any;
+          : undefined;
 
         updatedMessages = [
           ...messages.slice(0, -1),

@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { WebSocketEventBus } from '@/client/lib/WebSocketEventBus';
 import { wsMetrics } from '@/client/lib/WebSocketMetrics';
 import { calculateReconnectDelay, DEFAULT_MAX_RECONNECT_DELAY } from '@/client/lib/reconnectionStrategy';
-import { ReadyState } from '@/shared/types/websocket';
+import { ReadyState } from '@/shared/websocket';
 import { useAuthStore } from '@/client/stores/authStore';
 import { WebSocketContext, type WebSocketContextValue } from '@/client/contexts/WebSocketContext';
 import {

@@ -1,6 +1,5 @@
 import type { FastifyInstance } from "fastify";
 import type { JWTPayload } from "@/server/utils/auth";
-import type { WebSocketMessage } from "./types.js";
 import { sendMessage } from "./utils/send-message.js";
 import { wsMetrics } from "./utils/metrics.js";
 import { activeSessions } from "./utils/active-sessions.js";
