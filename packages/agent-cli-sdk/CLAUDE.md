@@ -73,6 +73,33 @@ This is a TypeScript SDK for orchestrating AI-powered CLI tools (Claude Code and
 - `spawn.ts`: Process spawning abstraction with callbacks and timeout handling
 - `extractJson.ts`: Extract and validate JSON from text (supports Zod schemas)
 
+### Integration with Web App
+
+The web app (`apps/web`) consumes the unified types defined in this SDK to render tool interactions in the chat UI. The web app implements a **standardized tool result matching pattern** that automatically connects `tool_result` blocks to their parent `tool_use` blocks.
+
+**Key integration points:**
+- All `tool_use` blocks are rendered using specialized tool block components
+- Tool results are matched via `tool_use_id` during message enrichment (O(1) Map-based lookup)
+- Components receive `{input, result}` props - no manual `tool_use_id` matching required
+- Images are auto-parsed from strings to `UnifiedImageBlock` objects
+- Other content (JSON, plain text) stays as strings and is parsed by individual tool renderers
+
+**For complete details on how the web app uses these types, see:**
+`.agent/docs/claude-tool-result-patterns.md`
+
+This document explains:
+- How `tool_use_id` matching works under the hood
+- Complete data flow from JSONL → enrichment → rendering
+- Step-by-step guide for implementing new tools in the web app
+- Testing patterns and troubleshooting tips
+- Real-world examples from the codebase (Read, AskUserQuestion, Bash)
+
+**When adding a new tool to this SDK:**
+1. Define the tool input type in `src/types/unified.ts`
+2. The web app will automatically handle the result matching
+3. Create a tool block component in the web app following the documented pattern
+4. No changes needed to the enrichment process
+
 ### Data Flow
 
 1. **Execute Flow**:

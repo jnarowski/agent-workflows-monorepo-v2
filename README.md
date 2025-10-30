@@ -290,10 +290,20 @@ See `apps/web/.env.example` for all available options.
 
 ## Documentation
 
-- **[CLAUDE.md](./CLAUDE.md)** - Monorepo development guide
-- **[apps/web/CLAUDE.md](./apps/web/CLAUDE.md)** - Web app architecture
+### General Guides
+
+- **[CLAUDE.md](./CLAUDE.md)** - Monorepo development guide and conventions
+- **[apps/web/CLAUDE.md](./apps/web/CLAUDE.md)** - Web app architecture and patterns
 - **[packages/agent-cli-sdk/](./packages/agent-cli-sdk/)** - SDK docs (CLAUDE.md + README.md)
 - **[packages/agent-workflows/](./packages/agent-workflows/)** - Workflow library docs
+
+### Architecture Deep Dives
+
+- **[.agent/docs/claude-tool-result-patterns.md](./.agent/docs/claude-tool-result-patterns.md)** - Tool result matching pattern in the web app
+  - How `tool_use_id` matching works
+  - Data flow from JSONL → enrichment → rendering
+  - Guide for implementing new tools
+  - Testing patterns and troubleshooting
 
 ## Usage Examples
 
