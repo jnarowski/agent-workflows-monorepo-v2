@@ -4,11 +4,12 @@
 
 import { useState } from "react";
 import type { BashToolInput } from "@/shared/types/tool.types";
+import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 
 interface BashToolRendererProps {
   input: BashToolInput;
   result?: {
-    content: string;
+    content: string | UnifiedImageBlock;
     is_error?: boolean;
   };
 }
@@ -18,12 +19,15 @@ const MAX_LINES_PREVIEW = 3;
 export function BashToolRenderer({ input, result }: BashToolRendererProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // For bash results, we only expect strings (not images)
+  const resultContent = typeof result?.content === 'string' ? result.content : '';
+
   // Check if output has more than 3 lines
-  const outputLines = result ? result.content.split("\n") : [];
+  const outputLines = result ? resultContent.split("\n") : [];
   const shouldTruncate = outputLines.length > MAX_LINES_PREVIEW;
   const displayContent = shouldTruncate && !isExpanded
     ? outputLines.slice(0, MAX_LINES_PREVIEW).join("\n")
-    : result?.content;
+    : resultContent;
 
   return (
     <div className="rounded-lg bg-muted/50 p-3 text-xs font-mono">

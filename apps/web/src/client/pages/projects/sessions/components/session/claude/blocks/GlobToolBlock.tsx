@@ -7,11 +7,12 @@ import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
 import { useCodeBlockTheme } from "@/client/utils/codeBlockTheme";
 import { ExpandButton } from "./ExpandButton";
 import type { GlobToolInput } from "@/shared/types/tool.types";
+import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 
 interface GlobToolBlockProps {
   input: GlobToolInput;
   result?: {
-    content: string;
+    content: string | UnifiedImageBlock;
     is_error?: boolean;
   };
 }
@@ -22,6 +23,9 @@ export function GlobToolBlock({ input, result }: GlobToolBlockProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { colors } = useCodeBlockTheme();
 
+  // For glob results, we only expect strings (not images)
+  const resultContent = typeof result?.content === 'string' ? result.content : '';
+
   // Count files in result
   const getDescription = (): string => {
     if (result?.is_error) {
@@ -31,7 +35,7 @@ export function GlobToolBlock({ input, result }: GlobToolBlockProps) {
       return "Searching...";
     }
 
-    const lines = result.content.trim().split("\n");
+    const lines = resultContent.trim().split("\n");
     const count = lines.filter((line) => line.trim().length > 0).length;
 
     if (count === 0) {
@@ -44,8 +48,8 @@ export function GlobToolBlock({ input, result }: GlobToolBlockProps) {
   };
 
   // Calculate total lines for truncation
-  const totalLines = result?.content
-    ? result.content.trim().split("\n").filter((line) => line.trim().length > 0).length
+  const totalLines = resultContent
+    ? resultContent.trim().split("\n").filter((line) => line.trim().length > 0).length
     : 0;
   const shouldTruncate = totalLines > MAX_LINES_PREVIEW;
 
@@ -58,7 +62,7 @@ export function GlobToolBlock({ input, result }: GlobToolBlockProps) {
       defaultOpen={false}
     >
       {/* Results */}
-      {result && !result.is_error && result.content.trim() && (
+      {result && !result.is_error && resultContent.trim() && (
         <div
           className={`relative rounded-lg border overflow-hidden ${
             shouldTruncate && !isExpanded ? "max-h-40" : ""
@@ -72,7 +76,7 @@ export function GlobToolBlock({ input, result }: GlobToolBlockProps) {
             className="text-xs p-3 font-mono whitespace-pre-wrap break-words"
             style={{ margin: 0 }}
           >
-            {result.content.trim()}
+            {resultContent.trim()}
           </pre>
 
           {/* Fade gradient overlay */}
@@ -100,7 +104,7 @@ export function GlobToolBlock({ input, result }: GlobToolBlockProps) {
           }}
         >
           <pre className="text-xs font-mono text-red-500 whitespace-pre-wrap break-words">
-            {result.content}
+            {resultContent}
           </pre>
         </div>
       )}

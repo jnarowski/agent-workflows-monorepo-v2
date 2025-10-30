@@ -312,6 +312,52 @@ describe('Tool Input Types', () => {
       expect(input.questions[0]?.header).toBe('Button position');
     });
 
+    it('should match real JSONL data with multiple questions and multiSelect variations', () => {
+      const input: AskUserQuestionToolInput = {
+        questions: [
+          {
+            question: 'Which framework should we use?',
+            header: 'Framework',
+            multiSelect: false,
+            options: [
+              { label: 'React', description: 'Popular library with large ecosystem' },
+              { label: 'Vue', description: 'Progressive framework, easy to learn' },
+              { label: 'Svelte', description: 'Compile-time framework, no virtual DOM' },
+            ],
+          },
+          {
+            question: 'What styling approach do you prefer?',
+            header: 'Styling',
+            multiSelect: false,
+            options: [
+              { label: 'CSS Modules', description: 'Scoped CSS files' },
+              { label: 'Tailwind', description: 'Utility-first CSS' },
+              { label: 'Styled Components', description: 'CSS-in-JS solution' },
+            ],
+          },
+          {
+            question: 'Which features should we include?',
+            header: 'Features',
+            multiSelect: true,
+            options: [
+              { label: 'Dark mode', description: 'Theme switching support' },
+              { label: 'Animations', description: 'UI transitions and effects' },
+              { label: 'Accessibility', description: 'ARIA labels and keyboard nav' },
+            ],
+          },
+        ],
+      };
+
+      expect(input).toBeDefined();
+      expect(input.questions).toHaveLength(3);
+      expect(input.questions[0]?.multiSelect).toBe(false);
+      expect(input.questions[1]?.multiSelect).toBe(false);
+      expect(input.questions[2]?.multiSelect).toBe(true);
+      expect(input.questions[0]?.header).toBe('Framework');
+      expect(input.questions[1]?.header).toBe('Styling');
+      expect(input.questions[2]?.header).toBe('Features');
+    });
+
     it('should support multiSelect questions', () => {
       const input: AskUserQuestionToolInput = {
         questions: [

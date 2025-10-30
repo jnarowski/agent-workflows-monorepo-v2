@@ -322,6 +322,96 @@ describe('parser', () => {
     });
   });
 
+  // AskUserQuestion tests
+  describe('AskUserQuestion tool', () => {
+    // Multi-question AskUserQuestion with both multiSelect: false and multiSelect: true
+    const askUserQuestionMulti =
+      '{"parentUuid":"4e479d93-51a9-4e21-b09d-6d38bea867f5","isSidechain":false,"userType":"external","cwd":"/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2","sessionId":"06381696-0074-49f8-863e-6ad4fac507f9","version":"2.0.29","gitBranch":"fix/image-blocks","message":{"model":"claude-sonnet-4-5-20250929","id":"msg_019aZy4YRtPuPrG99oLrqtUa","type":"message","role":"assistant","content":[{"type":"tool_use","id":"toolu_01VEjCZtxeHL3UL4CNaqMyBa","name":"AskUserQuestion","input":{"questions":[{"question":"Which framework should we use?","header":"Framework","multiSelect":false,"options":[{"label":"React","description":"Popular library with large ecosystem"},{"label":"Vue","description":"Progressive framework, easy to learn"},{"label":"Svelte","description":"Compile-time framework, no virtual DOM"}]},{"question":"What styling approach do you prefer?","header":"Styling","multiSelect":false,"options":[{"label":"CSS Modules","description":"Scoped CSS files"},{"label":"Tailwind","description":"Utility-first CSS"},{"label":"Styled Components","description":"CSS-in-JS solution"}]},{"question":"Which features should we include?","header":"Features","multiSelect":true,"options":[{"label":"Dark mode","description":"Theme switching support"},{"label":"Animations","description":"UI transitions and effects"},{"label":"Accessibility","description":"ARIA labels and keyboard nav"}]}]}}],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":3,"cache_creation_input_tokens":3620,"cache_read_input_tokens":24921,"cache_creation":{"ephemeral_5m_input_tokens":3620,"ephemeral_1h_input_tokens":0},"output_tokens":14,"service_tier":"standard"}},"requestId":"req_011CUdMUWG4L1a1n9Rr53776","type":"assistant","uuid":"82b73821-2d40-4030-ac18-f0413121c1a7","timestamp":"2025-10-30T12:06:26.401Z"}';
+
+    // User response to AskUserQuestion with toolUseResult metadata
+    const askUserQuestionResponse =
+      '{"parentUuid":"82b73821-2d40-4030-ac18-f0413121c1a7","isSidechain":false,"userType":"external","cwd":"/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2","sessionId":"06381696-0074-49f8-863e-6ad4fac507f9","version":"2.0.29","gitBranch":"fix/image-blocks","type":"user","message":{"role":"user","content":[{"type":"tool_result","content":"User has answered your questions: \\"Which framework should we use?\\"=\\"React\\", \\"What styling approach do you prefer?\\"=\\"Tailwind\\", \\"Which features should we include?\\"=\\"Dark mode, Accessibility\\". You can now continue with the user\'s answers in mind.","tool_use_id":"toolu_01VEjCZtxeHL3UL4CNaqMyBa"}]},"uuid":"f2da9f56-7f63-4fa2-89dd-b3df134e2b1b","timestamp":"2025-10-30T12:12:39.753Z","toolUseResult":{"questions":[{"question":"Which framework should we use?","header":"Framework","options":[{"label":"React","description":"Popular library with large ecosystem"},{"label":"Vue","description":"Progressive framework, easy to learn"},{"label":"Svelte","description":"Compile-time framework, no virtual DOM"}],"multiSelect":false},{"question":"What styling approach do you prefer?","header":"Styling","options":[{"label":"CSS Modules","description":"Scoped CSS files"},{"label":"Tailwind","description":"Utility-first CSS"},{"label":"Styled Components","description":"CSS-in-JS solution"}],"multiSelect":false},{"question":"Which features should we include?","header":"Features","options":[{"label":"Dark mode","description":"Theme switching support"},{"label":"Animations","description":"UI transitions and effects"},{"label":"Accessibility","description":"ARIA labels and keyboard nav"}],"multiSelect":true}],"answers":{"Which framework should we use?":"React","What styling approach do you prefer?":"Tailwind","Which features should we include?":"Dark mode, Accessibility"}}}';
+
+    it('should parse multi-question AskUserQuestion tool use', () => {
+      const result = parse(askUserQuestionMulti);
+
+      expect(result).not.toBeNull();
+      expect(result?.role).toBe('assistant');
+      expect(result?.content).toHaveLength(1);
+
+      if (Array.isArray(result?.content)) {
+        const block = result.content[0];
+        expect(block?.type).toBe('tool_use');
+        if (block?.type !== 'tool_use') {
+          throw new Error(`Expected tool_use block, got ${block?.type}`);
+        }
+        expect(block.name).toBe('AskUserQuestion');
+        expect(block.input.questions).toBeDefined();
+        expect(Array.isArray(block.input.questions)).toBe(true);
+        expect(block.input.questions).toHaveLength(3);
+
+        // Verify first question (multiSelect: false)
+        const firstQuestion = block.input.questions[0];
+        expect(firstQuestion.question).toBe('Which framework should we use?');
+        expect(firstQuestion.header).toBe('Framework');
+        expect(firstQuestion.multiSelect).toBe(false);
+        expect(firstQuestion.options).toHaveLength(3);
+
+        // Verify third question (multiSelect: true)
+        const thirdQuestion = block.input.questions[2];
+        expect(thirdQuestion.multiSelect).toBe(true);
+        expect(thirdQuestion.header).toBe('Features');
+      }
+    });
+
+    it('should parse AskUserQuestion tool result with answers', () => {
+      const result = parse(askUserQuestionResponse);
+
+      expect(result).not.toBeNull();
+      expect(result?.role).toBe('user');
+      expect(result?.content).toHaveLength(1);
+
+      if (Array.isArray(result?.content)) {
+        const block = result.content[0];
+        expect(block?.type).toBe('tool_result');
+        if (block?.type !== 'tool_result') {
+          throw new Error(`Expected tool_result block, got ${block?.type}`);
+        }
+        expect(block.tool_use_id).toBe('toolu_01VEjCZtxeHL3UL4CNaqMyBa');
+        expect(block.content).toBeDefined();
+        expect(typeof block.content).toBe('string');
+        if (typeof block.content === 'string') {
+          expect(block.content).toContain('React');
+          expect(block.content).toContain('Tailwind');
+        }
+      }
+    });
+
+    it('should correctly identify AskUserQuestion tool with type guard', () => {
+      const result = parse(askUserQuestionMulti);
+      expect(result).not.toBeNull();
+
+      if (Array.isArray(result?.content)) {
+        const block = result.content[0];
+        if (block?.type === 'tool_use') {
+          if (block.name === 'AskUserQuestion') {
+            expect(block.input.questions).toBeDefined();
+            expect(Array.isArray(block.input.questions)).toBe(true);
+            const questions = block.input.questions as Array<{
+              question: string;
+              header: string;
+              multiSelect: boolean;
+              options: Array<{ label: string; description: string }>;
+            }>;
+            expect(questions[0]?.question).toBeTruthy();
+            expect(questions[0]?.header).toBeTruthy();
+            expect(typeof questions[0]?.multiSelect).toBe('boolean');
+          }
+        }
+      }
+    });
+  });
+
   // Slash command tests
   describe('slash commands', () => {
     // User message with slash command (no args)

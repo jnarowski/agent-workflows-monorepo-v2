@@ -5,12 +5,13 @@
 
 import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
 import { ToolResultRenderer } from "../tools/ToolResultRenderer";
+import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 
 interface DefaultToolBlockProps {
   toolName: string;
   input: Record<string, unknown>;
   result?: {
-    content: string;
+    content: string | UnifiedImageBlock;
     is_error?: boolean;
   };
 }

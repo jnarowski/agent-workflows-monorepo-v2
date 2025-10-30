@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreHorizontal, Pencil } from "lucide-react";
+import { MoreHorizontal, Pencil, FileJson } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/client/components/ui/dropdown-menu";
 import { SessionDialog } from "./SessionDialog";
+import { SessionFileViewer } from "./SessionFileViewer";
 import { useUpdateSession } from "../hooks/useAgentSessions";
 import { cn } from "@/client/lib/utils";
 import type { SessionResponse } from "@/shared/types";
@@ -30,6 +31,7 @@ export function SessionDropdownMenu({
 }: SessionDropdownMenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const updateSessionMutation = useUpdateSession();
 
   const handleMenuOpenChange = (open: boolean) => {
@@ -42,6 +44,13 @@ export function SessionDropdownMenu({
     e.stopPropagation();
     handleMenuOpenChange(false);
     setEditDialogOpen(true);
+  };
+
+  const handleViewFile = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleMenuOpenChange(false);
+    setFileViewerOpen(true);
   };
 
   const handleUpdateSession = async (sessionId: string, name: string) => {
@@ -72,6 +81,12 @@ export function SessionDropdownMenu({
             <Pencil className="h-4 w-4" />
             <span>Edit</span>
           </DropdownMenuItem>
+          {session.session_path && (
+            <DropdownMenuItem onClick={handleViewFile}>
+              <FileJson className="h-4 w-4" />
+              <span>View Session File</span>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -80,6 +95,12 @@ export function SessionDropdownMenu({
         onOpenChange={setEditDialogOpen}
         session={session}
         onUpdateSession={handleUpdateSession}
+      />
+
+      <SessionFileViewer
+        open={fileViewerOpen}
+        onOpenChange={setFileViewerOpen}
+        sessionId={session.id}
       />
     </>
   );

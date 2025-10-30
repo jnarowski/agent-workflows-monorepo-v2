@@ -13,6 +13,7 @@ import { WebSearchToolBlock } from './blocks/WebSearchToolBlock';
 import { GlobToolBlock } from './blocks/GlobToolBlock';
 import { GrepToolBlock } from './blocks/GrepToolBlock';
 import { TaskToolBlock } from './blocks/TaskToolBlock';
+import { AskUserQuestionToolBlock } from './blocks/AskUserQuestionToolBlock';
 import { DefaultToolBlock } from './blocks/DefaultToolBlock';
 
 import type {
@@ -25,13 +26,15 @@ import type {
   GlobToolInput,
   GrepToolInput,
   TaskToolInput,
+  AskUserQuestionToolInput,
 } from '@/shared/types/tool.types';
+import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 
 interface ToolBlockRendererProps {
   toolName: string;
   input: Record<string, unknown>;
   result?: {
-    content: string;
+    content: string | UnifiedImageBlock;
     is_error?: boolean;
   };
 }
@@ -64,6 +67,9 @@ export function ToolBlockRenderer({ toolName, input, result }: ToolBlockRenderer
 
     case 'Task':
       return <TaskToolBlock input={input as TaskToolInput} result={result} />;
+
+    case 'AskUserQuestion':
+      return <AskUserQuestionToolBlock input={input as AskUserQuestionToolInput} result={result} />;
 
     default:
       // Fallback to default block for unknown tools

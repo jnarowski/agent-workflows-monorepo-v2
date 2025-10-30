@@ -5,11 +5,12 @@
 import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
 import { BashToolRenderer } from "../tools/BashToolRenderer";
 import type { BashToolInput } from "@/shared/types/tool.types";
+import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 
 interface BashToolBlockProps {
   input: BashToolInput;
   result?: {
-    content: string;
+    content: string | UnifiedImageBlock;
     is_error?: boolean;
   };
 }

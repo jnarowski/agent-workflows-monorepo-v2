@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { UnifiedMessage, UnifiedContent, ClaudePermissionMode } from '@repo/agent-cli-sdk';
+import type { UnifiedMessage, UnifiedContent, UnifiedImageBlock, ClaudePermissionMode } from '@repo/agent-cli-sdk';
 import type { UIMessage } from '@/shared/types/message.types';
 import type {
   AgentSessionMetadata,
@@ -12,15 +12,82 @@ import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import { isSystemMessage } from '@/shared/utils/message.utils';
 
 /**
- * Enrich messages by nesting tool_result blocks into their corresponding tool_use blocks
- * This is the ONLY transform on the frontend - happens once when loading messages
+ * Parse tool result content and auto-convert images to UnifiedImageBlock objects.
+ *
+ * **Special Case for Images:** Images are stored as stringified JSON arrays in JSONL files
+ * but need to be parsed back to structured objects for the ImageBlock component. This
+ * function handles that conversion automatically.
+ *
+ * **Other Content Types:** All other content (including JSON answers, plain text, etc.)
+ * is preserved as strings and should be parsed by the individual tool renderers.
+ *
+ * @param content - Raw tool result content from JSONL (string, array, or object)
+ * @returns Parsed content - UnifiedImageBlock for images, string for everything else
+ *
+ * @example
+ * // Image content (stringified in JSONL)
+ * tryParseImageContent('[{"type":"image","source":{...}}]')
+ * // Returns: { type: 'image', source: {...} }
+ *
+ * @example
+ * // Plain text content
+ * tryParseImageContent('Command executed successfully')
+ * // Returns: 'Command executed successfully'
+ *
+ * @example
+ * // JSON content (not an image)
+ * tryParseImageContent('{"answers":{"q1":"a1"}}')
+ * // Returns: '{"answers":{"q1":"a1"}}' (unchanged - parse in component)
+ */
+function tryParseImageContent(content: unknown): string | UnifiedImageBlock {
+  // If already a string, try to parse it as JSON
+  if (typeof content === 'string') {
+    try {
+      const parsed = JSON.parse(content);
+      // Check if it's an array with an image object
+      if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]?.type === 'image') {
+        return parsed[0] as UnifiedImageBlock;
+      }
+      // Not an image, return stringified
+      return content;
+    } catch {
+      // Not valid JSON, return as-is
+      return content;
+    }
+  }
+
+  // If it's an array, check if first item is an image
+  if (Array.isArray(content) && content.length > 0 && content[0]?.type === 'image') {
+    return content[0] as UnifiedImageBlock;
+  }
+
+  // For any other type, stringify it
+  return JSON.stringify(content);
+}
+
+/**
+ * Enrich messages by nesting tool_result blocks into their corresponding tool_use blocks.
+ * This is the ONLY transform on the frontend - happens once when loading messages.
+ *
+ * **Core Pattern:** All tool results are matched to tool invocations via tool_use_id using
+ * a Map-based lookup. This ensures O(1) matching performance and enables components to
+ * receive enriched data without manual searching.
+ *
+ * For complete documentation on the tool result matching pattern, see:
+ * `.agent/docs/claude-tool-result-patterns.md`
  *
  * Process:
  * 1. Filter out messages containing only system content (caveats, command tags, etc.)
- * 2. Build Map of tool_use_id → result from all tool_result blocks
- * 3. Nest results into corresponding tool_use blocks (by matching IDs)
+ * 2. Build Map of tool_use_id → result from all tool_result blocks (O(n) scan)
+ * 3. Nest results into corresponding tool_use blocks (O(1) lookup per tool)
  * 4. Filter out standalone tool_result blocks (now nested in tool_use)
  * 5. Add isStreaming: false to all loaded messages
+ *
+ * **Important:** User messages containing ONLY tool_result blocks are removed entirely
+ * after enrichment, since their content is now nested in the assistant's tool_use block.
+ *
+ * @param messages - Array of UnifiedMessages from JSONL parsing
+ * @returns Array of UIMessages with nested tool results and isStreaming flags
  *
  * @example
  * // Input: Array of UnifiedMessages with separate tool_use and tool_result blocks
@@ -91,16 +158,14 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
   });
 
   // Step 2: Build lookup map of tool results
-  const resultMap = new Map<string, { content: string; is_error?: boolean }>();
+  const resultMap = new Map<string, { content: string | UnifiedImageBlock; is_error?: boolean }>();
 
   for (const message of filteredMessages) {
     if (Array.isArray(message.content)) {
       for (const block of message.content) {
         if (block.type === 'tool_result') {
           resultMap.set(block.tool_use_id, {
-            content: typeof block.content === 'string'
-              ? block.content
-              : JSON.stringify(block.content),
+            content: tryParseImageContent(block.content),
             is_error: block.is_error
           });
         }

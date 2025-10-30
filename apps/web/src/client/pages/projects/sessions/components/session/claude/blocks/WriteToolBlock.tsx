@@ -9,11 +9,12 @@ import { getLanguageFromPath } from "@/client/utils/getLanguageFromPath";
 import { useCodeBlockTheme } from "@/client/utils/codeBlockTheme";
 import { ExpandButton } from "./ExpandButton";
 import type { WriteToolInput } from "@/shared/types/tool.types";
+import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 
 interface WriteToolBlockProps {
   input: WriteToolInput;
   result?: {
-    content: string;
+    content: string | UnifiedImageBlock;
     is_error?: boolean;
   };
 }

@@ -5,11 +5,12 @@
 import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
 import { TodoWriteToolRenderer } from "../tools/TodoWriteToolRenderer";
 import type { TodoWriteToolInput } from "@/shared/types/tool.types";
+import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 
 interface TodoWriteToolBlockProps {
   input: TodoWriteToolInput;
   result?: {
-    content: string;
+    content: string | UnifiedImageBlock;
     is_error?: boolean;
   };
 }

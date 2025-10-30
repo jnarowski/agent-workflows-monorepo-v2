@@ -153,6 +153,16 @@ The web app supports multiple AI CLI tools:
 
 All agents normalized to `UnifiedMessage` format via agent-cli-sdk.
 
+**5. Tool Result Matching Pattern**
+
+All interactive tools in the web app follow a standardized pattern:
+- Tool results are matched to tool invocations via `tool_use_id` automatically
+- Matching happens once during message enrichment (O(1) Map-based lookup)
+- Results are nested into `tool_use` blocks before rendering
+- Components receive enriched `{input, result}` props - no manual lookups required
+- Images auto-parse to `UnifiedImageBlock`, other content stays as strings
+- Pattern documented in `.agent/docs/claude-tool-result-patterns.md`
+
 ## Important Rules & Conventions
 
 ### General Monorepo Rules
