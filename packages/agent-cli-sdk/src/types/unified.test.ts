@@ -312,6 +312,79 @@ describe('Tool Input Types', () => {
       expect(input.questions[0]?.header).toBe('Button position');
     });
 
+    it('should match real JSONL data with multiple questions and multiSelect variations', () => {
+      const input: AskUserQuestionToolInput = {
+        questions: [
+          {
+            question: 'Which scrolling approach would you like to implement?',
+            header: 'Approach',
+            multiSelect: false,
+            options: [
+              {
+                label: 'use-stick-to-bottom hook (recommended)',
+                description: 'Battle-tested library already installed. Best performance and configurability. Need to build scroll button UI.',
+              },
+              {
+                label: 'AI Elements components',
+                description: 'Use existing Conversation/ConversationContent/ConversationScrollButton components. Quick to implement, includes UI.',
+              },
+              {
+                label: 'Hybrid approach',
+                description: 'Combine use-stick-to-bottom hook for logic with ConversationScrollButton for UI. Best of both worlds.',
+              },
+            ],
+          },
+          {
+            question: 'What scroll behavior do you prefer when new messages arrive?',
+            header: 'Auto-scroll',
+            multiSelect: false,
+            options: [
+              {
+                label: 'Smart auto-scroll (current behavior)',
+                description: 'Only auto-scroll if user is near bottom (~200px). Preserves manual scroll position when reading history.',
+              },
+              {
+                label: 'Always auto-scroll',
+                description: 'Always jump to newest message. Simpler but may interrupt users reviewing chat history.',
+              },
+              {
+                label: 'Configurable threshold',
+                description: 'Make proximity threshold adjustable (requires use-stick-to-bottom or custom implementation).',
+              },
+            ],
+          },
+          {
+            question: 'Should we also update other message/conversation UI components?',
+            header: 'Scope',
+            multiSelect: true,
+            options: [
+              {
+                label: 'Just scrolling improvements',
+                description: 'Only update scroll behavior and add scroll-to-bottom button. Keep existing message rendering.',
+              },
+              {
+                label: 'Adopt AI Elements message components',
+                description: 'Replace current message components with Message/MessageAvatar/MessageContent from AI Elements.',
+              },
+              {
+                label: 'Full conversation refactor',
+                description: 'Replace entire ChatInterface with AI Elements Conversation pattern. Larger refactor.',
+              },
+            ],
+          },
+        ],
+      };
+
+      expect(input).toBeDefined();
+      expect(input.questions).toHaveLength(3);
+      expect(input.questions[0]?.multiSelect).toBe(false);
+      expect(input.questions[1]?.multiSelect).toBe(false);
+      expect(input.questions[2]?.multiSelect).toBe(true);
+      expect(input.questions[0]?.header).toBe('Approach');
+      expect(input.questions[1]?.header).toBe('Auto-scroll');
+      expect(input.questions[2]?.header).toBe('Scope');
+    });
+
     it('should support multiSelect questions', () => {
       const input: AskUserQuestionToolInput = {
         questions: [

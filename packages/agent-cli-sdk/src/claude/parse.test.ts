@@ -322,6 +322,96 @@ describe('parser', () => {
     });
   });
 
+  // AskUserQuestion tests
+  describe('AskUserQuestion tool', () => {
+    // Multi-question AskUserQuestion with both multiSelect: false and multiSelect: true
+    const askUserQuestionMulti =
+      '{"parentUuid":"4e479d93-51a9-4e21-b09d-6d38bea867f5","isSidechain":false,"userType":"external","cwd":"/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2","sessionId":"06381696-0074-49f8-863e-6ad4fac507f9","version":"2.0.29","gitBranch":"fix/image-blocks","message":{"model":"claude-sonnet-4-5-20250929","id":"msg_019aZy4YRtPuPrG99oLrqtUa","type":"message","role":"assistant","content":[{"type":"tool_use","id":"toolu_01VEjCZtxeHL3UL4CNaqMyBa","name":"AskUserQuestion","input":{"questions":[{"question":"Which scrolling approach would you like to implement?","header":"Approach","multiSelect":false,"options":[{"label":"use-stick-to-bottom hook (recommended)","description":"Battle-tested library already installed. Best performance and configurability. Need to build scroll button UI."},{"label":"AI Elements components","description":"Use existing Conversation/ConversationContent/ConversationScrollButton components. Quick to implement, includes UI."},{"label":"Hybrid approach","description":"Combine use-stick-to-bottom hook for logic with ConversationScrollButton for UI. Best of both worlds."}]},{"question":"What scroll behavior do you prefer when new messages arrive?","header":"Auto-scroll","multiSelect":false,"options":[{"label":"Smart auto-scroll (current behavior)","description":"Only auto-scroll if user is near bottom (~200px). Preserves manual scroll position when reading history."},{"label":"Always auto-scroll","description":"Always jump to newest message. Simpler but may interrupt users reviewing chat history."},{"label":"Configurable threshold","description":"Make proximity threshold adjustable (requires use-stick-to-bottom or custom implementation)."}]},{"question":"Should we also update other message/conversation UI components?","header":"Scope","multiSelect":true,"options":[{"label":"Just scrolling improvements","description":"Only update scroll behavior and add scroll-to-bottom button. Keep existing message rendering."},{"label":"Adopt AI Elements message components","description":"Replace current message components with Message/MessageAvatar/MessageContent from AI Elements."},{"label":"Full conversation refactor","description":"Replace entire ChatInterface with AI Elements Conversation pattern. Larger refactor."}]}]}}],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":3,"cache_creation_input_tokens":3620,"cache_read_input_tokens":24921,"cache_creation":{"ephemeral_5m_input_tokens":3620,"ephemeral_1h_input_tokens":0},"output_tokens":14,"service_tier":"standard"}},"requestId":"req_011CUdMUWG4L1a1n9Rr53776","type":"assistant","uuid":"82b73821-2d40-4030-ac18-f0413121c1a7","timestamp":"2025-10-30T12:06:26.401Z"}';
+
+    // User response to AskUserQuestion with toolUseResult metadata
+    const askUserQuestionResponse =
+      '{"parentUuid":"82b73821-2d40-4030-ac18-f0413121c1a7","isSidechain":false,"userType":"external","cwd":"/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2","sessionId":"06381696-0074-49f8-863e-6ad4fac507f9","version":"2.0.29","gitBranch":"fix/image-blocks","type":"user","message":{"role":"user","content":[{"type":"tool_result","content":"User has answered your questions: \\"Which scrolling approach would you like to implement?\\"=\\"AI Elements components\\", \\"What scroll behavior do you prefer when new messages arrive?\\"=\\"Remove anything custom we have and use the ai elements approach. What they have is perfect\\", \\"Should we also update other message/conversation UI components?\\"=\\"Just scrolling improvements\\". You can now continue with the user\'s answers in mind.","tool_use_id":"toolu_01VEjCZtxeHL3UL4CNaqMyBa"}]},"uuid":"f2da9f56-7f63-4fa2-89dd-b3df134e2b1b","timestamp":"2025-10-30T12:12:39.753Z","toolUseResult":{"questions":[{"question":"Which scrolling approach would you like to implement?","header":"Approach","options":[{"label":"use-stick-to-bottom hook (recommended)","description":"Battle-tested library already installed. Best performance and configurability. Need to build scroll button UI."},{"label":"AI Elements components","description":"Use existing Conversation/ConversationContent/ConversationScrollButton components. Quick to implement, includes UI."},{"label":"Hybrid approach","description":"Combine use-stick-to-bottom hook for logic with ConversationScrollButton for UI. Best of both worlds."}],"multiSelect":false},{"question":"What scroll behavior do you prefer when new messages arrive?","header":"Auto-scroll","options":[{"label":"Smart auto-scroll (current behavior)","description":"Only auto-scroll if user is near bottom (~200px). Preserves manual scroll position when reading history."},{"label":"Always auto-scroll","description":"Always jump to newest message. Simpler but may interrupt users reviewing chat history."},{"label":"Configurable threshold","description":"Make proximity threshold adjustable (requires use-stick-to-bottom or custom implementation)."}],"multiSelect":false},{"question":"Should we also update other message/conversation UI components?","header":"Scope","options":[{"label":"Just scrolling improvements","description":"Only update scroll behavior and add scroll-to-bottom button. Keep existing message rendering."},{"label":"Adopt AI Elements message components","description":"Replace current message components with Message/MessageAvatar/MessageContent from AI Elements."},{"label":"Full conversation refactor","description":"Replace entire ChatInterface with AI Elements Conversation pattern. Larger refactor."}],"multiSelect":true}],"answers":{"Which scrolling approach would you like to implement?":"AI Elements components","What scroll behavior do you prefer when new messages arrive?":"Remove anything custom we have and use the ai elements approach. What they have is perfect","Should we also update other message/conversation UI components?":"Just scrolling improvements"}}}';
+
+    it('should parse multi-question AskUserQuestion tool use', () => {
+      const result = parse(askUserQuestionMulti);
+
+      expect(result).not.toBeNull();
+      expect(result?.role).toBe('assistant');
+      expect(result?.content).toHaveLength(1);
+
+      if (Array.isArray(result?.content)) {
+        const block = result.content[0];
+        expect(block?.type).toBe('tool_use');
+        if (block?.type !== 'tool_use') {
+          throw new Error(`Expected tool_use block, got ${block?.type}`);
+        }
+        expect(block.name).toBe('AskUserQuestion');
+        expect(block.input.questions).toBeDefined();
+        expect(Array.isArray(block.input.questions)).toBe(true);
+        expect(block.input.questions).toHaveLength(3);
+
+        // Verify first question (multiSelect: false)
+        const firstQuestion = block.input.questions[0];
+        expect(firstQuestion.question).toBe('Which scrolling approach would you like to implement?');
+        expect(firstQuestion.header).toBe('Approach');
+        expect(firstQuestion.multiSelect).toBe(false);
+        expect(firstQuestion.options).toHaveLength(3);
+
+        // Verify third question (multiSelect: true)
+        const thirdQuestion = block.input.questions[2];
+        expect(thirdQuestion.multiSelect).toBe(true);
+        expect(thirdQuestion.header).toBe('Scope');
+      }
+    });
+
+    it('should parse AskUserQuestion tool result with answers', () => {
+      const result = parse(askUserQuestionResponse);
+
+      expect(result).not.toBeNull();
+      expect(result?.role).toBe('user');
+      expect(result?.content).toHaveLength(1);
+
+      if (Array.isArray(result?.content)) {
+        const block = result.content[0];
+        expect(block?.type).toBe('tool_result');
+        if (block?.type !== 'tool_result') {
+          throw new Error(`Expected tool_result block, got ${block?.type}`);
+        }
+        expect(block.tool_use_id).toBe('toolu_01VEjCZtxeHL3UL4CNaqMyBa');
+        expect(block.content).toBeDefined();
+        expect(typeof block.content).toBe('string');
+        if (typeof block.content === 'string') {
+          expect(block.content).toContain('AI Elements components');
+          expect(block.content).toContain('Just scrolling improvements');
+        }
+      }
+    });
+
+    it('should correctly identify AskUserQuestion tool with type guard', () => {
+      const result = parse(askUserQuestionMulti);
+      expect(result).not.toBeNull();
+
+      if (Array.isArray(result?.content)) {
+        const block = result.content[0];
+        if (block?.type === 'tool_use') {
+          if (block.name === 'AskUserQuestion') {
+            expect(block.input.questions).toBeDefined();
+            expect(Array.isArray(block.input.questions)).toBe(true);
+            const questions = block.input.questions as Array<{
+              question: string;
+              header: string;
+              multiSelect: boolean;
+              options: Array<{ label: string; description: string }>;
+            }>;
+            expect(questions[0]?.question).toBeTruthy();
+            expect(questions[0]?.header).toBeTruthy();
+            expect(typeof questions[0]?.multiSelect).toBe('boolean');
+          }
+        }
+      }
+    });
+  });
+
   // Slash command tests
   describe('slash commands', () => {
     // User message with slash command (no args)

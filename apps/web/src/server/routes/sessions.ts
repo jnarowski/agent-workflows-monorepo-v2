@@ -16,6 +16,8 @@ import {
 import { errorResponse } from "@/server/schemas/response";
 import type { CreateSessionRequest } from "@/shared/types/agent-session.types";
 import { buildErrorResponse } from "@/server/utils/error";
+import { prisma } from "@/shared/prisma";
+import fs from "fs/promises";
 
 export async function sessionRoutes(fastify: FastifyInstance) {
   /**
@@ -215,6 +217,81 @@ export async function sessionRoutes(fastify: FastifyInstance) {
       }
 
       return reply.send({ data: session });
+    }
+  );
+
+  /**
+   * GET /api/sessions/:sessionId/file
+   * Get raw JSONL file content for a session (for debugging)
+   */
+  fastify.get<{
+    Params: { sessionId: string };
+  }>(
+    "/api/sessions/:sessionId/file",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: sessionIdSchema,
+      },
+    },
+    async (request, reply) => {
+      const userId = request.user?.id;
+      if (!userId) {
+        return reply.code(401).send(buildErrorResponse(401, "Unauthorized"));
+      }
+
+      const { sessionId } = request.params;
+
+      fastify.log.info({ sessionId, userId }, 'Fetching session file content');
+
+      try {
+        // Verify session exists and user has access
+        const session = await prisma.agentSession.findFirst({
+          where: {
+            id: sessionId,
+            userId,
+          },
+        });
+
+        if (!session) {
+          return reply.code(404).send(buildErrorResponse(404, "Session not found"));
+        }
+
+        // Check if session_path exists
+        if (!session.session_path) {
+          return reply.code(404).send(buildErrorResponse(404, "Session file path not available (legacy session)"));
+        }
+
+        // Read the file content
+        const content = await fs.readFile(session.session_path, "utf-8");
+
+        return reply.send({
+          data: {
+            content,
+            path: session.session_path,
+          },
+        });
+      } catch (error: any) {
+        fastify.log.error({
+          error: {
+            message: error.message,
+            stack: error.stack,
+            code: error.code,
+          },
+          sessionId,
+          userId,
+        }, 'Error reading session file');
+
+        if (error.code === "ENOENT") {
+          return reply.code(404).send(buildErrorResponse(404, "Session file not found on disk"));
+        }
+
+        if (error.code === "EACCES") {
+          return reply.code(403).send(buildErrorResponse(403, "Permission denied reading session file"));
+        }
+
+        return reply.code(500).send(buildErrorResponse(500, error.message || "Internal server error"));
+      }
     }
   );
 }

@@ -404,7 +404,15 @@ import { ChatPromptInput } from "./ChatPromptInput";
    - Shared code: Use `@/shared/*` for types, utilities, and Prisma client
    - **Never use relative imports** (`../`, `./`) - always use the `@/` alias
 
-6. **Production Mode**: Built client assets are served from `dist/client/` by Fastify with SPA fallback
+6. **Tool Result Matching Pattern**:
+   - All interactive tools (Read, AskUserQuestion, Bash, etc.) follow a standardized pattern
+   - Tool results are matched to tool invocations via `tool_use_id` during message enrichment
+   - Results are nested into `tool_use` blocks automatically (happens once when loading messages)
+   - Components receive enriched data as props - no manual `tool_use_id` lookups required
+   - Images are auto-parsed to `UnifiedImageBlock` objects, other content stays as strings
+   - For complete details, see: `.agent/docs/claude-tool-result-patterns.md`
+
+7. **Production Mode**: Built client assets are served from `dist/client/` by Fastify with SPA fallback
 
 ## Workspace Dependencies
 
