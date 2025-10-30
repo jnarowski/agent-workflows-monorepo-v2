@@ -53,12 +53,12 @@ Function: `enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[
 Remove messages containing only system content (caveats, command tags, etc.):
 
 ```typescript
-const filteredMessages = messages.filter(msg => {
+const filteredMessages = messages.filter((msg) => {
   // Skip messages with only system content blocks
   if (Array.isArray(content)) {
-    const textBlocks = content.filter(c => c.type === 'text');
+    const textBlocks = content.filter((c) => c.type === "text");
     if (textBlocks.length === 0) return true;
-    return !textBlocks.every(c => isSystemMessage(c.text));
+    return !textBlocks.every((c) => isSystemMessage(c.text));
   }
   return true;
 });
@@ -69,18 +69,21 @@ const filteredMessages = messages.filter(msg => {
 **This is the core matching logic:**
 
 ```typescript
-const resultMap = new Map<string, {
-  content: string | UnifiedImageBlock;
-  is_error?: boolean
-}>();
+const resultMap = new Map<
+  string,
+  {
+    content: string | UnifiedImageBlock;
+    is_error?: boolean;
+  }
+>();
 
 for (const message of filteredMessages) {
   if (Array.isArray(message.content)) {
     for (const block of message.content) {
-      if (block.type === 'tool_result') {
+      if (block.type === "tool_result") {
         resultMap.set(block.tool_use_id, {
           content: tryParseImageContent(block.content),
-          is_error: block.is_error
+          is_error: block.is_error,
         });
       }
     }
@@ -89,6 +92,7 @@ for (const message of filteredMessages) {
 ```
 
 **Key Points:**
+
 - Iterates through ALL messages
 - Finds all `tool_result` blocks
 - Creates a Map using `tool_use_id` as the key
@@ -97,32 +101,33 @@ for (const message of filteredMessages) {
 #### 3. Enrich and Filter
 
 ```typescript
-return filteredMessages.map(msg => {
+return filteredMessages.map((msg) => {
   if (!Array.isArray(msg.content)) {
     return { ...msg, isStreaming: false };
   }
 
   const enrichedContent = msg.content
-    .map(block => {
+    .map((block) => {
       // Nest result into tool_use block
-      if (block.type === 'tool_use') {
+      if (block.type === "tool_use") {
         const result = resultMap.get(block.id);
         return result ? { ...block, result } : block;
       }
       return block;
     })
     // Filter out standalone tool_result blocks (now nested)
-    .filter(block => block.type !== 'tool_result');
+    .filter((block) => block.type !== "tool_result");
 
   return {
     ...msg,
     content: enrichedContent,
-    isStreaming: false
+    isStreaming: false,
   } as UIMessage;
 });
 ```
 
 **Result:**
+
 - Tool results are nested inside their parent `tool_use` blocks
 - Standalone `tool_result` blocks are removed
 - User messages containing **only** `tool_result` blocks disappear entirely
@@ -137,31 +142,31 @@ Two separate messages:
 [
   // Assistant message with tool invocation
   {
-    id: 'msg-1',
-    role: 'assistant',
+    id: "msg-1",
+    role: "assistant",
     content: [
-      { type: 'text', text: 'Let me read that file' },
+      { type: "text", text: "Let me read that file" },
       {
-        type: 'tool_use',
-        id: 'tool_abc123',
-        name: 'Read',
-        input: { file_path: '/path/to/image.png' }
-      }
-    ]
+        type: "tool_use",
+        id: "tool_abc123",
+        name: "Read",
+        input: { file_path: "/path/to/image.png" },
+      },
+    ],
   },
   // User message with tool result (will be filtered out)
   {
-    id: 'msg-2',
-    role: 'user',
+    id: "msg-2",
+    role: "user",
     content: [
       {
-        type: 'tool_result',
-        tool_use_id: 'tool_abc123',
-        content: '[{"type":"image","source":{...}}]'  // Stringified
-      }
-    ]
-  }
-]
+        type: "tool_result",
+        tool_use_id: "tool_abc123",
+        content: '[{"type":"image","source":{...}}]', // Stringified
+      },
+    ],
+  },
+];
 ```
 
 ### After Enrichment
@@ -383,7 +388,7 @@ export function BashToolRenderer({ input, result }: BashToolRendererProps) {
 function parseAnswerString(content: string): Record<string, string> {
   // Custom parser for the specific format
   const answers: Record<string, string> = {};
-  const prefix = 'User has answered your questions: ';
+  const prefix = "User has answered your questions: ";
   if (!content.startsWith(prefix)) return answers;
 
   const answersText = content.slice(prefix.length);
@@ -399,7 +404,7 @@ function parseAnswerString(content: string): Record<string, string> {
 
 export function AskUserQuestionToolRenderer({ input, result }: Props) {
   let answers: Record<string, string> = {};
-  if (result && typeof result.content === 'string') {
+  if (result && typeof result.content === "string") {
     answers = parseAnswerString(result.content);
   }
 
@@ -517,16 +522,18 @@ When adding a new tool, you generally **don't need** to test the enrichment proc
 ### My tool result isn't showing
 
 **Check:**
+
 1. Is `tool_use_id` in the result matching the `id` in the tool_use?
 2. Is the result being filtered out by `isSystemMessage()`?
 3. Are you checking for `result` existence before rendering?
 4. Is your tool registered in `ToolBlockRenderer` switch statement?
 
 **Debug:**
+
 ```typescript
-console.log('Tool input:', input);
-console.log('Tool result:', result);
-console.log('Result content type:', typeof result?.content);
+console.log("Tool input:", input);
+console.log("Tool result:", result);
+console.log("Result content type:", typeof result?.content);
 ```
 
 ### My result content is always a string
@@ -534,7 +541,7 @@ console.log('Result content type:', typeof result?.content);
 **This is expected!** Only images are auto-parsed. For other formats:
 
 ```typescript
-if (result && typeof result.content === 'string') {
+if (result && typeof result.content === "string") {
   try {
     const parsed = JSON.parse(result.content);
     // Use parsed data
@@ -549,6 +556,7 @@ if (result && typeof result.content === 'string') {
 **This is also expected!** User messages containing only `tool_result` blocks are filtered out after enrichment. The result is nested into the assistant's `tool_use` block instead.
 
 If you need the user message to appear in the timeline, you'll need to:
+
 1. Special-case it in the enrichment filter
 2. Create a custom message renderer
 3. Handle both the nested result AND the user message display
@@ -556,16 +564,19 @@ If you need the user message to appear in the timeline, you'll need to:
 ## Examples in the Codebase
 
 ### Image Tool (Auto-Parse)
+
 - **Block:** `apps/web/src/client/pages/projects/sessions/components/session/claude/blocks/ReadToolBlock.tsx`
 - **Renderer:** `apps/web/src/client/pages/projects/sessions/components/session/claude/ImageBlock.tsx`
 - **Pattern:** Type guard + auto-parsed content
 
 ### AskUserQuestion (Custom Parse)
+
 - **Block:** `apps/web/src/client/pages/projects/sessions/components/session/claude/blocks/AskUserQuestionToolBlock.tsx`
 - **Renderer:** `apps/web/src/client/pages/projects/sessions/components/session/claude/tools/AskUserQuestionToolRenderer.tsx`
 - **Pattern:** Custom string parser + answer highlighting
 
 ### Bash (Plain Text)
+
 - **Block:** `apps/web/src/client/pages/projects/sessions/components/session/claude/blocks/BashToolBlock.tsx`
 - **Renderer:** `apps/web/src/client/pages/projects/sessions/components/session/claude/tools/BashToolRenderer.tsx`
 - **Pattern:** Direct string display with styling

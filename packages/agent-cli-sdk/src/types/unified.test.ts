@@ -316,60 +316,33 @@ describe('Tool Input Types', () => {
       const input: AskUserQuestionToolInput = {
         questions: [
           {
-            question: 'Which scrolling approach would you like to implement?',
-            header: 'Approach',
+            question: 'Which framework should we use?',
+            header: 'Framework',
             multiSelect: false,
             options: [
-              {
-                label: 'use-stick-to-bottom hook (recommended)',
-                description: 'Battle-tested library already installed. Best performance and configurability. Need to build scroll button UI.',
-              },
-              {
-                label: 'AI Elements components',
-                description: 'Use existing Conversation/ConversationContent/ConversationScrollButton components. Quick to implement, includes UI.',
-              },
-              {
-                label: 'Hybrid approach',
-                description: 'Combine use-stick-to-bottom hook for logic with ConversationScrollButton for UI. Best of both worlds.',
-              },
+              { label: 'React', description: 'Popular library with large ecosystem' },
+              { label: 'Vue', description: 'Progressive framework, easy to learn' },
+              { label: 'Svelte', description: 'Compile-time framework, no virtual DOM' },
             ],
           },
           {
-            question: 'What scroll behavior do you prefer when new messages arrive?',
-            header: 'Auto-scroll',
+            question: 'What styling approach do you prefer?',
+            header: 'Styling',
             multiSelect: false,
             options: [
-              {
-                label: 'Smart auto-scroll (current behavior)',
-                description: 'Only auto-scroll if user is near bottom (~200px). Preserves manual scroll position when reading history.',
-              },
-              {
-                label: 'Always auto-scroll',
-                description: 'Always jump to newest message. Simpler but may interrupt users reviewing chat history.',
-              },
-              {
-                label: 'Configurable threshold',
-                description: 'Make proximity threshold adjustable (requires use-stick-to-bottom or custom implementation).',
-              },
+              { label: 'CSS Modules', description: 'Scoped CSS files' },
+              { label: 'Tailwind', description: 'Utility-first CSS' },
+              { label: 'Styled Components', description: 'CSS-in-JS solution' },
             ],
           },
           {
-            question: 'Should we also update other message/conversation UI components?',
-            header: 'Scope',
+            question: 'Which features should we include?',
+            header: 'Features',
             multiSelect: true,
             options: [
-              {
-                label: 'Just scrolling improvements',
-                description: 'Only update scroll behavior and add scroll-to-bottom button. Keep existing message rendering.',
-              },
-              {
-                label: 'Adopt AI Elements message components',
-                description: 'Replace current message components with Message/MessageAvatar/MessageContent from AI Elements.',
-              },
-              {
-                label: 'Full conversation refactor',
-                description: 'Replace entire ChatInterface with AI Elements Conversation pattern. Larger refactor.',
-              },
+              { label: 'Dark mode', description: 'Theme switching support' },
+              { label: 'Animations', description: 'UI transitions and effects' },
+              { label: 'Accessibility', description: 'ARIA labels and keyboard nav' },
             ],
           },
         ],
@@ -380,9 +353,9 @@ describe('Tool Input Types', () => {
       expect(input.questions[0]?.multiSelect).toBe(false);
       expect(input.questions[1]?.multiSelect).toBe(false);
       expect(input.questions[2]?.multiSelect).toBe(true);
-      expect(input.questions[0]?.header).toBe('Approach');
-      expect(input.questions[1]?.header).toBe('Auto-scroll');
-      expect(input.questions[2]?.header).toBe('Scope');
+      expect(input.questions[0]?.header).toBe('Framework');
+      expect(input.questions[1]?.header).toBe('Styling');
+      expect(input.questions[2]?.header).toBe('Features');
     });
 
     it('should support multiSelect questions', () => {

@@ -5,7 +5,7 @@
 
 import { CheckCircle2, Circle } from "lucide-react";
 import type { AskUserQuestionToolInput } from "@/shared/types/tool.types";
-import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
+import type { UnifiedImageBlock } from "@repo/agent-cli-sdk";
 
 interface AskUserQuestionToolRendererProps {
   input: AskUserQuestionToolInput;
@@ -23,13 +23,13 @@ function parseAnswerString(content: string): Record<string, string> {
   const answers: Record<string, string> = {};
 
   // Extract the answers portion after the prefix
-  const prefix = 'User has answered your questions: ';
+  const prefix = "User has answered your questions: ";
   if (!content.startsWith(prefix)) {
     return answers;
   }
 
   const answersText = content.slice(prefix.length);
-  if (!answersText || answersText === '.') {
+  if (!answersText || answersText === ".") {
     return answers;
   }
 
@@ -47,10 +47,13 @@ function parseAnswerString(content: string): Record<string, string> {
   return answers;
 }
 
-export function AskUserQuestionToolRenderer({ input, result }: AskUserQuestionToolRendererProps) {
+export function AskUserQuestionToolRenderer({
+  input,
+  result,
+}: AskUserQuestionToolRendererProps) {
   // Parse answers from result if available
   let answers: Record<string, string> = {};
-  if (result && typeof result.content === 'string') {
+  if (result && typeof result.content === "string") {
     answers = parseAnswerString(result.content);
   }
 
@@ -68,7 +71,9 @@ export function AskUserQuestionToolRenderer({ input, result }: AskUserQuestionTo
                 {question.header}
               </span>
               {question.multiSelect && (
-                <span className="text-xs text-muted-foreground">(multi-select)</span>
+                <span className="text-xs text-muted-foreground">
+                  (multi-select)
+                </span>
               )}
             </div>
 
@@ -78,39 +83,30 @@ export function AskUserQuestionToolRenderer({ input, result }: AskUserQuestionTo
             </div>
 
             {/* Options */}
-            <div className="space-y-2">
+            <div className="space-y-0.5">
               {question.options.map((option, oIndex) => {
                 const isSelected = selectedAnswer === option.label;
 
                 return (
-                  <div
-                    key={oIndex}
-                    className={`
-                      border rounded-md p-3 transition-colors
-                      ${isSelected
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/20'
-                        : 'border-border bg-muted/30'
-                      }
-                    `}
-                  >
-                    <div className="flex items-start gap-2">
-                      {/* Selection indicator */}
-                      <div className="mt-0.5 flex-shrink-0">
-                        {isSelected ? (
-                          <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                        ) : (
-                          <Circle className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </div>
+                  <div key={oIndex} className="flex items-start gap-2 py-1">
+                    {/* Selection indicator */}
+                    <div className="mt-0.5 flex-shrink-0">
+                      {isSelected ? (
+                        <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      ) : (
+                        <Circle className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </div>
 
-                      {/* Option content */}
-                      <div className="flex-1 min-w-0">
-                        <div className={`text-sm font-medium ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-foreground'}`}>
-                          {option.label}
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {option.description}
-                        </div>
+                    {/* Option content */}
+                    <div className="flex-1 min-w-0">
+                      <div
+                        className={`text-sm font-medium ${isSelected ? "text-blue-700 dark:text-blue-300" : "text-foreground"}`}
+                      >
+                        {option.label}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {option.description}
                       </div>
                     </div>
                   </div>
@@ -119,16 +115,17 @@ export function AskUserQuestionToolRenderer({ input, result }: AskUserQuestionTo
             </div>
 
             {/* Show freeform answer if it doesn't match any option */}
-            {selectedAnswer && !question.options.some(opt => opt.label === selectedAnswer) && (
-              <div className="mt-2 p-3 rounded-md bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-                <div className="text-xs font-semibold text-amber-700 dark:text-amber-300 mb-1">
-                  Custom Answer
+            {selectedAnswer &&
+              !question.options.some((opt) => opt.label === selectedAnswer) && (
+                <div className="mt-2 p-3 rounded-md bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+                  <div className="text-xs font-semibold text-amber-700 dark:text-amber-300 mb-1">
+                    Custom Answer
+                  </div>
+                  <div className="text-sm text-amber-900 dark:text-amber-100">
+                    {selectedAnswer}
+                  </div>
                 </div>
-                <div className="text-sm text-amber-900 dark:text-amber-100">
-                  {selectedAnswer}
-                </div>
-              </div>
-            )}
+              )}
           </div>
         );
       })}
@@ -140,7 +137,9 @@ export function AskUserQuestionToolRenderer({ input, result }: AskUserQuestionTo
             Raw Response
           </div>
           <pre className="text-xs whitespace-pre-wrap">
-            {typeof result.content === 'string' ? result.content : JSON.stringify(result.content, null, 2)}
+            {typeof result.content === "string"
+              ? result.content
+              : JSON.stringify(result.content, null, 2)}
           </pre>
         </div>
       )}
