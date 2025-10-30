@@ -1,6 +1,7 @@
 import { AgentIcon } from "@/client/components/AgentIcon";
 import { SessionDropdownMenu } from "@/client/pages/projects/sessions/components/SessionDropdownMenu";
 import type { SessionResponse } from "@/shared/types";
+import { getSessionDisplayName } from "@/client/utils/getSessionDisplayName";
 
 interface SessionHeaderProps {
   session: SessionResponse;
@@ -11,11 +12,10 @@ interface SessionHeaderProps {
  * Shows agent icon, session name, and actions menu on the far right
  */
 export function SessionHeader({ session }: SessionHeaderProps) {
-  // Truncate session name to 50 characters
+  // Get display name with consistent fallback logic, then truncate to 50 characters
+  const displayName = getSessionDisplayName(session);
   const truncatedSessionName =
-    session.name && session.name.length > 50
-      ? session.name.slice(0, 50) + "..."
-      : session.name;
+    displayName.length > 50 ? displayName.slice(0, 50) + "..." : displayName;
 
   return (
     <div className="flex items-center justify-between gap-1.5 px-4 md:px-6 py-1.5 text-xs text-muted-foreground bg-muted/30 border-b">

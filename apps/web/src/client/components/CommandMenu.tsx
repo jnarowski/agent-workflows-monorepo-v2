@@ -25,6 +25,7 @@ import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
 import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
 import { useSidebar } from "@/client/components/ui/sidebar";
+import { getSessionDisplayName } from "@/client/utils/getSessionDisplayName";
 
 interface CommandMenuProps {
   onSearchChange?: (query: string) => void;
@@ -234,7 +235,7 @@ function ProjectGroup({ project, onNavigate }: ProjectGroupProps) {
         >
           <MessageSquare className="mr-2 h-4 w-4" />
           <span className="truncate">
-            {session.metadata.firstMessagePreview || "New session"}
+            {getSessionDisplayName(session)}
           </span>
         </CommandItem>
       ))}

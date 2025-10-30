@@ -6,6 +6,7 @@ import { AgentIcon } from "@/client/components/AgentIcon";
 import { useSidebar } from "@/client/components/ui/sidebar";
 import { useState } from "react";
 import { SessionDropdownMenu } from "./SessionDropdownMenu";
+import { getSessionDisplayName } from "@/client/utils/getSessionDisplayName";
 
 interface SessionListItemProps {
   session: SessionResponse;
@@ -39,8 +40,8 @@ export function SessionListItem({
     addSuffix: true,
   });
 
-  // Use session name if available, otherwise fall back to first message preview
-  const displayName = session.name || firstMessagePreview || "New session";
+  // Use utility function for consistent session naming
+  const displayName = getSessionDisplayName(session);
   const truncatedName = truncateToChars(displayName);
 
   const handleClick = () => {

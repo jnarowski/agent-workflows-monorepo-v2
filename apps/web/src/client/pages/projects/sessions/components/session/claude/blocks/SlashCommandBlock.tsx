@@ -1,5 +1,3 @@
-import { ToolCollapsibleWrapper } from '../ToolCollapsibleWrapper';
-
 interface SlashCommandBlockProps {
   command: string;
   message?: string;
@@ -12,22 +10,10 @@ interface SlashCommandBlockProps {
  */
 export function SlashCommandBlock({ command, message, args }: SlashCommandBlockProps) {
   return (
-    <ToolCollapsibleWrapper
-      toolName={`/${command}`}
-      contextInfo={args}
-      description={message || 'Running slash command'}
-    >
-      <div className="space-y-2 text-sm font-mono">
-        <div className="text-muted-foreground">
-          Command: <span className="text-foreground">/{command}</span>
-          {args && <span className="text-foreground ml-2">{args}</span>}
-        </div>
-        {message && (
-          <div className="text-xs text-muted-foreground border-l-2 pl-2">
-            {message}
-          </div>
-        )}
-      </div>
-    </ToolCollapsibleWrapper>
+    <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground">
+      <span className="text-foreground">{command}</span>
+      {args && <span className="text-foreground">{args}</span>}
+      {message && <span className="text-xs">• {message}</span>}
+    </div>
   );
 }

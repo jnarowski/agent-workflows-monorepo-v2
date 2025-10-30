@@ -33,6 +33,7 @@ export interface SessionResponse {
   name?: string; // AI-generated session name (optional for legacy sessions)
   agent: AgentType;
   cli_session_id?: string; // Session ID from CLI tool (Claude/Codex) - needed for loading/resuming sessions
+  session_path?: string; // Full absolute path to session JSONL file (optional for legacy sessions)
   metadata: AgentSessionMetadata;
   created_at: Date;
   updated_at: Date;
@@ -58,5 +59,4 @@ export interface SyncSessionsRequest {
 export interface SyncSessionsResponse {
   synced: number; // Number of sessions synced from filesystem
   created: number; // Number of new sessions created
-  updated: number; // Number of existing sessions updated
 }

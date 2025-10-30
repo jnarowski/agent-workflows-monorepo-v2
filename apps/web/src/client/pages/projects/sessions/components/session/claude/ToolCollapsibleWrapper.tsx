@@ -1,9 +1,10 @@
 /**
  * Reusable collapsible wrapper for tool blocks
  * Handles the collapsible UI logic while allowing tools to customize icon, title, and content
+ * Automatically detects if content is empty and renders as non-interactive
  */
 
-import { useState, type ReactNode } from "react";
+import { useState, type ReactNode, Children } from "react";
 import { Button } from "@/client/components/ui/button";
 import {
   Collapsible,
@@ -34,6 +35,37 @@ export function ToolCollapsibleWrapper({
 }: ToolCollapsibleWrapperProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const dotColor = getToolColor(toolName, hasError);
+
+  // Check if children is empty/null
+  const hasContent = Children.count(children) > 0 && children !== null && children !== undefined;
+
+  // If no content, render as non-interactive
+  if (!hasContent) {
+    return (
+      <div className={className}>
+        <div className="flex items-start gap-2.5 w-full min-w-0 py-1.5">
+          <div className="flex items-center h-5">
+            <ToolDot color={dotColor} />
+          </div>
+          <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
+            <div className="flex items-center gap-2 w-full min-w-0">
+              <span className="text-base md:text-sm font-semibold">{toolName}</span>
+              {contextInfo && (
+                <span className="text-sm md:text-xs text-muted-foreground font-mono truncate">
+                  {contextInfo}
+                </span>
+              )}
+            </div>
+            {description && (
+              <span className="text-sm md:text-xs text-muted-foreground">
+                ↳ {description}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className={className}>

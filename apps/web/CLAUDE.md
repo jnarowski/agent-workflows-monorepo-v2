@@ -143,6 +143,7 @@ This is a **Turborepo monorepo** for agent workflow tools. The `web` app is a fu
 
 ```bash
 # Development mode (runs both client and server concurrently)
+# Note: Automatically runs 'prisma migrate deploy' to apply any pending migrations
 pnpm dev
 
 # Development server only (Fastify backend on port 3456)
@@ -184,14 +185,19 @@ pnpm format  # From monorepo root
 # Generate Prisma client
 pnpm prisma:generate
 
-# Run migrations
-pnpm prisma:migrate
+# Create and apply migrations (development only)
+pnpm prisma:migrate  # = prisma migrate dev
+
+# Apply existing migrations (auto-runs with 'pnpm dev')
+prisma migrate deploy
 
 # Open Prisma Studio
 pnpm prisma:studio
 ```
 
 Database file: `prisma/dev.db` (SQLite)
+
+**Note**: Migrations are automatically applied when running `pnpm dev`, so you typically only need to run `pnpm prisma:migrate` when you've changed the schema.
 
 ## Architecture
 

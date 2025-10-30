@@ -17,7 +17,7 @@
     "build:cli": "node scripts/build-cli.js && node scripts/copy-prisma-schema.js",
     "check": "pnpm lint && pnpm check-types && pnpm test",
     "check-types": "tsc --noEmit",
-    "dev": "concurrently --kill-others \"pnpm dev:server\" \"pnpm dev:client\"",
+    "dev": "prisma migrate deploy && concurrently --kill-others \"pnpm dev:server\" \"pnpm dev:client\"",
     "dev:client": "vite --host",
     "dev:kill": "bash ./scripts/kill-ports.sh",
     "dev:setup": "prisma migrate deploy && node scripts/setup-env.js",

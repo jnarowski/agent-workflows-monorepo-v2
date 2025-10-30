@@ -13,6 +13,7 @@ import {
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { useNavigationStore } from "@/client/stores/index";
 import { ProjectHeader } from "@/client/components/ProjectHeader";
+import { getSessionDisplayName } from "@/client/utils/getSessionDisplayName";
 
 export default function ProjectDetailLayout() {
   const { id } = useParams<{ id: string }>();
@@ -31,15 +32,15 @@ export default function ProjectDetailLayout() {
   const activeSession = useSessionStore((s) => s.session);
 
   // Build current session with proper display name logic
-  // Use same display logic as SessionListItem: session.name || firstMessagePreview || "New session"
+  // Use utility function for consistent session naming
   const currentSession = activeSessionId ? (
     cachedSession ? {
       ...cachedSession,
-      name: cachedSession.name || cachedSession.metadata.firstMessagePreview || "New session"
+      name: getSessionDisplayName(cachedSession)
     } : (activeSession ? {
       id: activeSession.id,
       agent: activeSession.agent,
-      name: activeSession.metadata?.firstMessagePreview || "New session",
+      name: getSessionDisplayName({ metadata: activeSession.metadata }),
     } : null)
   ) : null;
 

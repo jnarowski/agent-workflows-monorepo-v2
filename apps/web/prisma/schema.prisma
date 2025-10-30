@@ -69,6 +69,7 @@ model AgentSession {
   name           String? // AI-generated session name (nullable for legacy sessions)
   agent          AgentType @default(claude)
   cli_session_id String? // Session ID from CLI tool (Claude/Codex) - needed for loading/resuming sessions
+  session_path   String? // Full absolute path to session JSONL file (nullable during migration)
   metadata       Json // { totalTokens, messageCount, lastMessageAt, firstMessagePreview }
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
@@ -79,5 +80,6 @@ model AgentSession {
   @@index([projectId, updated_at])
   @@index([userId, updated_at])
   @@index([cli_session_id])
+  @@index([session_path])
   @@map("agent_sessions")
 }

@@ -16,6 +16,7 @@ import { LoadingButton } from '@/client/components/ui/loading-button';
 import { Label } from '@/client/components/ui/label';
 import { ErrorAlert } from '@/client/components/ui/error-alert';
 import type { SessionResponse } from '@/shared/types';
+import { getSessionDisplayName } from '@/client/utils/getSessionDisplayName';
 
 interface SessionDialogProps {
   open: boolean;
@@ -43,7 +44,7 @@ export function SessionDialog({
     reset,
   } = useDialogForm<SessionFormValues>({
     initialValues: {
-      name: session?.name || session?.metadata?.firstMessagePreview || '',
+      name: session ? getSessionDisplayName(session) : '',
     },
     onSubmit: async (formValues) => {
       if (!session) return;

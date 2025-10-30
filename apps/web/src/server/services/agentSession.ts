@@ -12,6 +12,7 @@ import type { UnifiedMessage } from '@repo/agent-cli-sdk';
 import {
   encodeProjectPath,
   getClaudeProjectsDir,
+  getSessionFilePath,
 } from '@/server/utils/path';
 import path from 'path';
 import { isSystemMessage, stripXmlTags } from '@/shared/utils/message.utils';
@@ -115,7 +116,7 @@ export async function parseJSONLFile(
       messageCount,
       totalTokens,
       lastMessageAt,
-      firstMessagePreview: firstMessagePreview || '(No messages)',
+      firstMessagePreview: firstMessagePreview || 'Untitled Session',
     };
   } catch (error) {
     // Return default metadata if file can't be read
@@ -150,7 +151,6 @@ export async function syncProjectSessions(
 
   let synced = 0;
   let created = 0;
-  let updated = 0;
 
   try {
     // Check if directory exists
@@ -189,10 +189,8 @@ export async function syncProjectSessions(
       projectId: string;
       userId: string;
       agent: 'claude';
-      metadata: any;
-    }> = [];
-    const sessionsToUpdate: Array<{
-      id: string;
+      cli_session_id: string;
+      session_path: string;
       metadata: any;
     }> = [];
 
@@ -207,11 +205,8 @@ export async function syncProjectSessions(
         const metadata = await parseJSONLFile(filePath);
 
         if (existingClaudeSessionsMap.has(sessionId)) {
-          // Update existing Claude session
-          sessionsToUpdate.push({
-            id: sessionId,
-            metadata: metadata as any,
-          });
+          // Session already exists - skip to preserve created_at timestamp and avoid reordering
+          // Metadata updates happen via WebSocket during active sessions
         } else if (allExistingSessionIds.has(sessionId)) {
           // Session exists but as a different agent type - skip to avoid conflict
           // (This can happen if the same session ID is used across different agents)
@@ -225,6 +220,8 @@ export async function syncProjectSessions(
             projectId,
             userId,
             agent: 'claude',
+            cli_session_id: sessionId,
+            session_path: filePath,
             metadata: metadata as any,
           });
         }
@@ -241,21 +238,6 @@ export async function syncProjectSessions(
         data: sessionsToCreate,
       });
       created = sessionsToCreate.length;
-    }
-
-    // Batch update existing sessions
-    if (sessionsToUpdate.length > 0) {
-      await prisma.$transaction(
-        sessionsToUpdate.map((session) =>
-          prisma.agentSession.update({
-            where: { id: session.id },
-            data: {
-              metadata: session.metadata,
-            },
-          })
-        )
-      );
-      updated = sessionsToUpdate.length;
     }
 
     // Batch delete orphaned Claude sessions (only)
@@ -279,7 +261,7 @@ export async function syncProjectSessions(
     // If directory doesn't exist, no sessions to sync
   }
 
-  return { synced, created, updated };
+  return { synced, created };
 }
 
 /**
@@ -309,6 +291,7 @@ export async function getSessionsByProject(
     name: session.name ?? undefined,
     agent: session.agent,
     cli_session_id: session.cli_session_id ?? undefined,
+    session_path: session.session_path ?? undefined,
     metadata: session.metadata as AgentSessionMetadata,
     created_at: session.created_at,
     updated_at: session.updated_at,
@@ -380,6 +363,18 @@ export async function createSession(
   sessionId: string,
   agent: AgentType = 'claude'
 ): Promise<SessionResponse> {
+  // Get project to determine session file path
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+  });
+
+  if (!project) {
+    throw new Error(`Project not found: ${projectId}`);
+  }
+
+  // Calculate the full absolute path to the session JSONL file
+  const sessionPath = getSessionFilePath(project.path, sessionId);
+
   // Initialize with empty metadata
   const metadata: AgentSessionMetadata = {
     totalTokens: 0,
@@ -394,6 +389,7 @@ export async function createSession(
       projectId,
       userId,
       agent,
+      session_path: sessionPath,
       metadata: metadata as any,
     },
   });
@@ -405,6 +401,7 @@ export async function createSession(
     name: session.name ?? undefined,
     agent: session.agent,
     cli_session_id: session.cli_session_id ?? undefined,
+    session_path: session.session_path,
     metadata: metadata,
     created_at: session.created_at,
     updated_at: session.updated_at,
@@ -449,6 +446,7 @@ export async function updateSessionMetadata(
       name: updatedSession.name ?? undefined,
       agent: updatedSession.agent,
       cli_session_id: updatedSession.cli_session_id ?? undefined,
+      session_path: updatedSession.session_path ?? undefined,
       metadata: updatedMetadata,
       created_at: updatedSession.created_at,
       updated_at: updatedSession.updated_at,
@@ -501,6 +499,7 @@ export async function updateSessionName(
       name: updatedSession.name ?? undefined,
       agent: updatedSession.agent,
       cli_session_id: updatedSession.cli_session_id ?? undefined,
+      session_path: updatedSession.session_path ?? undefined,
       metadata: updatedSession.metadata as AgentSessionMetadata,
       created_at: updatedSession.created_at,
       updated_at: updatedSession.updated_at,
