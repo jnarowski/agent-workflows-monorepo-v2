@@ -50,15 +50,50 @@ export function useSessionWebSocket({
   const handleStreamOutput = useCallback(
     (data: { message?: UnifiedMessage }) => {
       if (import.meta.env.DEV) {
-        console.log("[useSessionWebSocket] stream_output received:", data);
+        console.log("[useSessionWebSocket] stream_output received:", {
+          hasMessage: Boolean(data.message),
+          messageId: data.message?.id,
+          messageRole: data.message?.role,
+          contentType: Array.isArray(data.message?.content) ? 'array' : typeof data.message?.content,
+          contentLength: Array.isArray(data.message?.content) ? data.message.content.length : 0,
+          contentBlockTypes: Array.isArray(data.message?.content)
+            ? data.message.content.map(b => b.type)
+            : [],
+          rawData: data,
+        });
       }
 
       // SDK already provides clean UnifiedMessage
       if (data.message) {
         const msg = data.message;
+
+        // Validate content before updating
+        if (!Array.isArray(msg.content)) {
+          console.error("[useSessionWebSocket] Message content is not an array:", msg);
+          return;
+        }
+
+        // Check for empty content blocks
+        if (import.meta.env.DEV) {
+          const emptyTextBlocks = msg.content.filter(
+            block => block.type === 'text' && (!block.text || block.text.trim() === '')
+          );
+          if (emptyTextBlocks.length > 0) {
+            console.warn("[useSessionWebSocket] Message contains", emptyTextBlocks.length, "empty text blocks:", emptyTextBlocks);
+          }
+
+          if (msg.content.length === 0) {
+            console.warn("[useSessionWebSocket] Message has EMPTY content array:", msg);
+          }
+        }
+
         useSessionStore
           .getState()
           .updateStreamingMessage(msg.id, msg.content as UnifiedContent[]);
+      } else {
+        if (import.meta.env.DEV) {
+          console.warn("[useSessionWebSocket] stream_output received without message:", data);
+        }
       }
     },
     []

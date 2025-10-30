@@ -51,11 +51,31 @@ export function AssistantMessage({ message }: AssistantMessageProps) {
     );
   }
 
+  // Filter out empty text blocks
+  const renderableContent = content.filter((block) => {
+    if (block.type === 'text') {
+      // Filter out empty or whitespace-only text blocks
+      const isEmpty = !block.text || block.text.trim() === '';
+      if (isEmpty) {
+        console.warn('[AssistantMessage] Skipping empty text block in message:', message.id);
+      }
+      return !isEmpty;
+    }
+    // Keep all non-text blocks (tool_use, thinking, etc.)
+    return true;
+  });
+
+  // Don't render if no content after filtering
+  if (renderableContent.length === 0) {
+    console.warn('[AssistantMessage] Message has no renderable content (all empty):', message.id);
+    return null;
+  }
+
   // Render content blocks with proper formatting
   return (
     <div className="w-full overflow-hidden">
       {/* Content blocks */}
-      {content.map((block, index) => (
+      {renderableContent.map((block, index) => (
         <ContentBlockRenderer key={index} block={block} />
       ))}
     </div>

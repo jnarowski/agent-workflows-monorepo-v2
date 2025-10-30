@@ -133,13 +133,21 @@ function tryParseImageContent(content: unknown): string | UnifiedImageBlock {
  * ]
  */
 function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] {
+  if (import.meta.env.DEV) {
+    console.log('[enrichMessagesWithToolResults] Starting enrichment with', messages.length, 'messages');
+  }
+
   // Step 1: Filter out messages with only system content
-  const filteredMessages = messages.filter(msg => {
+  const filteredMessages = messages.filter((msg, index) => {
     const content = msg.content;
 
     // If content is a string, check if it's a system message
     if (typeof content === 'string') {
-      return !isSystemMessage(content);
+      const isSystem = isSystemMessage(content);
+      if (import.meta.env.DEV && isSystem) {
+        console.log(`[enrichMessagesWithToolResults] Filtering out message ${index} (system string):`, content.substring(0, 100));
+      }
+      return !isSystem;
     }
 
     // If content is an array, check if all text blocks are system messages
@@ -147,15 +155,31 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
       const textBlocks = content.filter(c => c.type === 'text');
 
       // If no text blocks, keep the message (has other content like tools)
-      if (textBlocks.length === 0) return true;
+      if (textBlocks.length === 0) {
+        if (import.meta.env.DEV) {
+          console.log(`[enrichMessagesWithToolResults] Message ${index} has no text blocks, keeping:`, content.map(c => c.type));
+        }
+        return true;
+      }
 
       // Filter out messages where ALL text blocks are system messages
-      return !textBlocks.every(c => isSystemMessage(c.text));
+      const allSystemMessages = textBlocks.every(c => isSystemMessage(c.text));
+      if (import.meta.env.DEV && allSystemMessages) {
+        console.log(`[enrichMessagesWithToolResults] Filtering out message ${index} (all text blocks are system):`, textBlocks);
+      }
+      return !allSystemMessages;
     }
 
     // Keep messages with other content types
+    if (import.meta.env.DEV) {
+      console.log(`[enrichMessagesWithToolResults] Message ${index} has other content type, keeping`);
+    }
     return true;
   });
+
+  if (import.meta.env.DEV) {
+    console.log('[enrichMessagesWithToolResults] After filtering:', filteredMessages.length, 'messages remain');
+  }
 
   // Step 2: Build lookup map of tool results
   const resultMap = new Map<string, { content: string | UnifiedImageBlock; is_error?: boolean }>();
@@ -164,6 +188,9 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
     if (Array.isArray(message.content)) {
       for (const block of message.content) {
         if (block.type === 'tool_result') {
+          if (import.meta.env.DEV) {
+            console.log('[enrichMessagesWithToolResults] Found tool_result for:', block.tool_use_id);
+          }
           resultMap.set(block.tool_use_id, {
             content: tryParseImageContent(block.content),
             is_error: block.is_error
@@ -173,23 +200,49 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
     }
   }
 
+  if (import.meta.env.DEV) {
+    console.log('[enrichMessagesWithToolResults] Built resultMap with', resultMap.size, 'entries');
+  }
+
   // Step 3: Enrich tool_use blocks and filter out tool_result blocks
-  return filteredMessages.map(msg => {
+  const enrichedMessages = filteredMessages.map((msg, msgIndex) => {
     if (!Array.isArray(msg.content)) {
+      if (import.meta.env.DEV) {
+        console.log(`[enrichMessagesWithToolResults] Message ${msgIndex} has non-array content:`, typeof msg.content);
+      }
       return { ...msg, isStreaming: false };
     }
 
+    if (import.meta.env.DEV) {
+      console.log(`[enrichMessagesWithToolResults] Processing message ${msgIndex} with ${msg.content.length} blocks:`, msg.content.map(b => b.type));
+    }
+
     const enrichedContent = msg.content
-      .map(block => {
+      .map((block, blockIndex) => {
         // Nest result into tool_use block
         if (block.type === 'tool_use') {
           const result = resultMap.get(block.id);
+          if (import.meta.env.DEV) {
+            console.log(`[enrichMessagesWithToolResults] Message ${msgIndex} block ${blockIndex}: tool_use "${block.name}", result found:`, Boolean(result));
+          }
           return result ? { ...block, result } : block;
         }
         return block;
       })
       // Filter out standalone tool_result blocks (now nested in tool_use)
-      .filter(block => block.type !== 'tool_result');
+      .filter((block, blockIndex) => {
+        if (block.type === 'tool_result') {
+          if (import.meta.env.DEV) {
+            console.log(`[enrichMessagesWithToolResults] Message ${msgIndex} block ${blockIndex}: filtering out standalone tool_result`);
+          }
+          return false;
+        }
+        return true;
+      });
+
+    if (import.meta.env.DEV) {
+      console.log(`[enrichMessagesWithToolResults] Message ${msgIndex} after enrichment: ${enrichedContent.length} blocks:`, enrichedContent.map(b => b.type));
+    }
 
     return {
       ...msg,
@@ -197,6 +250,18 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
       isStreaming: false
     } as UIMessage;
   });
+
+  if (import.meta.env.DEV) {
+    console.log('[enrichMessagesWithToolResults] Enrichment complete. Returning', enrichedMessages.length, 'messages');
+    // Log messages with empty content
+    enrichedMessages.forEach((msg, index) => {
+      if (Array.isArray(msg.content) && msg.content.length === 0) {
+        console.warn(`[enrichMessagesWithToolResults] WARNING: Message ${index} has EMPTY content array!`, msg);
+      }
+    });
+  }
+
+  return enrichedMessages;
 }
 
 /**
@@ -396,8 +461,20 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   // Update the streaming message content
   // Receives UnifiedContent[] blocks from streaming updates
   updateStreamingMessage: (messageId: string, contentBlocks: UnifiedContent[]) => {
+    if (import.meta.env.DEV) {
+      console.log('[sessionStore] updateStreamingMessage called:', {
+        messageId,
+        contentBlocksLength: contentBlocks.length,
+        contentBlockTypes: contentBlocks.map(b => b.type),
+        contentBlocks,
+      });
+    }
+
     set((state) => {
       if (!state.session) {
+        if (import.meta.env.DEV) {
+          console.warn('[sessionStore] updateStreamingMessage: No active session');
+        }
         return state;
       }
 
@@ -411,8 +488,22 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         lastMessage.isStreaming === true &&
         lastMessage.id === messageId;
 
+      if (import.meta.env.DEV) {
+        console.log('[sessionStore] updateStreamingMessage decision:', {
+          shouldUpdateLastMessage,
+          lastMessageId: lastMessage?.id,
+          lastMessageRole: lastMessage?.role,
+          lastMessageIsStreaming: lastMessage?.isStreaming,
+          incomingMessageId: messageId,
+          totalMessages: messages.length,
+        });
+      }
+
       if (shouldUpdateLastMessage) {
         // Update existing streaming message with same ID immutably
+        if (import.meta.env.DEV) {
+          console.log('[sessionStore] Updating existing message at index', messages.length - 1);
+        }
         return {
           session: {
             ...state.session,
@@ -428,6 +519,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         };
       } else {
         // Create new streaming assistant message with the provided ID
+        if (import.meta.env.DEV) {
+          console.log('[sessionStore] Creating NEW streaming message at index', messages.length);
+        }
         return {
           session: {
             ...state.session,

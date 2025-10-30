@@ -3,7 +3,10 @@
  * Dispatches to appropriate renderer based on block type
  */
 
-import type { UnifiedContent, EnrichedToolUseBlock } from "@/shared/types/message.types";
+import type {
+  UnifiedContent,
+  EnrichedToolUseBlock,
+} from "@/shared/types/message.types";
 import { TextBlock } from "./TextBlock";
 import { ThinkingBlock } from "./ThinkingBlock";
 import { ToolBlockRenderer } from "./ToolBlockRenderer";
@@ -18,9 +21,25 @@ export function ContentBlockRenderer({
   block,
   className = "",
 }: ContentBlockRendererProps) {
+  // DEBUG: Log every block being rendered
+  if (import.meta.env.DEV) {
+    console.log("[ContentBlockRenderer] Rendering block:", block);
+  }
+
   switch (block.type) {
-    case "text":
+    case "text": {
+      // DEBUG: Check for empty text blocks
+      if (import.meta.env.DEV && (!block.text || block.text.trim() === "")) {
+        console.warn(
+          "[ContentBlockRenderer] EMPTY TEXT BLOCK DETECTED:",
+          block
+        );
+
+        return null;
+      }
+
       return <TextBlock text={block.text} className={className} />;
+    }
 
     case "thinking":
       return <ThinkingBlock thinking={block.thinking} className={className} />;
@@ -28,6 +47,7 @@ export function ContentBlockRenderer({
     case "tool_use": {
       // Access result directly from enriched block
       const enrichedBlock = block as EnrichedToolUseBlock;
+
       return (
         <ToolBlockRenderer
           toolName={block.name}
@@ -49,17 +69,18 @@ export function ContentBlockRenderer({
     case "tool_result":
       // Tool results are handled inline with tool_use blocks
       // We don't render them separately
-      return null;
+      if (import.meta.env.DEV) {
+        console.log(
+          "[ContentBlockRenderer] Skipping standalone tool_result block"
+        );
+      }
 
-    case "result":
-      // Result blocks from streaming - don't render separately
-      // These are intermediate streaming events
       return null;
 
     default: {
       // Unknown block type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      console.warn("Unknown content block type:", (block as any).type);
+      console.warn("Unknown content block type:", (block as any).type, block);
       return (
         <div className="text-sm text-muted-foreground italic">
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}

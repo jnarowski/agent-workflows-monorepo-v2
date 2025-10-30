@@ -48,7 +48,7 @@ export function AgentLoadingIndicator({
   if (!isStreaming) return null;
 
   return (
-    <div className="flex items-center gap-2 text-sm">
+    <div className="flex items-center gap-2 text-sm mt-4">
       <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
       <span className="relative text-orange-600 dark:text-orange-400 font-medium overflow-hidden">
         <span className="relative inline-block">

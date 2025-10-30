@@ -14,33 +14,39 @@ interface UserMessageProps {
 }
 
 export function UserMessage({ message }: UserMessageProps) {
-  // Extract tool result blocks
-  const toolResultBlocks = message.content.filter(
-    (block): block is UnifiedToolResultBlock => block.type === "tool_result"
-  );
+  // Filter out tool_result blocks (already shown inline with tool_use)
+  // and empty text blocks
+  const renderableBlocks = message.content.filter((block) => {
+    // Filter out tool_result blocks
+    if (block.type === "tool_result") {
+      return false;
+    }
 
-  // Get all non-tool-result blocks for rendering
-  const renderableBlocks = message.content.filter(
-    (block) => block.type !== "tool_result"
-  );
+    // Filter out empty text blocks
+    if (block.type === "text") {
+      const isEmpty = !block.text || block.text.trim() === '';
+      if (isEmpty) {
+        console.warn('[UserMessage] Skipping empty text block in message:', message.id);
+      }
+      return !isEmpty;
+    }
+
+    return true;
+  });
 
   // If message has no renderable content, don't render
-  // This includes:
-  // 1. Messages with only tool_result blocks (already shown inline with tool_use)
-  // 2. Messages with empty content arrays (e.g., image-only tool results)
   if (renderableBlocks.length === 0) {
+    console.warn('[UserMessage] Message has no renderable content (all empty):', message.id);
     return null;
   }
 
   return (
-    <div className="mb-4">
-      <div className="max-w-full">
-        <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
-          {/* Render all content blocks (text, slash_command, etc.) */}
-          {renderableBlocks.map((block, index) => (
-            <ContentBlockRenderer key={index} block={block} />
-          ))}
-        </div>
+    <div className="max-w-full">
+      <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
+        {/* Render all content blocks (text, slash_command, etc.) */}
+        {renderableBlocks.map((block, index) => (
+          <ContentBlockRenderer key={index} block={block} />
+        ))}
       </div>
     </div>
   );
