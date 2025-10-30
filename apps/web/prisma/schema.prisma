@@ -62,17 +62,25 @@ enum AgentType {
   gemini
 }
 
+enum SessionState {
+  idle      // Ready for new messages
+  working   // Agent actively processing
+  error     // Last execution failed
+}
+
 model AgentSession {
-  id             String    @id @default(uuid())
+  id             String       @id @default(uuid())
   projectId      String
   userId         String
   name           String? // AI-generated session name (nullable for legacy sessions)
-  agent          AgentType @default(claude)
+  agent          AgentType    @default(claude)
   cli_session_id String? // Session ID from CLI tool (Claude/Codex) - needed for loading/resuming sessions
   session_path   String? // Full absolute path to session JSONL file (nullable during migration)
   metadata       Json // { totalTokens, messageCount, lastMessageAt, firstMessagePreview }
-  created_at     DateTime  @default(now())
-  updated_at     DateTime  @updatedAt
+  state          SessionState @default(idle)
+  error_message  String? // Error details when state is error
+  created_at     DateTime     @default(now())
+  updated_at     DateTime     @updatedAt
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)

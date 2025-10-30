@@ -70,6 +70,8 @@ export const sessionResponseSchema = z.object({
   cli_session_id: z.string().optional(),
   session_path: z.string().optional(),
   metadata: agentSessionMetadataSchema,
+  state: z.enum(['idle', 'working', 'error']),
+  error_message: z.string().optional(),
   created_at: z.date(),
   updated_at: z.date(),
 });

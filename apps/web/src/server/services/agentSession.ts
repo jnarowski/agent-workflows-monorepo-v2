@@ -7,6 +7,7 @@ import type {
   SessionResponse,
   SyncSessionsResponse,
 } from '@/shared/types/agent-session.types';
+import type { AgentType } from '@/shared/types/agent.types';
 import { loadMessages } from '@repo/agent-cli-sdk';
 import type { UnifiedMessage } from '@repo/agent-cli-sdk';
 import {
@@ -192,6 +193,8 @@ export async function syncProjectSessions(
       cli_session_id: string;
       session_path: string;
       metadata: any;
+      state: 'idle';
+      error_message: null;
     }> = [];
 
     // Parse all JSONL files and prepare batch operations
@@ -223,6 +226,8 @@ export async function syncProjectSessions(
             cli_session_id: sessionId,
             session_path: filePath,
             metadata: metadata as any,
+            state: 'idle',
+            error_message: null,
           });
         }
 
@@ -293,6 +298,8 @@ export async function getSessionsByProject(
     cli_session_id: session.cli_session_id ?? undefined,
     session_path: session.session_path ?? undefined,
     metadata: session.metadata as AgentSessionMetadata,
+    state: session.state as 'idle' | 'working' | 'error',
+    error_message: session.error_message ?? undefined,
     created_at: session.created_at,
     updated_at: session.updated_at,
   }));
@@ -391,6 +398,8 @@ export async function createSession(
       agent,
       session_path: sessionPath,
       metadata: metadata as any,
+      state: 'working',
+      error_message: null,
     },
   });
 
@@ -401,8 +410,10 @@ export async function createSession(
     name: session.name ?? undefined,
     agent: session.agent,
     cli_session_id: session.cli_session_id ?? undefined,
-    session_path: session.session_path,
+    session_path: session.session_path ?? undefined,
     metadata: metadata,
+    state: session.state as 'idle' | 'working' | 'error',
+    error_message: session.error_message ?? undefined,
     created_at: session.created_at,
     updated_at: session.updated_at,
   };
@@ -448,6 +459,8 @@ export async function updateSessionMetadata(
       cli_session_id: updatedSession.cli_session_id ?? undefined,
       session_path: updatedSession.session_path ?? undefined,
       metadata: updatedMetadata,
+      state: updatedSession.state as 'idle' | 'working' | 'error',
+      error_message: updatedSession.error_message ?? undefined,
       created_at: updatedSession.created_at,
       updated_at: updatedSession.updated_at,
     };
@@ -501,6 +514,8 @@ export async function updateSessionName(
       cli_session_id: updatedSession.cli_session_id ?? undefined,
       session_path: updatedSession.session_path ?? undefined,
       metadata: updatedSession.metadata as AgentSessionMetadata,
+      state: updatedSession.state as 'idle' | 'working' | 'error',
+      error_message: updatedSession.error_message ?? undefined,
       created_at: updatedSession.created_at,
       updated_at: updatedSession.updated_at,
     };

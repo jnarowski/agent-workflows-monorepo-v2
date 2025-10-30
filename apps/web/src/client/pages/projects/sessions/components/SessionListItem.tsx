@@ -76,8 +76,10 @@ export function SessionListItem({
             )}
           />
           <div className="space-y-1 min-w-0 flex-1">
-            <div className="text-sm leading-none truncate" title={displayName}>
-              {truncatedName}
+            <div className="text-sm leading-none">
+              <span className="truncate" title={displayName}>
+                {truncatedName}
+              </span>
             </div>
             <div className="flex items-center justify-between text-sm md:text-xs text-muted-foreground gap-2">
               <span className="truncate">{timeAgo}</span>
