@@ -3,18 +3,13 @@
  *
  * TypeScript interfaces for WebSocket message structures and data payloads.
  * Used by the WebSocket handler for type-safe message processing.
+ *
+ * NOTE: Most event types and constants are now defined in @/shared/websocket
+ * This file only contains server-specific types and re-exports shared types.
  */
 
-/**
- * Generic WebSocket message structure
- * All WebSocket messages follow this format with a type and data payload
- *
- * @template T - The type of the data payload
- */
-export interface WebSocketMessage<T = unknown> {
-  type: string;
-  data: T;
-}
+// Re-export all shared WebSocket types
+export * from '@/shared/websocket/index.js'
 
 /**
  * Payload for session send_message events

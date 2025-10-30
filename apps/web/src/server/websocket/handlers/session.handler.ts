@@ -12,8 +12,8 @@ import { activeSessions } from "../utils/active-sessions.js";
 import { validateSessionOwnership } from "../services/session-validator.js";
 import { extractUsageFromEvents } from "../services/usage-extractor.js";
 import { executeAgentCommand, type AgentExecuteResult } from "../services/agent-executor.js";
-import { sessionChannel } from "../utils/channels.js";
 import { broadcast, subscribe } from "../utils/subscriptions.js";
+import { SessionEventTypes, GlobalEventTypes, Channels, parseChannel } from "@/shared/websocket";
 
 // ============================================================================
 // Types
@@ -49,7 +49,7 @@ export async function handleSessionSendMessage(
   fastify: FastifyInstance
 ): Promise<void> {
   // Auto-subscribe socket to session channel
-  const channel = sessionChannel(sessionId);
+  const channel = Channels.session(sessionId);
   subscribe(channel, socket);
   fastify.log.debug(
     { sessionId, channel },
@@ -75,9 +75,13 @@ export async function handleSessionSendMessage(
 
   // Validate agent is supported
   if (!isAgentSupported(session.agent)) {
-    broadcast(sessionChannel(sessionId), `session.${sessionId}.error`, {
-      error: `Agent type '${session.agent}' is not yet implemented`,
-      code: "UNSUPPORTED_AGENT",
+    broadcast(Channels.session(sessionId), {
+      type: SessionEventTypes.ERROR,
+      data: {
+        error: `Agent type '${session.agent}' is not yet implemented`,
+        sessionId,
+        code: "UNSUPPORTED_AGENT",
+      },
     });
     await cleanupSessionImages(sessionId, fastify.log);
     return;
@@ -118,8 +122,12 @@ export async function handleSessionSendMessage(
         : undefined,
     onEvent: ({ message }) => {
       if (message && typeof message === "object" && message !== null) {
-        broadcast(sessionChannel(sessionId), `session.${sessionId}.stream_output`, {
-          message,
+        broadcast(Channels.session(sessionId), {
+          type: SessionEventTypes.STREAM_OUTPUT,
+          data: {
+            message,
+            sessionId,
+          },
         });
       }
     },
@@ -153,7 +161,12 @@ export async function handleSessionSendMessage(
 
   // Cleanup and complete
   await cleanupSessionImages(sessionId, fastify.log);
-  broadcast(sessionChannel(sessionId), `session.${sessionId}.message_complete`, {});
+  broadcast(Channels.session(sessionId), {
+    type: SessionEventTypes.MESSAGE_COMPLETE,
+    data: {
+      sessionId,
+    },
+  });
 }
 
 /**
@@ -170,9 +183,12 @@ export async function handleSessionCancel(
   fastify: FastifyInstance
 ): Promise<void> {
   fastify.log.info({ sessionId }, "[WebSocket] Session cancel requested");
-  broadcast(sessionChannel(sessionId), `session.${sessionId}.error`, {
-    error: "Cancel functionality not implemented",
-    message: "Session cancellation is not yet implemented",
+  broadcast(Channels.session(sessionId), {
+    type: SessionEventTypes.ERROR,
+    data: {
+      error: "Cancel functionality not implemented",
+      sessionId,
+    },
   });
 }
 
@@ -193,7 +209,7 @@ export async function handleSessionSubscribe(
   await validateSessionOwnership(sessionId, userId);
 
   // Subscribe socket to session channel
-  const channel = sessionChannel(sessionId);
+  const channel = Channels.session(sessionId);
   subscribe(channel, socket);
 
   fastify.log.info(
@@ -210,22 +226,27 @@ export async function handleSessionSubscribe(
  */
 export async function handleSessionEvent(
   socket: WebSocket,
+  channel: string,
   type: string,
   data: unknown,
   userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
-  const sessionId = extractId(type, "session");
-  if (!sessionId) {
-    sendMessage(socket, "global.error", {
-      error: "Invalid session event type",
-      message: `Expected format: session.{id}.action, got: ${type}`,
+  const parsed = parseChannel(channel);
+  const sessionId = parsed?.id;
+
+  if (!sessionId || parsed?.resource !== "session") {
+    sendMessage(socket, Channels.global(), {
+      type: GlobalEventTypes.ERROR,
+      data: {
+        error: "Invalid session channel",
+      },
     });
     return;
   }
 
   try {
-    if (type.endsWith(".send_message")) {
+    if (type === "send_message" || type === SessionEventTypes.SEND_MESSAGE) {
       await handleSessionSendMessage(
         socket,
         sessionId,
@@ -233,29 +254,31 @@ export async function handleSessionEvent(
         userId,
         fastify
       );
-    } else if (type.endsWith(".cancel")) {
+    } else if (type === "cancel") {
       await handleSessionCancel(socket, sessionId, data, userId, fastify);
-    } else if (type.endsWith(".subscribe")) {
+    } else if (type === "subscribe") {
       await handleSessionSubscribe(socket, sessionId, userId, fastify);
     } else {
       // Unknown session action
-      broadcast(sessionChannel(sessionId), `session.${sessionId}.error`, {
-        error: "Unknown session action",
-        message: `Unknown action in event type: ${type}`,
+      broadcast(Channels.session(sessionId), {
+        type: SessionEventTypes.ERROR,
+        data: {
+          error: "Unknown session action",
+          sessionId,
+        },
       });
     }
   } catch (err: unknown) {
     fastify.log.error({ err, type, sessionId }, "Error handling session event");
     const errorMessage =
       err instanceof Error ? err.message : "Internal server error";
-    const errorStack = err instanceof Error ? err.stack : undefined;
-    const errorName = err instanceof Error ? err.name : undefined;
 
-    broadcast(sessionChannel(sessionId), `session.${sessionId}.error`, {
-      error: errorMessage,
-      message: errorMessage,
-      stack: errorStack,
-      name: errorName,
+    broadcast(Channels.session(sessionId), {
+      type: SessionEventTypes.ERROR,
+      data: {
+        error: errorMessage,
+        sessionId,
+      },
     });
   }
 }
@@ -383,10 +406,12 @@ async function handleExecutionFailure(
     },
   });
 
-  broadcast(sessionChannel(sessionId), `session.${sessionId}.error`, {
-    error: errorMessage,
-    message: errorMessage,
-    exitCode: result.exitCode,
+  broadcast(Channels.session(sessionId), {
+    type: SessionEventTypes.ERROR,
+    data: {
+      error: errorMessage,
+      sessionId,
+    },
   });
 }
 

@@ -9,6 +9,7 @@ import { handleSessionEvent } from "./handlers/session.handler.js";
 import { handleShellEvent } from "./handlers/shell.handler.js";
 import { handleGlobalEvent } from "./handlers/global.handler.js";
 import { unsubscribeAll } from "./utils/subscriptions.js";
+import { Channels, GlobalEventTypes } from "@/shared/websocket/index.js";
 
 /**
  * Register unified WebSocket endpoint
@@ -33,9 +34,12 @@ export async function registerWebSocket(
             request.headers.authorization?.replace("Bearer ", "");
 
           if (!token) {
-            sendMessage(socket, "global.error", {
-              error: "Authentication required",
-              message: "No authentication token provided",
+            sendMessage(socket, Channels.global(), {
+              type: GlobalEventTypes.ERROR,
+              data: {
+                error: "Authentication required",
+                message: "No authentication token provided",
+              },
             });
             socket.close(1008, "Authentication required"); // 1008 = Policy Violation
             return;
@@ -50,10 +54,13 @@ export async function registerWebSocket(
           // Record connection metric
           wsMetrics.recordConnection();
 
-          // Send global.connected event to signal client is ready
-          sendMessage(socket, "global.connected", {
-            timestamp: Date.now(),
-            userId,
+          // Send CONNECTED event to signal client is ready
+          sendMessage(socket, Channels.global(), {
+            type: GlobalEventTypes.CONNECTED,
+            data: {
+              timestamp: Date.now(),
+              userId,
+            },
           });
         } catch (err: unknown) {
           fastify.log.error({ err }, "[WebSocket] Authentication failed");
@@ -61,9 +68,12 @@ export async function registerWebSocket(
 
           const errorMessage =
             err instanceof Error ? err.message : "Invalid or expired token";
-          sendMessage(socket, "global.error", {
-            error: "Authentication failed",
-            message: errorMessage,
+          sendMessage(socket, Channels.global(), {
+            type: GlobalEventTypes.ERROR,
+            data: {
+              error: "Authentication failed",
+              message: errorMessage,
+            },
           });
           socket.close(1008, "Authentication failed"); // 1008 = Policy Violation
           return;
@@ -82,26 +92,31 @@ export async function registerWebSocket(
                   ? Buffer.concat(message).toString()
                   : new TextDecoder().decode(message);
 
-              const parsed: WebSocketMessage = JSON.parse(messageStr);
-              const { type, data } = parsed;
+              const parsed = JSON.parse(messageStr);
+
+              // Phoenix Channels format: {channel, type, data}
+              const { channel, type, data } = parsed;
 
               fastify.log.info(
-                { type, userId },
+                { channel, type, userId },
                 "[WebSocket] Received message"
               );
 
-              // Route based on event type prefix
-              if (type.startsWith("session.")) {
-                await handleSessionEvent(socket, type, data, userId!, fastify);
-              } else if (type.startsWith("shell.")) {
-                await handleShellEvent(socket, type, data, userId!, fastify);
-              } else if (type.startsWith("global.")) {
-                await handleGlobalEvent(socket, type, data, userId!, fastify);
+              // Route based on channel
+              if (channel?.startsWith("session:")) {
+                await handleSessionEvent(socket, channel, type, data, userId!, fastify);
+              } else if (channel?.startsWith("shell:")) {
+                await handleShellEvent(socket, channel, type, data, userId!, fastify);
+              } else if (channel === "global") {
+                await handleGlobalEvent(socket, channel, type, data, userId!, fastify);
               } else {
-                // Unknown event type
-                sendMessage(socket, "global.error", {
-                  error: "Unknown event type",
-                  message: `Event type must start with 'session.', 'shell.', or 'global.': ${type}`,
+                // Unknown channel
+                sendMessage(socket, Channels.global(), {
+                  type: GlobalEventTypes.ERROR,
+                  data: {
+                    error: "Unknown channel",
+                    message: `Invalid channel format: ${channel}`,
+                  },
                 });
               }
 
@@ -115,9 +130,12 @@ export async function registerWebSocket(
 
               const errorMessage =
                 err instanceof Error ? err.message : "Malformed message";
-              sendMessage(socket, "global.error", {
-                error: "Failed to process message",
-                message: errorMessage,
+              sendMessage(socket, Channels.global(), {
+                type: GlobalEventTypes.ERROR,
+                data: {
+                  error: "Failed to process message",
+                  message: errorMessage,
+                },
               });
             }
           }

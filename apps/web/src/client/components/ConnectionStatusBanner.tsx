@@ -1,16 +1,22 @@
 import { useEffect, useState } from "react";
 import { ReadyState } from "@/shared/types/websocket";
+import { wsMetrics } from "@/client/lib/WebSocketMetrics";
 
 interface ConnectionStatusBannerProps {
-  sessionId: string | null;
   readyState: ReadyState;
   isReady: boolean;
   connectionAttempts: number;
   onReconnect: () => void;
 }
 
+/**
+ * ConnectionStatusBanner
+ *
+ * Global connection status banner shown at the top of the application.
+ * Displays connection state, reconnection attempts, and average latency.
+ * Always visible reconnect button for manual retry.
+ */
 export function ConnectionStatusBanner({
-  sessionId,
   readyState,
   isReady,
   connectionAttempts,
@@ -19,6 +25,7 @@ export function ConnectionStatusBanner({
   // Debounce showing "Disconnected" state to prevent flashing during hot reload
   const [showDisconnected, setShowDisconnected] = useState(false);
   const [previousAttempts, setPreviousAttempts] = useState(connectionAttempts);
+  const [averageLatency, setAverageLatency] = useState<number | null>(null);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -45,16 +52,22 @@ export function ConnectionStatusBanner({
     }
   }, [connectionAttempts, previousAttempts]);
 
+  // Update average latency when connected
+  useEffect(() => {
+    if (readyState === ReadyState.OPEN && isReady) {
+      const interval = setInterval(() => {
+        setAverageLatency(wsMetrics.averageLatency);
+      }, 5000); // Update every 5 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [readyState, isReady]);
+
   // Detect if auto-reconnection is in progress
   // This happens when we were CLOSED and now CONNECTING with increasing attempts
   const isReconnecting =
     readyState === ReadyState.CONNECTING &&
     connectionAttempts > 1;
-
-  // Don't show banner if no session
-  if (!sessionId) {
-    return null;
-  }
 
   // Determine connection status message
   const getConnectionStatus = () => {
@@ -62,30 +75,30 @@ export function ConnectionStatusBanner({
       // Auto-reconnection in progress
       const attemptNumber = connectionAttempts - 1; // First attempt is 1, so subtract 1 for reconnect count
       return {
-        message: `Reconnecting... (attempt ${Math.min(attemptNumber, 5)}/5)`,
+        message: `Reconnecting... (${Math.min(attemptNumber, 5)}/5)`,
         color: "yellow" as const,
-        showReconnect: false,
+        showReconnect: true, // Always show reconnect button
       };
     } else if (readyState === ReadyState.CONNECTING) {
       // Initial connection
       return {
-        message: "Connecting to session...",
+        message: "Connecting...",
         color: "blue" as const,
         showReconnect: false,
       };
     } else if (readyState === ReadyState.OPEN && !isReady) {
       // Socket opened but waiting for global.connected message
       return {
-        message: "Establishing session connection...",
+        message: "Establishing connection...",
         color: "blue" as const,
         showReconnect: false,
       };
     } else if ((readyState === ReadyState.CLOSING || readyState === ReadyState.CLOSED) && showDisconnected) {
       // Only show after debounce delay
       return {
-        message: "Disconnected from session",
+        message: "Disconnected",
         color: "yellow" as const,
-        showReconnect: true,
+        showReconnect: true, // Always show reconnect button
       };
     }
     return null;
@@ -105,11 +118,18 @@ export function ConnectionStatusBanner({
           : "bg-yellow-100 border-yellow-200 text-yellow-800"
       }`}
     >
-      <span>{status.message}</span>
+      <div className="flex items-center gap-3">
+        <span className="font-medium">{status.message}</span>
+        {averageLatency !== null && status.color !== "yellow" && (
+          <span className="text-xs opacity-75">
+            {averageLatency}ms
+          </span>
+        )}
+      </div>
       {status.showReconnect && (
         <button
           onClick={onReconnect}
-          className={`underline hover:no-underline ${
+          className={`underline hover:no-underline font-medium ${
             status.color === "blue" ? "text-blue-900" : "text-yellow-900"
           }`}
         >

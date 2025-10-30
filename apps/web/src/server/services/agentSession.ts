@@ -247,8 +247,31 @@ export async function syncProjectSessions(
 
     // Batch delete orphaned Claude sessions (only)
     // Other agent types are not checked since they have different storage locations
+    // IMPORTANT: Only delete sessions that are:
+    // 1. Not in the JSONL files (orphaned)
+    // 2. In "idle" state (not actively being created/used)
+    // 3. Older than 5 seconds (to avoid race conditions with new session creation)
+    const fiveSecondsAgo = new Date(Date.now() - 5000);
     const orphanedSessionIds = dbClaudeSessions
-      .filter((session) => !jsonlSessionIds.has(session.id))
+      .filter((session) => {
+        // Keep if session has a JSONL file
+        if (jsonlSessionIds.has(session.id)) {
+          return false;
+        }
+
+        // Keep if session is actively being worked on
+        if (session.state === 'working') {
+          return false;
+        }
+
+        // Keep if session was created very recently (race condition protection)
+        if (session.created_at > fiveSecondsAgo) {
+          return false;
+        }
+
+        // This session is truly orphaned and safe to delete
+        return true;
+      })
       .map((session) => session.id);
 
     if (orphanedSessionIds.length > 0) {

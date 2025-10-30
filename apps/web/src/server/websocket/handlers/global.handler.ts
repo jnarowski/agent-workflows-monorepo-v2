@@ -4,33 +4,44 @@ import type {
   SubscribeMessageData,
   UnsubscribeMessageData,
 } from "../types.js";
+import { GlobalEventTypes, Channels } from "@/shared/websocket/index.js";
 import { subscribe, unsubscribe } from "../utils/subscriptions.js";
 import { validateChannelAccess } from "../utils/permissions.js";
 import { sendMessage } from "../utils/send-message.js";
 
 /**
- * Handle global events (global.*)
+ * Handle global events on the global channel
  */
 export async function handleGlobalEvent(
   socket: WebSocket,
+  channel: string,
   type: string,
   data: unknown,
   userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
+  // Handle ping/pong heartbeat
+  if (type === GlobalEventTypes.PING || type === "ping") {
+    sendMessage(socket, Channels.global(), {
+      type: GlobalEventTypes.PONG,
+      data: { timestamp: Date.now() },
+    });
+    return;
+  }
+
   // Handle subscription events
-  if (type === "global.subscribe") {
+  if (type === "subscribe") {
     await handleSubscribe(socket, data as SubscribeMessageData, userId, fastify);
     return;
   }
 
-  if (type === "global.unsubscribe") {
+  if (type === "unsubscribe") {
     await handleUnsubscribe(socket, data as UnsubscribeMessageData, fastify);
     return;
   }
 
   // Unknown global event
-  fastify.log.info(
+  fastify.log.debug(
     { type },
     "[WebSocket] Global event received (no handler)"
   );
@@ -48,9 +59,12 @@ async function handleSubscribe(
   const { channels } = data;
 
   if (!Array.isArray(channels)) {
-    sendMessage(socket, "global.subscription.error", {
-      error: "Invalid subscribe request",
-      message: "channels must be an array",
+    sendMessage(socket, Channels.global(), {
+      type: GlobalEventTypes.SUBSCRIPTION_ERROR,
+      data: {
+        channel: "",
+        error: "Invalid subscribe request: channels must be an array",
+      },
     });
     return;
   }
@@ -83,16 +97,24 @@ async function handleSubscribe(
 
   // Send success response for subscribed channels
   if (subscribedChannels.length > 0) {
-    sendMessage(socket, "global.subscription.success", {
-      channels: subscribedChannels,
-    });
+    for (const channel of subscribedChannels) {
+      sendMessage(socket, Channels.global(), {
+        type: GlobalEventTypes.SUBSCRIPTION_SUCCESS,
+        data: {
+          channel,
+        },
+      });
+    }
   }
 
   // Send error responses for denied channels
   for (const { channelId, reason } of deniedChannels) {
-    sendMessage(socket, "global.subscription.error", {
-      channelId,
-      reason,
+    sendMessage(socket, Channels.global(), {
+      type: GlobalEventTypes.SUBSCRIPTION_ERROR,
+      data: {
+        channel: channelId,
+        error: reason,
+      },
     });
   }
 }
@@ -108,9 +130,12 @@ async function handleUnsubscribe(
   const { channels } = data;
 
   if (!Array.isArray(channels)) {
-    sendMessage(socket, "global.subscription.error", {
-      error: "Invalid unsubscribe request",
-      message: "channels must be an array",
+    sendMessage(socket, Channels.global(), {
+      type: GlobalEventTypes.SUBSCRIPTION_ERROR,
+      data: {
+        channel: "",
+        error: "Invalid unsubscribe request: channels must be an array",
+      },
     });
     return;
   }
@@ -124,8 +149,13 @@ async function handleUnsubscribe(
     );
   }
 
-  // Send confirmation
-  sendMessage(socket, "global.unsubscribe.success", {
-    channels,
-  });
+  // Send confirmation for each channel
+  for (const channel of channels) {
+    sendMessage(socket, Channels.global(), {
+      type: GlobalEventTypes.SUBSCRIPTION_SUCCESS,
+      data: {
+        channel,
+      },
+    });
+  }
 }

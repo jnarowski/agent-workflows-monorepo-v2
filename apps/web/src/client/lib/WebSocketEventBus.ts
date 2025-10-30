@@ -1,80 +1,111 @@
 /**
  * WebSocketEventBus
  *
- * A lightweight event emitter for pub/sub pattern in the WebSocket architecture.
- * Allows components to subscribe to specific WebSocket events without managing connections.
+ * Channel-based event emitter following Phoenix Channels pattern.
+ * Components subscribe to channels and receive structured events with type discriminators.
+ *
+ * @example
+ * ```typescript
+ * import { Channels, SessionEventTypes, type SessionEvent } from '@/shared/websocket';
+ *
+ * // Subscribe to a channel
+ * eventBus.on<SessionEvent>(Channels.session('123'), (event) => {
+ *   switch (event.type) {
+ *     case SessionEventTypes.STREAM_OUTPUT:
+ *       console.log(event.data.message);
+ *       break;
+ *   }
+ * });
+ *
+ * // Emit an event to a channel
+ * eventBus.emit(Channels.session('123'), {
+ *   type: SessionEventTypes.STREAM_OUTPUT,
+ *   data: { message: 'Hello' }
+ * });
+ * ```
  */
 
-type EventHandler<T = unknown> = (data: T) => void;
+import type { ChannelEvent } from '@/shared/websocket';
+
+type ChannelEventHandler<T extends ChannelEvent = ChannelEvent> = (event: T) => void;
 
 export class WebSocketEventBus {
-  private listeners: Map<string, Set<EventHandler<unknown>>>;
+  private listeners: Map<string, Set<ChannelEventHandler>>;
 
   constructor() {
     this.listeners = new Map();
   }
 
   /**
-   * Subscribe to an event
-   * @param event The event name to listen for
-   * @param handler The function to call when the event is emitted
+   * Subscribe to a channel
+   * @param channel The channel name to listen on (e.g., 'session:123', 'global')
+   * @param handler The function to call when events are emitted to this channel
    */
-  on<T = unknown>(event: string, handler: EventHandler<T>): void {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, new Set());
+  on<T extends ChannelEvent = ChannelEvent>(
+    channel: string,
+    handler: ChannelEventHandler<T>
+  ): void {
+    if (!this.listeners.has(channel)) {
+      this.listeners.set(channel, new Set());
     }
-    this.listeners.get(event)!.add(handler as EventHandler<unknown>);
+    this.listeners.get(channel)!.add(handler as ChannelEventHandler);
   }
 
   /**
-   * Unsubscribe from an event
-   * @param event The event name to stop listening for
+   * Unsubscribe from a channel
+   * @param channel The channel name to stop listening on
    * @param handler The function to remove
    */
-  off<T = unknown>(event: string, handler: EventHandler<T>): void {
-    const handlers = this.listeners.get(event);
+  off<T extends ChannelEvent = ChannelEvent>(
+    channel: string,
+    handler: ChannelEventHandler<T>
+  ): void {
+    const handlers = this.listeners.get(channel);
     if (handlers) {
-      handlers.delete(handler as EventHandler<unknown>);
+      handlers.delete(handler as ChannelEventHandler);
       // Clean up empty sets
       if (handlers.size === 0) {
-        this.listeners.delete(event);
+        this.listeners.delete(channel);
       }
     }
   }
 
   /**
-   * Emit an event to all subscribed handlers
-   * @param event The event name to emit
-   * @param data The data to pass to handlers
+   * Emit an event to all subscribers of a channel
+   * @param channel The channel name to emit to
+   * @param event The structured event with type and data
    */
-  emit<T = unknown>(event: string, data: T): void {
-    const handlers = this.listeners.get(event);
+  emit(channel: string, event: ChannelEvent): void {
+    const handlers = this.listeners.get(channel);
     if (handlers) {
       handlers.forEach((handler) => {
         try {
-          handler(data);
+          handler(event);
         } catch (error) {
-          console.error(`[EventBus] Error in handler for event "${event}":`, error);
+          console.error(`[EventBus] Error in handler for channel "${channel}":`, error);
         }
       });
     }
   }
 
   /**
-   * Subscribe to an event and automatically unsubscribe after first emission
-   * @param event The event name to listen for
-   * @param handler The function to call once when the event is emitted
+   * Subscribe to a channel and automatically unsubscribe after first event
+   * @param channel The channel name to listen on
+   * @param handler The function to call once when an event is emitted
    */
-  once<T = unknown>(event: string, handler: EventHandler<T>): void {
-    const onceHandler = (data: T) => {
-      handler(data);
-      this.off(event, onceHandler);
+  once<T extends ChannelEvent = ChannelEvent>(
+    channel: string,
+    handler: ChannelEventHandler<T>
+  ): void {
+    const onceHandler = (event: T) => {
+      handler(event);
+      this.off(channel, onceHandler);
     };
-    this.on(event, onceHandler);
+    this.on(channel, onceHandler);
   }
 
   /**
-   * Remove all listeners for all events
+   * Remove all listeners for all channels
    * Useful for cleanup
    */
   clear(): void {
@@ -82,9 +113,16 @@ export class WebSocketEventBus {
   }
 
   /**
-   * Get the number of listeners for a specific event (useful for debugging)
+   * Get the number of listeners for a specific channel (useful for debugging)
    */
-  listenerCount(event: string): number {
-    return this.listeners.get(event)?.size ?? 0;
+  listenerCount(channel: string): number {
+    return this.listeners.get(channel)?.size ?? 0;
+  }
+
+  /**
+   * Get all active channel subscriptions (useful for debugging and DevTools)
+   */
+  getActiveChannels(): string[] {
+    return Array.from(this.listeners.keys());
   }
 }

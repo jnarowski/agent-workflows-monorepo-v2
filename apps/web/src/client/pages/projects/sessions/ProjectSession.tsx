@@ -3,7 +3,6 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChatInterface } from "./components/ChatInterface";
 import { ChatPromptInput } from "./components/ChatPromptInput";
-import { ConnectionStatusBanner } from "./components/ConnectionStatusBanner";
 import { useSessionWebSocket } from "./hooks/useSessionWebSocket";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import {
@@ -258,15 +257,6 @@ export default function ProjectSession() {
 
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden">
-      {/* Connection status banner */}
-      <ConnectionStatusBanner
-        sessionId={sessionId}
-        readyState={readyState}
-        isReady={isReady}
-        connectionAttempts={connectionAttempts}
-        onReconnect={reconnect}
-      />
-
       {/* Chat Messages Container - takes up remaining space */}
       <div className="flex-1 overflow-hidden">
         <ChatInterface

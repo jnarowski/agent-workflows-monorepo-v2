@@ -1,4 +1,5 @@
 import type { WebSocket } from "@fastify/websocket";
+import type { ChannelEvent } from "@/shared/websocket/index.js";
 import { wsMetrics } from "./metrics.js";
 
 /**
@@ -127,14 +128,9 @@ export function unsubscribeAll(socket: WebSocket): void {
  * Automatically removes dead sockets (readyState !== OPEN)
  *
  * @param channelId - Channel identifier
- * @param type - Message type
- * @param data - Message payload
+ * @param event - Event object with type and data (Phoenix Channels pattern)
  */
-export function broadcast(
-  channelId: string,
-  type: string,
-  data: unknown
-): void {
+export function broadcast(channelId: string, event: ChannelEvent): void {
   const subscribers = subscriptions.get(channelId);
   if (!subscribers || subscribers.size === 0) {
     console.log(
@@ -143,7 +139,10 @@ export function broadcast(
     return;
   }
 
-  const message = JSON.stringify({ type, data });
+  const message = JSON.stringify({
+    channel: channelId,
+    ...event,
+  });
   const deadSockets: WebSocket[] = [];
 
   // Send to all live subscribers
