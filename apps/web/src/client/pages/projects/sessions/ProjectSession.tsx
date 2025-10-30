@@ -12,7 +12,6 @@ import {
 } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation";
 import { useNavigationStore } from "@/client/stores/index";
-import type { ToolResultBlock } from "@/shared/types/message.types";
 import { generateUUID } from "@/client/lib/utils";
 import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
 import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
@@ -287,27 +286,6 @@ export default function ProjectSession() {
     );
   };
 
-  // Derive toolResults from messages
-  const toolResults = useMemo(() => {
-    const results = new Map<string, { content: string; is_error?: boolean }>();
-
-    if (!session?.messages) return results;
-
-    for (const message of session.messages) {
-      for (const block of message.content) {
-        if (block.type === "tool_result") {
-          const toolResultBlock = block as ToolResultBlock;
-          results.set(toolResultBlock.tool_use_id, {
-            content: toolResultBlock.content,
-            is_error: toolResultBlock.is_error,
-          });
-        }
-      }
-    }
-
-    return results;
-  }, [session?.messages]);
-
   // Determine if input should be blocked
   // Count assistant messages
   const assistantMessageCount =
@@ -339,7 +317,6 @@ export default function ProjectSession() {
           sessionId={sessionId || undefined}
           agent={session?.agent || "claude"}
           messages={session?.messages || []}
-          toolResults={toolResults}
           isLoading={session?.loadingState === "loading"}
           error={session?.error || null}
           isStreaming={session?.isStreaming || false}

@@ -257,17 +257,35 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
     } as UIMessage;
   });
 
-  if (import.meta.env.DEV) {
-    console.log('[enrichMessagesWithToolResults] Enrichment complete. Returning', enrichedMessages.length, 'messages');
-    // Log messages with empty content
-    enrichedMessages.forEach((msg, index) => {
-      if (Array.isArray(msg.content) && msg.content.length === 0) {
-        console.warn(`[enrichMessagesWithToolResults] WARNING: Message ${index} has EMPTY content array!`, msg);
+  // Filter out messages with empty content arrays (tool_result-only messages after enrichment)
+  const finalMessages = enrichedMessages.filter((msg) => {
+    // Keep messages with non-array content (edge case)
+    if (!Array.isArray(msg.content)) return true;
+
+    // Filter out empty content arrays (user messages with only tool_result blocks)
+    if (msg.content.length === 0) {
+      if (import.meta.env.DEV) {
+        console.log(
+          `[enrichMessagesWithToolResults] Filtering message ${msg.id} with empty content ` +
+          `(${msg.role} message contained only tool_result blocks, now nested in tool_use)`
+        );
       }
-    });
+      return false;
+    }
+
+    return true;
+  });
+
+  if (import.meta.env.DEV) {
+    const filteredCount = enrichedMessages.length - finalMessages.length;
+    console.log(
+      `[enrichMessagesWithToolResults] Enrichment complete. ` +
+      `Returning ${finalMessages.length} messages` +
+      (filteredCount > 0 ? ` (filtered ${filteredCount} empty)` : '')
+    );
   }
 
-  return enrichedMessages;
+  return finalMessages;
 }
 
 /**
@@ -505,6 +523,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         });
       }
 
+      let updatedMessages: UIMessage[];
+
       if (shouldUpdateLastMessage) {
         // Update existing streaming message with same ID immutably
         if (import.meta.env.DEV) {
@@ -516,20 +536,14 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
           ? (lastMessage._original || JSON.parse(JSON.stringify(lastMessage)))
           : undefined as any;
 
-        return {
-          session: {
-            ...state.session,
-            messages: [
-              ...messages.slice(0, -1),
-              {
-                ...lastMessage,
-                content: contentBlocks,
-                _original,
-              },
-            ],
-            isStreaming: true,
+        updatedMessages = [
+          ...messages.slice(0, -1),
+          {
+            ...lastMessage,
+            content: contentBlocks,
+            _original,
           },
-        };
+        ];
       } else {
         // Create new streaming assistant message with the provided ID
         if (import.meta.env.DEV) {
@@ -549,17 +563,30 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
           newMessage._original = JSON.parse(JSON.stringify(newMessage));
         }
 
-        return {
-          session: {
-            ...state.session,
-            messages: [
-              ...messages,
-              newMessage,
-            ],
-            isStreaming: true,
-          },
-        };
+        updatedMessages = [
+          ...messages,
+          newMessage,
+        ];
       }
+
+      // Apply enrichment to maintain consistent data structure with loaded sessions
+      const enrichedMessages = enrichMessagesWithToolResults(updatedMessages);
+
+      if (import.meta.env.DEV) {
+        console.log('[sessionStore] Applied enrichment to streaming messages:', {
+          beforeCount: updatedMessages.length,
+          afterCount: enrichedMessages.length,
+          filtered: updatedMessages.length - enrichedMessages.length,
+        });
+      }
+
+      return {
+        session: {
+          ...state.session,
+          messages: enrichedMessages,
+          isStreaming: true,
+        },
+      };
     });
   },
 
