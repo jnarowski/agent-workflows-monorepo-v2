@@ -96,7 +96,8 @@ export function CreateBranchDialog({
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            The new branch will be created from the current branch and you will automatically switch to it.
+            Any uncommitted changes will be automatically committed before creating the new branch.
+            You will then automatically switch to the new branch.
           </AlertDescription>
         </Alert>
 

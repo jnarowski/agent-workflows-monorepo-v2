@@ -8,6 +8,7 @@
 
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { Copy, Check } from "lucide-react";
 import type { UIMessage } from "@/shared/types/message.types";
 
 interface DebugMessagePanelProps {
@@ -19,6 +20,18 @@ export function DebugMessagePanel({ messages }: DebugMessagePanelProps) {
   const debugMode = searchParams.get('debug') === 'true';
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedMessageIndex, setSelectedMessageIndex] = useState<number | null>(null);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+
+  // Copy message JSON to clipboard
+  const copyMessageJson = async (msg: UIMessage) => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(msg, null, 2));
+      setCopiedMessageId(msg.id);
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy message JSON:', err);
+    }
+  };
 
   // Only render when ?debug=true
   if (!debugMode) {
@@ -92,48 +105,68 @@ export function DebugMessagePanel({ messages }: DebugMessagePanelProps) {
               return (
                 <div key={msg.id || index}>
                   {/* Message summary */}
-                  <button
-                    onClick={() => setSelectedMessageIndex(isSelected ? null : index)}
-                    className={`w-full text-left p-2 rounded text-xs ${
-                      isEmpty || hasEmptyText
-                        ? 'bg-red-900/50 border border-red-700'
-                        : 'bg-gray-800 border border-gray-700'
-                    } hover:bg-gray-700 transition-colors`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <span className="font-medium">#{index}</span>
-                        <span className={`px-1.5 py-0.5 rounded ${
-                          msg.role === 'user' ? 'bg-blue-700' : 'bg-green-700'
-                        }`}>
-                          {msg.role}
-                        </span>
-                        {msg.isStreaming && (
-                          <span className="px-1.5 py-0.5 rounded bg-yellow-700 animate-pulse">
-                            STREAMING
+                  <div className="relative">
+                    <button
+                      onClick={() => setSelectedMessageIndex(isSelected ? null : index)}
+                      className={`w-full text-left p-2 rounded text-xs ${
+                        isEmpty || hasEmptyText
+                          ? 'bg-red-900/50 border border-red-700'
+                          : 'bg-gray-800 border border-gray-700'
+                      } hover:bg-gray-700 transition-colors`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <span className="font-medium">#{index}</span>
+                          <span className={`px-1.5 py-0.5 rounded ${
+                            msg.role === 'user' ? 'bg-blue-700' : 'bg-green-700'
+                          }`}>
+                            {msg.role}
                           </span>
-                        )}
-                        {isEmpty && (
-                          <span className="px-1.5 py-0.5 rounded bg-red-700 font-medium">
-                            EMPTY!
+                          {msg.isStreaming && (
+                            <span className="px-1.5 py-0.5 rounded bg-yellow-700 animate-pulse">
+                              STREAMING
+                            </span>
+                          )}
+                          {isEmpty && (
+                            <span className="px-1.5 py-0.5 rounded bg-red-700 font-medium">
+                              EMPTY!
+                            </span>
+                          )}
+                          {hasEmptyText && (
+                            <span className="px-1.5 py-0.5 rounded bg-orange-700">
+                              Empty Text
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-400 text-xs">
+                            {Array.isArray(msg.content) ? `${msg.content.length} blocks` : 'string'}
                           </span>
-                        )}
-                        {hasEmptyText && (
-                          <span className="px-1.5 py-0.5 rounded bg-orange-700">
-                            Empty Text
-                          </span>
-                        )}
+                        </div>
                       </div>
-                      <div className="text-gray-400 text-xs">
-                        {Array.isArray(msg.content) ? `${msg.content.length} blocks` : 'string'}
-                      </div>
-                    </div>
                     {Array.isArray(msg.content) && msg.content.length > 0 && (
                       <div className="mt-1 text-gray-400 truncate">
                         {msg.content.map(b => b.type).join(', ')}
                       </div>
                     )}
                   </button>
+
+                  {/* Copy button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      copyMessageJson(msg);
+                    }}
+                    className="absolute top-2 right-2 p-1.5 rounded bg-gray-700 hover:bg-gray-600 transition-colors"
+                    title="Copy message JSON"
+                  >
+                    {copiedMessageId === msg.id ? (
+                      <Check className="h-3 w-3 text-green-400" />
+                    ) : (
+                      <Copy className="h-3 w-3 text-gray-300" />
+                    )}
+                  </button>
+                </div>
 
                   {/* Expanded message details */}
                   {isSelected && (
@@ -211,10 +244,47 @@ export function DebugMessagePanel({ messages }: DebugMessagePanelProps) {
                         </div>
                       )}
 
+                      {/* Original message (before enrichment) */}
+                      {msg._original && (
+                        <details className="mt-2">
+                          <summary className="text-yellow-400 cursor-pointer hover:text-yellow-300 font-medium">
+                            📦 Original Message (Before Enrichment)
+                          </summary>
+                          <div className="mt-1 p-2 bg-black rounded text-[10px]">
+                            <div className="mb-2 text-gray-400">
+                              Original content blocks: {Array.isArray(msg._original.content) ? msg._original.content.length : 'N/A'}
+                            </div>
+                            {Array.isArray(msg._original.content) && (
+                              <div className="mb-2 text-gray-400">
+                                Block types: {msg._original.content.map(b => b.type).join(', ')}
+                              </div>
+                            )}
+                            <pre className="overflow-x-auto max-h-40 overflow-y-auto">
+                              {JSON.stringify(msg._original, null, 2)}
+                            </pre>
+                          </div>
+                        </details>
+                      )}
+
                       {/* Raw JSON (collapsed by default) */}
                       <details className="mt-2">
-                        <summary className="text-gray-400 cursor-pointer hover:text-gray-300">
-                          Raw JSON
+                        <summary className="text-gray-400 cursor-pointer hover:text-gray-300 flex items-center justify-between">
+                          <span>Raw JSON (Enriched)</span>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              copyMessageJson(msg);
+                            }}
+                            className="ml-2 p-1 rounded bg-gray-800 hover:bg-gray-700 transition-colors"
+                            title="Copy message JSON"
+                          >
+                            {copiedMessageId === msg.id ? (
+                              <Check className="h-3 w-3 text-green-400" />
+                            ) : (
+                              <Copy className="h-3 w-3 text-gray-400" />
+                            )}
+                          </button>
                         </summary>
                         <pre className="mt-1 p-2 bg-black rounded text-[10px] overflow-x-auto max-h-40 overflow-y-auto">
                           {JSON.stringify(msg, null, 2)}

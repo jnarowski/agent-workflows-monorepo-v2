@@ -21,9 +21,25 @@ export function ContentBlockRenderer({
   block,
   className = "",
 }: ContentBlockRendererProps) {
-  // DEBUG: Log every block being rendered
+  // Enhanced logging with decision path
   if (import.meta.env.DEV) {
-    console.log("[ContentBlockRenderer] Rendering block:", block);
+    const logData: Record<string, unknown> = {
+      type: block.type
+    };
+
+    if (block.type === 'text') {
+      logData.textLength = block.text?.length || 0;
+      logData.isEmpty = !block.text || block.text.trim() === '';
+    } else if (block.type === 'tool_use') {
+      const enrichedBlock = block as EnrichedToolUseBlock;
+      logData.toolName = block.name;
+      logData.hasResult = Boolean(enrichedBlock.result);
+    } else if (block.type === 'tool_result') {
+      logData.willBeSkipped = true;
+      logData.reason = 'Standalone tool_result blocks are filtered (nested in tool_use)';
+    }
+
+    console.log("[ContentBlockRenderer] Rendering block:", logData);
   }
 
   switch (block.type) {

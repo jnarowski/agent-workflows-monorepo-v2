@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   ChatPromptInput,
@@ -19,6 +19,7 @@ import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjec
 
 export default function NewSession() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { projectId } = useActiveProject();
   const queryClient = useQueryClient();
   const chatInputRef = useRef<ChatPromptInputHandle>(null);
@@ -96,10 +97,13 @@ export default function NewSession() {
         },
       });
 
-      // Navigate to the new session with query parameter
+      // Navigate to the new session preserving all query parameters
       // Query param signals: message already sent, just display it
+      const currentParams = new URLSearchParams(location.search);
+      currentParams.set('query', message);
+
       navigate(
-        `/projects/${projectId}/session/${newSession.id}?query=${encodeURIComponent(message)}`,
+        `/projects/${projectId}/session/${newSession.id}?${currentParams.toString()}`,
         {
           replace: true,
         }

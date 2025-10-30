@@ -158,6 +158,7 @@ export async function getBranches(projectPath: string): Promise<GitBranch[]> {
 
 /**
  * Create and switch to a new branch
+ * Automatically commits any uncommitted changes before creating the branch
  */
 export async function createAndSwitchBranch(
   projectPath: string,
@@ -171,11 +172,25 @@ export async function createAndSwitchBranch(
 
   const git = simpleGit(projectPath);
 
+  // Check for uncommitted changes
+  const status = await git.status();
+  const hasChanges = status.files.length > 0;
+
+  // If there are uncommitted changes, commit them first
+  if (hasChanges) {
+    // Stage all files (including untracked)
+    await git.add('.');
+
+    // Commit with auto-generated message
+    await git.commit(`Auto-commit before creating branch "${branchName}"`);
+  }
+
   // If from branch is specified, checkout from that branch first
   if (from) {
     await git.checkout(from);
   }
 
+  // Create and switch to new branch
   await git.checkoutLocalBranch(branchName);
 
   return {

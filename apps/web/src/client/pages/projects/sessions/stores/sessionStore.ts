@@ -206,11 +206,16 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
 
   // Step 3: Enrich tool_use blocks and filter out tool_result blocks
   const enrichedMessages = filteredMessages.map((msg, msgIndex) => {
+    // Capture original message for debugging (deep clone)
+    const _original: UnifiedMessage = import.meta.env.DEV
+      ? JSON.parse(JSON.stringify(msg))
+      : undefined as any;
+
     if (!Array.isArray(msg.content)) {
       if (import.meta.env.DEV) {
         console.log(`[enrichMessagesWithToolResults] Message ${msgIndex} has non-array content:`, typeof msg.content);
       }
-      return { ...msg, isStreaming: false };
+      return { ...msg, isStreaming: false, _original };
     }
 
     if (import.meta.env.DEV) {
@@ -247,7 +252,8 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
     return {
       ...msg,
       content: enrichedContent,
-      isStreaming: false
+      isStreaming: false,
+      _original
     } as UIMessage;
   });
 
@@ -504,6 +510,12 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         if (import.meta.env.DEV) {
           console.log('[sessionStore] Updating existing message at index', messages.length - 1);
         }
+
+        // Capture _original on first update (if not already set)
+        const _original = import.meta.env.DEV
+          ? (lastMessage._original || JSON.parse(JSON.stringify(lastMessage)))
+          : undefined as any;
+
         return {
           session: {
             ...state.session,
@@ -512,6 +524,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
               {
                 ...lastMessage,
                 content: contentBlocks,
+                _original,
               },
             ],
             isStreaming: true,
@@ -522,18 +535,26 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         if (import.meta.env.DEV) {
           console.log('[sessionStore] Creating NEW streaming message at index', messages.length);
         }
+
+        const newMessage: UIMessage = {
+          id: messageId,
+          role: "assistant" as const,
+          content: contentBlocks,
+          timestamp: Date.now(),
+          isStreaming: true,
+        };
+
+        // Capture _original for new streaming messages (dev only)
+        if (import.meta.env.DEV) {
+          newMessage._original = JSON.parse(JSON.stringify(newMessage));
+        }
+
         return {
           session: {
             ...state.session,
             messages: [
               ...messages,
-              {
-                id: messageId,
-                role: "assistant" as const,
-                content: contentBlocks,
-                timestamp: Date.now(),
-                isStreaming: true,
-              },
+              newMessage,
             ],
             isStreaming: true,
           },

@@ -210,8 +210,11 @@ export default function ProjectSession() {
         // Set streaming state to show loading indicator
         setStreaming(true);
 
-        // Remove query parameter from URL
-        navigate(location.pathname, { replace: true });
+        // Remove only the query parameter, preserve others like debug
+        const searchParams = new URLSearchParams(location.search);
+        searchParams.delete('query');
+        const newSearch = searchParams.toString();
+        navigate(`${location.pathname}${newSearch ? `?${newSearch}` : ''}`, { replace: true });
       } catch (error) {
         console.error(
           "[ProjectSession] Error processing query parameter:",
