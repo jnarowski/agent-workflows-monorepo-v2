@@ -208,3 +208,12 @@ export function getSubscriberCount(channelId: string): number {
 export function getActiveChannels(): string[] {
   return Array.from(subscriptions.keys());
 }
+
+/**
+ * Clear all subscriptions (for testing)
+ * @internal
+ */
+export function clearAllSubscriptions(): void {
+  subscriptions.clear();
+  socketChannels.clear();
+}

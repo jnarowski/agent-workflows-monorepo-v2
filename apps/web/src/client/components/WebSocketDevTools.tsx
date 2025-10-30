@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useWebSocket } from '@/client/hooks/useWebSocket';
 import { wsMetrics } from '@/client/lib/WebSocketMetrics';
 import { type ChannelEvent } from '@/shared/websocket';
+import { useDebugMode } from '@/client/hooks/useDebugMode';
 
 /**
  * Message log entry for DevTools
@@ -18,15 +19,18 @@ interface MessageLogEntry {
 /**
  * WebSocketDevTools
  *
- * Floating debugging panel for WebSocket development (dev mode only).
+ * Floating debugging panel for WebSocket development (debug mode only).
  * Features:
  * - Recent messages (last 50, filterable by channel)
  * - Active subscriptions list
  * - Metrics dashboard with latency graph
  * - Manual controls (reconnect, disconnect, clear logs)
  * - Keyboard shortcut: Ctrl+Shift+W (Cmd+Shift+W on Mac)
+ *
+ * Enable by adding ?debug=true to the URL
  */
 export function WebSocketDevTools() {
+  const isDebugMode = useDebugMode();
   const [isOpen, setIsOpen] = useState(false);
   const [messageLog, setMessageLog] = useState<MessageLogEntry[]>([]);
   const [channelFilter, setChannelFilter] = useState<string>('');
@@ -102,8 +106,8 @@ export function WebSocketDevTools() {
     return date.toLocaleTimeString('en-US', { hour12: false, millisecond: true });
   };
 
-  // Only render in dev mode
-  if (!import.meta.env.DEV) {
+  // Only render in debug mode (when ?debug=true is in URL)
+  if (!isDebugMode) {
     return null;
   }
 

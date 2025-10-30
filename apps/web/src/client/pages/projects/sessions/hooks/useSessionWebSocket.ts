@@ -7,7 +7,7 @@ import type { UnifiedContent } from "@repo/agent-cli-sdk";
 import {
   Channels,
   SessionEventTypes,
-  type SessionEvent
+  type SessionEvent,
 } from "@/shared/websocket";
 import { sessionKeys } from "./useAgentSessions";
 import { generateUUID } from "@/client/lib/utils";
@@ -53,42 +53,48 @@ export function useSessionWebSocket({
       switch (event.type) {
         case SessionEventTypes.STREAM_OUTPUT: {
           const { message } = event.data;
-          console.log("[useSessionWebSocket] stream_output received:", {
-            hasMessage: Boolean(message),
-            messageId: message?.id,
-            messageRole: message?.role,
-            contentType: Array.isArray(message?.content) ? 'array' : typeof message?.content,
-            contentLength: Array.isArray(message?.content) ? message.content.length : 0,
-            contentBlockTypes: Array.isArray(message?.content)
-              ? message.content.map(b => b.type)
-              : [],
-          });
 
           // SDK already provides clean UnifiedMessage
           if (message) {
             // Validate content before updating
             if (!Array.isArray(message.content)) {
-              console.error("[useSessionWebSocket] Message content is not an array:", message);
+              console.error(
+                "[useSessionWebSocket] Message content is not an array:",
+                message
+              );
               return;
             }
 
             // Check for empty content blocks
             const emptyTextBlocks = message.content.filter(
-              block => block.type === 'text' && (!block.text || block.text.trim() === '')
+              (block) =>
+                block.type === "text" &&
+                (!block.text || block.text.trim() === "")
             );
             if (emptyTextBlocks.length > 0) {
-              console.warn("[useSessionWebSocket] Message contains", emptyTextBlocks.length, "empty text blocks");
+              console.warn(
+                "[useSessionWebSocket] Message contains",
+                emptyTextBlocks.length,
+                "empty text blocks"
+              );
             }
 
             if (message.content.length === 0) {
-              console.warn("[useSessionWebSocket] Message has EMPTY content array");
+              console.warn(
+                "[useSessionWebSocket] Message has EMPTY content array"
+              );
             }
 
             useSessionStore
               .getState()
-              .updateStreamingMessage(message.id, message.content as UnifiedContent[]);
+              .updateStreamingMessage(
+                message.id,
+                message.content as UnifiedContent[]
+              );
           } else {
-            console.warn("[useSessionWebSocket] stream_output received without message");
+            console.warn(
+              "[useSessionWebSocket] stream_output received without message"
+            );
           }
           break;
         }
@@ -176,14 +182,19 @@ export function useSessionWebSocket({
         }
 
         case SessionEventTypes.SUBSCRIBE_SUCCESS: {
-          console.log("[useSessionWebSocket] Successfully subscribed to session channel");
+          console.log(
+            "[useSessionWebSocket] Successfully subscribed to session channel"
+          );
           break;
         }
 
         default: {
           // Exhaustive checking - TypeScript will error if we miss a case
           const _exhaustive: never = event;
-          console.warn("[useSessionWebSocket] Unknown event type:", _exhaustive);
+          console.warn(
+            "[useSessionWebSocket] Unknown event type:",
+            _exhaustive
+          );
         }
       }
     },
@@ -201,8 +212,8 @@ export function useSessionWebSocket({
     // Subscribe to session channel on backend
     if (isConnected) {
       sendWsMessage(channel, {
-        type: 'subscribe' as const,
-        data: { sessionId }
+        type: "subscribe" as const,
+        data: { sessionId },
       });
     }
 
@@ -233,7 +244,7 @@ export function useSessionWebSocket({
 
       // Send message event to session channel
       sendWsMessage(channel, {
-        type: 'send_message' as const,
+        type: "send_message" as const,
         data: {
           message,
           images,

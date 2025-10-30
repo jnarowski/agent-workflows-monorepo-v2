@@ -172,7 +172,7 @@ describe("AgentSessionService", () => {
 
       expect(metadata.messageCount).toBe(0);
       expect(metadata.totalTokens).toBe(0);
-      expect(metadata.firstMessagePreview).toBe("(No messages)");
+      expect(metadata.firstMessagePreview).toBe("Untitled Session");
     });
 
     it("should handle file read errors", async () => {
@@ -332,10 +332,11 @@ describe("AgentSessionService", () => {
 
       const result = await syncProjectSessions(testProjectId, testUserId);
 
+      // Existing sessions are skipped to preserve created_at timestamp
       expect(result.synced).toBe(1);
       expect(result.created).toBe(0);
-      expect(result.updated).toBe(1);
-      expect(vi.mocked(prisma.agentSession.update)).toHaveBeenCalledTimes(1);
+      expect(result.updated).toBe(0);
+      expect(vi.mocked(prisma.agentSession.update)).toHaveBeenCalledTimes(0);
     });
 
     it("should delete orphaned sessions (sessions in DB but no JSONL file)", async () => {
@@ -380,7 +381,9 @@ describe("AgentSessionService", () => {
       });
 
       // Mock DB has 2 sessions, but only 1 JSONL file exists
-      vi.mocked(prisma.agentSession.findMany).mockResolvedValue([
+      // The orphaned session is old (>5 seconds) and in idle state
+      const oldDate = new Date(Date.now() - 10000); // 10 seconds ago
+      const sessions = [
         {
           id: "session-1",
           projectId: testProjectId,
@@ -388,6 +391,10 @@ describe("AgentSessionService", () => {
           name: null,
           agent: "claude" as const,
           metadata: {},
+          state: "idle" as const,
+          error_message: null,
+          cli_session_id: null,
+          session_path: null,
           created_at: new Date(),
           updated_at: new Date(),
         },
@@ -398,10 +405,19 @@ describe("AgentSessionService", () => {
           name: null,
           agent: "claude" as const,
           metadata: {},
-          created_at: new Date(),
-          updated_at: new Date(),
+          state: "idle" as const,
+          error_message: null,
+          cli_session_id: null,
+          session_path: null,
+          created_at: oldDate,
+          updated_at: oldDate,
         },
-      ]);
+      ];
+
+      // Mock both findMany calls - one for Claude sessions, one for all session IDs
+      vi.mocked(prisma.agentSession.findMany)
+        .mockResolvedValueOnce(sessions) // First call: Claude sessions
+        .mockResolvedValueOnce(sessions.map(s => ({ id: s.id }))); // Second call: all IDs
 
       vi.mocked(prisma.agentSession.deleteMany).mockResolvedValue({
         count: 1,

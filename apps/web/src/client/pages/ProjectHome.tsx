@@ -17,6 +17,12 @@ import {
 } from "@/client/components/ui/card";
 import { Button } from "@/client/components/ui/button";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/client/components/ui/tooltip";
+import {
   FolderOpen,
   Calendar,
   MessageSquare,
@@ -26,6 +32,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
+import { truncatePath } from "@/client/lib/utils";
 
 export default function ProjectHome() {
   const { id } = useParams<{ id: string }>();
@@ -61,37 +68,46 @@ export default function ProjectHome() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
       <div>
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="text-3xl font-bold">{project.name}</h1>
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="text-2xl md:text-3xl font-bold leading-tight break-words">{project.name}</h1>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setEditDialogOpen(true)}
-            className="shrink-0"
+            className="shrink-0 -mt-1"
           >
-            <Pencil className="h-4 w-4 mr-2" />
-            Edit
+            <Pencil className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Edit</span>
           </Button>
         </div>
       </div>
 
       <Card>
-        <CardContent>
+        <CardContent className="pt-4 md:pt-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium">
+              <div className="flex items-center gap-2 text-xs md:text-sm font-medium">
                 <FolderOpen className="h-4 w-4 text-muted-foreground" />
                 Project Path
               </div>
-              <div className="text-xs text-muted-foreground break-all font-mono">
-                {project.path}
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="text-xs text-muted-foreground font-mono cursor-help break-all">
+                      {truncatePath(project.path, typeof window !== 'undefined' && window.innerWidth < 768 ? 30 : 60)}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-md break-all">
+                    <p className="font-mono text-xs">{project.path}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium">
+              <div className="flex items-center gap-2 text-xs md:text-sm font-medium">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 Created
               </div>
@@ -109,30 +125,34 @@ export default function ProjectHome() {
 
       {/* Recent Sessions Section */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              Recent Sessions
-            </CardTitle>
-            <CardDescription className="mt-1">
-              Your most recent chat sessions
-            </CardDescription>
+        <CardHeader className="flex flex-col gap-4 pb-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                <MessageSquare className="h-5 w-5 shrink-0" />
+                <span className="truncate">Recent Sessions</span>
+              </CardTitle>
+              <CardDescription className="mt-1.5 text-xs md:text-sm">
+                Your most recent chat sessions
+              </CardDescription>
+            </div>
           </div>
           <NewSessionButton
             projectId={id!}
             variant="outline"
             size="sm"
-            className="h-8 text-xs"
+            className="w-full text-sm"
           />
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           {!sessions || sessions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No sessions yet. Start a new chat to see it here.
-            </p>
+            <div className="py-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                No sessions yet. Start a new chat to see it here.
+              </p>
+            </div>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-0 -mx-2">
               {sessions
                 .sort(
                   (a, b) =>
@@ -155,14 +175,23 @@ export default function ProjectHome() {
       {/* README Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Project README
+          <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+            <FileText className="h-5 w-5 shrink-0" />
+            <span className="truncate">Project README</span>
           </CardTitle>
           {readme?.path && project && (
-            <CardDescription className="font-mono text-xs">
-              {project.path}/{readme.path}
-            </CardDescription>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <CardDescription className="font-mono text-xs cursor-help break-all">
+                    {truncatePath(`${project.path}/${readme.path}`, typeof window !== 'undefined' && window.innerWidth < 768 ? 35 : 70)}
+                  </CardDescription>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-md break-all">
+                  <p className="font-mono text-xs">{project.path}/{readme.path}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </CardHeader>
         <CardContent>
@@ -173,9 +202,11 @@ export default function ProjectHome() {
               <Skeleton className="h-4 w-5/6" />
             </div>
           ) : readmeError ? (
-            <p className="text-sm text-muted-foreground">
-              No README.md found in this project.
-            </p>
+            <div className="py-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                No README.md found in this project.
+              </p>
+            </div>
           ) : readme ? (
             <div className="prose prose-sm dark:prose-invert max-w-none">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>

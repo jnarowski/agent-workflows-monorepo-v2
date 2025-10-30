@@ -152,6 +152,7 @@ export async function syncProjectSessions(
 
   let synced = 0;
   let created = 0;
+  const updated = 0;
 
   try {
     // Check if directory exists
@@ -289,7 +290,7 @@ export async function syncProjectSessions(
     // If directory doesn't exist, no sessions to sync
   }
 
-  return { synced, created };
+  return { synced, created, updated };
 }
 
 /**

@@ -66,4 +66,5 @@ export interface SyncSessionsRequest {
 export interface SyncSessionsResponse {
   synced: number; // Number of sessions synced from filesystem
   created: number; // Number of new sessions created
+  updated: number; // Number of existing sessions updated
 }

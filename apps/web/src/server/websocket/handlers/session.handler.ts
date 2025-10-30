@@ -55,6 +55,18 @@ export async function handleSessionSendMessage(
   userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
+  console.log("========================================");
+  console.log("===== handleSessionSendMessage CALLED =====");
+  console.log("SessionId:", sessionId);
+  console.log("UserId:", userId);
+  console.log("Message:", data.message);
+  console.log("========================================");
+
+  fastify.log.info(
+    { sessionId, userId, message: data.message },
+    "[WebSocket] ===== handleSessionSendMessage ENTRY POINT ====="
+  );
+
   // Auto-subscribe socket to session channel
   const channel = Channels.session(sessionId);
   subscribe(channel, socket);
@@ -115,6 +127,11 @@ export async function handleSessionSendMessage(
   });
 
   // Execute agent command
+  fastify.log.info(
+    { sessionId, agent: session.agent, message: data.message },
+    "[WebSocket] About to execute agent command"
+  );
+
   const result = await executeAgentCommand({
     agent: session.agent as "claude" | "codex",
     prompt: data.message,
@@ -139,14 +156,34 @@ export async function handleSessionSendMessage(
     logger: fastify.log,
   });
 
+  fastify.log.info(
+    { sessionId, success: result.success },
+    "[WebSocket] Agent command execution completed"
+  );
+
   // Handle execution failure
   if (!result.success) {
+    console.log("===== EXECUTION FAILED - SKIPPING POST-PROCESSING =====");
+    fastify.log.warn(
+      { sessionId, error: result.error },
+      "[WebSocket] Execution failed, skipping post-processing"
+    );
     await handleExecutionFailure(socket, sessionId, result, fastify);
     await cleanupSessionImages(sessionId, fastify.log);
     return;
   }
 
+  console.log("===== EXECUTION SUCCEEDED - PROCEEDING TO POST-PROCESSING =====");
+  fastify.log.info(
+    { sessionId },
+    "[WebSocket] Execution succeeded, proceeding to post-processing"
+  );
+
   // Post-processing: Store CLI session ID, generate name, extract usage
+  fastify.log.info(
+    { sessionId, existingSessionName: session.name, hasName: !!session.name },
+    "[WebSocket] Starting post-processing tasks"
+  );
   await performPostProcessingTasks(
     sessionId,
     session.name,
@@ -237,10 +274,34 @@ export async function handleSessionEvent(
   userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
+  console.log("========================================");
+  console.log("===== handleSessionEvent CALLED =====");
+  console.log("Channel:", channel);
+  console.log("Type:", type);
+  console.log("UserId:", userId);
+  console.log("========================================");
+
+  fastify.log.info(
+    { channel, type, userId },
+    "[WebSocket] handleSessionEvent router entry"
+  );
+
   const parsed = parseChannel(channel);
   const sessionId = parsed?.id;
 
+  fastify.log.info(
+    { parsed, sessionId, resource: parsed?.resource },
+    "[WebSocket] Parsed channel"
+  );
+
   if (!sessionId || parsed?.resource !== "session") {
+    console.log("===== INVALID SESSION CHANNEL =====");
+    console.log("SessionId:", sessionId);
+    console.log("Resource:", parsed?.resource);
+    fastify.log.warn(
+      { sessionId, resource: parsed?.resource },
+      "[WebSocket] Invalid session channel"
+    );
     sendMessage(socket, Channels.global(), {
       type: GlobalEventTypes.ERROR,
       data: {
@@ -252,6 +313,11 @@ export async function handleSessionEvent(
 
   try {
     if (type === SessionEventTypes.SEND_MESSAGE) {
+      console.log("===== ROUTING TO handleSessionSendMessage =====");
+      fastify.log.info(
+        { sessionId, type },
+        "[WebSocket] Routing to handleSessionSendMessage"
+      );
       await handleSessionSendMessage(
         socket,
         sessionId,
@@ -435,12 +501,32 @@ async function performPostProcessingTasks(
   result: AgentExecuteResult,
   fastify: FastifyInstance
 ): Promise<void> {
+  fastify.log.info(
+    {
+      sessionId,
+      existingSessionName,
+      hasExistingName: !!existingSessionName,
+      willGenerateName: !existingSessionName,
+      userMessagePreview: userMessage.substring(0, 50),
+    },
+    "[WebSocket] performPostProcessingTasks called"
+  );
+
   // Store CLI session ID
   await storeCliSessionId(sessionId, result.sessionId, fastify.log);
 
   // Generate session name if needed
   if (!existingSessionName) {
+    fastify.log.info(
+      { sessionId },
+      "[WebSocket] No existing session name, will generate one"
+    );
     await generateAndStoreName(sessionId, userMessage, fastify.log);
+  } else {
+    fastify.log.info(
+      { sessionId, existingSessionName },
+      "[WebSocket] Session already has a name, skipping generation"
+    );
   }
 
   // Extract and log usage data
@@ -490,15 +576,40 @@ async function generateAndStoreName(
   userMessage: string,
   logger: FastifyBaseLogger
 ): Promise<void> {
+  logger.info(
+    { sessionId, userMessageLength: userMessage.length },
+    "[WebSocket] ===== ENTERED generateAndStoreName function ====="
+  );
+
   try {
     logger.info(
-      { sessionId, userPrompt: userMessage.substring(0, 100) },
-      "[WebSocket] Generating session name from first user message"
+      { sessionId, userPrompt: userMessage.substring(0, 100), fullPrompt: userMessage },
+      "[WebSocket] About to call generateSessionName"
     );
+
+    console.log("===== GENERATE SESSION NAME START =====");
+    console.log("SessionId:", sessionId);
+    console.log("User Message:", userMessage);
+    console.log("Message Length:", userMessage.length);
 
     const sessionName = await generateSessionName({
       userPrompt: userMessage,
     });
+
+    console.log("===== GENERATE SESSION NAME RESULT =====");
+    console.log("Generated Name:", sessionName);
+    console.log("Name Type:", typeof sessionName);
+    console.log("Name Length:", sessionName?.length);
+
+    logger.info(
+      { sessionId, sessionName, nameLength: sessionName?.length },
+      "[WebSocket] generateSessionName returned successfully"
+    );
+
+    logger.info(
+      { sessionId, sessionName },
+      "[WebSocket] About to update database with session name"
+    );
 
     await prisma.agentSession.update({
       where: { id: sessionId },
@@ -507,12 +618,25 @@ async function generateAndStoreName(
 
     logger.info(
       { sessionId, sessionName },
-      "[WebSocket] Session name generated successfully"
+      "[WebSocket] Database updated successfully with session name"
     );
+
+    console.log("===== SESSION NAME STORED IN DATABASE =====");
+    console.log("SessionId:", sessionId);
+    console.log("Final Name:", sessionName);
   } catch (err: unknown) {
     // Non-critical error - log and continue
-    logger.warn(
-      { err, sessionId },
+    console.error("===== ERROR IN generateAndStoreName =====");
+    console.error("Error:", err);
+    console.error("SessionId:", sessionId);
+
+    logger.error(
+      {
+        err,
+        sessionId,
+        errorMessage: err instanceof Error ? err.message : String(err),
+        errorStack: err instanceof Error ? err.stack : undefined
+      },
       "[WebSocket] Failed to generate session name (non-critical)"
     );
   }

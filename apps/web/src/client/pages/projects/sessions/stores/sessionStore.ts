@@ -185,7 +185,7 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
       : undefined;
 
     if (!Array.isArray(msg.content)) {
-      return { ...msg, isStreaming: false, _original };
+      return { ...msg, isStreaming: msg.isStreaming ?? false, _original };
     }
 
     const enrichedContent = msg.content
@@ -208,7 +208,7 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
     return {
       ...msg,
       content: enrichedContent,
-      isStreaming: false,
+      isStreaming: msg.isStreaming ?? false,
       _original
     } as UIMessage;
   });

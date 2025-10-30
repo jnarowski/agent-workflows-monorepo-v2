@@ -4,19 +4,18 @@
  */
 
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import type { UIMessage } from "@/shared/types/message.types";
 import { UserMessage } from './UserMessage';
 import { AssistantMessage } from './AssistantMessage';
 import { ChevronDown, ChevronRight, Copy, Check } from "lucide-react";
+import { useDebugMode } from "@/client/hooks/useDebugMode";
 
 interface MessageRendererProps {
   message: UIMessage;
 }
 
 export function MessageRenderer({ message }: MessageRendererProps) {
-  const [searchParams] = useSearchParams();
-  const debugMode = searchParams.get('debug') === 'true';
+  const debugMode = useDebugMode();
   const [isJsonExpanded, setIsJsonExpanded] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 

@@ -8,6 +8,7 @@ import {
   hasSubscribers,
   getSubscriberCount,
   getActiveChannels,
+  clearAllSubscriptions,
 } from "../subscriptions.js";
 
 /**
@@ -32,15 +33,10 @@ function mockWebSocket(options: {
 describe("SubscriptionManager", () => {
   // Clean up subscriptions between tests
   beforeEach(() => {
-    // Clear all subscriptions by unsubscribing test sockets
-    const testSockets = [
-      mockWebSocket(),
-      mockWebSocket(),
-      mockWebSocket(),
-    ];
-    for (const socket of testSockets) {
-      unsubscribeAll(socket);
-    }
+    // Clear all subscriptions
+    clearAllSubscriptions();
+    // Clear all mock function calls
+    vi.clearAllMocks();
   });
 
   describe("subscribe", () => {
@@ -161,10 +157,11 @@ describe("SubscriptionManager", () => {
       subscribe("session:123", socket1);
       subscribe("session:123", socket2);
 
-      broadcast("session:123", "test.event", { message: "hello" });
+      broadcast("session:123", { type: "test.event", data: { message: "hello" } });
 
       expect(socket1.send).toHaveBeenCalledWith(
         JSON.stringify({
+          channel: "session:123",
           type: "test.event",
           data: { message: "hello" },
         })
@@ -172,6 +169,7 @@ describe("SubscriptionManager", () => {
 
       expect(socket2.send).toHaveBeenCalledWith(
         JSON.stringify({
+          channel: "session:123",
           type: "test.event",
           data: { message: "hello" },
         })
@@ -180,7 +178,7 @@ describe("SubscriptionManager", () => {
 
     test("broadcast to channel with no subscribers is safe", () => {
       expect(() => {
-        broadcast("session:999", "test.event", {});
+        broadcast("session:999", { type: "test.event", data: {} });
       }).not.toThrow();
     });
 
@@ -191,7 +189,7 @@ describe("SubscriptionManager", () => {
       subscribe("session:123", liveSocket);
       subscribe("session:123", deadSocket);
 
-      broadcast("session:123", "test.event", { data: "hello" });
+      broadcast("session:123", { type: "test.event", data: { data: "hello" } });
 
       expect(liveSocket.send).toHaveBeenCalled();
       expect(deadSocket.send).not.toHaveBeenCalled();
@@ -212,7 +210,7 @@ describe("SubscriptionManager", () => {
       subscribe("session:123", socket1);
       subscribe("session:123", socket2);
 
-      broadcast("session:123", "test.event", {});
+      broadcast("session:123", { type: "test.event", data: {} });
 
       // socket1 should succeed, socket2 should be removed
       expect(socket1.send).toHaveBeenCalled();

@@ -38,6 +38,11 @@ export default defineConfig({
     // Use different test projects for client and server tests
     projects: [
       {
+        plugins: [
+          react({
+            jsxRuntime: 'automatic',
+          }),
+        ],
         test: {
           name: "client",
           environment: "happy-dom",

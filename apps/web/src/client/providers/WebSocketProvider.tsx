@@ -1,18 +1,24 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { toast } from 'sonner';
-import { WebSocketEventBus } from '@/client/lib/WebSocketEventBus';
-import { wsMetrics } from '@/client/lib/WebSocketMetrics';
-import { calculateReconnectDelay, DEFAULT_MAX_RECONNECT_DELAY } from '@/client/lib/reconnectionStrategy';
-import { ReadyState } from '@/shared/websocket';
-import { useAuthStore } from '@/client/stores/authStore';
-import { WebSocketContext, type WebSocketContextValue } from '@/client/contexts/WebSocketContext';
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { toast } from "sonner";
+import { WebSocketEventBus } from "@/client/lib/WebSocketEventBus";
+import { wsMetrics } from "@/client/lib/WebSocketMetrics";
+import {
+  calculateReconnectDelay,
+  DEFAULT_MAX_RECONNECT_DELAY,
+} from "@/client/lib/reconnectionStrategy";
+import { ReadyState } from "@/shared/websocket";
+import { useAuthStore } from "@/client/stores/authStore";
+import {
+  WebSocketContext,
+  type WebSocketContextValue,
+} from "@/client/contexts/WebSocketContext";
 import {
   Channels,
   GlobalEventTypes,
   isWebSocketMessage,
   type ChannelEvent,
   type GlobalEvent,
-} from '@/shared/websocket';
+} from "@/shared/websocket";
 
 /**
  * WebSocketProvider Props
@@ -58,7 +64,9 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
   const eventBusRef = useRef(new WebSocketEventBus());
 
   // Message queue for messages sent before connection is ready
-  const messageQueueRef = useRef<Array<{ channel: string; event: ChannelEvent }>>([]);
+  const messageQueueRef = useRef<
+    Array<{ channel: string; event: ChannelEvent }>
+  >([]);
 
   // Connection state
   const [readyState, setReadyState] = useState<ReadyState>(ReadyState.CLOSED);
@@ -97,7 +105,9 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 
         // Set timeout for pong response
         heartbeatTimeoutRef.current = setTimeout(() => {
-          console.warn('[WebSocket] Heartbeat timeout - no pong received, reconnecting');
+          console.warn(
+            "[WebSocket] Heartbeat timeout - no pong received, reconnecting"
+          );
           // Reconnect if no pong received
           if (socketRef.current) {
             socketRef.current.close();
@@ -128,9 +138,9 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     // Don't connect if no token (user not logged in)
     if (!token) {
       if (import.meta.env.DEV) {
-        console.log('[WebSocket] No auth token, skipping connection');
+        console.log("[WebSocket] No auth token, skipping connection");
       }
-      
+
       return;
     }
 
@@ -142,22 +152,32 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     }
 
     try {
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       // In development, Vite runs on :5173 but backend is on :3456
       const isDev = import.meta.env.DEV;
 
       // Allow override via VITE_WS_HOST for VPN/remote access
       // Examples: "10.0.1.100:3456", "vpn.example.com:3456"
-      const wsHost = import.meta.env.VITE_WS_HOST ||
-                     (isDev ? 'localhost:3456' : window.location.host);
+      const wsHost =
+        import.meta.env.VITE_WS_HOST ||
+        (isDev ? "localhost:3456" : window.location.host);
       const wsUrl = `${wsProtocol}//${wsHost}/ws?token=${token}`;
 
       // Increment connection attempts
       setConnectionAttempts((prev) => prev + 1);
 
       if (import.meta.env.DEV) {
-        console.log('[WebSocket] Environment:', { isDev, wsHost, protocol: wsProtocol, override: import.meta.env.VITE_WS_HOST });
-        console.log('[WebSocket] Connecting to', wsUrl.replace(token, '***'), `(attempt ${connectionAttempts + 1})`);
+        console.log("[WebSocket] Environment:", {
+          isDev,
+          wsHost,
+          protocol: wsProtocol,
+          override: import.meta.env.VITE_WS_HOST,
+        });
+        console.log(
+          "[WebSocket] Connecting to",
+          wsUrl.replace(token, "***"),
+          `(attempt ${connectionAttempts + 1})`
+        );
       }
 
       const socket = new WebSocket(wsUrl);
@@ -168,7 +188,9 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       // Set connection timeout (10 seconds)
       connectionTimeoutRef.current = setTimeout(() => {
         if (socket.readyState === WebSocket.CONNECTING) {
-          console.warn('[WebSocket] Connection timeout - still in CONNECTING state after 10s');
+          console.warn(
+            "[WebSocket] Connection timeout - still in CONNECTING state after 10s"
+          );
           socket.close();
         }
       }, 10000);
@@ -182,8 +204,10 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
         }
 
         if (import.meta.env.DEV) {
-          console.log('[WebSocket] ✓ Socket opened (readyState = OPEN)');
-          console.log('[WebSocket] ⏳ Waiting for global.connected message from server...');
+          console.log("[WebSocket] ✓ Socket opened (readyState = OPEN)");
+          console.log(
+            "[WebSocket] ⏳ Waiting for global.connected message from server..."
+          );
         }
         setReadyState(ReadyState.OPEN);
         // Note: We wait for 'global.connected' message before setting isReady
@@ -196,7 +220,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 
           // Validate message format
           if (!isWebSocketMessage(rawMessage)) {
-            console.warn('[WebSocket] Invalid message format:', rawMessage);
+            console.warn("[WebSocket] Invalid message format:", rawMessage);
             return;
           }
 
@@ -206,18 +230,23 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
           wsMetrics.trackReceived();
 
           if (import.meta.env.DEV) {
-            console.log('[WebSocket] Received:', { channel, type });
-            if (type === 'stream_output') {
-              console.log('[WebSocket] Stream output data:', data);
+            if (type === "stream_output") {
+              console.log("[WebSocket] Stream output data:", data);
             }
           }
 
           // Handle global.connected event (backward compatibility)
-          if (type === 'connected' && channel === 'global') {
+          if (type === "connected" && channel === "global") {
             if (import.meta.env.DEV) {
-              console.log('[WebSocket] ✓ Received connected from server');
-              console.log('[WebSocket] ✓ Connection fully established and ready');
-              console.log('[WebSocket] 📤 Flushing message queue:', messageQueueRef.current.length, 'messages');
+              console.log("[WebSocket] ✓ Received connected from server");
+              console.log(
+                "[WebSocket] ✓ Connection fully established and ready"
+              );
+              console.log(
+                "[WebSocket] 📤 Flushing message queue:",
+                messageQueueRef.current.length,
+                "messages"
+              );
             }
             setIsReady(true);
             reconnectAttemptsRef.current = 0; // Reset reconnect attempts on successful connection
@@ -233,13 +262,16 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
               socket.send(msg);
               wsMetrics.trackSent();
               if (import.meta.env.DEV) {
-                console.log('[WebSocket] Sent queued message:', { channel: qChannel, type: qEvent.type });
+                console.log("[WebSocket] Sent queued message:", {
+                  channel: qChannel,
+                  type: qEvent.type,
+                });
               }
             });
           }
 
           // Handle pong response
-          if (type === GlobalEventTypes.PONG && channel === 'global') {
+          if (type === GlobalEventTypes.PONG && channel === "global") {
             // Clear pong timeout
             if (heartbeatTimeoutRef.current) {
               clearTimeout(heartbeatTimeoutRef.current);
@@ -251,24 +283,24 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
             wsMetrics.trackLatency(latency);
 
             if (import.meta.env.DEV) {
-              console.log('[WebSocket] Pong received, latency:', latency, 'ms');
+              console.log("[WebSocket] Pong received, latency:", latency, "ms");
             }
           }
 
           // Emit event to EventBus (channel-based)
           eventBusRef.current.emit(channel, { type, data });
         } catch (error) {
-          console.error('[WebSocket] Failed to parse message:', error);
+          console.error("[WebSocket] Failed to parse message:", error);
         }
       };
 
       // Handle errors
       socket.onerror = (error) => {
-        console.error('[WebSocket] Error:', error);
+        console.error("[WebSocket] Error:", error);
         eventBusRef.current.emit(Channels.global(), {
           type: GlobalEventTypes.ERROR,
           data: {
-            error: 'WebSocket error occurred',
+            error: "WebSocket error occurred",
             timestamp: Date.now(),
           },
         });
@@ -280,7 +312,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
         stopHeartbeat();
 
         if (import.meta.env.DEV) {
-          console.log('[WebSocket] Connection closed', {
+          console.log("[WebSocket] Connection closed", {
             code: event.code,
             reason: event.reason,
             wasClean: event.wasClean,
@@ -296,18 +328,18 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
         // Handle specific close codes
         if (event.code === 1008) {
           // 1008 = Policy Violation (typically auth failure)
-          console.error('[WebSocket] Authentication failed');
+          console.error("[WebSocket] Authentication failed");
           eventBusRef.current.emit(Channels.global(), {
             type: GlobalEventTypes.ERROR,
             data: {
-              error: 'Authentication failed',
-              message: 'Invalid or expired token',
+              error: "Authentication failed",
+              message: "Invalid or expired token",
               timestamp: Date.now(),
             },
           });
 
-          toast.error('Authentication failed', {
-            description: 'Invalid or expired token. Please log in again.',
+          toast.error("Authentication failed", {
+            description: "Invalid or expired token. Please log in again.",
           });
           return; // Don't attempt to reconnect
         }
@@ -331,16 +363,22 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
             wsMetrics.trackReconnection();
 
             if (import.meta.env.DEV) {
-              console.log('[WebSocket] Executing reconnect attempt', reconnectAttemptsRef.current);
+              console.log(
+                "[WebSocket] Executing reconnect attempt",
+                reconnectAttemptsRef.current
+              );
             }
             connect();
           }, delay);
-        } else if (!intentionalCloseRef.current && reconnectAttemptsRef.current >= 5) {
-          console.error('[WebSocket] Max reconnection attempts reached');
+        } else if (
+          !intentionalCloseRef.current &&
+          reconnectAttemptsRef.current >= 5
+        ) {
+          console.error("[WebSocket] Max reconnection attempts reached");
 
           const errorData = {
-            error: 'Connection lost',
-            message: 'Maximum reconnection attempts reached',
+            error: "Connection lost",
+            message: "Maximum reconnection attempts reached",
             timestamp: Date.now(),
           };
 
@@ -349,10 +387,11 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
             data: errorData,
           });
 
-          toast.error('Connection lost', {
-            description: 'Maximum reconnection attempts reached. Click to retry.',
+          toast.error("Connection lost", {
+            description:
+              "Maximum reconnection attempts reached. Click to retry.",
             action: {
-              label: 'Retry',
+              label: "Retry",
               onClick: () => reconnect(),
             },
           });
@@ -361,14 +400,14 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
           intentionalCloseRef.current = false;
         } else if (intentionalCloseRef.current) {
           if (import.meta.env.DEV) {
-            console.log('[WebSocket] Intentional close, not reconnecting');
+            console.log("[WebSocket] Intentional close, not reconnecting");
           }
           // Reset intentional close flag for next connection attempt
           intentionalCloseRef.current = false;
         }
       };
     } catch (error) {
-      console.error('[WebSocket] Failed to create connection:', error);
+      console.error("[WebSocket] Failed to create connection:", error);
       setReadyState(ReadyState.CLOSED);
     }
   };
@@ -380,14 +419,17 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
    */
   const sendMessage = (channel: string, event: ChannelEvent) => {
     if (!socketRef.current) {
-      console.warn('[WebSocket] Cannot send message: no connection');
+      console.warn("[WebSocket] Cannot send message: no connection");
       return;
     }
 
     // Queue message if not ready yet
     if (!isReady) {
       if (import.meta.env.DEV) {
-        console.log('[WebSocket] Queueing message (not ready yet):', { channel, type: event.type });
+        console.log("[WebSocket] Queueing message (not ready yet):", {
+          channel,
+          type: event.type,
+        });
       }
 
       // Check queue size limit
@@ -411,10 +453,10 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       wsMetrics.trackSent();
 
       if (import.meta.env.DEV) {
-        console.log('[WebSocket] Sent:', { channel, type: event.type });
+        console.log("[WebSocket] Sent:", { channel, type: event.type });
       }
     } else {
-      console.warn('[WebSocket] Cannot send message: connection not open');
+      console.warn("[WebSocket] Cannot send message: connection not open");
     }
   };
 
@@ -423,7 +465,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
    */
   const reconnect = () => {
     if (import.meta.env.DEV) {
-      console.log('[WebSocket] Manual reconnect triggered');
+      console.log("[WebSocket] Manual reconnect triggered");
     }
     reconnectAttemptsRef.current = 0;
 
@@ -448,16 +490,19 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 
         // Only show retry button if we haven't exhausted reconnection attempts
         if (reconnectAttemptsRef.current < 5) {
-          toast.error('WebSocket Error', {
-            description: error || 'An error occurred with the WebSocket connection',
+          toast.error("WebSocket Error", {
+            description:
+              error || "An error occurred with the WebSocket connection",
             action: {
-              label: 'Retry',
+              label: "Retry",
               onClick: () => reconnect(),
             },
           });
         } else {
-          toast.error(error || 'WebSocket Error', {
-            description: event.data.message || 'An error occurred with the WebSocket connection',
+          toast.error(error || "WebSocket Error", {
+            description:
+              event.data.message ||
+              "An error occurred with the WebSocket connection",
           });
         }
       }
@@ -482,7 +527,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 
     return () => {
       if (import.meta.env.DEV) {
-        console.log('[WebSocket] Provider unmounting, closing connection');
+        console.log("[WebSocket] Provider unmounting, closing connection");
       }
       intentionalCloseRef.current = true;
 
