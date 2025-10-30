@@ -62,3 +62,28 @@ export interface ActiveSessionData {
   userId: string;
   tempImageDir?: string;
 }
+
+/**
+ * Payload for subscribe messages
+ * Clients send this to subscribe to one or more channels
+ */
+export interface SubscribeMessageData {
+  channels: string[]; // Array of channel IDs (e.g., ["session:123", "project:456"])
+}
+
+/**
+ * Payload for unsubscribe messages
+ * Clients send this to unsubscribe from one or more channels
+ */
+export interface UnsubscribeMessageData {
+  channels: string[]; // Array of channel IDs to unsubscribe from
+}
+
+/**
+ * Payload for subscription error responses
+ * Sent when a subscription request fails (e.g., permission denied)
+ */
+export interface SubscriptionErrorData {
+  channelId: string; // Channel that was denied
+  reason: string; // Human-readable error message
+}

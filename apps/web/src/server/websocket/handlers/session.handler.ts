@@ -12,6 +12,8 @@ import { activeSessions } from "../utils/active-sessions.js";
 import { validateSessionOwnership } from "../services/session-validator.js";
 import { extractUsageFromEvents } from "../services/usage-extractor.js";
 import { executeAgentCommand, type AgentExecuteResult } from "../services/agent-executor.js";
+import { sessionChannel } from "../utils/channels.js";
+import { broadcast, subscribe } from "../utils/subscriptions.js";
 
 // ============================================================================
 // Types
@@ -46,6 +48,14 @@ export async function handleSessionSendMessage(
   userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
+  // Auto-subscribe socket to session channel
+  const channel = sessionChannel(sessionId);
+  subscribe(channel, socket);
+  fastify.log.debug(
+    { sessionId, channel },
+    "[WebSocket] Auto-subscribed to session channel"
+  );
+
   // Verify user owns session
   const session = await validateSessionOwnership(sessionId, userId);
   const projectPath = session.project.path;
@@ -65,7 +75,7 @@ export async function handleSessionSendMessage(
 
   // Validate agent is supported
   if (!isAgentSupported(session.agent)) {
-    sendMessage(socket, `session.${sessionId}.error`, {
+    broadcast(sessionChannel(sessionId), `session.${sessionId}.error`, {
       error: `Agent type '${session.agent}' is not yet implemented`,
       code: "UNSUPPORTED_AGENT",
     });
@@ -108,7 +118,7 @@ export async function handleSessionSendMessage(
         : undefined,
     onEvent: ({ message }) => {
       if (message && typeof message === "object" && message !== null) {
-        sendMessage(socket, `session.${sessionId}.stream_output`, {
+        broadcast(sessionChannel(sessionId), `session.${sessionId}.stream_output`, {
           message,
         });
       }
@@ -143,7 +153,7 @@ export async function handleSessionSendMessage(
 
   // Cleanup and complete
   await cleanupSessionImages(sessionId, fastify.log);
-  sendMessage(socket, `session.${sessionId}.message_complete`, {});
+  broadcast(sessionChannel(sessionId), `session.${sessionId}.message_complete`, {});
 }
 
 /**
@@ -153,17 +163,43 @@ export async function handleSessionSendMessage(
  * Currently returns an error indicating the feature is not yet implemented.
  */
 export async function handleSessionCancel(
-  socket: WebSocket,
+  _socket: WebSocket,
   sessionId: string,
   _data: unknown,
   _userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
   fastify.log.info({ sessionId }, "[WebSocket] Session cancel requested");
-  sendMessage(socket, `session.${sessionId}.error`, {
+  broadcast(sessionChannel(sessionId), `session.${sessionId}.error`, {
     error: "Cancel functionality not implemented",
     message: "Session cancellation is not yet implemented",
   });
+}
+
+/**
+ * Handle session subscribe event
+ *
+ * Subscribes the WebSocket to the session's broadcast channel, enabling
+ * the client to receive real-time updates for this session.
+ * This is used for page reloads and passive session viewing.
+ */
+export async function handleSessionSubscribe(
+  socket: WebSocket,
+  sessionId: string,
+  userId: string,
+  fastify: FastifyInstance
+): Promise<void> {
+  // Validate session ownership
+  await validateSessionOwnership(sessionId, userId);
+
+  // Subscribe socket to session channel
+  const channel = sessionChannel(sessionId);
+  subscribe(channel, socket);
+
+  fastify.log.info(
+    { sessionId, channel },
+    "[WebSocket] Client subscribed to session channel"
+  );
 }
 
 /**
@@ -199,9 +235,11 @@ export async function handleSessionEvent(
       );
     } else if (type.endsWith(".cancel")) {
       await handleSessionCancel(socket, sessionId, data, userId, fastify);
+    } else if (type.endsWith(".subscribe")) {
+      await handleSessionSubscribe(socket, sessionId, userId, fastify);
     } else {
       // Unknown session action
-      sendMessage(socket, `session.${sessionId}.error`, {
+      broadcast(sessionChannel(sessionId), `session.${sessionId}.error`, {
         error: "Unknown session action",
         message: `Unknown action in event type: ${type}`,
       });
@@ -213,7 +251,7 @@ export async function handleSessionEvent(
     const errorStack = err instanceof Error ? err.stack : undefined;
     const errorName = err instanceof Error ? err.name : undefined;
 
-    sendMessage(socket, `session.${sessionId}.error`, {
+    broadcast(sessionChannel(sessionId), `session.${sessionId}.error`, {
       error: errorMessage,
       message: errorMessage,
       stack: errorStack,
@@ -324,7 +362,7 @@ function parseExecutionConfig(
  * @private
  */
 async function handleExecutionFailure(
-  socket: WebSocket,
+  _socket: WebSocket,
   sessionId: string,
   result: AgentExecuteResult,
   fastify: FastifyInstance
@@ -345,7 +383,7 @@ async function handleExecutionFailure(
     },
   });
 
-  sendMessage(socket, `session.${sessionId}.error`, {
+  broadcast(sessionChannel(sessionId), `session.${sessionId}.error`, {
     error: errorMessage,
     message: errorMessage,
     exitCode: result.exitCode,

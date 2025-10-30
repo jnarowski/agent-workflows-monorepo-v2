@@ -66,6 +66,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 
     // Close existing connection if any
     if (socketRef.current) {
+      intentionalCloseRef.current = true;
       socketRef.current.close();
       socketRef.current = null;
     }
@@ -215,14 +216,15 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
             error: 'Connection lost',
             message: 'Maximum reconnection attempts reached',
           });
+          // Reset intentional close flag after all reconnection attempts exhausted
+          intentionalCloseRef.current = false;
         } else if (intentionalCloseRef.current) {
           if (import.meta.env.DEV) {
             console.log('[WebSocket] Intentional close, not reconnecting');
           }
+          // Reset intentional close flag for next connection attempt
+          intentionalCloseRef.current = false;
         }
-
-        // Reset intentional close flag
-        intentionalCloseRef.current = false;
       };
     } catch (error) {
       console.error('[WebSocket] Failed to create connection:', error);

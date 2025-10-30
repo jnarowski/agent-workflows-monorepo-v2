@@ -186,6 +186,11 @@ export function useSessionWebSocket({
   useEffect(() => {
     if (!sessionId) return;
 
+    // Subscribe to session channel on backend
+    if (isConnected) {
+      sendWsMessage(`session.${sessionId}.subscribe`, {});
+    }
+
     // Subscribe to session-specific events
     const streamEvent = `session.${sessionId}.stream_output`;
     const completeEvent = `session.${sessionId}.message_complete`;
@@ -203,7 +208,9 @@ export function useSessionWebSocket({
     };
   }, [
     sessionId,
+    isConnected,
     eventBus,
+    sendWsMessage,
     handleStreamOutput,
     handleMessageComplete,
     handleError,

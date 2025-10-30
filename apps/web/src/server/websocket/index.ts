@@ -8,6 +8,7 @@ import { reconnectionManager } from "./utils/reconnection.js";
 import { handleSessionEvent } from "./handlers/session.handler.js";
 import { handleShellEvent } from "./handlers/shell.handler.js";
 import { handleGlobalEvent } from "./handlers/global.handler.js";
+import { unsubscribeAll } from "./utils/subscriptions.js";
 
 /**
  * Register unified WebSocket endpoint
@@ -127,6 +128,10 @@ export async function registerWebSocket(
           fastify.log.info({ userId }, "[WebSocket] Client disconnected");
           wsMetrics.recordDisconnection();
 
+          // Unsubscribe from all channels
+          unsubscribeAll(socket);
+          fastify.log.debug({ userId }, "[WebSocket] Unsubscribed from all channels");
+
           // Schedule cleanup with 30-second grace period for reconnection
           for (const [sessionId, sessionData] of activeSessions.entries()) {
             if (sessionData.userId === userId) {
@@ -150,6 +155,10 @@ export async function registerWebSocket(
         socket.on("error", (err: Error) => {
           fastify.log.error({ err, userId }, "[WebSocket] Socket error");
           wsMetrics.recordError();
+
+          // Unsubscribe from all channels
+          unsubscribeAll(socket);
+          fastify.log.debug({ userId }, "[WebSocket] Unsubscribed from all channels on error");
 
           // Clean up immediately on error (no grace period)
           for (const [sessionId, sessionData] of activeSessions.entries()) {
