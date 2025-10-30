@@ -24,6 +24,11 @@ export interface CreateSessionRequest {
 }
 
 /**
+ * Session state enum
+ */
+export type SessionState = 'idle' | 'working' | 'error';
+
+/**
  * Session response from API
  */
 export interface SessionResponse {
@@ -35,6 +40,8 @@ export interface SessionResponse {
   cli_session_id?: string; // Session ID from CLI tool (Claude/Codex) - needed for loading/resuming sessions
   session_path?: string; // Full absolute path to session JSONL file (optional for legacy sessions)
   metadata: AgentSessionMetadata;
+  state: SessionState; // Current execution state
+  error_message?: string; // Error details when state is 'error'
   created_at: Date;
   updated_at: Date;
 }

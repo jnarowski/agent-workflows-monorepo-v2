@@ -26,6 +26,8 @@ function transformSession(prismaSession: any): SessionResponse {
     cli_session_id: prismaSession.cli_session_id,
     session_path: prismaSession.session_path,
     metadata: prismaSession.metadata,
+    state: prismaSession.state as 'idle' | 'working' | 'error',
+    error_message: prismaSession.error_message ?? undefined,
     created_at: prismaSession.created_at,
     updated_at: prismaSession.updated_at,
   };
@@ -103,6 +105,8 @@ export async function getAllProjects(options?: {
             cli_session_id: true,
             session_path: true,
             metadata: true,
+            state: true,
+            error_message: true,
             created_at: true,
             updated_at: true,
           },
@@ -120,6 +124,10 @@ export async function getAllProjects(options?: {
   );
 
   if (includeSessions) {
+    // Debug: Log first session to verify state and error_message are included
+    if (projects.length > 0 && projects[0].sessions && projects[0].sessions.length > 0) {
+      console.log('[DEBUG] First session from Prisma:', JSON.stringify(projects[0].sessions[0], null, 2));
+    }
     return projectsWithBranches.map(({ project, currentBranch }) =>
       transformProjectWithSessions(project, currentBranch)
     );

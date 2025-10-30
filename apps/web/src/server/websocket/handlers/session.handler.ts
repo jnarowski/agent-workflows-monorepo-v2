@@ -84,6 +84,15 @@ export async function handleSessionSendMessage(
     "[WebSocket] Executing with session ID"
   );
 
+  // Set session state to working
+  await prisma.agentSession.update({
+    where: { id: sessionId },
+    data: {
+      state: 'working',
+      error_message: null, // Clear any previous error
+    },
+  });
+
   // Execute agent command
   const result = await executeAgentCommand({
     agent: session.agent as "claude" | "codex",
@@ -122,6 +131,15 @@ export async function handleSessionSendMessage(
     result,
     fastify
   );
+
+  // Set session state to idle (successful completion)
+  await prisma.agentSession.update({
+    where: { id: sessionId },
+    data: {
+      state: 'idle',
+      error_message: null,
+    },
+  });
 
   // Cleanup and complete
   await cleanupSessionImages(sessionId, fastify.log);
@@ -317,6 +335,15 @@ async function handleExecutionFailure(
     { sessionId, exitCode: result.exitCode, error: errorMessage },
     "[WebSocket] Agent CLI SDK command failed"
   );
+
+  // Set session state to error
+  await prisma.agentSession.update({
+    where: { id: sessionId },
+    data: {
+      state: 'error',
+      error_message: errorMessage,
+    },
+  });
 
   sendMessage(socket, `session.${sessionId}.error`, {
     error: errorMessage,
