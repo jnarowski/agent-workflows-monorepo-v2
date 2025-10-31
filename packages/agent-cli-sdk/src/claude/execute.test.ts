@@ -44,11 +44,12 @@ function mockSpawnWithOutput(output: string, result?: Partial<SpawnResult>) {
       options.onStderr(result.stderr);
     }
 
-    const finalResult = {
+    const finalResult: SpawnResult = {
       stdout: output,
       stderr: '',
       exitCode: 0,
       duration: 1000,
+      process: {} as any, // Mock process object
       ...result,
     };
 
@@ -618,7 +619,7 @@ describe('execute', () => {
 
     vi.spyOn(spawnModule, 'spawnProcess').mockImplementation(async (_command, options) => {
       options.onError?.(testError);
-      return { stdout: '', stderr: '', exitCode: 1, duration: 0 };
+      return { stdout: '', stderr: '', exitCode: 1, duration: 0, process: {} as any };
     });
 
     const onError = vi.fn();

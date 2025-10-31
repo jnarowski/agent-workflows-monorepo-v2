@@ -192,6 +192,7 @@ export { extractTextContent } from './types/unified';
 
 // Re-export utilities
 export { extractJSON } from './utils/extractJson';
+export { killProcess, type KillProcessOptions, type KillProcessResult } from './utils/kill';
 export { detectCli as detectClaudeCli } from './claude/detectCli';
 export { detectCli as detectCodexCli } from './codex/detectCli';
 export { detectCli as detectGeminiCli } from './gemini/detectCli';

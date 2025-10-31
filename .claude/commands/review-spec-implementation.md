@@ -1,6 +1,6 @@
 ---
 description: Review implementation against spec and document findings for fixes
-argument-hint: [specFilePath, format]
+argument-hint: [specNumberOrNameOrPath, format]
 ---
 
 # Review Spec Implementation
@@ -9,7 +9,7 @@ Reviews a previous agent's implementation work by comparing the provided spec fi
 
 ## Variables
 
-- $specFilePath: $1 (required) - Path to the spec file to review against (e.g., `.agent/specs/todo/feature-name.md` or `.agent/specs/done/feature-name.md`)
+- $specNumberOrNameOrPath: $1 (required) - Either a spec number (e.g., `24`), feature name (e.g., `kill-claude-process`), or full path (e.g., `.agent/specs/todo/24-kill-claude-process-spec.md`)
 - $format: $2 (optional) - Output format: "text" or "json" (defaults to "text" if not provided)
 - $max-reviews: 3 - This is a constant (maximum review iterations allowed)
 

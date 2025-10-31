@@ -21,6 +21,7 @@ import {
   Channels,
 } from "@/shared/websocket";
 import { parseChannel } from "../utils/channels.js";
+import { killProcess } from "@repo/agent-cli-sdk";
 
 // ============================================================================
 // Types
@@ -236,24 +237,159 @@ export async function handleSessionSendMessage(
 /**
  * Handle session cancel event
  *
- * Placeholder for future session cancellation functionality.
- * Currently returns an error indicating the feature is not yet implemented.
+ * Kills the running agent process and returns session to idle state
  */
 export async function handleSessionCancel(
   _socket: WebSocket,
   sessionId: string,
   _data: unknown,
-  _userId: string,
+  userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
-  fastify.log.info({ sessionId }, "[WebSocket] Session cancel requested");
-  broadcast(Channels.session(sessionId), {
-    type: SessionEventTypes.ERROR,
-    data: {
-      error: "Cancel functionality not implemented",
-      sessionId,
-    },
-  });
+  fastify.log.info({ sessionId, userId }, "[WebSocket] Session cancel requested");
+
+  try {
+    // Validate session ownership
+    const session = await prisma.agentSession.findUnique({
+      where: { id: sessionId },
+    });
+
+    if (!session) {
+      broadcast(Channels.session(sessionId), {
+        type: SessionEventTypes.ERROR,
+        data: {
+          error: "Session not found",
+          sessionId,
+          code: "SESSION_NOT_FOUND",
+        },
+      });
+      return;
+    }
+
+    if (session.userId !== userId) {
+      broadcast(Channels.session(sessionId), {
+        type: SessionEventTypes.ERROR,
+        data: {
+          error: "Unauthorized: session does not belong to user",
+          sessionId,
+          code: "UNAUTHORIZED",
+        },
+      });
+      return;
+    }
+
+    // Check if session is in 'working' state
+    if (session.state !== "working") {
+      broadcast(Channels.session(sessionId), {
+        type: SessionEventTypes.ERROR,
+        data: {
+          error: `Cannot cancel session in '${session.state}' state`,
+          sessionId,
+          code: "INVALID_STATE",
+        },
+      });
+      return;
+    }
+
+    // Retrieve process from active sessions
+    const process = activeSessions.getProcess(sessionId);
+
+    if (!process) {
+      fastify.log.warn(
+        { sessionId },
+        "[WebSocket] No process found for session (may have already completed)"
+      );
+
+      // Update state to idle anyway (race condition handling)
+      await prisma.agentSession.update({
+        where: { id: sessionId },
+        data: {
+          state: "idle",
+          error_message: null,
+          updated_at: new Date(),
+        },
+      });
+
+      broadcast(Channels.session(sessionId), {
+        type: SessionEventTypes.SESSION_UPDATED,
+        data: {
+          sessionId,
+          state: "idle",
+          error_message: null,
+          updated_at: new Date().toISOString(),
+        },
+      });
+
+      return;
+    }
+
+    // Kill the process with graceful shutdown
+    fastify.log.info({ sessionId }, "[WebSocket] Killing agent process");
+
+    try {
+      const killResult = await killProcess(process, { timeoutMs: 5000 });
+
+      fastify.log.info(
+        { sessionId, killed: killResult.killed, signal: killResult.signal },
+        "[WebSocket] Process kill result"
+      );
+    } catch (killError) {
+      // Log but don't fail - process might already be dead
+      fastify.log.warn(
+        { err: killError, sessionId },
+        "[WebSocket] Error killing process (may already be dead)"
+      );
+    }
+
+    // Clear process reference
+    activeSessions.clearProcess(sessionId);
+
+    // Update database state to idle
+    await prisma.agentSession.update({
+      where: { id: sessionId },
+      data: {
+        state: "idle",
+        error_message: null,
+        updated_at: new Date(),
+      },
+    });
+
+    // Broadcast cancellation complete
+    broadcast(Channels.session(sessionId), {
+      type: SessionEventTypes.SESSION_UPDATED,
+      data: {
+        sessionId,
+        state: "idle",
+        error_message: null,
+        updated_at: new Date().toISOString(),
+      },
+    });
+
+    // Also send message_complete for consistency
+    broadcast(Channels.session(sessionId), {
+      type: SessionEventTypes.MESSAGE_COMPLETE,
+      data: {
+        sessionId,
+        cancelled: true,
+      },
+    });
+
+    fastify.log.info({ sessionId }, "[WebSocket] Session cancelled successfully");
+  } catch (err: unknown) {
+    const errorMessage =
+      err instanceof Error ? err.message : "Failed to cancel session";
+
+    fastify.log.error({ err, sessionId }, "[WebSocket] Error cancelling session");
+
+    broadcast(Channels.session(sessionId), {
+      type: SessionEventTypes.ERROR,
+      data: {
+        error: errorMessage,
+        sessionId,
+        code: "CANCEL_FAILED",
+      },
+    });
+  }
 }
 
 /**

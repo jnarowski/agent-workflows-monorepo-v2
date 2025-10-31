@@ -1,10 +1,12 @@
 import type { FastifyBaseLogger } from "fastify";
+import type { ChildProcess } from "node:child_process";
 import { cleanupTempDir } from "./cleanup.js";
 
 export interface ActiveSessionData {
   projectPath: string;
   userId: string;
   tempImageDir?: string;
+  childProcess?: ChildProcess;
 }
 
 /**
@@ -48,6 +50,33 @@ export class ActiveSessionsManager {
   }
 
   /**
+   * Set child process reference for a session
+   */
+  setProcess(sessionId: string, process: ChildProcess): void {
+    const existing = this.sessions.get(sessionId);
+    if (existing) {
+      this.sessions.set(sessionId, { ...existing, childProcess: process });
+    }
+  }
+
+  /**
+   * Get child process reference for a session
+   */
+  getProcess(sessionId: string): ChildProcess | undefined {
+    return this.sessions.get(sessionId)?.childProcess;
+  }
+
+  /**
+   * Clear child process reference for a session
+   */
+  clearProcess(sessionId: string): void {
+    const existing = this.sessions.get(sessionId);
+    if (existing) {
+      this.sessions.set(sessionId, { ...existing, childProcess: undefined });
+    }
+  }
+
+  /**
    * Clean up session and remove from map
    */
   async cleanup(
@@ -56,6 +85,8 @@ export class ActiveSessionsManager {
   ): Promise<void> {
     const session = this.sessions.get(sessionId);
     if (session) {
+      // Clear process reference before cleanup
+      this.clearProcess(sessionId);
       await cleanupTempDir(session.tempImageDir, logger);
       this.sessions.delete(sessionId);
     }
@@ -86,6 +117,13 @@ export class ActiveSessionsManager {
    */
   entries(): IterableIterator<[string, ActiveSessionData]> {
     return this.sessions.entries();
+  }
+
+  /**
+   * Get number of active sessions
+   */
+  get size(): number {
+    return this.sessions.size;
   }
 }
 

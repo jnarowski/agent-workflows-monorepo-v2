@@ -79,11 +79,12 @@ function mockSpawnWithOutput(output: string, result?: Partial<SpawnResult>) {
       options.onStderr(result.stderr);
     }
 
-    const finalResult = {
+    const finalResult: SpawnResult = {
       stdout: output,
       stderr: '',
       exitCode: 0,
       duration: 1000,
+      process: {} as any, // Mock process object
       ...result,
     };
 
