@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { loadSession } from './loadSession.js';
-import type { UnifiedMessage } from '../types/unified.js';
+import { loadSession } from './loadSession';
+import type { UnifiedMessage } from '../types/unified';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 

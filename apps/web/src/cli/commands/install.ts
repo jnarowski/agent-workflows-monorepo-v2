@@ -1,7 +1,7 @@
 import { existsSync, unlinkSync } from "fs";
 import { spawnSync } from "child_process";
-import { getDefaultDbPath, ensureDirectoryExists, resolvePath } from "../utils/paths.js";
-import { getDefaultConfig, saveConfig } from "../utils/config.js";
+import { getDefaultDbPath, ensureDirectoryExists, resolvePath } from "../utils/paths";
+import { getDefaultConfig, saveConfig } from "../utils/config";
 
 interface InstallOptions {
   force?: boolean;

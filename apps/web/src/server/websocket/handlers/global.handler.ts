@@ -3,11 +3,11 @@ import type { FastifyInstance } from "fastify";
 import type {
   SubscribeMessageData,
   UnsubscribeMessageData,
-} from "../types.js";
-import { GlobalEventTypes, Channels } from "@/shared/websocket/index.js";
-import { subscribe, unsubscribe } from "../infrastructure/subscriptions.js";
-import { validateChannelAccess } from "../infrastructure/permissions.js";
-import { sendMessage } from "../infrastructure/send-message.js";
+} from "../types";
+import { GlobalEventTypes, Channels } from "@/shared/websocket/index";
+import { subscribe, unsubscribe } from "../infrastructure/subscriptions";
+import { validateChannelAccess } from "../infrastructure/permissions";
+import { sendMessage } from "../infrastructure/send-message";
 
 /**
  * Handle global events on the global channel

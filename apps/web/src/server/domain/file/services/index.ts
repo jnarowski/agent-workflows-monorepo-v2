@@ -1,3 +1,3 @@
-export * from './getFileTree.js';
-export * from './readFile.js';
-export * from './writeFile.js';
+export * from './getFileTree';
+export * from './readFile';
+export * from './writeFile';

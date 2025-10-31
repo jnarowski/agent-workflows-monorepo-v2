@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { parseJsonResponse, parseJsonResponseStrict } from './parseJsonResponse.js';
-import type { ExecutionResponse } from '../types/workflow.js';
+import { parseJsonResponse, parseJsonResponseStrict } from './parseJsonResponse';
+import type { ExecutionResponse } from '../types/workflow';
 
 describe('parseJsonResponse', () => {
   describe('when response.data is already an object (responseSchema used)', () => {

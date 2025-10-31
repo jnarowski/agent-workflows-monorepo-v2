@@ -1,7 +1,7 @@
 import { prisma } from '@/shared/prisma';
 import type { AgentSessionMetadata, SessionResponse } from '@/shared/types/agent-session.types';
 import type { AgentType } from '@/shared/types/agent.types';
-import { getSessionFilePath } from '@/server/utils/path.js';
+import { getSessionFilePath } from '@/server/utils/path';
 
 /**
  * Create a new session

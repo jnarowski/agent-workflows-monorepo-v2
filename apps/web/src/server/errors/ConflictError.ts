@@ -8,7 +8,7 @@
  * - State conflicts (e.g., trying to delete a resource that's in use)
  */
 
-import { AppError } from './AppError.js';
+import { AppError } from './AppError';
 
 export class ConflictError extends AppError {
   readonly statusCode = 409;

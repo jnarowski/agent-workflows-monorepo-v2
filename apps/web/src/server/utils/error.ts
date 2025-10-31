@@ -9,14 +9,14 @@
  */
 
 // Re-export new error classes
-export { AppError } from '@/server/errors/AppError.js';
-export { ConflictError } from '@/server/errors/ConflictError.js';
-export { BadRequestError } from '@/server/errors/BadRequestError.js';
-export { InternalServerError } from '@/server/errors/InternalServerError.js';
-export { ServiceUnavailableError } from '@/server/errors/ServiceUnavailableError.js';
+export { AppError } from '@/server/errors/AppError';
+export { ConflictError } from '@/server/errors/ConflictError';
+export { BadRequestError } from '@/server/errors/BadRequestError';
+export { InternalServerError } from '@/server/errors/InternalServerError';
+export { ServiceUnavailableError } from '@/server/errors/ServiceUnavailableError';
 
 // Backward compatibility: Keep existing error classes
-import { AppError } from '@/server/errors/AppError.js';
+import { AppError } from '@/server/errors/AppError';
 
 /**
  * 404 Not Found Error

@@ -1,4 +1,4 @@
-import type { ShellSession } from '../types/index.js';
+import type { ShellSession } from '../types/index';
 
 // Module-level sessions Map - shared across all shell service functions
 const sessions = new Map<string, ShellSession>();

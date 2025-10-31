@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { activeSessions } from '@/server/websocket/infrastructure/active-sessions.js';
+import { activeSessions } from '@/server/websocket/infrastructure/active-sessions';
 
 export interface ImageProcessingResult {
   imagePaths: string[];

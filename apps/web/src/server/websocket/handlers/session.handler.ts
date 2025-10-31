@@ -1,10 +1,10 @@
 import type { WebSocket } from "@fastify/websocket";
 import type { FastifyInstance, FastifyBaseLogger } from "fastify";
 import { prisma } from "@/shared/prisma";
-import type { SessionSendMessageData } from "../types.js";
-import { sendMessage } from "../infrastructure/send-message.js";
-import { cleanupTempDir } from "../infrastructure/cleanup.js";
-import { activeSessions } from "../infrastructure/active-sessions.js";
+import type { SessionSendMessageData } from "../types";
+import { sendMessage } from "../infrastructure/send-message";
+import { cleanupTempDir } from "../infrastructure/cleanup";
+import { activeSessions } from "../infrastructure/active-sessions";
 import {
   validateSessionOwnership,
   extractUsageFromEvents,
@@ -13,13 +13,13 @@ import {
   generateSessionName,
   type AgentExecuteResult,
 } from "@/server/domain/session/services";
-import { broadcast, subscribe } from "../infrastructure/subscriptions.js";
+import { broadcast, subscribe } from "../infrastructure/subscriptions";
 import {
   SessionEventTypes,
   GlobalEventTypes,
   Channels,
 } from "@/shared/websocket";
-import { parseChannel } from "../infrastructure/channels.js";
+import { parseChannel } from "../infrastructure/channels";
 import { killProcess } from "@repo/agent-cli-sdk";
 
 // ============================================================================

@@ -8,7 +8,7 @@
  * - CLI detection errors (the one case that throws)
  */
 
-import { execute } from '../../src/index.js';
+import { execute } from '../../src/index';
 
 async function main() {
   console.log('=== Error Handling Example ===\n');

@@ -1,12 +1,12 @@
 import type { UnifiedMessage } from '../types/unified';
-import type { PermissionMode } from '../types/permissions.js';
+import type { PermissionMode } from '../types/permissions';
 import type { ChildProcess } from 'node:child_process';
 import { spawnProcess } from '../utils/spawn';
 import { extractJSON } from '../utils/extractJson';
 import { parse } from './parse';
 import { extractTextContent } from '../types/unified';
 import { detectCli } from './detectCli';
-import { createLineBuffer } from '../utils/lineBuffer.js';
+import { createLineBuffer } from '../utils/lineBuffer';
 
 // ============================================================================
 // Types

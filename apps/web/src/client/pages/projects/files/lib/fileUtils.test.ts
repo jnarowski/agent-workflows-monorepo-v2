@@ -119,8 +119,8 @@ describe('flattenFileTree', () => {
             type: 'file',
           },
           {
-            name: 'file2.js',
-            path: 'src/file2.js',
+            name: 'file2',
+            path: 'src/file2',
             type: 'file',
           },
           {
@@ -135,7 +135,7 @@ describe('flattenFileTree', () => {
     const result = flattenFileTree(tree);
     expect(result).toHaveLength(3);
     expect(result[0].filename).toBe('file1.ts');
-    expect(result[1].filename).toBe('file2.js');
+    expect(result[1].filename).toBe('file2');
     expect(result[2].filename).toBe('README.md');
   });
 
@@ -170,7 +170,7 @@ describe('extractFileReferences', () => {
     const text = 'See src/utils.ts and lib/helpers.js for details';
     const result = extractFileReferences(text);
     expect(result).toContain('src/utils.ts');
-    expect(result).toContain('lib/helpers.js');
+    expect(result).toContain('lib/helpers');
     expect(result).toHaveLength(2);
   });
 
@@ -181,10 +181,10 @@ describe('extractFileReferences', () => {
   });
 
   it('should handle paths with hyphens and underscores', () => {
-    const text = 'Files: my-component.tsx and test_utils.js';
+    const text = 'Files: my-component.tsx and test_utils';
     const result = extractFileReferences(text);
     expect(result).toContain('my-component.tsx');
-    expect(result).toContain('test_utils.js');
+    expect(result).toContain('test_utils');
   });
 
   it('should not match incomplete paths', () => {
@@ -280,7 +280,7 @@ describe('removeAllOccurrences', () => {
 
   it('should handle paths with dots and slashes', () => {
     const text = 'Check ../utils/helper.js for reference';
-    const result = removeAllOccurrences(text, '../utils/helper.js');
+    const result = removeAllOccurrences(text, '../utils/helper');
     expect(result).toBe('Check  for reference');
   });
 });
@@ -296,7 +296,7 @@ describe('getFileTypeInfo', () => {
     expect(result).toEqual({ label: 'TS', color: 'rgb(59, 130, 246)' });
   });
 
-  it('should return correct info for .js', () => {
+  it('should return correct info for ', () => {
     const result = getFileTypeInfo('js');
     expect(result).toEqual({ label: 'JS', color: 'rgb(234, 179, 8)' });
   });

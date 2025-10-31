@@ -1,6 +1,6 @@
 import { generateText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
-import { config } from "@/server/config/Configuration.js";
+import { config } from "@/server/config/Configuration";
 
 /**
  * Options for generating a session name

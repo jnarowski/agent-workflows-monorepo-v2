@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { BaseStorage, type BaseStorageConfig } from "./BaseStorage.js";
-import type { WorkflowStateData, StepStatus } from "../types/workflow.js";
+import { BaseStorage, type BaseStorageConfig } from "./BaseStorage";
+import type { WorkflowStateData, StepStatus } from "../types/workflow";
 
 // Concrete implementation for testing
 class TestStorage extends BaseStorage {

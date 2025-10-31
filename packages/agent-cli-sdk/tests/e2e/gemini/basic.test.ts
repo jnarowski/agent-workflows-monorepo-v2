@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { execute } from '../../../src/gemini/execute.js';
-import { detectCli } from '../../../src/gemini/detectCli.js';
+import { execute } from '../../../src/gemini/execute';
+import { detectCli } from '../../../src/gemini/detectCli';
 
 describe('E2E: Basic Gemini CLI Execution', () => {
   it('should execute a comprehensive prompt and validate output structure', async () => {

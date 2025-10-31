@@ -16,7 +16,7 @@ async function buildCLI() {
       platform: 'node',
       target: 'node18',
       format: 'esm',
-      outfile: join(rootDir, 'dist/cli.js'),
+      outfile: join(rootDir, 'dist/cli'),
       banner: {
         js: '#!/usr/bin/env node\n',
       },
@@ -26,7 +26,7 @@ async function buildCLI() {
       ],
       packages: 'external',
     });
-    console.log('✓ Built CLI to dist/cli.js');
+    console.log('✓ Built CLI to dist/cli');
   } catch (error) {
     console.error('Failed to build CLI:', error);
     process.exit(1);

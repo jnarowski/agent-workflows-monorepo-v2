@@ -151,8 +151,15 @@ pnpm vitest run src/path/to/file.test.ts
 
 - All packages use ESM (`type: "module"`)
 - TypeScript with `moduleResolution: "bundler"`
-- Import statements include `.js` extension even for `.ts` files
 - Use `@/` path aliases in web app: `@/client/*`, `@/server/*`, `@/shared/*`
+
+**Import Extensions:**
+
+**DO NOT include file extensions in imports**:
+- ✅ `import { foo } from "./bar"`
+- ❌ `import { foo } from "./bar.js"`
+
+**Why**: All packages use `moduleResolution: "bundler"` which tells TypeScript that bundlers (Vite, Bunchee, TSX) will handle extension resolution at build/runtime. Extensions are added automatically during transpilation.
 
 **4. Multi-Agent Architecture**
 

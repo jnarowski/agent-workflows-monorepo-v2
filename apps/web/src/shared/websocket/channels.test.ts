@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { Channels, parseChannel } from './channels.js';
+import { Channels, parseChannel } from './channels';
 
 describe('Channel Builders', () => {
   describe('Channels.session', () => {

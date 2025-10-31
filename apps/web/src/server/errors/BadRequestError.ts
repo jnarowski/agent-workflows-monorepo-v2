@@ -12,7 +12,7 @@
  * Use BadRequestError for business logic validation that occurs after schema validation.
  */
 
-import { AppError } from './AppError.js';
+import { AppError } from './AppError';
 
 export class BadRequestError extends AppError {
   readonly statusCode = 400;

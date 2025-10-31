@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { parse } from './parse.js';
+import { parse } from './parse';
 import type {
   UnifiedToolUseBlock,
   UnifiedToolResultBlock,
   UnifiedThinkingBlock,
   UnifiedTextBlock,
-} from '../types/unified.js';
+} from '../types/unified';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

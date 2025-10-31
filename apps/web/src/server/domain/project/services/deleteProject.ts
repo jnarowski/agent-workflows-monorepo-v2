@@ -2,7 +2,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/shared/prisma";
 import type { Project } from "@/shared/types/project.types";
-import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch.js";
+import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch";
 
 /**
  * Transform Prisma project to API project format

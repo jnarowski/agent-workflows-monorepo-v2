@@ -5,8 +5,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parse } from './parse.js';
-import type { GeminiMessage } from './types.js';
+import { parse } from './parse';
+import type { GeminiMessage } from './types';
 
 // Import all 10 individual fixtures
 import toolReadFile from '../../tests/fixtures/gemini/individual/tool-read_file.json';

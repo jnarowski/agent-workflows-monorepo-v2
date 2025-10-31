@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import type { FastifyBaseLogger } from 'fastify';
-import { getProjectById } from '@/server/domain/project/services/getProjectById.js';
+import { getProjectById } from '@/server/domain/project/services/getProjectById';
 
 /**
  * Write file content

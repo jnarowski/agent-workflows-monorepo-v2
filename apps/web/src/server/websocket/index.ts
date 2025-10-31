@@ -1,14 +1,14 @@
 import type { FastifyInstance } from "fastify";
 import type { JWTPayload } from "@/server/utils/auth";
-import { sendMessage } from "./infrastructure/send-message.js";
-import { wsMetrics } from "./infrastructure/metrics.js";
-import { activeSessions } from "./infrastructure/active-sessions.js";
-import { reconnectionManager } from "./infrastructure/reconnection.js";
-import { handleSessionEvent } from "./handlers/session.handler.js";
-import { handleShellEvent } from "./handlers/shell.handler.js";
-import { handleGlobalEvent } from "./handlers/global.handler.js";
-import { unsubscribeAll } from "./infrastructure/subscriptions.js";
-import { Channels, GlobalEventTypes } from "@/shared/websocket/index.js";
+import { sendMessage } from "./infrastructure/send-message";
+import { wsMetrics } from "./infrastructure/metrics";
+import { activeSessions } from "./infrastructure/active-sessions";
+import { reconnectionManager } from "./infrastructure/reconnection";
+import { handleSessionEvent } from "./handlers/session.handler";
+import { handleShellEvent } from "./handlers/shell.handler";
+import { handleGlobalEvent } from "./handlers/global.handler";
+import { unsubscribeAll } from "./infrastructure/subscriptions";
+import { Channels, GlobalEventTypes } from "@/shared/websocket/index";
 
 /**
  * Register unified WebSocket endpoint

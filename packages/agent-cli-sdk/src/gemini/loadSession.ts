@@ -11,9 +11,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
-import type { UnifiedMessage } from '../types/unified.js';
-import type { GeminiSession } from './types.js';
-import { parse } from './parse.js';
+import type { UnifiedMessage } from '../types/unified';
+import type { GeminiSession } from './types';
+import { parse } from './parse';
 
 // ============================================================================
 // Public API

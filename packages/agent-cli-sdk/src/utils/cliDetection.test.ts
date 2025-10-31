@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { detectCliGeneric } from './cliDetection.js';
-import type { CliDetectionConfig } from './cliDetection.js';
+import { detectCliGeneric } from './cliDetection';
+import type { CliDetectionConfig } from './cliDetection';
 import { exec } from 'node:child_process';
 import { existsSync } from 'node:fs';
 

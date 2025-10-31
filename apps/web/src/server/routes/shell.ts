@@ -3,7 +3,7 @@ import {
   createShellSession,
   getShellSession,
   destroyShellSession,
-} from '@/server/domain/shell/services/index.js';
+} from '@/server/domain/shell/services/index';
 import {
   shellMessageSchema,
   type InitMessage,

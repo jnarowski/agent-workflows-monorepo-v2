@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { ConfigSchema } from './schemas.js';
+import { ConfigSchema } from './schemas';
 
 /**
  * Application configuration type

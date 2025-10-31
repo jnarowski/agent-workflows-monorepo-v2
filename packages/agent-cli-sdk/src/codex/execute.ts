@@ -1,12 +1,12 @@
-import type { UnifiedMessage } from '../types/unified.js';
-import type { PermissionMode } from '../types/permissions.js';
-import { spawnProcess } from '../utils/spawn.js';
-import { extractJSON } from '../utils/extractJson.js';
-import { parse } from './parse.js';
-import { extractTextContent } from '../types/unified.js';
-import { detectCli } from './detectCli.js';
-import type { CodexEvent } from './types.js';
-import { createLineBuffer } from '../utils/lineBuffer.js';
+import type { UnifiedMessage } from '../types/unified';
+import type { PermissionMode } from '../types/permissions';
+import { spawnProcess } from '../utils/spawn';
+import { extractJSON } from '../utils/extractJson';
+import { parse } from './parse';
+import { extractTextContent } from '../types/unified';
+import { detectCli } from './detectCli';
+import type { CodexEvent } from './types';
+import { createLineBuffer } from '../utils/lineBuffer';
 
 // ============================================================================
 // Types

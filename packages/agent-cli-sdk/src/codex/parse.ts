@@ -14,7 +14,7 @@
  * Both formats are transformed into Claude-compatible unified format.
  */
 
-import type { UnifiedMessage, UnifiedContent, UnifiedToolUseBlock } from '../types/unified.js';
+import type { UnifiedMessage, UnifiedContent, UnifiedToolUseBlock } from '../types/unified';
 import type {
   CodexEvent,
   ItemCompletedEvent,
@@ -24,7 +24,7 @@ import type {
   FileChangeItem,
   ResponseItemEvent,
   EventMessageEvent,
-} from './types.js';
+} from './types';
 
 // ============================================================================
 // Public API

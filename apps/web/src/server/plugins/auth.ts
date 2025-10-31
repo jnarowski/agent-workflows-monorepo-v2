@@ -4,7 +4,7 @@ import fastifyPlugin from "fastify-plugin";
 import { prisma } from "@/shared/prisma";
 import { JWTPayload } from "@/server/utils/auth";
 import { buildErrorResponse } from "@/server/utils/error";
-import { config } from "@/server/config/Configuration.js";
+import { config } from "@/server/config/Configuration";
 
 async function authPluginFunction(fastify: FastifyInstance) {
   // Register JWT plugin using config service

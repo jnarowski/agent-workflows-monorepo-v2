@@ -2,8 +2,8 @@ import { prisma } from '@/shared/prisma';
 import fs from 'fs/promises';
 import path from 'path';
 import type { SyncSessionsResponse } from '@/shared/types/agent-session.types';
-import { encodeProjectPath, getClaudeProjectsDir } from '@/server/utils/path.js';
-import { parseJSONLFile } from './parseJSONLFile.js';
+import { encodeProjectPath, getClaudeProjectsDir } from '@/server/utils/path';
+import { parseJSONLFile } from './parseJSONLFile';
 
 /**
  * Check if a file is a valid session file

@@ -9,7 +9,7 @@ import { promisify } from "util";
 import { z } from "zod";
 import { buildSuccessResponse } from "@/server/utils/response";
 import { getCapabilities } from "@repo/agent-cli-sdk";
-import { config } from "@/server/config/Configuration.js";
+import { config } from "@/server/config/Configuration";
 import { prisma } from "@/shared/prisma";
 
 const execAsync = promisify(exec);

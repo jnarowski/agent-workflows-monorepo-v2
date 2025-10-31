@@ -19,11 +19,11 @@
  */
 
 // Export all types
-export type * from './types.js'
-export * from './types.js'
+export type * from './types'
+export * from './types'
 
 // Export channel builders and utilities
-export * from './channels.js'
+export * from './channels'
 
 // Export type guards
-export * from './guards.js'
+export * from './guards'

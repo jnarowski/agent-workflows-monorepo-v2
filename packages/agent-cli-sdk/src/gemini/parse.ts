@@ -12,8 +12,8 @@
  * This ensures the frontend **only needs to support one format** (Claude's).
  */
 
-import type { UnifiedMessage, UnifiedContent } from '../types/unified.js';
-import type { GeminiMessage } from './types.js';
+import type { UnifiedMessage, UnifiedContent } from '../types/unified';
+import type { GeminiMessage } from './types';
 
 // ============================================================================
 // Public API

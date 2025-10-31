@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   commandNameToTypeName,
   generateResponseTypeCode,
-} from "./generateCommandResponseTypes.js";
-import type { ResponseSchema } from "../types/workflow.js";
+} from "./generateCommandResponseTypes";
+import type { ResponseSchema } from "../types/workflow";
 
 describe("commandNameToTypeName", () => {
   it("should convert slash command to PascalCase with Result suffix", () => {

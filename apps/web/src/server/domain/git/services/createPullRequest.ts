@@ -2,7 +2,7 @@ import simpleGit from 'simple-git';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import type { PrResult } from '@/shared/types/git.types';
-import { checkGhCliAvailable } from './checkGhCliAvailable.js';
+import { checkGhCliAvailable } from './checkGhCliAvailable';
 
 const execAsync = promisify(exec);
 

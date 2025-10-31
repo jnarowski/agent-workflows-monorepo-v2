@@ -1,4 +1,4 @@
-import type { ResponseSchema } from "../types/workflow.js";
+import type { ResponseSchema } from "../types/workflow";
 
 /**
  * Convert a command name to a PascalCase type name with "Result" suffix.

@@ -9,4 +9,4 @@
  * See: https://webpro.nl/scraps/compiled-bin-in-typescript-monorepo
  */
 
-import '../dist/cli.js';
+import '../dist/cli';

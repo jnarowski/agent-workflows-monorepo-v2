@@ -1,6 +1,6 @@
 import type { FastifyBaseLogger } from "fastify";
 import type { ChildProcess } from "node:child_process";
-import { cleanupTempDir } from "./cleanup.js";
+import { cleanupTempDir } from "./cleanup";
 
 export interface ActiveSessionData {
   projectPath: string;

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawn } from 'node:child_process';
-import { killProcess } from './kill.js';
+import { killProcess } from './kill';
 
 describe('killProcess', () => {
   it('should kill process with SIGTERM', async () => {

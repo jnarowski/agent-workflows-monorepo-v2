@@ -1,7 +1,7 @@
 import matter from "gray-matter";
 import { readdir, readFile } from "fs/promises";
 import path from "path";
-import type { CommandDefinition, CommandArgument, ResponseSchema } from "../types/workflow.js";
+import type { CommandDefinition, CommandArgument, ResponseSchema } from "../types/workflow";
 
 /**
  * Parse argument-hint string from frontmatter into CommandArgument[]

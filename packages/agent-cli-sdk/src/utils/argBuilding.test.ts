@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { permissionModeToFlags, workingDirToFlags } from './argBuilding.js';
-import type { PermissionMode } from '../types/permissions.js';
+import { permissionModeToFlags, workingDirToFlags } from './argBuilding';
+import type { PermissionMode } from '../types/permissions';
 
 describe('argBuilding', () => {
   describe('permissionModeToFlags', () => {

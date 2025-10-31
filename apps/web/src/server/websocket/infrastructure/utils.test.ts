@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { sendMessage } from "./send-message.js";
-import { extractId } from "./extract-id.js";
-import { cleanupTempDir } from "./cleanup.js";
-import { WebSocketMetrics } from "./metrics.js";
+import { sendMessage } from "./send-message";
+import { extractId } from "./extract-id";
+import { cleanupTempDir } from "./cleanup";
+import { WebSocketMetrics } from "./metrics";
 import fs from "fs/promises";
 import { EventEmitter } from "events";
 import type { WebSocket } from "@fastify/websocket";

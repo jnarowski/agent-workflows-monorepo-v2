@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { generateSlashCommandTypesCode } from "./generateSlashCommandTypes.js";
-import type { CommandDefinition } from "../types/workflow.js";
+import { generateSlashCommandTypesCode } from "./generateSlashCommandTypes";
+import type { CommandDefinition } from "../types/workflow";
 
 describe("generateSlashCommandTypesCode", () => {
   it("should generate types for multiple commands with arguments", () => {

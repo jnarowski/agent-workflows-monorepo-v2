@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "@/shared/prisma";
 import type { Project } from "@/shared/types/project.types";
-import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch.js";
+import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch";
 import type { CreateProjectInput } from "@/server/domain/project/types";
 
 /**

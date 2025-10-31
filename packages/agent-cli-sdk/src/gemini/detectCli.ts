@@ -11,7 +11,7 @@
  * as detectCliGeneric doesn't support glob expansion
  */
 
-import { detectCliGeneric } from '../utils/cliDetection.js';
+import { detectCliGeneric } from '../utils/cliDetection';
 import os from 'node:os';
 import path from 'node:path';
 

@@ -1,2 +1,2 @@
-export { BaseStorage, type BaseStorageConfig } from "./BaseStorage.js";
-export { FileStorage, type FileStorageConfig } from "./FileStorage.js";
+export { BaseStorage, type BaseStorageConfig } from "./BaseStorage";
+export { FileStorage, type FileStorageConfig } from "./FileStorage";

@@ -3,8 +3,8 @@
  * Run with: pnpm tsx scripts/migrate-session-paths.ts
  */
 
-import { prisma } from '../src/shared/prisma.js';
-import { getSessionFilePath } from '../src/server/utils/path.js';
+import { prisma } from '../src/shared/prisma';
+import { getSessionFilePath } from '../src/server/utils/path';
 
 async function migrateSessionPaths() {
   console.log('Starting session_path migration...');
