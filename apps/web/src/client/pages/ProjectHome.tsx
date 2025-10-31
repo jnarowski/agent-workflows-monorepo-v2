@@ -71,7 +71,9 @@ export default function ProjectHome() {
     <div className="p-4 md:p-6 space-y-4 md:space-y-6">
       <div>
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <h1 className="text-xl md:text-2xl font-semibold leading-tight break-words flex-1 min-w-0">{project.name}</h1>
+          <h1 className="text-xl md:text-2xl font-semibold leading-tight break-words flex-1 min-w-0">
+            {project.name}
+          </h1>
           <div className="flex items-stretch gap-1 shrink-0">
             <NewSessionButton
               projectId={id!}
@@ -92,35 +94,36 @@ export default function ProjectHome() {
         </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2">
-        <Card className="border-border/50">
-          <CardContent className="p-4">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <FolderOpen className="h-3.5 w-3.5" />
+      <Card className="border-border/50 py-2">
+        <CardContent className="p-0">
+          <div className="divide-y divide-border/50">
+            <div className="grid grid-cols-[200px_1fr] items-center px-6 py-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <FolderOpen className="h-4 w-4" />
                 Project Path
               </div>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="text-sm font-mono cursor-help break-all">
-                      {truncatePath(project.path, typeof window !== 'undefined' && window.innerWidth < 768 ? 30 : 60)}
+                    <div className="text-sm cursor-help truncate">
+                      {truncatePath(
+                        project.path,
+                        typeof window !== "undefined" && window.innerWidth < 768
+                          ? 30
+                          : 60
+                      )}
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-md break-all">
-                    <p className="font-mono text-xs">{project.path}</p>
+                    <p className="text-xs">{project.path}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
-          </CardContent>
-        </Card>
 
-        <Card className="border-border/50">
-          <CardContent className="p-4">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <Calendar className="h-3.5 w-3.5" />
+            <div className="grid grid-cols-[200px_1fr] items-center px-6 py-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Calendar className="h-4 w-4" />
                 Created
               </div>
               <div className="text-sm">
@@ -131,9 +134,9 @@ export default function ProjectHome() {
                 })}
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Recent Sessions Section */}
       <Card>
@@ -186,11 +189,18 @@ export default function ProjectHome() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <CardDescription className="font-mono text-xs cursor-help break-all">
-                    {truncatePath(`${project.path}/${readme.path}`, typeof window !== 'undefined' && window.innerWidth < 768 ? 35 : 70)}
+                    {truncatePath(
+                      `${project.path}/${readme.path}`,
+                      typeof window !== "undefined" && window.innerWidth < 768
+                        ? 35
+                        : 70
+                    )}
                   </CardDescription>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-md break-all">
-                  <p className="font-mono text-xs">{project.path}/{readme.path}</p>
+                  <p className="font-mono text-xs">
+                    {project.path}/{readme.path}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

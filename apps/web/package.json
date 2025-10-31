@@ -1,7 +1,7 @@
 {
   "name": "@repo/web",
   "private": true,
-  "version": "0.9.0",
+  "version": "1.0.5",
   "type": "module",
   "main": "src/server/index.ts",
   "bin": {
