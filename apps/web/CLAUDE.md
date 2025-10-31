@@ -215,6 +215,308 @@ packages/
   typescript-config/# Shared TypeScript configuration
 ```
 
+### Backend Architecture
+
+The backend follows a **domain-driven functional architecture** that prioritizes:
+- Business logic organized by domain (not technical layer)
+- Pure functions over classes
+- Thin transport layer (routes, WebSocket)
+- Centralized configuration
+
+#### Domain Directory Structure
+
+```
+src/server/
+├── domain/                     # All business logic lives here
+│   ├── project/               # Project management domain
+│   │   ├── services/          # Business logic (one function per file)
+│   │   │   ├── getProjectById.ts
+│   │   │   ├── getAllProjects.ts
+│   │   │   ├── createProject.ts
+│   │   │   ├── updateProject.ts
+│   │   │   ├── deleteProject.ts
+│   │   │   └── index.ts       # Barrel export
+│   │   ├── schemas/           # Zod validation schemas
+│   │   │   └── index.ts
+│   │   └── types/             # Domain-specific types
+│   │       └── index.ts
+│   │
+│   ├── session/               # Agent session domain
+│   │   ├── services/
+│   │   │   ├── createSession.ts
+│   │   │   ├── getSessionsByProject.ts
+│   │   │   ├── executeAgent.ts
+│   │   │   ├── updateSessionMetadata.ts
+│   │   │   └── index.ts
+│   │   ├── schemas/
+│   │   └── types/
+│   │
+│   ├── file/                  # File operations domain
+│   │   ├── services/
+│   │   │   ├── getFileTree.ts
+│   │   │   ├── readFile.ts
+│   │   │   ├── writeFile.ts
+│   │   │   └── index.ts
+│   │   ├── schemas/
+│   │   └── types/
+│   │
+│   ├── git/                   # Git operations domain
+│   │   ├── services/
+│   │   │   ├── getGitStatus.ts
+│   │   │   ├── createCommit.ts
+│   │   │   ├── getBranches.ts
+│   │   │   └── index.ts
+│   │   ├── schemas/
+│   │   └── types/
+│   │
+│   └── shell/                 # Shell/terminal domain
+│       ├── services/
+│       │   ├── createShellSession.ts
+│       │   ├── destroyShellSession.ts
+│       │   ├── writeToShell.ts
+│       │   └── index.ts
+│       ├── schemas/
+│       └── types/
+│
+├── routes/                    # Thin HTTP route handlers
+│   ├── auth.ts               # Authentication endpoints
+│   ├── projects.ts           # Project CRUD
+│   ├── sessions.ts           # Session management
+│   ├── files.ts              # File operations
+│   ├── git.ts                # Git operations
+│   └── index.ts              # Route registration
+│
+├── websocket.ts              # WebSocket transport (thin orchestrator)
+├── config.ts                 # Centralized configuration
+├── plugins/                  # Fastify plugins
+│   └── auth.ts              # JWT authentication
+├── utils/                    # Shared server utilities
+└── index.ts                  # Server entry point
+```
+
+#### Key Architectural Principles
+
+**1. One Function Per File in domain/*/services/**
+
+Each service file exports exactly ONE function, and the file name matches the function name:
+
+```typescript
+// ✅ domain/project/services/getProjectById.ts
+export async function getProjectById(id: string): Promise<Project | null> {
+  // Function logic
+}
+
+// ✅ domain/session/services/createSession.ts
+export async function createSession(
+  projectId: string,
+  userId: string,
+  agent: string
+): Promise<AgentSession> {
+  // Function logic
+}
+```
+
+**2. Pure Functions - No Classes**
+
+All domain services are pure functions that receive dependencies explicitly:
+
+```typescript
+// ✅ GOOD - Pure function with explicit parameters
+export async function readFile(
+  projectId: string,
+  filePath: string,
+  logger?: FastifyBaseLogger
+): Promise<string> {
+  const project = await getProjectById(projectId);
+  // ... implementation
+}
+
+// ❌ BAD - Class-based service with hidden state
+class FileService {
+  constructor(private logger: Logger) {}
+  async readFile(projectId: string, filePath: string) { ... }
+}
+```
+
+**3. Routes Are Thin Orchestrators**
+
+Route handlers delegate all business logic to domain services:
+
+```typescript
+// ✅ GOOD - Thin route handler
+fastify.get('/api/projects/:id', async (request, reply) => {
+  const { id } = request.params;
+  const userId = request.user!.id;
+
+  // Delegate to domain service
+  const project = await getProjectById(id);
+
+  if (!project) {
+    throw new NotFoundError('Project not found');
+  }
+
+  return reply.send(buildSuccessResponse(project));
+});
+
+// ❌ BAD - Business logic in route handler
+fastify.get('/api/projects/:id', async (request, reply) => {
+  const project = await prisma.project.findUnique(...);
+  const currentBranch = await getCurrentBranch(...);
+  const transformed = {
+    id: project.id,
+    // ... manual transformation
+  };
+  return reply.send({ data: transformed });
+});
+```
+
+**4. WebSocket as Thin Transport Layer**
+
+WebSocket handlers orchestrate domain functions but contain no business logic:
+
+```typescript
+// ✅ GOOD - Thin WebSocket handler
+socket.on('message', async (rawMessage) => {
+  const message = JSON.parse(rawMessage.toString()) as WebSocketMessage;
+
+  if (message.type === 'session.send_message') {
+    // Orchestrate domain services
+    const session = await getSessionById(message.data.sessionId);
+    const result = await executeAgent({
+      sessionId: session.id,
+      message: message.data.message,
+      onStream: (chunk) => sendToClient(socket, chunk)
+    });
+
+    sendToClient(socket, 'session.message_complete', result);
+  }
+});
+
+// ❌ BAD - Business logic in WebSocket handler
+socket.on('message', async (rawMessage) => {
+  const message = JSON.parse(rawMessage.toString());
+  // Directly spawning processes, parsing outputs, etc.
+  const process = spawn('claude', [...]);
+  // 50+ lines of logic here
+});
+```
+
+**5. Centralized Configuration**
+
+All environment variables accessed through `config.ts`:
+
+```typescript
+// config.ts
+export const config = {
+  port: Number(process.env.PORT) || 3456,
+  jwtSecret: process.env.JWT_SECRET!,
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+  // ...
+};
+
+// ✅ GOOD - Import from config
+import { config } from '@/server/config.js';
+const port = config.port;
+
+// ❌ BAD - Direct process.env access
+const port = process.env.PORT || 3456;
+```
+
+**6. Import Patterns**
+
+Always import from domain services, never from old services/ directory:
+
+```typescript
+// ✅ GOOD - Import from domain
+import { getProjectById } from '@/server/domain/project/services/getProjectById.js';
+import { readFile } from '@/server/domain/file/services/readFile.js';
+import { createSession } from '@/server/domain/session/services/createSession.js';
+
+// ❌ BAD - Don't import from old services/ directory
+import { getProjectById } from '@/server/services/project.service.js';
+
+// ✅ ALSO GOOD - Import from barrel export
+import { getProjectById, getAllProjects } from '@/server/domain/project/services/index.js';
+```
+
+**7. Error Handling**
+
+Domain functions return `null` for "not found" cases; routes decide HTTP status:
+
+```typescript
+// Domain service
+export async function getProjectById(id: string): Promise<Project | null> {
+  const project = await prisma.project.findUnique({ where: { id } });
+  return project || null;  // Return null, not throw
+}
+
+// Route handler decides status code
+const project = await getProjectById(id);
+if (!project) {
+  throw new NotFoundError('Project not found');  // 404
+}
+```
+
+#### Domain Organization Benefits
+
+1. **Discoverability**: Find all project-related logic in `domain/project/`
+2. **Maintainability**: Each function in its own file, easy to locate and update
+3. **Testability**: Pure functions are easy to unit test
+4. **Scalability**: Add new domains without affecting existing ones
+5. **Team collaboration**: Multiple developers can work on different domains without conflicts
+6. **Clear boundaries**: Domain logic separated from transport concerns
+
+#### Adding New Domain Functions
+
+When adding new business logic:
+
+1. **Identify the domain**: project, session, file, git, shell, or create new domain
+2. **Create function file**: `domain/{domain}/services/{functionName}.ts`
+3. **Write pure function**: Accept parameters explicitly, return Promise
+4. **Export from barrel**: Add to `domain/{domain}/services/index.ts`
+5. **Create route handler**: Import and call domain function
+6. **Add tests**: Co-locate test file: `{functionName}.test.ts`
+
+#### Testing Domain Functions
+
+Domain functions should have unit tests co-located with the source:
+
+```
+domain/project/services/
+├── getProjectById.ts
+├── getProjectById.test.ts      # Unit test
+├── createProject.ts
+├── createProject.test.ts       # Unit test
+└── index.ts
+```
+
+Test template:
+
+```typescript
+// getProjectById.test.ts
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { getProjectById } from './getProjectById.js';
+
+describe('getProjectById', () => {
+  it('should return project when found', async () => {
+    // Arrange
+    const projectId = 'test-id';
+
+    // Act
+    const result = await getProjectById(projectId);
+
+    // Assert
+    expect(result).toBeDefined();
+    expect(result?.id).toBe(projectId);
+  });
+
+  it('should return null when not found', async () => {
+    const result = await getProjectById('non-existent');
+    expect(result).toBeNull();
+  });
+});
+```
+
 ### Web App Structure
 
 ```

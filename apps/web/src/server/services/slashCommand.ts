@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import matter from 'gray-matter';
 import type { SlashCommand } from '@/shared/types/slash-command.types';
-import { getProjectById } from '@/server/services/project';
+import { getProjectById } from '@/server/domain/project/services';
 
 /**
  * Slash Command Service
@@ -104,15 +104,14 @@ async function scanCommandsDirectory(
             argumentHints: argumentHints && argumentHints.length > 0 ? argumentHints : undefined,
             type: 'custom',
           });
-        } catch (error) {
-          console.error(`Error parsing ${fullPath}:`, error);
-          // Continue processing other files
+        } catch {
+          // Skip malformed command files and continue processing
+          // Error: Failed to parse command file
         }
       }
     }
-  } catch (error) {
-    console.error(`Error scanning directory ${currentDir}:`, error);
-    // Return partial results
+  } catch {
+    // Return partial results if directory scan fails
   }
 
   return commands;
@@ -153,8 +152,6 @@ export async function getProjectSlashCommands(
 
     return commands;
   } catch (error) {
-    console.error('Error getting project slash commands:', error);
-
     // If project not found, throw the error
     if ((error as Error).message === 'Project not found') {
       throw error;

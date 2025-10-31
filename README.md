@@ -13,6 +13,7 @@ This monorepo includes the following packages and apps:
   - File editor with syntax highlighting
   - Terminal emulator with WebSocket
   - Session management with Prisma (SQLite)
+  - **Domain-driven functional backend** - business logic organized by domain (project, session, file, git, shell)
 
 ### Packages
 
@@ -212,6 +213,15 @@ pnpm build
 │   │   ├── src/
 │   │   │   ├── client/         # React frontend
 │   │   │   ├── server/         # Fastify backend
+│   │   │   │   ├── domain/     # Domain-driven business logic
+│   │   │   │   │   ├── project/    # Project management
+│   │   │   │   │   ├── session/    # Agent sessions
+│   │   │   │   │   ├── file/       # File operations
+│   │   │   │   │   ├── git/        # Git operations
+│   │   │   │   │   └── shell/      # Shell/terminal
+│   │   │   │   ├── routes/     # HTTP handlers (thin)
+│   │   │   │   ├── websocket.ts # WebSocket transport (thin)
+│   │   │   │   └── config.ts   # Centralized configuration
 │   │   │   └── shared/         # Shared code
 │   │   ├── prisma/             # Database schema
 │   │   └── scripts/            # Build/setup scripts
@@ -286,6 +296,7 @@ See `apps/web/.env.example` for all available options.
 
 **Frontend:** React 19, Vite, TanStack Query, Zustand, Tailwind CSS v4, shadcn/ui, CodeMirror, xterm.js
 **Backend:** Fastify, Prisma (SQLite), JWT, WebSocket, node-pty, Zod
+**Architecture:** Domain-driven design, functional programming (pure functions, no classes)
 **Build:** Turborepo, pnpm, Bunchee, TypeScript (strict mode)
 
 ## Documentation

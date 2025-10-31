@@ -9,9 +9,9 @@ import {
   toggleProjectHidden,
   toggleProjectStarred,
   projectExistsByPath,
-} from "@/server/services/project";
+} from "@/server/domain/project/services";
 import { syncFromClaudeProjects } from "@/server/services/projectSync";
-import { getProjectFiles, readFile, writeFile } from "@/server/services/file";
+import { getFileTree, readFile, writeFile } from "@/server/domain/file/services/index.js";
 import {
   createProjectSchema,
   updateProjectSchema,
@@ -20,7 +20,7 @@ import {
   fileContentBodySchema,
   hideProjectSchema,
   starProjectSchema,
-} from "@/server/schemas/project";
+} from "@/server/domain/project/schemas";
 import {
   projectResponseSchema,
   errorResponse,
@@ -345,7 +345,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const files = await getProjectFiles(request.params.id, fastify.log);
+        const files = await getFileTree(request.params.id, fastify.log);
         return reply.send({ data: files });
       } catch (error) {
         // Handle specific error messages

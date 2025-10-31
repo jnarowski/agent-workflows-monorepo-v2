@@ -3,62 +3,67 @@
  *
  * Custom error classes and response builders for consistent error handling
  * throughout the Fastify application.
+ *
+ * This file re-exports the new error classes from the errors/ directory
+ * and maintains backward compatibility with existing code.
  */
 
-/**
- * Base class for custom HTTP errors with status codes
- */
-abstract class HTTPError extends Error {
-  abstract statusCode: number;
+// Re-export new error classes
+export { AppError } from '@/server/errors/AppError.js';
+export { ConflictError } from '@/server/errors/ConflictError.js';
+export { BadRequestError } from '@/server/errors/BadRequestError.js';
+export { InternalServerError } from '@/server/errors/InternalServerError.js';
+export { ServiceUnavailableError } from '@/server/errors/ServiceUnavailableError.js';
 
-  constructor(message: string) {
-    super(message);
-    this.name = this.constructor.name;
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
+// Backward compatibility: Keep existing error classes
+import { AppError } from '@/server/errors/AppError.js';
 
 /**
  * 404 Not Found Error
  */
-export class NotFoundError extends HTTPError {
-  statusCode = 404;
+export class NotFoundError extends AppError {
+  readonly statusCode = 404;
+  readonly code = 'NOT_FOUND';
 
-  constructor(message = 'Resource not found') {
-    super(message);
+  constructor(message = 'Resource not found', context?: Record<string, unknown>) {
+    super(message, context);
   }
 }
 
 /**
  * 401 Unauthorized Error
  */
-export class UnauthorizedError extends HTTPError {
-  statusCode = 401;
+export class UnauthorizedError extends AppError {
+  readonly statusCode = 401;
+  readonly code = 'UNAUTHORIZED';
 
-  constructor(message = 'Unauthorized') {
-    super(message);
+  constructor(message = 'Unauthorized', context?: Record<string, unknown>) {
+    super(message, context);
   }
 }
 
 /**
  * 403 Forbidden Error
  */
-export class ForbiddenError extends HTTPError {
-  statusCode = 403;
+export class ForbiddenError extends AppError {
+  readonly statusCode = 403;
+  readonly code = 'FORBIDDEN';
 
-  constructor(message = 'Forbidden') {
-    super(message);
+  constructor(message = 'Forbidden', context?: Record<string, unknown>) {
+    super(message, context);
   }
 }
 
 /**
  * 400 Validation Error
+ * @deprecated Use BadRequestError from errors/ directory for new code
  */
-export class ValidationError extends HTTPError {
-  statusCode = 400;
+export class ValidationError extends AppError {
+  readonly statusCode = 400;
+  readonly code = 'VALIDATION_ERROR';
 
-  constructor(message = 'Validation failed') {
-    super(message);
+  constructor(message = 'Validation failed', context?: Record<string, unknown>) {
+    super(message, context);
   }
 }
 

@@ -1,26 +1,25 @@
 import type { WebSocket } from "@fastify/websocket";
 import type { FastifyInstance, FastifyBaseLogger } from "fastify";
-import fs from "fs/promises";
-import path from "path";
 import { prisma } from "@/shared/prisma";
-import { generateSessionName } from "@/server/utils/generateSessionName";
 import type { SessionSendMessageData } from "../types.js";
-import { sendMessage } from "../utils/send-message.js";
-import { cleanupTempDir } from "../utils/cleanup.js";
-import { activeSessions } from "../utils/active-sessions.js";
-import { validateSessionOwnership } from "../services/session-validator.js";
-import { extractUsageFromEvents } from "../services/usage-extractor.js";
+import { sendMessage } from "../infrastructure/send-message.js";
+import { cleanupTempDir } from "../infrastructure/cleanup.js";
+import { activeSessions } from "../infrastructure/active-sessions.js";
 import {
-  executeAgentCommand,
+  validateSessionOwnership,
+  extractUsageFromEvents,
+  executeAgent,
+  processImageUploads,
+  generateSessionName,
   type AgentExecuteResult,
-} from "../services/agent-executor.js";
-import { broadcast, subscribe } from "../utils/subscriptions.js";
+} from "@/server/domain/session/services";
+import { broadcast, subscribe } from "../infrastructure/subscriptions.js";
 import {
   SessionEventTypes,
   GlobalEventTypes,
   Channels,
 } from "@/shared/websocket";
-import { parseChannel } from "../utils/channels.js";
+import { parseChannel } from "../infrastructure/channels.js";
 import { killProcess } from "@repo/agent-cli-sdk";
 
 // ============================================================================
@@ -31,11 +30,6 @@ interface ExecutionConfig {
   resume: boolean;
   permissionMode: "default" | "acceptEdits" | "bypassPermissions" | undefined;
   model: string | undefined;
-}
-
-interface ImageProcessingResult {
-  imagePaths: string[];
-  tempImageDir?: string;
 }
 
 // ============================================================================
@@ -56,13 +50,6 @@ export async function handleSessionSendMessage(
   userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
-  console.log("========================================");
-  console.log("===== handleSessionSendMessage CALLED =====");
-  console.log("SessionId:", sessionId);
-  console.log("UserId:", userId);
-  console.log("Message:", data.message);
-  console.log("========================================");
-
   fastify.log.info(
     { sessionId, userId, message: data.message },
     "[WebSocket] ===== handleSessionSendMessage ENTRY POINT ====="
@@ -86,7 +73,7 @@ export async function handleSessionSendMessage(
     userId,
   });
 
-  // Process image uploads
+  // Process image uploads (domain function)
   const { imagePaths } = await processImageUploads(
     data.images,
     sessionData.projectPath,
@@ -144,7 +131,7 @@ export async function handleSessionSendMessage(
     "[WebSocket] About to execute agent command"
   );
 
-  const result = await executeAgentCommand({
+  const result = await executeAgent({
     agent: session.agent as "claude" | "codex",
     prompt: data.message,
     workingDir: projectPath,
@@ -175,7 +162,6 @@ export async function handleSessionSendMessage(
 
   // Handle execution failure
   if (!result.success) {
-    console.log("===== EXECUTION FAILED - SKIPPING POST-PROCESSING =====");
     fastify.log.warn(
       { sessionId, error: result.error },
       "[WebSocket] Execution failed, skipping post-processing"
@@ -185,7 +171,6 @@ export async function handleSessionSendMessage(
     return;
   }
 
-  console.log("===== EXECUTION SUCCEEDED - PROCEEDING TO POST-PROCESSING =====");
   fastify.log.info(
     { sessionId },
     "[WebSocket] Execution succeeded, proceeding to post-processing"
@@ -432,13 +417,6 @@ export async function handleSessionEvent(
   userId: string,
   fastify: FastifyInstance
 ): Promise<void> {
-  console.log("========================================");
-  console.log("===== handleSessionEvent CALLED =====");
-  console.log("Channel:", channel);
-  console.log("Type:", type);
-  console.log("UserId:", userId);
-  console.log("========================================");
-
   fastify.log.info(
     { channel, type, userId },
     "[WebSocket] handleSessionEvent router entry"
@@ -453,9 +431,6 @@ export async function handleSessionEvent(
   );
 
   if (!sessionId || parsed?.resource !== "session") {
-    console.log("===== INVALID SESSION CHANNEL =====");
-    console.log("SessionId:", sessionId);
-    console.log("Resource:", parsed?.resource);
     fastify.log.warn(
       { sessionId, resource: parsed?.resource },
       "[WebSocket] Invalid session channel"
@@ -471,7 +446,6 @@ export async function handleSessionEvent(
 
   try {
     if (type === SessionEventTypes.SEND_MESSAGE) {
-      console.log("===== ROUTING TO handleSessionSendMessage =====");
       fastify.log.info(
         { sessionId, type },
         "[WebSocket] Routing to handleSessionSendMessage"
@@ -515,66 +489,6 @@ export async function handleSessionEvent(
 // ============================================================================
 // Private Helper Methods
 // ============================================================================
-
-/**
- * Process image uploads for a session
- *
- * Handles both base64-encoded images and file path references.
- * Creates a temporary directory in the project and saves all images there.
- *
- * @private
- */
-async function processImageUploads(
-  images: string[] | undefined,
-  projectPath: string,
-  sessionId: string
-): Promise<ImageProcessingResult> {
-  const imagePaths: string[] = [];
-
-  if (!images || images.length === 0) {
-    return { imagePaths };
-  }
-
-  // Create temp directory for images
-  const timestamp = Date.now();
-  const tempImageDir = path.join(
-    projectPath,
-    ".tmp",
-    "images",
-    String(timestamp)
-  );
-  await fs.mkdir(tempImageDir, { recursive: true });
-
-  // Update active session with temp dir
-  activeSessions.update(sessionId, { tempImageDir });
-
-  // Save each image
-  for (let i = 0; i < images.length; i++) {
-    const image = images[i];
-
-    // Determine file extension from MIME type or default to .png
-    let ext = ".png";
-    if (image.startsWith("data:image/")) {
-      const mimeType = image.split(";")[0].split("/")[1];
-      ext = "." + mimeType;
-    }
-
-    const imagePath = path.join(tempImageDir, `image-${i}${ext}`);
-
-    // Handle base64 data URLs
-    if (image.startsWith("data:")) {
-      const base64Data = image.split(",")[1];
-      await fs.writeFile(imagePath, Buffer.from(base64Data, "base64"));
-    } else {
-      // Assume it's a file path - copy it
-      await fs.copyFile(image, imagePath);
-    }
-
-    imagePaths.push(imagePath);
-  }
-
-  return { imagePaths, tempImageDir };
-}
 
 /**
  * Check if an agent type is supported
@@ -756,19 +670,9 @@ async function generateAndStoreName(
       "[WebSocket] About to call generateSessionName"
     );
 
-    console.log("===== GENERATE SESSION NAME START =====");
-    console.log("SessionId:", sessionId);
-    console.log("User Message:", userMessage);
-    console.log("Message Length:", userMessage.length);
-
     const sessionName = await generateSessionName({
       userPrompt: userMessage,
     });
-
-    console.log("===== GENERATE SESSION NAME RESULT =====");
-    console.log("Generated Name:", sessionName);
-    console.log("Name Type:", typeof sessionName);
-    console.log("Name Length:", sessionName?.length);
 
     logger.info(
       { sessionId, sessionName, nameLength: sessionName?.length },
@@ -799,16 +703,8 @@ async function generateAndStoreName(
         updated_at: new Date().toISOString(),
       },
     });
-
-    console.log("===== SESSION NAME STORED IN DATABASE =====");
-    console.log("SessionId:", sessionId);
-    console.log("Final Name:", sessionName);
   } catch (err: unknown) {
     // Non-critical error - log and continue
-    console.error("===== ERROR IN generateAndStoreName =====");
-    console.error("Error:", err);
-    console.error("SessionId:", sessionId);
-
     logger.error(
       {
         err,

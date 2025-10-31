@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { FastifyInstance } from "fastify";
 import {
   getSessionsByProject,
@@ -6,7 +6,7 @@ import {
   createSession,
   syncProjectSessions,
   updateSessionName,
-} from "@/server/services/agentSession";
+} from "@/server/domain/session/services";
 import {
   createSessionSchema,
   sessionIdSchema,
@@ -75,12 +75,13 @@ export async function sessionRoutes(fastify: FastifyInstance) {
         );
 
         return reply.send({ data: messages });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error instanceof Error ? error : new Error(String(error));
         fastify.log.error({
           error: {
-            message: error.message,
-            stack: error.stack,
-            name: error.name
+            message: err.message,
+            stack: err.stack,
+            name: err.name
           },
           sessionId: request.params.sessionId,
           projectId: request.params.id,
@@ -88,18 +89,18 @@ export async function sessionRoutes(fastify: FastifyInstance) {
         }, 'Error fetching session messages');
 
         if (
-          error.message === "Session not found" ||
-          error.message === "Session file not found"
+          err.message === "Session not found" ||
+          err.message === "Session file not found"
         ) {
-          return reply.code(404).send(buildErrorResponse(404, error.message));
+          return reply.code(404).send(buildErrorResponse(404, err.message));
         }
 
-        if (error.message === "Unauthorized access to session") {
+        if (err.message === "Unauthorized access to session") {
           return reply.code(401).send(buildErrorResponse(401, "Unauthorized access to session"));
         }
 
         // Catch all other errors
-        return reply.code(500).send(buildErrorResponse(500, error.message || 'Internal server error'));
+        return reply.code(500).send(buildErrorResponse(500, err.message || 'Internal server error'));
       }
     }
   );
@@ -173,8 +174,9 @@ export async function sessionRoutes(fastify: FastifyInstance) {
         );
 
         return reply.send({ data: result });
-      } catch (error: any) {
-        if (error.message.includes("Project not found")) {
+      } catch (error: unknown) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        if (err.message.includes("Project not found")) {
           return reply.code(404).send(buildErrorResponse(404, "Project not found"));
         }
 
@@ -271,26 +273,28 @@ export async function sessionRoutes(fastify: FastifyInstance) {
             path: session.session_path,
           },
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        const errCode = 'code' in err ? (err as NodeJS.ErrnoException).code : undefined;
         fastify.log.error({
           error: {
-            message: error.message,
-            stack: error.stack,
-            code: error.code,
+            message: err.message,
+            stack: err.stack,
+            code: errCode,
           },
           sessionId,
           userId,
         }, 'Error reading session file');
 
-        if (error.code === "ENOENT") {
+        if (errCode === "ENOENT") {
           return reply.code(404).send(buildErrorResponse(404, "Session file not found on disk"));
         }
 
-        if (error.code === "EACCES") {
+        if (errCode === "EACCES") {
           return reply.code(403).send(buildErrorResponse(403, "Permission denied reading session file"));
         }
 
-        return reply.code(500).send(buildErrorResponse(500, error.message || "Internal server error"));
+        return reply.code(500).send(buildErrorResponse(500, err.message || "Internal server error"));
       }
     }
   );

@@ -1,0 +1,55 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/shared/prisma";
+import type { Project } from "@/shared/types/project.types";
+import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch.js";
+import type { UpdateProjectInput } from "@/server/domain/project/types";
+
+/**
+ * Transform Prisma project to API project format
+ * @param prismaProject - Raw project from Prisma
+ * @param currentBranch - Optional git branch (fetched separately)
+ */
+function transformProject(
+  prismaProject: any,
+  currentBranch?: string | null
+): Project {
+  return {
+    id: prismaProject.id,
+    name: prismaProject.name,
+    path: prismaProject.path,
+    is_hidden: prismaProject.is_hidden,
+    is_starred: prismaProject.is_starred,
+    created_at: prismaProject.created_at,
+    updated_at: prismaProject.updated_at,
+    current_branch: currentBranch ?? undefined,
+  };
+}
+
+/**
+ * Update an existing project
+ * @param id - Project ID
+ * @param data - Project update data
+ * @returns Updated project or null if not found
+ */
+export async function updateProject(
+  id: string,
+  data: UpdateProjectInput
+): Promise<Project | null> {
+  try {
+    const project = await prisma.project.update({
+      where: { id },
+      data,
+    });
+    const currentBranch = await getCurrentBranch(project.path);
+    return transformProject(project, currentBranch);
+  } catch (error) {
+    // Return null if project not found
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        return null;
+      }
+    }
+    throw error;
+  }
+}

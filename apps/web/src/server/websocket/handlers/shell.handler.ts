@@ -1,6 +1,6 @@
 import type { WebSocket } from "@fastify/websocket";
 import type { FastifyInstance } from "fastify";
-import { sendMessage } from "../utils/send-message.js";
+import { sendMessage } from "../infrastructure/send-message.js";
 import { Channels, GlobalEventTypes, ShellEventTypes, parseChannel } from "@/shared/websocket";
 
 /**

@@ -5,9 +5,9 @@ import type {
   UnsubscribeMessageData,
 } from "../types.js";
 import { GlobalEventTypes, Channels } from "@/shared/websocket/index.js";
-import { subscribe, unsubscribe } from "../utils/subscriptions.js";
-import { validateChannelAccess } from "../utils/permissions.js";
-import { sendMessage } from "../utils/send-message.js";
+import { subscribe, unsubscribe } from "../infrastructure/subscriptions.js";
+import { validateChannelAccess } from "../infrastructure/permissions.js";
+import { sendMessage } from "../infrastructure/send-message.js";
 
 /**
  * Handle global events on the global channel

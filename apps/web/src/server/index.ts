@@ -18,11 +18,10 @@ import { registerWebSocket, activeSessions, reconnectionManager } from '@/server
 import { registerShellRoute } from '@/server/routes/shell';
 import { authPlugin } from '@/server/plugins/auth';
 import { setupGracefulShutdown } from '@/server/utils/shutdown';
+import { config } from '@/server/config/Configuration.js';
 import {
-  NotFoundError,
-  UnauthorizedError,
-  ForbiddenError,
-  ValidationError as CustomValidationError,
+  AppError,
+  ConflictError,
   buildErrorResponse
 } from '@/server/utils/error';
 
@@ -30,10 +29,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export async function createServer() {
+  // Validate configuration on startup (will throw if invalid)
+  const serverConfig = config.get('server');
+
   const fastify = Fastify({
-    logger: process.env.NODE_ENV === 'production'
+    logger: serverConfig.nodeEnv === 'production'
       ? {
-          level: process.env.LOG_LEVEL || 'info',
+          level: serverConfig.logLevel,
           transport: {
             targets: [
               // Console output (for Docker, PM2, systemd)
@@ -46,17 +48,17 @@ export async function createServer() {
               {
                 target: 'pino/file',
                 options: {
-                  destination: process.env.LOG_FILE || './logs/app.log',
+                  destination: serverConfig.logFile,
                   mkdir: true
                 },
-                level: process.env.LOG_LEVEL || 'info'
+                level: serverConfig.logLevel
               }
             ]
           }
         }
       : {
           // Development: pretty-print to console + log file
-          level: process.env.LOG_LEVEL || 'info',
+          level: serverConfig.logLevel,
           transport: {
             targets: [
               // Pretty console output
@@ -67,16 +69,16 @@ export async function createServer() {
                   translateTime: 'HH:MM:ss Z',
                   ignore: 'pid,hostname'
                 },
-                level: process.env.LOG_LEVEL || 'info'
+                level: serverConfig.logLevel
               },
               // File output (plain JSON)
               {
                 target: 'pino/file',
                 options: {
-                  destination: process.env.LOG_FILE || './logs/app.log',
+                  destination: serverConfig.logFile,
                   mkdir: true
                 },
-                level: process.env.LOG_LEVEL || 'info'
+                level: serverConfig.logLevel
               }
             ]
           }
@@ -135,43 +137,58 @@ export async function createServer() {
       });
     }
 
-    // Handle custom error classes
-    if (error instanceof NotFoundError) {
-      return reply.status(404).send(buildErrorResponse(404, error.message));
-    }
-    if (error instanceof UnauthorizedError) {
-      return reply.status(401).send(buildErrorResponse(401, error.message));
-    }
-    if (error instanceof ForbiddenError) {
-      return reply.status(403).send(buildErrorResponse(403, error.message));
-    }
-    if (error instanceof CustomValidationError) {
-      return reply.status(400).send(buildErrorResponse(400, error.message, 'VALIDATION_ERROR'));
+    // Handle all AppError subclasses (new and legacy)
+    if (error instanceof AppError) {
+      // Log error with appropriate level
+      const logLevel = error.statusCode >= 500 ? 'error' : 'warn';
+      fastify.log[logLevel]({
+        err: error,
+        statusCode: error.statusCode,
+        code: error.code,
+        context: error.context,
+        url: request.url,
+        method: request.method,
+      }, `${error.constructor.name}: ${error.message}`);
+
+      // Use the error's toJSON method for consistent response format
+      return reply.status(error.statusCode).send(error.toJSON());
     }
 
     // Handle Prisma errors
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
         // Record not found
-        return reply.status(404).send(buildErrorResponse(404, 'Resource not found'));
+        return reply.status(404).send(buildErrorResponse(404, 'Resource not found', 'PRISMA_NOT_FOUND'));
       }
       if (error.code === 'P2002') {
         // Unique constraint violation
-        return reply.status(409).send(buildErrorResponse(409, 'Resource already exists', 'DUPLICATE_ERROR'));
+        const conflictError = new ConflictError('Resource already exists', {
+          prismaCode: error.code,
+          meta: error.meta,
+        });
+        return reply.status(409).send(conflictError.toJSON());
       }
+      // Other Prisma errors
+      fastify.log.error({
+        err: error,
+        prismaCode: error.code,
+        url: request.url,
+        method: request.method,
+      }, 'Prisma error');
+      return reply.status(500).send(buildErrorResponse(500, 'Database error', 'DATABASE_ERROR'));
     }
 
-    // Default error handling
+    // Default error handling for unexpected errors
     const statusCode = error.statusCode || 500;
     fastify.log.error({
       err: error,
       url: request.url,
       method: request.method,
-    }, 'Request error');
+    }, 'Unhandled request error');
 
     return reply.status(statusCode).send({
       error: {
-        message: error.message || 'Internal server error',
+        message: statusCode === 500 ? 'Internal server error' : (error.message || 'Request failed'),
         statusCode,
       },
     });
@@ -193,8 +210,9 @@ export async function createServer() {
   );
 
   // Register CORS
+  const corsConfig = config.get('cors');
   await fastify.register(cors, {
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || 'http://localhost:5173',
+    origin: corsConfig.allowedOrigins,
     credentials: true,
   });
 
@@ -258,8 +276,11 @@ export async function createServer() {
 
 // Start server when run directly (not imported as module)
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const PORT = parseInt(process.env.PORT || '3456');
-  const HOST = process.env.HOST || '127.0.0.1';
+  // Validate configuration (will throw on startup if invalid)
+  const serverConfig = config.get('server');
+  const PORT = serverConfig.port;
+  const HOST = serverConfig.host;
+
   const server = await createServer();
 
   await server.listen({
