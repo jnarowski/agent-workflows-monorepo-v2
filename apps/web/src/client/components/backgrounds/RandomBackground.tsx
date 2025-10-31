@@ -162,7 +162,7 @@ export function RandomBackground({
       />
 
       {/* Debug label - shows animation name */}
-      <div className="fixed top-4 left-4 bg-black/50 text-white px-3 py-2 rounded text-sm font-mono z-50">
+      <div className="hidden fixed top-4 left-4 bg-black/50 text-white px-3 py-2 rounded text-sm font-mono z-50">
         {config.name}
         {config.interactive && (
           <span className="ml-2 text-xs opacity-70">(interactive)</span>

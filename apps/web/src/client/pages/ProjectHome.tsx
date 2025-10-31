@@ -71,7 +71,7 @@ export default function ProjectHome() {
     <div className="p-4 md:p-6 space-y-4 md:space-y-6">
       <div>
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <h1 className="text-2xl md:text-3xl font-bold leading-tight break-words flex-1 min-w-0">{project.name}</h1>
+          <h1 className="text-xl md:text-2xl font-semibold leading-tight break-words flex-1 min-w-0">{project.name}</h1>
           <div className="flex items-stretch gap-1 shrink-0">
             <NewSessionButton
               projectId={id!}
@@ -92,18 +92,18 @@ export default function ProjectHome() {
         </div>
       </div>
 
-      <Card>
-        <CardContent className="p-4 md:p-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-xs md:text-sm font-medium">
-                <FolderOpen className="h-4 w-4 text-muted-foreground" />
+      <div className="grid gap-3 md:grid-cols-2">
+        <Card className="border-border/50">
+          <CardContent className="p-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <FolderOpen className="h-3.5 w-3.5" />
                 Project Path
               </div>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="text-xs text-muted-foreground font-mono cursor-help break-all">
+                    <div className="text-sm font-mono cursor-help break-all">
                       {truncatePath(project.path, typeof window !== 'undefined' && window.innerWidth < 768 ? 30 : 60)}
                     </div>
                   </TooltipTrigger>
@@ -113,13 +113,17 @@ export default function ProjectHome() {
                 </Tooltip>
               </TooltipProvider>
             </div>
+          </CardContent>
+        </Card>
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-xs md:text-sm font-medium">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+        <Card className="border-border/50">
+          <CardContent className="p-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <Calendar className="h-3.5 w-3.5" />
                 Created
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-sm">
                 {new Date(project.created_at).toLocaleDateString("en-US", {
                   year: "numeric",
                   month: "long",
@@ -127,9 +131,9 @@ export default function ProjectHome() {
                 })}
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Recent Sessions Section */}
       <Card>
