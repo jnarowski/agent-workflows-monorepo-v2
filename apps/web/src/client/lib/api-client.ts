@@ -50,7 +50,10 @@ class ApiClient {
     const response = await fetch(url, requestOptions);
 
     // Response interceptor - handle 401 globally
-    if (response.status === 401) {
+    // Skip 401 handling for auth endpoints (login/register) since 401 is expected for wrong credentials
+    const isAuthEndpoint = url.includes('/api/auth/login') || url.includes('/api/auth/register');
+
+    if (response.status === 401 && !isAuthEndpoint) {
       // Clear auth state and show error message
       useAuthStore.getState().handleInvalidToken();
 
@@ -106,7 +109,10 @@ class ApiClient {
     });
 
     // Response interceptor - handle 401 globally
-    if (response.status === 401) {
+    // Skip 401 handling for auth endpoints (login/register) since 401 is expected for wrong credentials
+    const isAuthEndpoint = url.includes('/api/auth/login') || url.includes('/api/auth/register');
+
+    if (response.status === 401 && !isAuthEndpoint) {
       useAuthStore.getState().handleInvalidToken();
       window.location.href = '/login';
       throw new ApiError('Session expired', 401);

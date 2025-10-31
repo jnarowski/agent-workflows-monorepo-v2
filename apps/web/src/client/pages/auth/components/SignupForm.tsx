@@ -7,6 +7,7 @@ import {
   FieldLabel,
 } from "@/client/components/ui/field";
 import { Input } from "@/client/components/ui/input";
+import { PasswordStrengthMeter } from "@/client/pages/auth/components/PasswordStrengthMeter";
 import type { FormEvent, ComponentProps } from "react";
 
 interface SignupFormProps extends ComponentProps<"div"> {
@@ -65,6 +66,8 @@ export function SignupForm({
             onChange={(e) => onPasswordChange(e.target.value)}
             required
           />
+          <FieldDescription>Minimum 8 characters required</FieldDescription>
+          <PasswordStrengthMeter password={password} />
         </Field>
         <Field>
           <FieldLabel htmlFor="confirmPassword">

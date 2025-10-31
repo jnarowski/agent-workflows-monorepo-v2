@@ -23,7 +23,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/client/components/ui/empty";
-import { FolderOpen, Plus, Calendar, FolderGit2, Info, Loader2 } from "lucide-react";
+import { FolderOpen, Plus, Calendar, FolderGit2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
 import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
