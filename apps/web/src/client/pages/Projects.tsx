@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
+import { useProjectsWithSessions, useSyncProjects } from "@/client/pages/projects/hooks/useProjects";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import {
   Card,
@@ -23,7 +23,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/client/components/ui/empty";
-import { FolderOpen, Plus, Calendar, FolderGit2, Info } from "lucide-react";
+import { FolderOpen, Plus, Calendar, FolderGit2, Info, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
 import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
@@ -33,6 +33,7 @@ export default function Projects() {
   useDocumentTitle("Projects | Agent Workflows");
   const navigate = useNavigate();
   const { data: projects, isLoading } = useProjectsWithSessions();
+  const { isLoading: isSyncing } = useSyncProjects();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Loading state
@@ -48,6 +49,25 @@ export default function Projects() {
           <Skeleton className="h-48" />
           <Skeleton className="h-48" />
         </div>
+      </div>
+    );
+  }
+
+  // Empty state - syncing projects from Claude CLI
+  if (isSyncing && (!projects || projects.length === 0)) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] p-6">
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Loader2 className="animate-spin" />
+            </EmptyMedia>
+            <EmptyTitle>Importing Projects</EmptyTitle>
+            <EmptyDescription>
+              Syncing your projects from Claude CLI. This will only take a moment...
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       </div>
     );
   }
@@ -72,21 +92,6 @@ export default function Projects() {
               <Plus className="mr-2 h-4 w-4" />
               Create Your First Project
             </Button>
-            <div className="mt-6 p-4 bg-muted/50 rounded-lg max-w-md">
-              <div className="flex items-start gap-3">
-                <Info className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div className="text-sm text-muted-foreground space-y-2">
-                  <p className="font-medium text-foreground">Quick Tips:</p>
-                  <ul className="list-disc list-inside space-y-1">
-                    <li>Projects can contain multiple chat sessions</li>
-                    <li>Each project has its own file explorer and terminal</li>
-                    <li>
-                      Use projects to separate different codebases or workflows
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
           </EmptyContent>
         </Empty>
         <ProjectDialog
