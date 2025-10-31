@@ -72,16 +72,18 @@ export default function ProjectHome() {
       <div>
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <h1 className="text-2xl md:text-3xl font-bold leading-tight break-words flex-1 min-w-0">{project.name}</h1>
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-stretch gap-1 shrink-0">
             <NewSessionButton
               projectId={id!}
               variant="outline"
               size="sm"
+              className="[&>button]:h-full [&]:h-auto"
             />
             <Button
               variant="outline"
               size="sm"
               onClick={() => setEditDialogOpen(true)}
+              className="self-stretch"
             >
               <Pencil className="h-4 w-4 mr-2" />
               Edit
