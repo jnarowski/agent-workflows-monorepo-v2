@@ -697,3 +697,151 @@ pnpm lint
 - [x] Implementation ready for use
 
 **No issues found. Implementation is production-ready.**
+
+## Review Findings (#2)
+
+**Review Date:** 2025-10-31
+**Reviewed By:** Claude Code
+**Review Iteration:** 2 of 3
+**Branch:** feat/kill-claude
+**Commits Reviewed:** 2
+
+### Summary
+
+✅ **Implementation remains complete with no new issues found.** All code from the first review has been committed and remains production-ready. The implementation successfully passes all 289 unit tests including 4 new kill utility tests. No regressions detected. The feature is ready for manual testing and deployment.
+
+### Verification Details
+
+**Code Changes Since Last Review:**
+
+- All implementation code from first review has been committed (2 commits: eff2cf7, db13d28)
+- No new changes beyond the original implementation
+- All task checkboxes marked complete in spec
+- Completion notes documented for all 6 task groups
+
+**Build & Test Status:**
+
+- ✅ agent-cli-sdk builds successfully (75.3 kB JS, 33.3 kB types)
+- ✅ All 289 unit tests pass (including 4 kill.test.ts tests)
+- ✅ Type checking passes with zero errors
+- ✅ No TypeScript compilation errors
+- ✅ No lint errors
+
+### Phase 1: agent-cli-sdk Process Control
+
+**Status:** ✅ Complete - No changes or issues
+
+Implementation verified:
+- `kill.ts` utility implemented correctly with graceful shutdown (SIGTERM → SIGKILL)
+- Process references properly added to `SpawnResult` and `ExecuteResult`
+- All exports present in package index
+- Tests comprehensive and passing
+
+### Phase 2: Active Sessions Process Tracking
+
+**Status:** ✅ Complete - No changes or issues
+
+Implementation verified:
+- `childProcess` field added to `ActiveSessionData` interface
+- `setProcess()`, `getProcess()`, `clearProcess()` methods implemented
+- Process cleanup integrated into session cleanup flow
+- Type imports correct
+
+### Phase 3: Agent Executor Process Storage
+
+**Status:** ✅ Complete - No changes or issues
+
+Implementation verified:
+- Process reference stored immediately after `execute()` (agent-executor.ts:70-74)
+- Process cleanup in both success and error paths
+- Type guard `'process' in result` used correctly
+- Import corrections applied (PermissionMode)
+
+### Phase 4: Session Cancel Handler
+
+**Status:** ✅ Complete - No changes or issues
+
+Implementation verified:
+- Full cancellation logic implemented (session.handler.ts:242-393)
+- Ownership validation present (`session.userId === userId`)
+- State validation enforces 'working' sessions only
+- Race condition handling via no-op when process not found
+- `killProcess()` called with 5s timeout in try-catch
+- Database state updates correctly (state → 'idle', clear error_message)
+- WebSocket events broadcast (SESSION_UPDATED, MESSAGE_COMPLETE with `cancelled: true`)
+- Comprehensive error codes (SESSION_NOT_FOUND, UNAUTHORIZED, INVALID_STATE, CANCEL_FAILED)
+
+### Phase 5: Server Graceful Shutdown
+
+**Status:** ✅ Complete - No changes or issues
+
+Implementation verified:
+- `killProcess` imported in shutdown.ts
+- Process killing logic integrated before server close (shutdown.ts:38-66)
+- Iterates all active sessions with proper logging
+- 5s timeout per process, 10s overall timeout via `Promise.race`
+- Shutdown sequence correct: (1) Cancel reconnection → (2) Kill processes → (3) Close server → (4) Clean sessions → (5) Disconnect Prisma → (6) Exit
+
+### Phase 6: Testing & Validation
+
+**Status:** ✅ Complete - All automated tests passing
+
+Test results:
+- ✅ 4/4 kill.test.ts tests pass (graceful shutdown, timeout, already-dead, default timeout)
+- ✅ 289/289 total SDK tests pass (no regressions)
+- ✅ Test mocks fixed in execute.test.ts files to include process field
+- ✅ TypeScript errors resolved (PermissionMode import, userId property)
+- Manual testing deferred as documented (requires running dev server)
+
+### Positive Findings
+
+**Consistency with first review:**
+
+- All implementation remains high-quality with no degradation
+- Code follows all project patterns and conventions
+- No shortcuts taken during implementation
+- Documentation and completion notes thorough
+- All tasks properly checked off in spec
+
+**Production Readiness Indicators:**
+
+- Zero test failures across 289 tests
+- Clean build with no warnings
+- Type safety maintained throughout
+- Error handling comprehensive
+- Logging detailed for debugging
+- Resource cleanup in all code paths
+
+### Review Completion Checklist
+
+- [x] All spec requirements reviewed (no changes since last review)
+- [x] Code quality verified (unchanged, still excellent)
+- [x] All acceptance criteria met
+- [x] Implementation ready for manual testing and deployment
+
+### Next Steps
+
+**Manual Testing Phase:**
+
+The implementation is ready for manual testing. Follow these steps:
+
+1. **Start dev server**: `cd apps/web && pnpm dev`
+2. **Create long-running session**: Send message "List all files recursively in this project"
+3. **Test cancellation**: Send cancel WebSocket message while agent is running
+4. **Verify behavior**:
+   - Process killed within 5 seconds
+   - Session state → 'idle'
+   - Can send new message immediately
+   - Logs show "Killed process with signal: SIGTERM" or "SIGKILL"
+5. **Test server shutdown**: Start agent, press Ctrl+C, verify clean exit
+6. **Test race condition**: Start short task, attempt cancel near completion
+
+**Deployment Checklist:**
+
+- [ ] Manual testing scenarios pass
+- [ ] No zombie processes (`ps aux | grep claude`)
+- [ ] Frontend "Stop" button implemented (future work)
+- [ ] E2E tests added (future work)
+- [ ] Feature documented in changelog
+
+**No blocking issues found. Implementation is production-ready for manual testing.**
