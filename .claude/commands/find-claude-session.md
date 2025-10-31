@@ -25,7 +25,7 @@ Search through Claude Code session files to find specific sessions based on thei
 ## Workflow
 
 1. **Determine search scope**
-   - If $project-path provided, search only: `$project-path/.claude/projects/*/sessions/*.jsonl`
+   - If $project-path provided, search only: `$project-path/.claude/projects/_/sessions/_.jsonl`
    - Otherwise, search all: `/Users/jnarowski/.claude/projects/*/sessions/*.jsonl`
 
 2. **Search session files**
@@ -56,12 +56,14 @@ Search through Claude Code session files to find specific sessions based on thei
 ## Search Strategy
 
 **High-value signals** (boost relevance):
+
 - Tool uses matching search terms (e.g., searching "Edit tool" finds sessions with Edit tool uses)
 - File paths matching search terms (e.g., "config.ts" finds sessions that touched that file)
 - Recent activity (sessions from today/this week rank higher)
 - Multiple matches in same session (repeated mentions = more relevant)
 
 **Content to search**:
+
 - `tool_use` blocks: tool name, input parameters
 - `text` blocks: message content
 - `tool_result` blocks: output content
@@ -69,6 +71,7 @@ Search through Claude Code session files to find specific sessions based on thei
 - Thinking blocks (if present)
 
 **Example searches**:
+
 - "authentication" → finds sessions mentioning auth, login, JWT, etc.
 - "WebSocket refactor" → finds sessions with WebSocket-related edits
 - "prisma migration" → finds sessions using Prisma commands or editing schema
@@ -116,6 +119,7 @@ Which session would you like to resume?
 ## Report
 
 After searching:
+
 - Report number of sessions searched
 - Display top 5 matches with context snippets
 - Provide exact resume commands for each match
