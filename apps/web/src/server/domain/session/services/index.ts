@@ -4,6 +4,8 @@ export { getSessionMessages } from './getSessionMessages';
 export { createSession } from './createSession';
 export { updateSessionName } from './updateSessionName';
 export { updateSessionMetadata } from './updateSessionMetadata';
+export { updateSession } from './updateSession';
+export { updateSessionState } from './updateSessionState';
 
 // Session sync operations
 export { syncProjectSessions } from './syncProjectSessions';
@@ -14,9 +16,15 @@ export { executeAgent } from './executeAgent';
 export { validateSessionOwnership } from './validateSessionOwnership';
 export { extractUsageFromEvents } from './extractUsageFromEvents';
 export { processImageUploads } from './processImageUploads';
+export { cancelSession } from './cancelSession';
+export { handleExecutionFailure } from './handleExecutionFailure';
 
 // Session utilities
 export { generateSessionName } from './generateSessionName';
+export { storeCliSessionId } from './storeCliSessionId';
+export { cleanupSessionImages } from './cleanupSessionImages';
+export { validateAgentSupported } from './validateAgentSupported';
+export { parseExecutionConfig } from './parseExecutionConfig';
 
 // Re-export types for convenience
 export type {
@@ -26,4 +34,6 @@ export type {
   SessionWithProject,
   ImageProcessingResult,
   GenerateSessionNameOptions,
+  ExecutionConfig,
+  SessionUpdateData,
 } from '../types/index';

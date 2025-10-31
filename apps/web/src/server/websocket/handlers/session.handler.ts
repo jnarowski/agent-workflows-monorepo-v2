@@ -1,9 +1,8 @@
 import type { WebSocket } from "@fastify/websocket";
-import type { FastifyInstance, FastifyBaseLogger } from "fastify";
+import type { FastifyInstance } from "fastify";
 import { prisma } from "@/shared/prisma";
 import type { SessionSendMessageData } from "../types";
 import { sendMessage } from "../infrastructure/send-message";
-import { cleanupTempDir } from "../infrastructure/cleanup";
 import { activeSessions } from "../infrastructure/active-sessions";
 import {
   validateSessionOwnership,
@@ -11,6 +10,13 @@ import {
   executeAgent,
   processImageUploads,
   generateSessionName,
+  updateSessionState,
+  handleExecutionFailure,
+  storeCliSessionId,
+  cleanupSessionImages,
+  validateAgentSupported,
+  parseExecutionConfig,
+  cancelSession,
   type AgentExecuteResult,
 } from "@/server/domain/session/services";
 import { broadcast, subscribe } from "../infrastructure/subscriptions";
@@ -20,17 +26,6 @@ import {
   Channels,
 } from "@/shared/websocket";
 import { parseChannel } from "../infrastructure/channels";
-import { killProcess } from "@repo/agent-cli-sdk";
-
-// ============================================================================
-// Types
-// ============================================================================
-
-interface ExecutionConfig {
-  resume: boolean;
-  permissionMode: "default" | "acceptEdits" | "bypassPermissions" | undefined;
-  model: string | undefined;
-}
 
 // ============================================================================
 // Public API - Session Event Handlers
@@ -81,11 +76,12 @@ export async function handleSessionSendMessage(
   );
 
   // Validate agent is supported
-  if (!isAgentSupported(session.agent)) {
+  const validation = await validateAgentSupported(session.agent);
+  if (!validation.supported) {
     broadcast(Channels.session(sessionId), {
       type: SessionEventTypes.ERROR,
       data: {
-        error: `Agent type '${session.agent}' is not yet implemented`,
+        error: validation.error || "Unsupported agent",
         sessionId,
         code: "UNSUPPORTED_AGENT",
       },
@@ -95,7 +91,7 @@ export async function handleSessionSendMessage(
   }
 
   // Parse execution configuration
-  const config = parseExecutionConfig(data.config);
+  const config = await parseExecutionConfig(data.config);
 
   // Determine session ID to use (CLI session ID or database ID)
   const cliSessionId = session.cli_session_id || sessionId;
@@ -106,24 +102,7 @@ export async function handleSessionSendMessage(
   );
 
   // Set session state to working
-  await prisma.agentSession.update({
-    where: { id: sessionId },
-    data: {
-      state: "working",
-      error_message: null, // Clear any previous error
-    },
-  });
-
-  // Broadcast session state update
-  broadcast(Channels.session(sessionId), {
-    type: SessionEventTypes.SESSION_UPDATED,
-    data: {
-      sessionId,
-      state: 'working',
-      error_message: null,
-      updated_at: new Date().toISOString(),
-    },
-  });
+  await updateSessionState(sessionId, "working");
 
   // Execute agent command
   fastify.log.info(
@@ -166,7 +145,7 @@ export async function handleSessionSendMessage(
       { sessionId, error: result.error },
       "[WebSocket] Execution failed, skipping post-processing"
     );
-    await handleExecutionFailure(socket, sessionId, result, fastify);
+    await handleExecutionFailure(sessionId, result, true, fastify.log);
     await cleanupSessionImages(sessionId, fastify.log);
     return;
   }
@@ -190,24 +169,7 @@ export async function handleSessionSendMessage(
   );
 
   // Set session state to idle (successful completion)
-  await prisma.agentSession.update({
-    where: { id: sessionId },
-    data: {
-      state: "idle",
-      error_message: null,
-    },
-  });
-
-  // Broadcast session state update
-  broadcast(Channels.session(sessionId), {
-    type: SessionEventTypes.SESSION_UPDATED,
-    data: {
-      sessionId,
-      state: 'idle',
-      error_message: null,
-      updated_at: new Date().toISOString(),
-    },
-  });
+  await updateSessionState(sessionId, "idle");
 
   // Cleanup and complete
   await cleanupSessionImages(sessionId, fastify.log);
@@ -234,140 +196,16 @@ export async function handleSessionCancel(
   fastify.log.info({ sessionId, userId }, "[WebSocket] Session cancel requested");
 
   try {
-    // Validate session ownership
-    const session = await prisma.agentSession.findUnique({
-      where: { id: sessionId },
-    });
+    // Delegate all business logic to domain service
+    const result = await cancelSession(sessionId, userId, true, fastify.log);
 
-    if (!session) {
-      broadcast(Channels.session(sessionId), {
-        type: SessionEventTypes.ERROR,
-        data: {
-          error: "Session not found",
-          sessionId,
-          code: "SESSION_NOT_FOUND",
-        },
-      });
-      return;
-    }
-
-    if (session.userId !== userId) {
-      broadcast(Channels.session(sessionId), {
-        type: SessionEventTypes.ERROR,
-        data: {
-          error: "Unauthorized: session does not belong to user",
-          sessionId,
-          code: "UNAUTHORIZED",
-        },
-      });
-      return;
-    }
-
-    // Check if session is in 'working' state
-    if (session.state !== "working") {
-      broadcast(Channels.session(sessionId), {
-        type: SessionEventTypes.ERROR,
-        data: {
-          error: `Cannot cancel session in '${session.state}' state`,
-          sessionId,
-          code: "INVALID_STATE",
-        },
-      });
-      return;
-    }
-
-    // Retrieve process from active sessions
-    const process = activeSessions.getProcess(sessionId);
-
-    if (!process) {
-      fastify.log.warn(
-        { sessionId },
-        "[WebSocket] No process found for session (may have already completed)"
-      );
-
-      // Update state to idle anyway (race condition handling)
-      await prisma.agentSession.update({
-        where: { id: sessionId },
-        data: {
-          state: "idle",
-          error_message: null,
-          updated_at: new Date(),
-        },
-      });
-
-      broadcast(Channels.session(sessionId), {
-        type: SessionEventTypes.SESSION_UPDATED,
-        data: {
-          sessionId,
-          state: "idle",
-          error_message: null,
-          updated_at: new Date().toISOString(),
-        },
-      });
-
-      return;
-    }
-
-    // Kill the process with graceful shutdown
-    fastify.log.info(
-      { sessionId, pid: process.pid },
-      "[WebSocket] Killing agent process"
-    );
-
-    try {
-      const killResult = await killProcess(process, { timeoutMs: 5000 });
-
-      fastify.log.info(
-        {
-          sessionId,
-          pid: process.pid,
-          killed: killResult.killed,
-          signal: killResult.signal,
-        },
-        "[WebSocket] Process kill result"
-      );
-    } catch (killError) {
-      // Log but don't fail - process might already be dead
-      fastify.log.warn(
-        { err: killError, sessionId, pid: process.pid },
-        "[WebSocket] Error killing process (may already be dead)"
+    if (!result.success) {
+      // Error already broadcasted by domain service
+      fastify.log.error(
+        { sessionId, error: result.error },
+        "[WebSocket] Session cancellation failed"
       );
     }
-
-    // Clear process reference
-    activeSessions.clearProcess(sessionId);
-
-    // Update database state to idle
-    await prisma.agentSession.update({
-      where: { id: sessionId },
-      data: {
-        state: "idle",
-        error_message: null,
-        updated_at: new Date(),
-      },
-    });
-
-    // Broadcast cancellation complete
-    broadcast(Channels.session(sessionId), {
-      type: SessionEventTypes.SESSION_UPDATED,
-      data: {
-        sessionId,
-        state: "idle",
-        error_message: null,
-        updated_at: new Date().toISOString(),
-      },
-    });
-
-    // Also send message_complete for consistency
-    broadcast(Channels.session(sessionId), {
-      type: SessionEventTypes.MESSAGE_COMPLETE,
-      data: {
-        sessionId,
-        cancelled: true,
-      },
-    });
-
-    fastify.log.info({ sessionId }, "[WebSocket] Session cancelled successfully");
   } catch (err: unknown) {
     const errorMessage =
       err instanceof Error ? err.message : "Failed to cancel session";
@@ -499,83 +337,6 @@ export async function handleSessionEvent(
 // ============================================================================
 
 /**
- * Check if an agent type is supported
- *
- * @private
- */
-function isAgentSupported(agent: string): boolean {
-  return agent === "claude" || agent === "codex";
-}
-
-/**
- * Parse execution configuration from data config
- *
- * @private
- */
-function parseExecutionConfig(config: unknown): ExecutionConfig {
-  const configObj = config as Record<string, unknown> | undefined;
-
-  return {
-    resume: configObj?.resume === true,
-    permissionMode: configObj?.permissionMode as
-      | "default"
-      | "acceptEdits"
-      | "bypassPermissions"
-      | undefined,
-    model: configObj?.model as string | undefined,
-  };
-}
-
-/**
- * Handle agent execution failure
- *
- * Logs the error and sends error message to the client via WebSocket.
- *
- * @private
- */
-async function handleExecutionFailure(
-  _socket: WebSocket,
-  sessionId: string,
-  result: AgentExecuteResult,
-  fastify: FastifyInstance
-): Promise<void> {
-  const errorMessage = result.error || "Command failed with non-zero exit code";
-
-  fastify.log.error(
-    { sessionId, exitCode: result.exitCode, error: errorMessage },
-    "[WebSocket] Agent CLI SDK command failed"
-  );
-
-  // Set session state to error
-  await prisma.agentSession.update({
-    where: { id: sessionId },
-    data: {
-      state: "error",
-      error_message: errorMessage,
-    },
-  });
-
-  // Broadcast session state update
-  broadcast(Channels.session(sessionId), {
-    type: SessionEventTypes.SESSION_UPDATED,
-    data: {
-      sessionId,
-      state: 'error',
-      error_message: errorMessage,
-      updated_at: new Date().toISOString(),
-    },
-  });
-
-  broadcast(Channels.session(sessionId), {
-    type: SessionEventTypes.ERROR,
-    data: {
-      error: errorMessage,
-      sessionId,
-    },
-  });
-}
-
-/**
  * Perform post-processing tasks after successful execution
  *
  * Handles:
@@ -625,39 +386,6 @@ async function performPostProcessingTasks(
 }
 
 /**
- * Store the CLI-generated session ID
- *
- * @private
- */
-async function storeCliSessionId(
-  sessionId: string,
-  cliSessionId: string | undefined,
-  logger: FastifyBaseLogger
-): Promise<void> {
-  if (!cliSessionId) {
-    return;
-  }
-
-  try {
-    logger.info(
-      { sessionId, cliSessionId },
-      "[WebSocket] Storing CLI-generated session ID"
-    );
-
-    await prisma.agentSession.update({
-      where: { id: sessionId },
-      data: { cli_session_id: cliSessionId },
-    });
-  } catch (err: unknown) {
-    // Non-critical error - log and continue
-    logger.warn(
-      { err, sessionId },
-      "[WebSocket] Failed to store CLI session ID (non-critical)"
-    );
-  }
-}
-
-/**
  * Generate and store a session name from the user's first message
  *
  * @private
@@ -665,7 +393,7 @@ async function storeCliSessionId(
 async function generateAndStoreName(
   sessionId: string,
   userMessage: string,
-  logger: FastifyBaseLogger
+  logger: import("fastify").FastifyBaseLogger
 ): Promise<void> {
   logger.info(
     { sessionId, userMessageLength: userMessage.length },
@@ -733,7 +461,7 @@ async function generateAndStoreName(
 function extractAndLogUsage(
   sessionId: string,
   result: AgentExecuteResult,
-  logger: FastifyBaseLogger
+  logger: import("fastify").FastifyBaseLogger
 ): void {
   const usage = extractUsageFromEvents(result.events);
 
@@ -741,22 +469,5 @@ function extractAndLogUsage(
     logger.info({ usage, sessionId }, "Extracted usage data");
   } else {
     logger.warn({ sessionId }, "No usage data found in result.events");
-  }
-}
-
-/**
- * Clean up temporary image files for a session
- *
- * @private
- */
-async function cleanupSessionImages(
-  sessionId: string,
-  logger: FastifyBaseLogger
-): Promise<void> {
-  const sessionData = activeSessions.get(sessionId);
-  await cleanupTempDir(sessionData?.tempImageDir, logger);
-
-  if (sessionData) {
-    activeSessions.update(sessionId, { tempImageDir: undefined });
   }
 }
