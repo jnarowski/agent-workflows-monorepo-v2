@@ -4,7 +4,7 @@
  * Shows real-time message processing as Codex responds
  */
 
-import { execute } from '../../src/index.js';
+import { execute } from '../../src/index';
 
 async function main() {
   console.log('Running Codex command with streaming callbacks...\n');

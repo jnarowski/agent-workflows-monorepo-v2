@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { wsMetrics } from "@/server/websocket/infrastructure/metrics.js";
+import { wsMetrics } from "@/server/websocket/infrastructure/metrics";
 
 /**
  * WebSocket metrics endpoint

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import type { ChildProcess } from 'node:child_process';
-import { execute } from './execute.js';
-import * as spawnModule from '../utils/spawn.js';
-import type { SpawnResult } from '../utils/spawn.js';
-import * as detectCliModule from './detectCli.js';
+import { execute } from './execute';
+import * as spawnModule from '../utils/spawn';
+import type { SpawnResult } from '../utils/spawn';
+import * as detectCliModule from './detectCli';
 
 // Mock the spawn module
 vi.mock('../utils/spawn', () => ({

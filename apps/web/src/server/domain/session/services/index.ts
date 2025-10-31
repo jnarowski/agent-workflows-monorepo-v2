@@ -1,22 +1,22 @@
 // Session CRUD operations
-export { getSessionsByProject } from './getSessionsByProject.js';
-export { getSessionMessages } from './getSessionMessages.js';
-export { createSession } from './createSession.js';
-export { updateSessionName } from './updateSessionName.js';
-export { updateSessionMetadata } from './updateSessionMetadata.js';
+export { getSessionsByProject } from './getSessionsByProject';
+export { getSessionMessages } from './getSessionMessages';
+export { createSession } from './createSession';
+export { updateSessionName } from './updateSessionName';
+export { updateSessionMetadata } from './updateSessionMetadata';
 
 // Session sync operations
-export { syncProjectSessions } from './syncProjectSessions.js';
-export { parseJSONLFile } from './parseJSONLFile.js';
+export { syncProjectSessions } from './syncProjectSessions';
+export { parseJSONLFile } from './parseJSONLFile';
 
 // WebSocket operations
-export { executeAgent } from './executeAgent.js';
-export { validateSessionOwnership } from './validateSessionOwnership.js';
-export { extractUsageFromEvents } from './extractUsageFromEvents.js';
-export { processImageUploads } from './processImageUploads.js';
+export { executeAgent } from './executeAgent';
+export { validateSessionOwnership } from './validateSessionOwnership';
+export { extractUsageFromEvents } from './extractUsageFromEvents';
+export { processImageUploads } from './processImageUploads';
 
 // Session utilities
-export { generateSessionName } from './generateSessionName.js';
+export { generateSessionName } from './generateSessionName';
 
 // Re-export types for convenience
 export type {
@@ -26,4 +26,4 @@ export type {
   SessionWithProject,
   ImageProcessingResult,
   GenerateSessionNameOptions,
-} from '../types/index.js';
+} from '../types/index';

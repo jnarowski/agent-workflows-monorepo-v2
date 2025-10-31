@@ -5,7 +5,7 @@ import type {
   ProjectWithSessions,
 } from "@/shared/types/project.types";
 import type { SessionResponse } from "@/shared/types/agent-session.types";
-import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch.js";
+import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch";
 
 /**
  * Transform Prisma session to API session format

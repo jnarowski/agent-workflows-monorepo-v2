@@ -1,7 +1,7 @@
 import * as pty from 'node-pty';
 import * as os from 'os';
-import { getProjectById } from '@/server/domain/project/services/getProjectById.js';
-import { setShellSession } from './getShellSession.js';
+import { getProjectById } from '@/server/domain/project/services/getProjectById';
+import { setShellSession } from './getShellSession';
 
 /**
  * Detect platform and return appropriate shell configuration

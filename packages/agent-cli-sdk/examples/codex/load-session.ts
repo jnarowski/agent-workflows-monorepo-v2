@@ -4,7 +4,7 @@
  * Demonstrates how to read session files and analyze the conversation
  */
 
-import { loadMessages, execute } from '../../src/index.js';
+import { loadMessages, execute } from '../../src/index';
 
 async function main() {
   console.log('=== Load Session Example ===\n');

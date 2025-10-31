@@ -1,6 +1,6 @@
 import { execute, type PermissionMode } from "@repo/agent-cli-sdk";
 import type { FastifyBaseLogger } from "fastify";
-import { activeSessions } from "@/server/websocket/infrastructure/active-sessions.js";
+import { activeSessions } from "@/server/websocket/infrastructure/active-sessions";
 
 export interface AgentExecuteConfig {
   agent: "claude" | "codex";

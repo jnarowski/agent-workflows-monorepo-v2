@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, existsSync } from "fs";
-import { getConfigPath, resolvePath, ensureDirectoryExists } from "./paths.js";
+import { getConfigPath, resolvePath, ensureDirectoryExists } from "./paths";
 
 export interface AgentWorkflowsConfig {
   uiPort: number;

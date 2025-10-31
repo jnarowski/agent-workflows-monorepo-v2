@@ -9,7 +9,7 @@
  */
 
 // Re-export all shared WebSocket types
-export * from '@/shared/websocket/index.js'
+export * from '@/shared/websocket/index'
 
 /**
  * Payload for session send_message events

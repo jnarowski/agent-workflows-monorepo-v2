@@ -11,7 +11,7 @@
  * These errors should be logged with full stack traces and investigated.
  */
 
-import { AppError } from './AppError.js';
+import { AppError } from './AppError';
 
 export class InternalServerError extends AppError {
   readonly statusCode = 500;

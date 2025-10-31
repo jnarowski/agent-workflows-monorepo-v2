@@ -18,11 +18,11 @@
  * Sessions are stored in ~/.gemini/tmp/<project-hash>/ but cannot be resumed.
  */
 
-import type { UnifiedMessage } from '../types/unified.js';
-import type { PermissionMode } from '../types/permissions.js';
-import { spawnProcess } from '../utils/spawn.js';
-import { extractJSON } from '../utils/extractJson.js';
-import { detectCli } from './detectCli.js';
+import type { UnifiedMessage } from '../types/unified';
+import type { PermissionMode } from '../types/permissions';
+import { spawnProcess } from '../utils/spawn';
+import { extractJSON } from '../utils/extractJson';
+import { detectCli } from './detectCli';
 
 // ============================================================================
 // Types

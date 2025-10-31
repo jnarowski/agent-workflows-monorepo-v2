@@ -5,8 +5,8 @@
  * Provides type-safe access to environment variables and configuration values.
  */
 
-import { ConfigSchema } from './schemas.js';
-import type { AppConfig } from './types.js';
+import { ConfigSchema } from './schemas';
+import type { AppConfig } from './types';
 
 /**
  * Configuration singleton class

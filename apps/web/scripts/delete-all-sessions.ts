@@ -6,7 +6,7 @@
  * This does NOT delete the actual JSONL files from the filesystem.
  */
 
-import { prisma } from '../src/shared/prisma.js';
+import { prisma } from '../src/shared/prisma';
 
 async function deleteAllSessions() {
   console.log('🗑️  Deleting all agent sessions...');

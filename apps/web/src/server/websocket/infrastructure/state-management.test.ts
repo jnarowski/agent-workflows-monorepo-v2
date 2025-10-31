@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
-import { ActiveSessionsManager } from "./active-sessions.js";
-import { ReconnectionManager } from "./reconnection.js";
+import { ActiveSessionsManager } from "./active-sessions";
+import { ReconnectionManager } from "./reconnection";
 import fs from "fs/promises";
 
 describe("State Management", () => {

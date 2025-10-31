@@ -1,4 +1,4 @@
-import type { ExecutionResponse } from '../types/workflow.js';
+import type { ExecutionResponse } from '../types/workflow';
 
 /**
  * Extracts valid JSON from an ExecutionResponse that may contain mixed text and JSON

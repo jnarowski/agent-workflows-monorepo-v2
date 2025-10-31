@@ -1,7 +1,7 @@
-import type { CommandDefinition } from '../types/workflow.js';
+import type { CommandDefinition } from '../types/workflow';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
-import { generateResponseTypeCode, commandNameToTypeName } from './generateCommandResponseTypes.js';
+import { generateResponseTypeCode, commandNameToTypeName } from './generateCommandResponseTypes';
 
 /**
  * Generate TypeScript code from command definitions
@@ -125,7 +125,7 @@ ${responseTypes ? '\n' + responseTypes : ''}${responsesInterface ? '\n' + respon
  * @param outputPath - Path to write generated TypeScript file
  */
 export async function generateSlashCommandTypesFromDir(inputDir: string, outputPath: string): Promise<void> {
-  const { parseSlashCommands } = await import('./parseSlashCommands.js');
+  const { parseSlashCommands } = await import('./parseSlashCommands');
 
   // Parse commands
   const commands = await parseSlashCommands(inputDir);

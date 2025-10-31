@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { generateWorkflowId } from './generateWorkflowId.js';
+import { generateWorkflowId } from './generateWorkflowId';
 
 describe('generateWorkflowId', () => {
   const mockDate = new Date('2025-10-18T14:30:22Z'); // UTC time

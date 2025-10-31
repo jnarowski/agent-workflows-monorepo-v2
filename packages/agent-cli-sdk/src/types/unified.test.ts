@@ -30,7 +30,7 @@ describe('Tool Input Types', () => {
 
     it('should match real JSONL data structure', () => {
       const input: BashToolInput = {
-        command: 'find . -maxdepth 3 -type f -name "*.json" -o -name "*.md" -o -name "*.ts" -o -name "*.js" | head -50',
+        command: 'find . -maxdepth 3 -type f -name "*.json" -o -name "*.md" -o -name "*.ts" -o -name "*" | head -50',
         description: 'List key files in the project',
       };
 

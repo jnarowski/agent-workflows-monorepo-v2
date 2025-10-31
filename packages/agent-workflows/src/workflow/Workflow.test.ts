@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { promises as fs } from "fs";
-import { Workflow, type WorkflowConfig, type ExecuteStepConfig, type ExecuteCliStepConfig } from "./Workflow.js";
-import { FileStorage, type FileStorageConfig } from "../storage/FileStorage.js";
-import type { Cli, ExecutionResponse } from "../types/workflow.js";
+import { Workflow, type WorkflowConfig, type ExecuteStepConfig, type ExecuteCliStepConfig } from "./Workflow";
+import { FileStorage, type FileStorageConfig } from "../storage/FileStorage";
+import type { Cli, ExecutionResponse } from "../types/workflow";
 
 const TEST_STATE_DIR = ".agent/workflows/logs-test-workflow";
 

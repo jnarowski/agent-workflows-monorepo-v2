@@ -1,0 +1,12 @@
+{
+  "workflowId": "test-metadata-1761927714556",
+  "createdAt": "2025-10-31T16:21:54.556Z",
+  "updatedAt": "2025-10-31T16:21:54.556Z",
+  "status": "running",
+  "stepStatuses": {},
+  "steps": {},
+  "branchName": "feat/test",
+  "step1": {
+    "result": "success"
+  }
+}

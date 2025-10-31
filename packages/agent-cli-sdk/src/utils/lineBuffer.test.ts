@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { createLineBuffer } from './lineBuffer.js';
+import { createLineBuffer } from './lineBuffer';
 
 describe('createLineBuffer', () => {
   it('should emit complete lines immediately', () => {

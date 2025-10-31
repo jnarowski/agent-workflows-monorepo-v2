@@ -1,5 +1,5 @@
-import { prisma } from "@/shared/prisma.js";
-import { parseChannel } from "./channels.js";
+import { prisma } from "@/shared/prisma";
+import { parseChannel } from "./channels";
 
 /**
  * Permission Validation Utilities

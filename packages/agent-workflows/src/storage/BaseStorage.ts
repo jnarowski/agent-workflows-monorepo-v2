@@ -1,4 +1,4 @@
-import type { WorkflowStateData } from "../types/workflow.js";
+import type { WorkflowStateData } from "../types/workflow";
 
 /**
  * Configuration for BaseStorage

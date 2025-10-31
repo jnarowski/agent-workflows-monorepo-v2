@@ -1,6 +1,6 @@
 import type { FastifyBaseLogger } from 'fastify';
-import { getShellSession, removeShellSession } from './getShellSession.js';
-import { cleanupShellSession } from './cleanupShellSession.js';
+import { getShellSession, removeShellSession } from './getShellSession';
+import { cleanupShellSession } from './cleanupShellSession';
 
 /**
  * Destroy a shell session

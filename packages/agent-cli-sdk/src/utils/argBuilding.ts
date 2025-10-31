@@ -1,4 +1,4 @@
-import type { PermissionMode } from '../types/permissions.js';
+import type { PermissionMode } from '../types/permissions';
 
 /**
  * Converts permission mode to CLI flags

@@ -4,9 +4,9 @@ import {
   isGlobalEvent,
   isShellEvent,
   isWebSocketMessage,
-} from './guards.js';
-import { SessionEventTypes, GlobalEventTypes, ShellEventTypes } from './types.js';
-import type { ChannelEvent } from './types.js';
+} from './guards';
+import { SessionEventTypes, GlobalEventTypes, ShellEventTypes } from './types';
+import type { ChannelEvent } from './types';
 
 describe('Type Guards', () => {
   describe('isSessionEvent', () => {

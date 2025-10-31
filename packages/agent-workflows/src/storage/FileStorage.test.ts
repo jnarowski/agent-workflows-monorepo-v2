@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "fs/promises";
 import { join } from "path";
-import { FileStorage, type FileStorageConfig } from "./FileStorage.js";
+import { FileStorage, type FileStorageConfig } from "./FileStorage";
 
 const TEST_STATE_DIR = ".agent/workflows/logs-test";
 

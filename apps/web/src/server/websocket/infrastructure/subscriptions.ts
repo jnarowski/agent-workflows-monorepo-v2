@@ -1,6 +1,6 @@
 import type { WebSocket } from "@fastify/websocket";
-import type { ChannelEvent } from "@/shared/websocket/index.js";
-import { wsMetrics } from "./metrics.js";
+import type { ChannelEvent } from "@/shared/websocket/index";
+import { wsMetrics } from "./metrics";
 
 /**
  * Channel-based WebSocket Subscription Manager

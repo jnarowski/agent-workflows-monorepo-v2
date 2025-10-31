@@ -1,23 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getCapabilities, type AgentType } from './getCapabilities.js';
+import { getCapabilities, type AgentType } from './getCapabilities';
 
 // Mock the detectCli functions
-vi.mock('../claude/detectCli.js', () => ({
+vi.mock('../claude/detectCli', () => ({
   detectCli: vi.fn(),
 }));
 
-vi.mock('../codex/detectCli.js', () => ({
+vi.mock('../codex/detectCli', () => ({
   detectCli: vi.fn(),
 }));
 
-vi.mock('../gemini/detectCli.js', () => ({
+vi.mock('../gemini/detectCli', () => ({
   detectCli: vi.fn(),
 }));
 
 // Import mocked functions
-import { detectCli as detectClaudeCli } from '../claude/detectCli.js';
-import { detectCli as detectCodexCli } from '../codex/detectCli.js';
-import { detectCli as detectGeminiCli } from '../gemini/detectCli.js';
+import { detectCli as detectClaudeCli } from '../claude/detectCli';
+import { detectCli as detectCodexCli } from '../codex/detectCli';
+import { detectCli as detectGeminiCli } from '../gemini/detectCli';
 
 describe('getCapabilities', () => {
   beforeEach(() => {

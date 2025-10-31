@@ -9,7 +9,7 @@ import {
   getSubscriberCount,
   getActiveChannels,
   clearAllSubscriptions,
-} from "../subscriptions.js";
+} from "../subscriptions";
 
 /**
  * Mock WebSocket factory

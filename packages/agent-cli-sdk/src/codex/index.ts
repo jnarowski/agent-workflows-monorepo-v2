@@ -7,9 +7,9 @@
  * @packageDocumentation
  */
 
-export { parse } from './parse.js';
-export { execute } from './execute.js';
-export { loadSession } from './loadSession.js';
-export { detectCli } from './detectCli.js';
-export type * from './types.js';
-export type { ExecuteOptions, ExecuteResult, OnEventData, OnStdoutData } from './execute.js';
+export { parse } from './parse';
+export { execute } from './execute';
+export { loadSession } from './loadSession';
+export { detectCli } from './detectCli';
+export type * from './types';
+export type { ExecuteOptions, ExecuteResult, OnEventData, OnStdoutData } from './execute';

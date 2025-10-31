@@ -5,8 +5,8 @@
  * Supports subcommands like: agent-workflows generate-slash-types
  */
 
-import { parseSlashCommands } from "../utils/parseSlashCommands.js";
-import { generateSlashCommandTypesCode } from "../utils/generateSlashCommandTypes.js";
+import { parseSlashCommands } from "../utils/parseSlashCommands";
+import { generateSlashCommandTypesCode } from "../utils/generateSlashCommandTypes";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 

@@ -6,7 +6,7 @@ const resolveConfig = {
   alias: {
     "@": path.resolve(__dirname, "./src"),
   },
-  extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],
+  extensions: [".mjs", "", ".mts", ".ts", ".jsx", ".tsx", ".json"],
 };
 
 export default defineConfig({
@@ -19,7 +19,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    extensions: [".mjs", ".js", ".mts", ".ts", ".jsx", ".tsx", ".json"],
+    extensions: [".mjs", "", ".mts", ".ts", ".jsx", ".tsx", ".json"],
   },
   test: {
     globals: true,

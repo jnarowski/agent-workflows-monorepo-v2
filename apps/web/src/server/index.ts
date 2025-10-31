@@ -18,13 +18,13 @@ import { registerWebSocket, activeSessions, reconnectionManager } from '@/server
 import { registerShellRoute } from '@/server/routes/shell';
 import { authPlugin } from '@/server/plugins/auth';
 import { setupGracefulShutdown } from '@/server/utils/shutdown';
-import { config } from '@/server/config/Configuration.js';
+import { config } from '@/server/config/Configuration';
 import {
   AppError,
   ConflictError,
   buildErrorResponse
 } from '@/server/utils/error';
-import { ServiceUnavailableError } from '@/server/errors/ServiceUnavailableError.js';
+import { ServiceUnavailableError } from '@/server/errors/ServiceUnavailableError';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

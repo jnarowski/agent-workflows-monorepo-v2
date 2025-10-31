@@ -4,7 +4,7 @@
  * Demonstrates how to get structured data from Codex's response
  */
 
-import { execute } from '../../src/index.js';
+import { execute } from '../../src/index';
 
 interface FileInfo {
   name: string;

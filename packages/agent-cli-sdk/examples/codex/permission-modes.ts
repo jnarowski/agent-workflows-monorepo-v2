@@ -4,7 +4,7 @@
  * Shows how to control file operations and command execution safety
  */
 
-import { execute } from '../../src/index.js';
+import { execute } from '../../src/index';
 
 async function main() {
   console.log('=== Permission Modes Example ===\n');

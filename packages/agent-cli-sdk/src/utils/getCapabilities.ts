@@ -1,6 +1,6 @@
-import { detectCli as detectClaudeCli } from '../claude/detectCli.js';
-import { detectCli as detectCodexCli } from '../codex/detectCli.js';
-import { detectCli as detectGeminiCli } from '../gemini/detectCli.js';
+import { detectCli as detectClaudeCli } from '../claude/detectCli';
+import { detectCli as detectCodexCli } from '../codex/detectCli';
+import { detectCli as detectGeminiCli } from '../gemini/detectCli';
 
 /**
  * Agent type representing supported AI CLI tools.

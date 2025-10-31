@@ -1,4 +1,4 @@
-import { detectCliGeneric } from '../utils/cliDetection.js';
+import { detectCliGeneric } from '../utils/cliDetection';
 
 /**
  * Detects the Claude CLI by checking multiple sources

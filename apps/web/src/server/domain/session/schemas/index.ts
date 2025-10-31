@@ -8,4 +8,4 @@ export {
   sessionIdSchema,
   projectIdSchema,
   updateSessionNameSchema,
-} from '@/server/schemas/session.js';
+} from '@/server/schemas/session';

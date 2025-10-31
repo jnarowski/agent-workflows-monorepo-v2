@@ -1,4 +1,4 @@
-import type { PermissionMode } from './permissions.js';
+import type { PermissionMode } from './permissions';
 
 /**
  * Base options shared across all execute functions.

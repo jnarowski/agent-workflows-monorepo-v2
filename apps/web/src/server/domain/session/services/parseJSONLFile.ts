@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import fs from 'fs/promises';
 import type { AgentSessionMetadata } from '@/shared/types/agent-session.types';
-import { isSystemMessage, stripXmlTags } from '@/shared/utils/message.utils.js';
+import { isSystemMessage, stripXmlTags } from '@/shared/utils/message.utils';
 
 /**
  * Parse a JSONL file to extract session metadata

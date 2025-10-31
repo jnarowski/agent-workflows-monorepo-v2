@@ -1,9 +1,9 @@
 import fs from "fs/promises";
 import { join } from "path";
-import { BaseStorage, type BaseStorageConfig } from "./BaseStorage.js";
-import type { WorkflowStateData, StepStatus } from "../types/workflow.js";
-import type { Result } from "../utils/result.js";
-import { ok, err } from "../utils/result.js";
+import { BaseStorage, type BaseStorageConfig } from "./BaseStorage";
+import type { WorkflowStateData, StepStatus } from "../types/workflow";
+import type { Result } from "../utils/result";
+import { ok, err } from "../utils/result";
 
 /**
  * Configuration for FileStorage adapter.

@@ -1,0 +1,15 @@
+{
+  "workflowId": "test-123",
+  "createdAt": "2025-10-31T16:21:54.522Z",
+  "updatedAt": "2025-10-31T16:21:54.522Z",
+  "status": "pending",
+  "stepStatuses": {
+    "test-step": "running"
+  },
+  "steps": {
+    "test-step": {
+      "status": "running"
+    }
+  },
+  "currentStepNumber": 1
+}

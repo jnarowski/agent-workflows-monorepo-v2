@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import { glob } from 'glob';
-import type { UnifiedMessage } from '../types/unified.js';
-import { parse } from './parse.js';
+import type { UnifiedMessage } from '../types/unified';
+import { parse } from './parse';
 
 // ============================================================================
 // Public API

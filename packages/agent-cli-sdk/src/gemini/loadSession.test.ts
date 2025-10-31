@@ -5,8 +5,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parse } from './parse.js';
-import type { GeminiSession } from './types.js';
+import { parse } from './parse';
+import type { GeminiSession } from './types';
 
 // Import full session fixture
 import fullSession from '../../tests/fixtures/gemini/full/session-2025-10-29T10-36-9c9a14e1.json';

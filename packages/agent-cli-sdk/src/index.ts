@@ -199,8 +199,8 @@ export { detectCli as detectGeminiCli } from './gemini/detectCli';
 export { getCapabilities, type AgentType, type AgentCapabilities, type ModelInfo } from './utils/getCapabilities';
 
 // Re-export permission types
-export type { PermissionMode } from './types/permissions.js';
-export type { BaseExecuteOptions, BaseExecuteCallbacks } from './types/execute.js';
+export type { PermissionMode } from './types/permissions';
+export type { BaseExecuteOptions, BaseExecuteCallbacks } from './types/execute';
 
 // Re-export Claude execute types
 export type {

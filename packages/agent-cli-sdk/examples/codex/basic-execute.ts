@@ -3,7 +3,7 @@
  * Basic example of using execute() to run a simple Codex command
  */
 
-import { execute } from '../../src/index.js';
+import { execute } from '../../src/index';
 
 async function main() {
   console.log('Running basic Codex command...\n');

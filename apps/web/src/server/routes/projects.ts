@@ -11,7 +11,7 @@ import {
   projectExistsByPath,
 } from "@/server/domain/project/services";
 import { syncFromClaudeProjects } from "@/server/services/projectSync";
-import { getFileTree, readFile, writeFile } from "@/server/domain/file/services/index.js";
+import { getFileTree, readFile, writeFile } from "@/server/domain/file/services/index";
 import {
   createProjectSchema,
   updateProjectSchema,

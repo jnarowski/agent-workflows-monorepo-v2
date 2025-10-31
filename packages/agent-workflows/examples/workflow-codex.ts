@@ -2,7 +2,7 @@ import {
   Workflow,
   FileStorage,
   generateWorkflowId,
-} from "../src/index.js";
+} from "../src/index";
 import { createCodexAdapter } from "@sourceborn/agent-cli-sdk";
 
 /**

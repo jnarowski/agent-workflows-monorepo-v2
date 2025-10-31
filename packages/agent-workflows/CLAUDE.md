@@ -297,14 +297,16 @@ abstract class BaseStorage {
 - **Included**: Only `dist/` directory
 - **Pre-publish Hook**: Automatically runs `pnpm build`
 
-## File Extensions
+## Import Extensions
 
-Use `.js` extensions in import statements (Node16+ module resolution), even though files are `.ts`:
+**Do not use file extensions in import statements**. This package uses `moduleResolution: "bundler"` which allows extensionless imports:
 
 ```typescript
-import { Workflow } from './Workflow.js'; // ✓ Correct
-import { Workflow } from './Workflow'; // ✗ Incorrect
+import { Workflow } from './Workflow'; // ✓ Correct
+import { Workflow } from './Workflow.js'; // ✗ Incorrect (old convention)
 ```
+
+The bundler (Bunchee) automatically resolves extensions during build/transpilation.
 
 ## Best Practices
 
@@ -402,8 +404,8 @@ export * from './validators.js';
 
 ```typescript
 // Import directly from the module
-import { logger } from './utils/logger.js';
-import { formatConsoleJson } from './utils/formatConsoleJson.js';
+import { logger } from './utils/logger';
+import { formatConsoleJson } from './utils/formatConsoleJson';
 ```
 
 **Why avoid barrel exports:**

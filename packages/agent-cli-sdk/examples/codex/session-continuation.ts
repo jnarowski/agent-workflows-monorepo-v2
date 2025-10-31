@@ -5,7 +5,7 @@
  * pnpm tsx packages/agent-cli-sdk/examples/codex/session-continuation.ts
  */
 
-import { execute } from '../../src/index.js';
+import { execute } from '../../src/index';
 
 async function main() {
   console.log('=== Session Continuation Example ===\n');

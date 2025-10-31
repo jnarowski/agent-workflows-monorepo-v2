@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseArgumentHint, parseJsonResponseSchema } from "./parseSlashCommands.js";
+import { parseArgumentHint, parseJsonResponseSchema } from "./parseSlashCommands";
 
 describe("parseArgumentHint", () => {
   it("should parse array format with required arguments", () => {

@@ -11,7 +11,7 @@
  * Clients should retry these requests after a delay.
  */
 
-import { AppError } from './AppError.js';
+import { AppError } from './AppError';
 
 export class ServiceUnavailableError extends AppError {
   readonly statusCode = 503;

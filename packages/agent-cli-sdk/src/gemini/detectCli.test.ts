@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { detectCli } from './detectCli.js';
+import { detectCli } from './detectCli';
 
 describe('detectCli', () => {
   it('should return a string or null', async () => {
