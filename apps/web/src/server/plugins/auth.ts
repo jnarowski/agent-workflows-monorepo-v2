@@ -23,7 +23,7 @@ async function authPluginFunction(fastify: FastifyInstance) {
         const userId = decoded.userId;
         const user = await prisma.user.findUnique({
           where: { id: userId },
-          select: { id: true, username: true, is_active: true },
+          select: { id: true, email: true, is_active: true },
         });
 
         if (!user || !user.is_active) {
@@ -59,7 +59,7 @@ declare module "fastify" {
   interface FastifyRequest {
     user?: {
       id: string;
-      username: string;
+      email: string;
       is_active: boolean;
     };
   }

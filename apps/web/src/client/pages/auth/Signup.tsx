@@ -6,7 +6,7 @@ import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
 
 function Signup() {
   useDocumentTitle("Sign Up | Agent Workflows");
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -18,8 +18,8 @@ function Signup() {
     e.preventDefault();
     setError("");
 
-    if (username.length < 3) {
-      setError("Username must be at least 3 characters");
+    if (!email.includes('@')) {
+      setError("Please enter a valid email address");
       return;
     }
 
@@ -36,7 +36,7 @@ function Signup() {
     setIsLoading(true);
 
     try {
-      await signup(username, password);
+      await signup(email, password);
       navigate("/");
     } catch {
       setError("Failed to create account. Please try again.");
@@ -53,12 +53,12 @@ function Signup() {
     <div className="flex items-center justify-center min-h-screen p-4">
       <div className="w-full max-w-md">
         <SignupForm
-          username={username}
+          email={email}
           password={password}
           confirmPassword={confirmPassword}
           isLoading={isLoading}
           error={error}
-          onUsernameChange={setUsername}
+          onEmailChange={setEmail}
           onPasswordChange={setPassword}
           onConfirmPasswordChange={setConfirmPassword}
           onSubmit={handleSubmit}

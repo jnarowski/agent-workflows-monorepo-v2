@@ -57,13 +57,14 @@ This monorepo includes the following packages and apps:
 
 3. **Set up the web application** (first-time only)
    ```bash
-   cd apps/web
    pnpm dev:setup
    ```
    This will:
    - Create `.env` file with secure JWT_SECRET (if it doesn't exist)
    - Create and migrate the database (`prisma/dev.db`)
    - Set up the development environment
+
+   Note: This command works from the monorepo root directory.
 
 4. **Configure environment variables** (optional)
    ```bash

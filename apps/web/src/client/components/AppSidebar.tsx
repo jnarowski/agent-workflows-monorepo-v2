@@ -43,8 +43,8 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   }, [location.pathname]);
 
   const currentUser = {
-    name: user?.username || "Guest User",
-    email: "", // No email field in User model
+    name: user?.email || "Guest User",
+    email: user?.email || "",
     avatar: "/avatars/shadcn.jpg",
   };
 

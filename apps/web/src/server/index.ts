@@ -24,6 +24,7 @@ import {
   ConflictError,
   buildErrorResponse
 } from '@/server/utils/error';
+import { ServiceUnavailableError } from '@/server/errors/ServiceUnavailableError.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -152,6 +153,66 @@ export async function createServer() {
 
       // Use the error's toJSON method for consistent response format
       return reply.status(error.statusCode).send(error.toJSON());
+    }
+
+    // Handle Prisma connection/initialization errors
+    if (error instanceof Prisma.PrismaClientInitializationError) {
+      fastify.log.error({
+        err: error,
+        url: request.url,
+        method: request.method,
+      }, 'Database initialization error');
+
+      const serviceError = new ServiceUnavailableError(
+        'Database connection failed. Please run `pnpm dev:setup` to initialize the database.',
+        { prismaError: error.message },
+        60 // Retry after 60 seconds
+      );
+      return reply.status(503).send(serviceError.toJSON());
+    }
+
+    if (error instanceof Prisma.PrismaClientRustPanicError) {
+      fastify.log.error({
+        err: error,
+        url: request.url,
+        method: request.method,
+      }, 'Database engine panic');
+
+      const serviceError = new ServiceUnavailableError(
+        'Database engine error. Please check the database configuration and try again.',
+        { prismaError: error.message },
+        30 // Retry after 30 seconds
+      );
+      return reply.status(503).send(serviceError.toJSON());
+    }
+
+    if (error instanceof Prisma.PrismaClientUnknownRequestError) {
+      fastify.log.error({
+        err: error,
+        url: request.url,
+        method: request.method,
+      }, 'Unknown database request error');
+
+      const serviceError = new ServiceUnavailableError(
+        'Database is temporarily unavailable. Please try again later.',
+        { prismaError: error.message },
+        30 // Retry after 30 seconds
+      );
+      return reply.status(503).send(serviceError.toJSON());
+    }
+
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      fastify.log.error({
+        err: error,
+        url: request.url,
+        method: request.method,
+      }, 'Database validation error');
+
+      return reply.status(500).send(buildErrorResponse(
+        500,
+        'Database validation error',
+        'DATABASE_VALIDATION_ERROR'
+      ));
     }
 
     // Handle Prisma errors

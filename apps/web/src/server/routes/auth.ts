@@ -32,7 +32,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 
   // User registration (setup) - only allowed if no users exist
   fastify.post<{
-    Body: { username: string; password: string };
+    Body: { email: string; password: string };
   }>('/api/auth/register', {
     config: {
       rateLimit: {
@@ -46,10 +46,11 @@ export async function authRoutes(fastify: FastifyInstance) {
         200: authResponseSchema,
         403: errorResponse,
         409: errorResponse,
+        503: errorResponse,
       },
     },
   }, async (request, reply) => {
-    const { username, password } = request.body;
+    const { email, password } = request.body;
 
     // Check if users already exist (only allow one user)
     const existingUserCount = await prisma.user.count();
@@ -65,13 +66,13 @@ export async function authRoutes(fastify: FastifyInstance) {
       // Create user
       const user = await prisma.user.create({
         data: {
-          username,
+          email,
           password_hash,
           last_login: new Date(),
         },
         select: {
           id: true,
-          username: true,
+          email: true,
         },
       });
 
@@ -79,7 +80,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       const token = fastify.jwt.sign(
         {
           userId: user.id,
-          username: user.username,
+          email: user.email,
         } as JWTPayload,
         // No expiration - token lasts forever
       );
@@ -90,10 +91,20 @@ export async function authRoutes(fastify: FastifyInstance) {
         token,
       });
     } catch (error) {
+      // Check for connection-specific Prisma errors first
+      if (
+        error instanceof Prisma.PrismaClientInitializationError ||
+        error instanceof Prisma.PrismaClientRustPanicError ||
+        error instanceof Prisma.PrismaClientUnknownRequestError
+      ) {
+        // Re-throw connection errors for global error handler
+        throw error;
+      }
+
       // Check for unique constraint violation (Prisma error)
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          return reply.code(409).send(buildErrorResponse(409, 'Username already exists', 'DUPLICATE_USERNAME'));
+          return reply.code(409).send(buildErrorResponse(409, 'Email already exists', 'DUPLICATE_EMAIL'));
         }
       }
 
@@ -103,7 +114,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 
   // User login
   fastify.post<{
-    Body: { username: string; password: string };
+    Body: { email: string; password: string };
   }>('/api/auth/login', {
     config: {
       rateLimit: {
@@ -117,24 +128,25 @@ export async function authRoutes(fastify: FastifyInstance) {
         200: authResponseSchema,
         401: errorResponse,
         403: errorResponse,
+        503: errorResponse,
       },
     },
   }, async (request, reply) => {
-    const { username, password } = request.body;
+    const { email, password } = request.body;
 
     // Get user from database
     const user = await prisma.user.findUnique({
-      where: { username },
+      where: { email },
     });
 
     if (!user) {
-      return reply.code(401).send(buildErrorResponse(401, 'Invalid username or password'));
+      return reply.code(401).send(buildErrorResponse(401, 'Invalid email or password'));
     }
 
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
-      return reply.code(401).send(buildErrorResponse(401, 'Invalid username or password'));
+      return reply.code(401).send(buildErrorResponse(401, 'Invalid email or password'));
     }
 
     // Check if user is active
@@ -146,7 +158,7 @@ export async function authRoutes(fastify: FastifyInstance) {
     const token = fastify.jwt.sign(
       {
         userId: user.id,
-        username: user.username,
+        email: user.email,
       } as JWTPayload,
       // No expiration - token lasts forever
     );
@@ -161,7 +173,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       success: true,
       user: {
         id: user.id,
-        username: user.username,
+        email: user.email,
       },
       token,
     });

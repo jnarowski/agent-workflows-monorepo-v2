@@ -8,7 +8,7 @@ import { api } from "@/client/lib/api-client";
  */
 export interface User {
   id: string;
-  username: string;
+  email: string;
 }
 
 /**
@@ -22,20 +22,20 @@ export interface AuthStore {
 
   // Actions
   /**
-   * Login with username and password
-   * @param username - User's username
+   * Login with email and password
+   * @param email - User's email address
    * @param password - User's password
    * @throws Error if login fails
    */
-  login: (username: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
 
   /**
    * Sign up a new user
-   * @param username - Desired username
+   * @param email - Email address
    * @param password - Desired password
    * @throws Error if signup fails
    */
-  signup: (username: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
 
   /**
    * Logout the current user
@@ -72,11 +72,11 @@ export const useAuthStore = create<AuthStore>()(
       isAuthenticated: false,
 
       // Login action
-      login: async (username: string, password: string) => {
+      login: async (email: string, password: string) => {
         try {
           const data = await api.post<{ user: User; token: string }>(
             "/api/auth/login",
-            { username, password }
+            { email, password }
           );
 
           // Update store with user and token
@@ -96,11 +96,11 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       // Signup action
-      signup: async (username: string, password: string) => {
+      signup: async (email: string, password: string) => {
         try {
           const data = await api.post<{ user: User; token: string }>(
             "/api/auth/register",
-            { username, password }
+            { email, password }
           );
 
           // Update store with user and token

@@ -98,43 +98,50 @@ None - adding helper functions to existing files only
 ### Task Group 1: Add Helper Function to projectSync.ts
 
 <!-- prettier-ignore -->
-- [ ] fix-agent-01 Add `isValidSessionFile()` private helper function
+- [x] fix-agent-01 Add `isValidSessionFile()` private helper function
   - Add function after the existing `decodeProjectPath()` function (around line 20)
   - File: `apps/web/src/server/services/projectSync.ts`
   - Include JSDoc comment explaining the function purpose
-- [ ] fix-agent-02 Update filter in `extractProjectDirectory()` function
+- [x] fix-agent-02 Update filter in `extractProjectDirectory()` function
   - Replace `.filter((file) => file.endsWith(".jsonl"))` with `.filter(isValidSessionFile)`
   - Location: Line 38
   - File: `apps/web/src/server/services/projectSync.ts`
-- [ ] fix-agent-03 Update filter in `hasEnoughSessions()` function
+- [x] fix-agent-03 Update filter in `hasEnoughSessions()` function
   - Replace `.filter((file) => file.endsWith(".jsonl"))` with `.filter(isValidSessionFile)`
   - Location: Line 142
   - File: `apps/web/src/server/services/projectSync.ts`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added `isValidSessionFile()` helper function after `decodeProjectPath()` at line 27
+- Function checks that filename ends with `.jsonl` AND does not start with `agent-`
+- Updated filter in `extractProjectDirectory()` at line 48 to use `isValidSessionFile`
+- Updated filter in `hasEnoughSessions()` at line 152 to use `isValidSessionFile`
+- All changes maintain existing logic while adding the agent- prefix filtering
 
 ### Task Group 2: Add Helper Function to syncProjectSessions.ts
 
 <!-- prettier-ignore -->
-- [ ] fix-agent-04 Add `isValidSessionFile()` private helper function
+- [x] fix-agent-04 Add `isValidSessionFile()` private helper function
   - Add function after imports, before the main exported function (around line 8)
   - File: `apps/web/src/server/domain/session/services/syncProjectSessions.ts`
   - Include JSDoc comment explaining the function purpose
-- [ ] fix-agent-05 Update filter in `syncProjectSessions()` function
+- [x] fix-agent-05 Update filter in `syncProjectSessions()` function
   - Replace `.filter((file) => file.endsWith('.jsonl'))` with `.filter(isValidSessionFile)`
   - Location: Line 43
   - File: `apps/web/src/server/domain/session/services/syncProjectSessions.ts`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added `isValidSessionFile()` helper function after imports at line 14
+- Function is identical to the one in projectSync.ts (checks `.jsonl` extension and excludes `agent-` prefix)
+- Updated filter in `syncProjectSessions()` at line 53 to use `isValidSessionFile`
+- Changes maintain existing session syncing logic while filtering out agent-prefixed files
 
 ### Task Group 3: Add Test Coverage
 
 <!-- prettier-ignore -->
-- [ ] fix-agent-06 Add test cases to projectSync.test.ts
+- [x] fix-agent-06 Add test cases to projectSync.test.ts
   - Test: `isValidSessionFile` should accept valid JSONL files (e.g., `session-123.jsonl`)
   - Test: `isValidSessionFile` should reject files starting with `agent-` (e.g., `agent-64613bb1.jsonl`)
   - Test: `isValidSessionFile` should reject non-JSONL files (e.g., `readme.txt`)
@@ -144,7 +151,13 @@ None - adding helper functions to existing files only
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added 4 new test cases to `hasEnoughSessions` test suite:
+  - Test for ignoring `agent-` prefixed files (verifies they don't count toward session minimum)
+  - Test for accepting files with "agent" in middle/end (e.g., `my-agent-session.jsonl`, `agent.jsonl`)
+  - Test for not counting `agent-` files when determining if project has enough sessions
+  - Integration test for `syncFromClaudeProjects` to verify agent- files are filtered during sync
+- All tests verify behavior through public API (hasEnoughSessions, syncFromClaudeProjects)
+- Tests cover edge cases: exactly 3 sessions (should skip), 4+ valid sessions with many agent- files (should import)
 
 ## Testing Strategy
 

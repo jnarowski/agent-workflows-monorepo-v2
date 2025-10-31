@@ -19,6 +19,16 @@ function decodeProjectPath(projectName: string): string {
 }
 
 /**
+ * Check if a file is a valid session file
+ * Valid files must end with .jsonl and NOT start with "agent-"
+ * @param filename - The filename to check
+ * @returns True if valid session file, false otherwise
+ */
+function isValidSessionFile(filename: string): boolean {
+  return filename.endsWith('.jsonl') && !filename.startsWith('agent-');
+}
+
+/**
  * Extract the actual project directory from JSONL session files
  * @param projectName - Encoded project name from filesystem
  * @returns Extracted project path
@@ -35,7 +45,7 @@ async function extractProjectDirectory(projectName: string): Promise<string> {
     await fs.access(projectDir);
 
     const files = await fs.readdir(projectDir);
-    const jsonlFiles = files.filter((file) => file.endsWith(".jsonl"));
+    const jsonlFiles = files.filter(isValidSessionFile);
 
     if (jsonlFiles.length === 0) {
       // Fall back to decoded project name if no sessions
@@ -139,7 +149,7 @@ export async function hasEnoughSessions(
   try {
     await fs.access(projectDir);
     const files = await fs.readdir(projectDir);
-    const jsonlFiles = files.filter((file) => file.endsWith(".jsonl"));
+    const jsonlFiles = files.filter(isValidSessionFile);
 
     // Check if project has more than minSessions sessions
     return jsonlFiles.length > minSessions;

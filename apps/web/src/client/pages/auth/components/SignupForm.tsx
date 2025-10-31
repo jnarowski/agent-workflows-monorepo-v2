@@ -10,12 +10,12 @@ import { Input } from "@/client/components/ui/input";
 import type { FormEvent, ComponentProps } from "react";
 
 interface SignupFormProps extends ComponentProps<"div"> {
-  username: string;
+  email: string;
   password: string;
   confirmPassword: string;
   isLoading?: boolean;
   error?: string;
-  onUsernameChange: (username: string) => void;
+  onEmailChange: (email: string) => void;
   onPasswordChange: (password: string) => void;
   onConfirmPasswordChange: (password: string) => void;
   onSubmit: (e: FormEvent) => void;
@@ -24,12 +24,12 @@ interface SignupFormProps extends ComponentProps<"div"> {
 
 export function SignupForm({
   className,
-  username,
+  email,
   password,
   confirmPassword,
   isLoading = false,
   error,
-  onUsernameChange,
+  onEmailChange,
   onPasswordChange,
   onConfirmPasswordChange,
   onSubmit,
@@ -45,15 +45,14 @@ export function SignupForm({
         onSubmit={onSubmit}
       >
         <Field>
-          <FieldLabel htmlFor="username">Username</FieldLabel>
+          <FieldLabel htmlFor="email">Email</FieldLabel>
           <Input
-            id="username"
-            type="text"
-            placeholder="username"
-            value={username}
-            onChange={(e) => onUsernameChange(e.target.value)}
+            id="email"
+            type="email"
+            placeholder="email@example.com"
+            value={email}
+            onChange={(e) => onEmailChange(e.target.value)}
             required
-            minLength={3}
           />
         </Field>
         <Field>

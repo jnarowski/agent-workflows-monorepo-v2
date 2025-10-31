@@ -6,6 +6,16 @@ import { encodeProjectPath, getClaudeProjectsDir } from '@/server/utils/path.js'
 import { parseJSONLFile } from './parseJSONLFile.js';
 
 /**
+ * Check if a file is a valid session file
+ * Valid files must end with .jsonl and NOT start with "agent-"
+ * @param filename - The filename to check
+ * @returns True if valid session file, false otherwise
+ */
+function isValidSessionFile(filename: string): boolean {
+  return filename.endsWith('.jsonl') && !filename.startsWith('agent-');
+}
+
+/**
  * Sync project sessions from filesystem to database
  * Scans ~/.claude/projects/{encodedPath}/ for JSONL files
  * @param projectId - Project ID
@@ -40,7 +50,7 @@ export async function syncProjectSessions(
 
     // Read all JSONL files in directory
     const files = await fs.readdir(projectSessionsDir);
-    const jsonlFiles = files.filter((file) => file.endsWith('.jsonl'));
+    const jsonlFiles = files.filter(isValidSessionFile);
 
     // Fetch all existing Claude sessions for this project
     // Only sync Claude sessions - other agents (Codex, Cursor, Gemini) have different storage locations

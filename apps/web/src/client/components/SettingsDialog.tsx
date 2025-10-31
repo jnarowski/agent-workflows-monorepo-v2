@@ -77,7 +77,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
-      contentProps={{ className: "sm:max-w-[500px]" }}
+      contentProps={{ className: "sm:max-w-md" }}
     >
       <DialogHeader>
         <DialogTitle>Settings</DialogTitle>
