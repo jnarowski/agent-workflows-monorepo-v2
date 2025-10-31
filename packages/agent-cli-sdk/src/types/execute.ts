@@ -50,6 +50,9 @@ export interface BaseExecuteOptions {
  * This documents the common pattern but each tool defines its own callback types.
  */
 export interface BaseExecuteCallbacks {
+  /** Callback invoked immediately when process starts (before any output) */
+  onStart?: (process: import('node:child_process').ChildProcess) => void;
+
   /** Callback invoked when stdout data is received */
   onStdout?: (data: unknown) => void;
 

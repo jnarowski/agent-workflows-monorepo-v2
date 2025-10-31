@@ -42,7 +42,6 @@ export function ChatInterface({
   isStreaming = false,
   isLoadingHistory = false,
 }: ChatInterfaceProps) {
-
   // Loading state
   if (isLoading) {
     return <ChatSkeleton />;
@@ -55,7 +54,7 @@ export function ChatInterface({
         <Alert variant="destructive" className="max-w-md">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            <div className="font-medium">Failed to load conversation</div>
+            <div className="font-medium">There was an error</div>
             <div className="text-sm mt-1">{error.message}</div>
           </AlertDescription>
         </Alert>

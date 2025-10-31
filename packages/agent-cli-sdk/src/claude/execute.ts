@@ -96,6 +96,8 @@ export interface ExecuteOptions {
   images?: Array<{ path: string }>;
   /** Automatically extract and parse JSON from the response */
   json?: boolean;
+  /** Callback invoked immediately when process starts (before any output) */
+  onStart?: (process: ChildProcess) => void;
   /**
    * Callback invoked for each event received from the CLI.
    * Provides raw JSONL line, parsed event, and unified message.
@@ -209,6 +211,7 @@ export async function execute<T = string>(options: ExecuteOptions): Promise<Exec
       cwd: options.workingDir,
       timeout: options.timeout || 300000, // 5 minutes default
       verbose: options.verbose,
+      onStart: options.onStart,
       onStdout: (chunk) => {
         rawOutput += chunk;
         lineBuffer.add(chunk);

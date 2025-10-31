@@ -94,9 +94,6 @@ export async function projectRoutes(fastify: FastifyInstance) {
           return reply.code(401).send(buildErrorResponse(401, "Unauthorized"));
         }
 
-        // TODO: REMOVE - Temporary delay for testing loading state
-        await new Promise(resolve => setTimeout(resolve, 3000));
-
         const syncResults = await syncFromClaudeProjects(userId);
 
         return reply.send({ data: syncResults });

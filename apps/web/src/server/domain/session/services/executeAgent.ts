@@ -65,17 +65,16 @@ export async function executeAgent(
       model,
       verbose: true,
       images,
+      onStart: (process) => {
+        // Store process reference immediately when execution starts
+        logger?.info(
+          { sessionId, pid: process.pid },
+          "Process started, storing reference for session"
+        );
+        activeSessions.setProcess(sessionId, process);
+      },
       onEvent,
     });
-
-    // Store process reference if available (Claude only)
-    if ("process" in result && result.process) {
-      logger?.debug(
-        { sessionId, pid: result.process.pid },
-        "Storing process reference for session"
-      );
-      activeSessions.setProcess(sessionId, result.process);
-    }
 
     logger?.info(
       {
