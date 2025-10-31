@@ -196,6 +196,24 @@ export function useSessionWebSocket({
               });
             }
           );
+
+          // Sync sessionStore with database state
+          if (data.state === "error") {
+            // Session failed - stop streaming and show error
+            useSessionStore.getState().setStreaming(false);
+            useSessionStore
+              .getState()
+              .setError(data.error_message || "An error occurred");
+          } else if (data.state === "idle") {
+            // Session completed or cancelled - stop streaming and clear error
+            useSessionStore.getState().setStreaming(false);
+            useSessionStore.getState().setError(null);
+          } else if (data.state === "working") {
+            // Session started - begin streaming
+            useSessionStore.getState().setStreaming(true);
+            useSessionStore.getState().setError(null);
+          }
+
           break;
         }
 
@@ -336,15 +354,14 @@ export function useSessionWebSocket({
     // Add system message to UI
     useSessionStore.getState().addMessage({
       id: generateUUID(),
-      role: "assistant",
+      role: "user",
       content: [
         {
           type: "text",
-          text: "🛑 Session stopped by user",
+          text: "🛑 Session interrupted",
         },
       ],
       timestamp: Date.now(),
-      isError: true,
     });
 
     // Update streaming state

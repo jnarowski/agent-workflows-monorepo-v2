@@ -101,6 +101,9 @@ export async function cancelSession(
     return { success: true };
   }
 
+  // Mark session as cancelled before killing
+  activeSessions.update(sessionId, { cancelled: true });
+
   // Kill the process with graceful shutdown
   logger?.info({ sessionId, pid: process.pid }, "Killing agent process");
 

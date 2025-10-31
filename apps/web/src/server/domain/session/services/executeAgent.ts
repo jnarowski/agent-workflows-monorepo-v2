@@ -88,6 +88,17 @@ export async function executeAgent(
     // Clear process reference after completion
     activeSessions.clearProcess(sessionId);
 
+    // If session was cancelled, treat as success to avoid error handling
+    const sessionData = activeSessions.get(sessionId);
+    if (sessionData?.cancelled) {
+      logger?.info({ sessionId }, "Session was cancelled, treating as success");
+      return {
+        ...result,
+        success: true,
+        error: undefined,
+      };
+    }
+
     return result;
   } catch (err: unknown) {
     logger?.error({ err, sessionId, agent }, "Agent CLI SDK error");
