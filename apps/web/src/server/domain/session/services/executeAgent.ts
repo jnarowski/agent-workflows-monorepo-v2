@@ -65,17 +65,16 @@ export async function executeAgent(
       model,
       verbose: true,
       images,
+      onStart: (process) => {
+        // Store process reference immediately when execution starts
+        logger?.info(
+          { sessionId, pid: process.pid },
+          "Process started, storing reference for session"
+        );
+        activeSessions.setProcess(sessionId, process);
+      },
       onEvent,
     });
-
-    // Store process reference if available (Claude only)
-    if ("process" in result && result.process) {
-      logger?.debug(
-        { sessionId, pid: result.process.pid },
-        "Storing process reference for session"
-      );
-      activeSessions.setProcess(sessionId, result.process);
-    }
 
     logger?.info(
       {
@@ -88,6 +87,17 @@ export async function executeAgent(
 
     // Clear process reference after completion
     activeSessions.clearProcess(sessionId);
+
+    // If session was cancelled, treat as success to avoid error handling
+    const sessionData = activeSessions.get(sessionId);
+    if (sessionData?.cancelled) {
+      logger?.info({ sessionId }, "Session was cancelled, treating as success");
+      return {
+        ...result,
+        success: true,
+        error: undefined,
+      };
+    }
 
     return result;
   } catch (err: unknown) {

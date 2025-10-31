@@ -73,3 +73,30 @@ export interface SessionWithProject {
 export interface GenerateSessionNameOptions {
   userPrompt: string;
 }
+
+/**
+ * Execution configuration for agent commands
+ */
+export interface ExecutionConfig {
+  resume: boolean;
+  permissionMode: "default" | "acceptEdits" | "bypassPermissions" | undefined;
+  model: string | undefined;
+}
+
+/**
+ * Partial session update data
+ */
+export type SessionUpdateData = Partial<{
+  id: string;
+  projectId: string;
+  userId: string;
+  agent: string;
+  cli_session_id: string | null;
+  session_path: string | null;
+  name: string | null;
+  metadata: Prisma.JsonValue;
+  state: string;
+  error_message: string | null;
+  created_at: Date;
+  updated_at: Date;
+}>;

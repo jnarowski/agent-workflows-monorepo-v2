@@ -7,6 +7,7 @@ export interface ActiveSessionData {
   userId: string;
   tempImageDir?: string;
   childProcess?: ChildProcess;
+  cancelled?: boolean;
 }
 
 /**

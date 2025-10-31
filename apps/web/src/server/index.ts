@@ -45,12 +45,17 @@ export async function createServer() {
                 options: { destination: 1 }, // stdout
                 level: 'info'
               },
-              // File output
+              // File output with rotation
               {
-                target: 'pino/file',
+                target: 'pino-roll',
                 options: {
-                  destination: serverConfig.logFile,
-                  mkdir: true
+                  file: serverConfig.logFile,
+                  frequency: 'daily',
+                  size: '5m',
+                  mkdir: true,
+                  limit: {
+                    count: 30
+                  }
                 },
                 level: serverConfig.logLevel
               }
@@ -72,12 +77,17 @@ export async function createServer() {
                 },
                 level: serverConfig.logLevel
               },
-              // File output (plain JSON)
+              // File output with rotation (plain JSON)
               {
-                target: 'pino/file',
+                target: 'pino-roll',
                 options: {
-                  destination: serverConfig.logFile,
-                  mkdir: true
+                  file: serverConfig.logFile,
+                  frequency: 'daily',
+                  size: '5m',
+                  mkdir: true,
+                  limit: {
+                    count: 7
+                  }
                 },
                 level: serverConfig.logLevel
               }

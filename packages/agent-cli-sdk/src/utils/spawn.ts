@@ -7,6 +7,7 @@ export interface SpawnOptions {
   env?: Record<string, string>;
   timeout?: number;
   verbose?: boolean;
+  onStart?: (process: ChildProcess) => void;
   onStdout?: (chunk: string) => void;
   onStderr?: (chunk: string) => void;
   onError?: (error: Error) => void;
@@ -45,6 +46,9 @@ export async function spawnProcess(command: string, options: SpawnOptions): Prom
 
     // Close stdin immediately since we're not sending any input
     proc.stdin?.end();
+
+    // Invoke onStart callback immediately after process spawn
+    options.onStart?.(proc);
 
     let stdout = '';
     let stderr = '';
