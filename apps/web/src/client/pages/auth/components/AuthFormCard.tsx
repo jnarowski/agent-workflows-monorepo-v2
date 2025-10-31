@@ -1,13 +1,13 @@
-import type { ReactNode, FormEvent } from 'react';
+import type { ReactNode, FormEvent } from "react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/client/components/ui/card';
-import { ErrorAlert } from '@/client/components/ui/error-alert';
-import { FieldGroup } from '@/client/components/ui/field';
+} from "@/client/components/ui/card";
+import { ErrorAlert } from "@/client/components/ui/error-alert";
+import { FieldGroup } from "@/client/components/ui/field";
 
 export interface AuthFormCardProps {
   title: string;
@@ -29,7 +29,7 @@ export function AuthFormCard({
   children,
 }: AuthFormCardProps) {
   return (
-    <Card>
+    <Card className="shadow-xl">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>

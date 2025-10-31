@@ -1,9 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ShellProvider } from "@/client/pages/projects/shell/contexts/ShellContext";
 import { WebSocketProvider } from "@/client/providers/WebSocketProvider";
-import { ConnectionStatusBanner } from "@/client/components/ConnectionStatusBanner";
 import { WebSocketDevTools } from "@/client/components/WebSocketDevTools";
-import { useWebSocket } from "@/client/hooks/useWebSocket";
 import ProtectedLayout from "@/client/layouts/ProtectedLayout";
 import AuthLayout from "@/client/layouts/AuthLayout";
 import ProjectDetailLayout from "@/client/layouts/ProjectDetailLayout";
@@ -19,15 +17,8 @@ import Signup from "@/client/pages/auth/Signup";
 import Components from "@/client/pages/Components";
 
 function AppContent() {
-  const { readyState, connectionAttempts, reconnect } = useWebSocket();
-
   return (
     <>
-      <ConnectionStatusBanner
-        readyState={readyState}
-        connectionAttempts={connectionAttempts}
-        onReconnect={reconnect}
-      />
       <ShellProvider>
         <Routes>
           {/* Public routes */}

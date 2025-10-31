@@ -6,14 +6,17 @@ import { useSyncProjects, projectKeys } from "@/client/pages/projects/hooks/useP
 import { useSettings } from "@/client/hooks/useSettings";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useTheme } from "next-themes";
+import { useWebSocket } from "@/client/hooks/useWebSocket";
 import { AppSidebar } from "@/client/components/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/client/components/ui/sidebar";
+import { ConnectionStatusBanner } from "@/client/components/ConnectionStatusBanner";
 
 function ProtectedLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const queryClient = useQueryClient();
   const initializeFromSettings = useSessionStore((s) => s.initializeFromSettings);
   const { setTheme } = useTheme();
+  const { readyState, connectionAttempts, reconnect } = useWebSocket();
 
   // Load settings early so they're available for all protected routes
   // Settings are cached by TanStack Query (5-minute stale time)
@@ -66,6 +69,11 @@ function ProtectedLayout() {
         } as React.CSSProperties
       }
     >
+      <ConnectionStatusBanner
+        readyState={readyState}
+        connectionAttempts={connectionAttempts}
+        onReconnect={reconnect}
+      />
       <AppSidebar />
       <SidebarInset>
         <Outlet />

@@ -200,6 +200,9 @@ importers:
       ai:
         specifier: ^5.0.81
         version: 5.0.81(zod@4.1.12)
+      animated-backgrounds:
+        specifier: ^2.0.0
+        version: 2.0.0
       bcrypt:
         specifier: ^6.0.0
         version: 6.0.0
@@ -3020,6 +3023,10 @@ packages:
 
   ajv@8.17.1:
     resolution: {integrity: sha512-B/gBuNg5SiMTrPkC+A2+cW0RszwxYmn6VYxB/inlBStS5nx6xHIt/ehKRhIMhqusl7a8LjQoZnjCs5vhwxOQ1g==}
+
+  animated-backgrounds@2.0.0:
+    resolution: {integrity: sha512-17Nfey+2FxVw+xcWjqxpaoaHBJRHNYopknEOOJ6b44hf7MZ6rcfJRUNMJ10X/pJnmJ7CBKUH1fYz5bFEGosqkw==}
+    engines: {node: '>=10.0.0'}
 
   ansi-align@3.0.1:
     resolution: {integrity: sha512-IOfwwBF5iczOjp/WeY4YxyjqAFMQoZufdQWDd19SEExbVLNXqvpzSJ/M7Za4/sCPmQ0+GRquoA7bGcINcxew6w==}
@@ -8909,6 +8916,8 @@ snapshots:
       fast-uri: 3.1.0
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
+
+  animated-backgrounds@2.0.0: {}
 
   ansi-align@3.0.1:
     dependencies:
