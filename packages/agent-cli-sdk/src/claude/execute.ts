@@ -1,5 +1,6 @@
 import type { UnifiedMessage } from '../types/unified';
 import type { PermissionMode } from '../types/permissions.js';
+import type { ChildProcess } from 'node:child_process';
 import { spawnProcess } from '../utils/spawn';
 import { extractJSON } from '../utils/extractJson';
 import { parse } from './parse';
@@ -132,6 +133,8 @@ export interface ExecuteResult<T = string> {
   data: T;
   /** Error message if execution failed */
   error?: string;
+  /** Child process reference (for cancellation) */
+  process?: ChildProcess;
 }
 
 // ============================================================================
@@ -240,6 +243,7 @@ export async function execute<T = string>(options: ExecuteOptions): Promise<Exec
       messages,
       data: extractData<T>(options, events, textOutput) as T,
       error: success ? undefined : stderr || 'Command failed',
+      process: result.process,
     };
   } catch (error) {
     // Handle timeout and other errors gracefully
@@ -255,6 +259,7 @@ export async function execute<T = string>(options: ExecuteOptions): Promise<Exec
       messages,
       data: extractData<T>(options, events, textOutput) as T,
       error: stderr || errorMessage,
+      process: undefined,
     };
   }
 }

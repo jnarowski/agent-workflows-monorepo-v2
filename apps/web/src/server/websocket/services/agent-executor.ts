@@ -1,5 +1,6 @@
-import { execute, type ClaudePermissionMode } from "@repo/agent-cli-sdk";
+import { execute, type PermissionMode } from "@repo/agent-cli-sdk";
 import type { FastifyBaseLogger } from "fastify";
+import { activeSessions } from "../utils/active-sessions.js";
 
 export interface AgentExecuteConfig {
   agent: "claude" | "codex";
@@ -7,7 +8,7 @@ export interface AgentExecuteConfig {
   workingDir: string;
   sessionId: string;
   resume?: boolean;
-  permissionMode?: ClaudePermissionMode;
+  permissionMode?: PermissionMode;
   model?: string;
   images?: { path: string }[];
   onEvent?: (data: { raw: string; event: unknown; message: unknown | null }) => void;
@@ -66,6 +67,12 @@ export async function executeAgentCommand(
       onEvent,
     });
 
+    // Store process reference if available (only for Claude currently)
+    if ('process' in result && result.process) {
+      logger?.debug({ sessionId }, "Storing process reference for session");
+      activeSessions.setProcess(sessionId, result.process);
+    }
+
     logger?.info(
       {
         sessionId,
@@ -75,9 +82,15 @@ export async function executeAgentCommand(
       "[WebSocket] Message execution completed"
     );
 
+    // Clear process reference after completion
+    activeSessions.clearProcess(sessionId);
+
     return result;
   } catch (err: unknown) {
     logger?.error({ err, sessionId }, "Agent CLI SDK error");
+
+    // Clear process reference on error
+    activeSessions.clearProcess(sessionId);
 
     const errorMessage =
       err instanceof Error ? err.message : "Failed to execute agent command";

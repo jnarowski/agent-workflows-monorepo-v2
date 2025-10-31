@@ -3,7 +3,7 @@
 **Status**: draft
 **Created**: 2025-01-31
 **Package**: apps/web (backend server)
-**Estimated Effort**: 88 hours (~4 weeks)
+**Estimated Effort**: 60-80 hours (3-4 weeks)
 
 ## Overview
 
@@ -200,16 +200,19 @@ apps/web/src/server/
 ### Integration Points
 
 **Routes**:
+
 - `routes/projects.ts` - Update imports to use `domain/project/services/*`
 - `routes/sessions.ts` - Update imports to use `domain/session/services/*`
 - `routes/git.ts` - Update imports to use `domain/git/services/*`
 - All other route files - Update imports accordingly
 
 **WebSocket Handlers**:
+
 - `websocket/handlers/session.handler.ts` - Becomes thin orchestrator, calls domain functions
 - `websocket/handlers/shell.handler.ts` - Update imports to use `domain/shell/services/*`
 
 **Existing Services**:
+
 - Delete `services/` directory entirely after migration complete
 
 ## Implementation Details
@@ -243,6 +246,7 @@ export const FunctionParamsSchema = z.object({ ... });
 ```
 
 **Key Points**:
+
 - Each service file exports exactly one function
 - Function name matches file name (e.g., `createBranch.ts` exports `createBranch`)
 - All types for a domain in one `types/index.ts` file
@@ -254,6 +258,7 @@ export const FunctionParamsSchema = z.object({ ... });
 Transform handlers from containing business logic to orchestrating domain functions:
 
 **Before** (722 lines with embedded logic):
+
 ```typescript
 export async function handleSessionSendMessage(socket, data, userId) {
   // 183 lines of inline logic for validation, image processing, execution, etc.
@@ -261,9 +266,10 @@ export async function handleSessionSendMessage(socket, data, userId) {
 ```
 
 **After** (thin orchestrator):
+
 ```typescript
-import { validateSessionOwnership } from '@/server/domain/session/services/validateSessionOwnership';
-import { processSessionMessage } from '@/server/domain/session/services/processSessionMessage';
+import { validateSessionOwnership } from "@/server/domain/session/services/validateSessionOwnership";
+import { processSessionMessage } from "@/server/domain/session/services/processSessionMessage";
 
 export async function handleSessionSendMessage(socket, data, userId) {
   const { sessionId, message, images, config } = data;
@@ -299,7 +305,10 @@ export abstract class AppError extends Error {
   abstract readonly statusCode: number;
   abstract readonly code: string;
 
-  constructor(message: string, public readonly context?: Record<string, any>) {
+  constructor(
+    message: string,
+    public readonly context?: Record<string, any>
+  ) {
     super(message);
     this.name = this.constructor.name;
   }
@@ -308,7 +317,7 @@ export abstract class AppError extends Error {
 // errors/ConflictError.ts
 export class ConflictError extends AppError {
   readonly statusCode = 409;
-  readonly code = 'CONFLICT';
+  readonly code = "CONFLICT";
 }
 ```
 
@@ -318,8 +327,8 @@ Centralize all environment variable access:
 
 ```typescript
 // config/Configuration.ts
-import { z } from 'zod';
-import { ConfigSchema } from './schemas';
+import { z } from "zod";
+import { ConfigSchema } from "./schemas";
 
 class Configuration {
   private static instance: Configuration;
@@ -364,14 +373,14 @@ export interface AgentStrategy {
 
 // strategies/agents/ClaudeAgentStrategy.ts
 export class ClaudeAgentStrategy implements AgentStrategy {
-  readonly name = 'claude';
+  readonly name = "claude";
 
   async execute(params: ExecuteParams): Promise<ExecuteResult> {
     // Claude-specific execution logic
   }
 
   isSupported(agent: string): boolean {
-    return agent === 'claude';
+    return agent === "claude";
   }
 }
 
@@ -398,6 +407,7 @@ export class AgentStrategyRegistry {
 ### New Files (90+)
 
 **Domain Structure:**
+
 1. `apps/web/src/server/domain/git/services/*.ts` - 27 git operation files
 2. `apps/web/src/server/domain/git/types/index.ts` - Git types
 3. `apps/web/src/server/domain/git/schemas/index.ts` - Git schemas
@@ -414,58 +424,31 @@ export class AgentStrategyRegistry {
 14. `apps/web/src/server/domain/shell/types/index.ts` - Shell types
 15. `apps/web/src/server/domain/shell/schemas/index.ts` - Shell schemas
 
-**Configuration:**
-16. `apps/web/src/server/config/Configuration.ts` - Config service
-17. `apps/web/src/server/config/schemas.ts` - Config Zod schemas
-18. `apps/web/src/server/config/types.ts` - Config types
+**Configuration:** 16. `apps/web/src/server/config/Configuration.ts` - Config service 17. `apps/web/src/server/config/schemas.ts` - Config Zod schemas 18. `apps/web/src/server/config/types.ts` - Config types
 
-**Error Handling:**
-19. `apps/web/src/server/errors/AppError.ts` - Base error class
-20. `apps/web/src/server/errors/ConflictError.ts` - 409 errors
-21. `apps/web/src/server/errors/BadRequestError.ts` - 400 errors
-22. `apps/web/src/server/errors/InternalServerError.ts` - 500 errors
-23. `apps/web/src/server/errors/ServiceUnavailableError.ts` - 503 errors
+**Error Handling:** 19. `apps/web/src/server/errors/AppError.ts` - Base error class 20. `apps/web/src/server/errors/ConflictError.ts` - 409 errors 21. `apps/web/src/server/errors/BadRequestError.ts` - 400 errors 22. `apps/web/src/server/errors/InternalServerError.ts` - 500 errors 23. `apps/web/src/server/errors/ServiceUnavailableError.ts` - 503 errors
 
-**Strategies:**
-24. `apps/web/src/server/strategies/agents/AgentStrategy.ts` - Interface
-25. `apps/web/src/server/strategies/agents/ClaudeAgentStrategy.ts` - Claude impl
-26. `apps/web/src/server/strategies/agents/CodexAgentStrategy.ts` - Codex impl
-27. `apps/web/src/server/strategies/agents/AgentStrategyRegistry.ts` - Registry
+**Strategies:** 24. `apps/web/src/server/strategies/agents/AgentStrategy.ts` - Interface 25. `apps/web/src/server/strategies/agents/ClaudeAgentStrategy.ts` - Claude impl 26. `apps/web/src/server/strategies/agents/CodexAgentStrategy.ts` - Codex impl 27. `apps/web/src/server/strategies/agents/AgentStrategyRegistry.ts` - Registry
 
-**Testing Infrastructure:**
-28. `apps/web/tests/integration/setup.ts` - Test setup
-29. `apps/web/tests/integration/helpers/TestServer.ts` - Server harness
-30. `apps/web/tests/integration/helpers/TestDatabase.ts` - DB utilities
-31. `apps/web/tests/factories/ProjectFactory.ts` - Project factory
-32. `apps/web/tests/factories/SessionFactory.ts` - Session factory
-33. `apps/web/tests/factories/UserFactory.ts` - User factory
+**Testing Infrastructure:** 28. `apps/web/tests/integration/setup.ts` - Test setup 29. `apps/web/tests/integration/helpers/TestServer.ts` - Server harness 30. `apps/web/tests/integration/helpers/TestDatabase.ts` - DB utilities 31. `apps/web/tests/factories/ProjectFactory.ts` - Project factory 32. `apps/web/tests/factories/SessionFactory.ts` - Session factory 33. `apps/web/tests/factories/UserFactory.ts` - User factory
 
 ### Modified Files (20+)
 
 **Routes (update imports):**
+
 1. `apps/web/src/server/routes/projects.ts` - Import from domain/project
 2. `apps/web/src/server/routes/sessions.ts` - Import from domain/session
 3. `apps/web/src/server/routes/git.ts` - Import from domain/git
 4. `apps/web/src/server/routes/shell.ts` - Import from domain/shell
 5. `apps/web/src/server/routes/settings.ts` - Import config service
 
-**WebSocket (thin orchestrators):**
-6. `apps/web/src/server/websocket/handlers/session.handler.ts` - Reduce to ~150 lines
-7. `apps/web/src/server/websocket/handlers/shell.handler.ts` - Import from domain/shell
-8. `apps/web/src/server/websocket/handlers/global.handler.ts` - Update imports
+**WebSocket (thin orchestrators):** 6. `apps/web/src/server/websocket/handlers/session.handler.ts` - Reduce to ~150 lines 7. `apps/web/src/server/websocket/handlers/shell.handler.ts` - Import from domain/shell 8. `apps/web/src/server/websocket/handlers/global.handler.ts` - Update imports
 
-**Infrastructure:**
-9. `apps/web/src/server/websocket/index.ts` - Update imports
-10. Rename `apps/web/src/server/websocket/utils/` → `infrastructure/`
+**Infrastructure:** 9. `apps/web/src/server/websocket/index.ts` - Update imports 10. Rename `apps/web/src/server/websocket/utils/` → `infrastructure/`
 
-**Error Handling:**
-11. `apps/web/src/server/utils/error.ts` - Add new error types
-12. `apps/web/src/server/index.ts` - Update error handler for new types
+**Error Handling:** 11. `apps/web/src/server/utils/error.ts` - Add new error types 12. `apps/web/src/server/index.ts` - Update error handler for new types
 
-**Cleanup:**
-13. Delete `apps/web/src/server/services/` directory (after migration)
-14. Replace all `console.log` with `fastify.log.*`
-15. Fix all `catch (error: any)` → `catch (error: unknown)`
+**Cleanup:** 13. Delete `apps/web/src/server/services/` directory (after migration) 14. Replace all `console.log` with `fastify.log.*` 15. Fix all `catch (error: any)` → `catch (error: unknown)`
 
 ## Step by Step Tasks
 
@@ -912,16 +895,16 @@ Each domain function should have a corresponding test file:
 
 ```typescript
 // domain/git/services/getCurrentBranch.test.ts
-import { getCurrentBranch } from './getCurrentBranch';
+import { getCurrentBranch } from "./getCurrentBranch";
 
-describe('getCurrentBranch', () => {
-  it('should return current branch name', async () => {
-    const branch = await getCurrentBranch('/test/project');
-    expect(branch).toBe('main');
+describe("getCurrentBranch", () => {
+  it("should return current branch name", async () => {
+    const branch = await getCurrentBranch("/test/project");
+    expect(branch).toBe("main");
   });
 
-  it('should return null if not a git repo', async () => {
-    const branch = await getCurrentBranch('/not/a/repo');
+  it("should return null if not a git repo", async () => {
+    const branch = await getCurrentBranch("/not/a/repo");
     expect(branch).toBeNull();
   });
 });
@@ -933,10 +916,10 @@ Test actual API endpoints with real database:
 
 ```typescript
 // tests/integration/api/projects.test.ts
-import { TestServer } from '../helpers/TestServer';
-import { ProjectFactory } from '../../factories/ProjectFactory';
+import { TestServer } from "../helpers/TestServer";
+import { ProjectFactory } from "../../factories/ProjectFactory";
 
-describe('Projects API', () => {
+describe("Projects API", () => {
   let server: TestServer;
 
   beforeAll(async () => {
@@ -947,10 +930,10 @@ describe('Projects API', () => {
     await server.stop();
   });
 
-  it('should get all projects', async () => {
-    await ProjectFactory.create({ name: 'Test Project' });
+  it("should get all projects", async () => {
+    await ProjectFactory.create({ name: "Test Project" });
 
-    const response = await server.get('/api/projects');
+    const response = await server.get("/api/projects");
     expect(response.status).toBe(200);
     expect(response.body.data).toHaveLength(1);
   });
@@ -963,9 +946,9 @@ Test WebSocket message flows:
 
 ```typescript
 // tests/integration/websocket/session.test.ts
-import { WebSocketTestClient } from '../helpers/WebSocketTestClient';
+import { WebSocketTestClient } from "../helpers/WebSocketTestClient";
 
-describe('Session WebSocket', () => {
+describe("Session WebSocket", () => {
   let client: WebSocketTestClient;
 
   beforeEach(async () => {
@@ -973,11 +956,11 @@ describe('Session WebSocket', () => {
     await client.connect(authToken);
   });
 
-  it('should handle session message', async () => {
-    await client.subscribe('session:123');
-    await client.send('send_message', { message: 'Hello' });
+  it("should handle session message", async () => {
+    await client.subscribe("session:123");
+    await client.send("send_message", { message: "Hello" });
 
-    const response = await client.waitFor('stream_output');
+    const response = await client.waitFor("stream_output");
     expect(response.data).toBeDefined();
   });
 });
@@ -1079,6 +1062,7 @@ pnpm dev:server
 ### 1. Migration Order is Critical
 
 Follow this sequence to avoid breaking changes:
+
 1. Create new domain structure
 2. Migrate functions one at a time
 3. Update imports immediately after each function
@@ -1088,6 +1072,7 @@ Follow this sequence to avoid breaking changes:
 ### 2. WebSocket Handler Refactoring
 
 The session.handler.ts refactor is the most complex:
+
 - Extract logic to domain functions first
 - Then refactor handler to call those functions
 - Test WebSocket functionality thoroughly after each extraction
@@ -1095,9 +1080,10 @@ The session.handler.ts refactor is the most complex:
 ### 3. Type Safety During Migration
 
 Use `@ts-expect-error` temporarily if needed during migration:
+
 ```typescript
 // @ts-expect-error - Will be fixed after domain migration
-import { oldFunction } from '../services/old-service';
+import { oldFunction } from "../services/old-service";
 ```
 
 Remove all `@ts-expect-error` comments before completion.
@@ -1105,6 +1091,7 @@ Remove all `@ts-expect-error` comments before completion.
 ### 4. Parallel Work Possible
 
 These can be done in parallel after domain structure exists:
+
 - Git domain migration
 - Project domain migration
 - File domain migration
@@ -1121,20 +1108,20 @@ Session domain must be done sequentially due to WebSocket dependencies.
 
 ## Timeline
 
-| Task                      | Estimated Time |
-| ------------------------- | -------------- |
-| Git domain migration      | 16 hours       |
-| Session domain migration  | 20 hours       |
-| Project domain migration  | 8 hours        |
-| File/Shell migration      | 6 hours        |
-| Configuration service     | 4 hours        |
-| Error handling            | 6 hours        |
-| Agent strategy pattern    | 4 hours        |
-| WebSocket refactoring     | 8 hours        |
-| Testing infrastructure    | 8 hours        |
-| Documentation updates     | 4 hours        |
-| Code cleanup              | 4 hours        |
-| **Total**                 | **88 hours**   |
+| Task                     | Estimated Time |
+| ------------------------ | -------------- |
+| Git domain migration     | 16 hours       |
+| Session domain migration | 20 hours       |
+| Project domain migration | 8 hours        |
+| File/Shell migration     | 6 hours        |
+| Configuration service    | 4 hours        |
+| Error handling           | 6 hours        |
+| Agent strategy pattern   | 4 hours        |
+| WebSocket refactoring    | 8 hours        |
+| Testing infrastructure   | 8 hours        |
+| Documentation updates    | 4 hours        |
+| Code cleanup             | 4 hours        |
+| **Total**                | **88 hours**   |
 
 ## References
 

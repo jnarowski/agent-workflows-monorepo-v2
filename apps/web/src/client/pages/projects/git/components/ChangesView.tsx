@@ -13,7 +13,7 @@ import { DiffViewer } from "@/client/components/DiffViewer";
 import {
   useFileDiff,
   useGenerateCommitMessage,
-} from "../hooks/useGitOperations";
+} from "@/client/pages/projects/git/hooks/useGitOperations";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import {
   Tooltip,

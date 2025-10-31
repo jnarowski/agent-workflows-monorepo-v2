@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Button } from '@/client/components/ui/button';
 import { CommitCard } from './CommitCard';
-import { useCommitHistory } from '../hooks/useGitOperations';
+import { useCommitHistory } from '@/client/pages/projects/git/hooks/useGitOperations';
 import { GitBranch, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/client/components/ui/skeleton';
 

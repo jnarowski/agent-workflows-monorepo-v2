@@ -1,4 +1,5 @@
 import { spawn } from 'cross-spawn';
+import type { ChildProcess } from 'node:child_process';
 
 export interface SpawnOptions {
   args: string[];
@@ -17,6 +18,7 @@ export interface SpawnResult {
   stderr: string;
   exitCode: number;
   duration: number;
+  process: ChildProcess;
 }
 
 /**
@@ -76,6 +78,7 @@ export async function spawnProcess(command: string, options: SpawnOptions): Prom
         stderr,
         exitCode,
         duration: Date.now() - startTime,
+        process: proc,
       };
 
       if (options.verbose) {

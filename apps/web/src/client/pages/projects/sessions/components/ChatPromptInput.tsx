@@ -46,33 +46,7 @@ import {
 } from "@/client/pages/projects/files/lib/fileUtils";
 import { cn } from "@/client/lib/utils";
 import { TokenUsageCircle } from "./TokenUsageCircle";
-
-const permissionModes: Array<{
-  id: ClaudePermissionMode;
-  name: string;
-  shortName: string;
-  color: string;
-}> = [
-  {
-    id: "default",
-    name: "Default",
-    shortName: "Default",
-    color: "bg-gray-500",
-  },
-  { id: "plan", name: "Plan Mode", shortName: "Plan", color: "bg-green-500" },
-  {
-    id: "acceptEdits",
-    name: "Accept Edits",
-    shortName: "Accept",
-    color: "bg-purple-500",
-  },
-  {
-    id: "bypassPermissions",
-    name: "Bypass Permissions",
-    shortName: "Bypass",
-    color: "bg-red-500",
-  },
-];
+import { PERMISSION_MODES } from "@/client/lib/permissionModes";
 
 const SUBMITTING_TIMEOUT = 200;
 const STREAMING_TIMEOUT = 2000;
@@ -156,11 +130,11 @@ const ChatPromptInputInner = forwardRef<
 
     // Cycle to next permission mode
     const cyclePermissionMode = () => {
-      const currentIndex = permissionModes.findIndex(
+      const currentIndex = PERMISSION_MODES.findIndex(
         (m) => m.id === permissionMode
       );
-      const nextIndex = (currentIndex + 1) % permissionModes.length;
-      const nextMode = permissionModes[nextIndex].id;
+      const nextIndex = (currentIndex + 1) % PERMISSION_MODES.length;
+      const nextMode = PERMISSION_MODES[nextIndex].id;
       handlePermissionModeChange(nextMode);
     };
 
@@ -427,13 +401,13 @@ const ChatPromptInputInner = forwardRef<
                     {/* Show dot + short name on mobile */}
                     <div
                       className={`size-2 rounded-full md:hidden ${
-                        permissionModes.find((m) => m.id === permissionMode)
+                        PERMISSION_MODES.find((m) => m.id === permissionMode)
                           ?.color
                       }`}
                     />
                     <span className="md:hidden">
                       {
-                        permissionModes.find((m) => m.id === permissionMode)
+                        PERMISSION_MODES.find((m) => m.id === permissionMode)
                           ?.shortName
                       }
                     </span>
@@ -444,7 +418,7 @@ const ChatPromptInputInner = forwardRef<
                   </div>
                 </PromptInputPermissionModeSelectTrigger>
                 <PromptInputPermissionModeSelectContent>
-                  {permissionModes.map((mode) => (
+                  {PERMISSION_MODES.map((mode) => (
                     <PromptInputPermissionModeSelectItem
                       key={mode.id}
                       value={mode.id}

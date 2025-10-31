@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import type { ChildProcess } from 'node:child_process';
 import { execute } from './execute.js';
 import * as spawnModule from '../utils/spawn.js';
 import type { SpawnResult } from '../utils/spawn.js';
@@ -79,11 +80,12 @@ function mockSpawnWithOutput(output: string, result?: Partial<SpawnResult>) {
       options.onStderr(result.stderr);
     }
 
-    const finalResult = {
+    const finalResult: SpawnResult = {
       stdout: output,
       stderr: '',
       exitCode: 0,
       duration: 1000,
+      process: {} as ChildProcess, // Mock process object
       ...result,
     };
 

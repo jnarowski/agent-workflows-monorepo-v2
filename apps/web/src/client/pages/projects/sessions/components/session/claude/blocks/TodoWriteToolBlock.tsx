@@ -2,8 +2,8 @@
  * TodoWrite tool block component
  */
 
-import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
-import { TodoWriteToolRenderer } from "../tools/TodoWriteToolRenderer";
+import { ToolCollapsibleWrapper } from "@/client/pages/projects/sessions/components/session/claude/ToolCollapsibleWrapper";
+import { TodoWriteToolRenderer } from "@/client/pages/projects/sessions/components/session/claude/tools/TodoWriteToolRenderer";
 import type { TodoWriteToolInput } from "@/shared/types/tool.types";
 import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 

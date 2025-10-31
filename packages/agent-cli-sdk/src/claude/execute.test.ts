@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { ChildProcess } from 'node:child_process';
 import { execute } from './execute';
 import * as spawnModule from '../utils/spawn';
 import type { SpawnResult } from '../utils/spawn';
@@ -44,11 +45,12 @@ function mockSpawnWithOutput(output: string, result?: Partial<SpawnResult>) {
       options.onStderr(result.stderr);
     }
 
-    const finalResult = {
+    const finalResult: SpawnResult = {
       stdout: output,
       stderr: '',
       exitCode: 0,
       duration: 1000,
+      process: {} as ChildProcess, // Mock process object
       ...result,
     };
 
@@ -618,7 +620,7 @@ describe('execute', () => {
 
     vi.spyOn(spawnModule, 'spawnProcess').mockImplementation(async (_command, options) => {
       options.onError?.(testError);
-      return { stdout: '', stderr: '', exitCode: 1, duration: 0 };
+      return { stdout: '', stderr: '', exitCode: 1, duration: 0, process: {} as ChildProcess };
     });
 
     const onError = vi.fn();

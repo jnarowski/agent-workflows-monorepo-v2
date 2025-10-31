@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
@@ -13,10 +12,19 @@ import { sessionKeys } from "./useAgentSessions";
 import { generateUUID } from "@/client/lib/utils";
 import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import type { ProjectWithSessions } from "@/shared/types/project.types";
+import type { ClaudePermissionMode, AgentType } from "@repo/agent-cli-sdk";
 
 interface UseSessionWebSocketOptions {
   sessionId: string;
   projectId: string;
+}
+
+interface SessionConfig {
+  resume?: boolean;
+  sessionId?: string;
+  permissionMode?: ClaudePermissionMode;
+  agentType?: AgentType;
+  [key: string]: unknown;
 }
 
 /**
@@ -199,6 +207,16 @@ export function useSessionWebSocket({
             data.error
           );
 
+          // Build error message with optional details
+          const errorMessage = data.message || data.error || "An error occurred";
+          const details =
+            typeof data === "object" &&
+            data !== null &&
+            "details" in data &&
+            data.details !== undefined
+              ? `\n\nDetails: ${JSON.stringify(data.details, null, 2)}`
+              : "";
+
           // Add error message to store
           useSessionStore.getState().addMessage({
             id: generateUUID(),
@@ -206,7 +224,7 @@ export function useSessionWebSocket({
             content: [
               {
                 type: "text",
-                text: `Error: ${data.message || data.error || "An error occurred"}\n\n${(data as any).details ? `Details: ${JSON.stringify((data as any).details, null, 2)}` : ""}`,
+                text: `Error: ${errorMessage}${details}`,
               },
             ],
             timestamp: Date.now(),
@@ -270,7 +288,7 @@ export function useSessionWebSocket({
    * Send a message via WebSocket using Phoenix Channels pattern
    */
   const sendMessage = useCallback(
-    (message: string, images?: string[], config?: Record<string, any>) => {
+    (message: string, images?: string[], config?: SessionConfig) => {
       const currentSessionId = sessionIdRef.current;
 
       if (!currentSessionId) {

@@ -159,6 +159,7 @@ export function FileTree() {
   // Use filesStore for UI state
   const expandedDirs = useFilesStore((s) => s.expandedDirs);
   const toggleDir = useFilesStore((s) => s.toggleDir);
+  const expandMultipleDirs = useFilesStore((s) => s.expandMultipleDirs);
   const searchQuery = useFilesStore((s) => s.searchQuery);
   const setSearch = useFilesStore((s) => s.setSearch);
   const setSelectedFile = useFilesStore((s) => s.setSelectedFile);
@@ -171,6 +172,8 @@ export function FileTree() {
   // Auto-expand directories containing search matches
   useEffect(() => {
     if (searchQuery && files) {
+      const pathsToExpand: string[] = [];
+
       function collectExpandedPaths(
         items: FileTreeItem[],
         currentPath: string[] = []
@@ -191,8 +194,8 @@ export function FileTree() {
             }
 
             if (hasMatch(item)) {
-              // Expand this directory using store action
-              useFilesStore.getState().expandDir(item.path);
+              // Collect path for batch expansion
+              pathsToExpand.push(item.path);
             }
 
             if (item.children) {
@@ -203,7 +206,13 @@ export function FileTree() {
       }
 
       collectExpandedPaths(files);
+
+      // Single store update with all paths
+      if (pathsToExpand.length > 0) {
+        expandMultipleDirs(pathsToExpand);
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, files]);
 
   const filteredFiles = useMemo(() => {

@@ -3,11 +3,11 @@
  */
 
 import { useState } from "react";
-import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
+import { ToolCollapsibleWrapper } from "@/client/pages/projects/sessions/components/session/claude/ToolCollapsibleWrapper";
 import { SyntaxHighlighter } from "@/client/utils/syntaxHighlighter";
 import { getLanguageFromPath } from "@/client/utils/getLanguageFromPath";
 import { useCodeBlockTheme } from "@/client/utils/codeBlockTheme";
-import { ExpandButton } from "./ExpandButton";
+import { ExpandButton } from "@/client/pages/projects/sessions/components/session/claude/blocks/ExpandButton";
 import type { WriteToolInput } from "@/shared/types/tool.types";
 import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 
