@@ -50,6 +50,7 @@ model User {
   created_at    DateTime       @default(now())
   last_login    DateTime?
   is_active     Boolean        @default(true)
+  settings      Json?
   sessions      AgentSession[]
 
   @@map("users")

@@ -1,6 +1,6 @@
-import type { PermissionMode } from "@repo/agent-cli-sdk";
+import { execute, type PermissionMode } from "@repo/agent-cli-sdk";
 import type { FastifyBaseLogger } from "fastify";
-import { AgentStrategyRegistry } from "@/server/strategies/agents/AgentStrategyRegistry.js";
+import { activeSessions } from "@/server/websocket/infrastructure/active-sessions.js";
 
 export interface AgentExecuteConfig {
   agent: "claude" | "codex";
@@ -24,8 +24,8 @@ export interface AgentExecuteResult {
 }
 
 /**
- * Execute agent command using strategy pattern
- * Delegates execution to the appropriate agent strategy
+ * Execute agent command via agent-cli-sdk
+ * Directly calls the SDK execute function for the specified agent
  */
 export async function executeAgent(
   config: AgentExecuteConfig
@@ -43,24 +43,58 @@ export async function executeAgent(
     logger,
   } = config;
 
-  try {
-    // Get the appropriate strategy for the agent
-    const strategy = AgentStrategyRegistry.get(agent);
+  logger?.info(
+    {
+      agent,
+      sessionId,
+      model,
+      messageLength: prompt.length,
+    },
+    "[WebSocket] Sending message to agent-cli-sdk"
+  );
 
-    // Execute using the strategy
-    return await strategy.execute({
+  try {
+    // Execute via agent-cli-sdk
+    const result = await execute({
+      tool: agent,
       prompt,
       workingDir,
       sessionId,
       resume,
       permissionMode,
       model,
+      verbose: true,
       images,
       onEvent,
-      logger,
     });
+
+    // Store process reference if available (Claude only)
+    if ("process" in result && result.process) {
+      logger?.debug(
+        { sessionId, pid: result.process.pid },
+        "Storing process reference for session"
+      );
+      activeSessions.setProcess(sessionId, result.process);
+    }
+
+    logger?.info(
+      {
+        sessionId,
+        success: result.success,
+        exitCode: result.exitCode,
+      },
+      "[WebSocket] Message execution completed"
+    );
+
+    // Clear process reference after completion
+    activeSessions.clearProcess(sessionId);
+
+    return result;
   } catch (err: unknown) {
-    logger?.error({ err, sessionId, agent }, "Agent execution failed");
+    logger?.error({ err, sessionId, agent }, "Agent CLI SDK error");
+
+    // Clear process reference on error
+    activeSessions.clearProcess(sessionId);
 
     const errorMessage =
       err instanceof Error ? err.message : "Failed to execute agent command";

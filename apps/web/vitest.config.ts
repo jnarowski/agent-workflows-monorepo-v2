@@ -50,6 +50,14 @@ export default defineConfig({
           include: [
             "src/client/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}",
           ],
+          // Suppress harmless happy-dom AbortError messages during teardown
+          onConsoleLog(log: string, type: 'stdout' | 'stderr') {
+            // Filter out happy-dom's AbortError stack traces from teardown
+            if (type === 'stderr' && log.includes('DOMException [AbortError]')) {
+              return false; // Don't print this log
+            }
+            // Allow all other logs through
+          },
         },
         resolve: resolveConfig,
       },

@@ -309,19 +309,27 @@ export async function handleSessionCancel(
     }
 
     // Kill the process with graceful shutdown
-    fastify.log.info({ sessionId }, "[WebSocket] Killing agent process");
+    fastify.log.info(
+      { sessionId, pid: process.pid },
+      "[WebSocket] Killing agent process"
+    );
 
     try {
       const killResult = await killProcess(process, { timeoutMs: 5000 });
 
       fastify.log.info(
-        { sessionId, killed: killResult.killed, signal: killResult.signal },
+        {
+          sessionId,
+          pid: process.pid,
+          killed: killResult.killed,
+          signal: killResult.signal,
+        },
         "[WebSocket] Process kill result"
       );
     } catch (killError) {
       // Log but don't fail - process might already be dead
       fastify.log.warn(
-        { err: killError, sessionId },
+        { err: killError, sessionId, pid: process.pid },
         "[WebSocket] Error killing process (may already be dead)"
       );
     }

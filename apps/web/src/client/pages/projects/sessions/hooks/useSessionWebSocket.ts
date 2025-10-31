@@ -313,9 +313,48 @@ export function useSessionWebSocket({
     [sendWsMessage]
   );
 
+  /**
+   * Kill the running agent session
+   * Sends cancel event and updates UI immediately
+   */
+  const killSession = useCallback(() => {
+    const currentSessionId = sessionIdRef.current;
+
+    if (!currentSessionId) {
+      console.error("[useSessionWebSocket] Cannot kill session: no sessionId");
+      return;
+    }
+
+    const channel = Channels.session(currentSessionId);
+
+    // Send cancel event to backend
+    sendWsMessage(channel, {
+      type: SessionEventTypes.CANCEL,
+      data: { sessionId: currentSessionId },
+    });
+
+    // Add system message to UI
+    useSessionStore.getState().addMessage({
+      id: generateUUID(),
+      role: "assistant",
+      content: [
+        {
+          type: "text",
+          text: "🛑 Session stopped by user",
+        },
+      ],
+      timestamp: Date.now(),
+      isError: true,
+    });
+
+    // Update streaming state
+    useSessionStore.getState().setStreaming(false);
+  }, [sendWsMessage]);
+
   return {
     readyState,
     isConnected,
     sendMessage,
+    killSession,
   };
 }

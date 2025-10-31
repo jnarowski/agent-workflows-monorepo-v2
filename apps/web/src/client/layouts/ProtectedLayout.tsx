@@ -4,16 +4,35 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/client/stores/index";
 import { useSyncProjects, projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import { useSettings } from "@/client/hooks/useSettings";
+import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
+import { useTheme } from "next-themes";
 import { AppSidebar } from "@/client/components/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/client/components/ui/sidebar";
 
 function ProtectedLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const queryClient = useQueryClient();
+  const initializeFromSettings = useSessionStore((s) => s.initializeFromSettings);
+  const { setTheme } = useTheme();
 
   // Load settings early so they're available for all protected routes
   // Settings are cached by TanStack Query (5-minute stale time)
-  useSettings();
+  const { data: settings } = useSettings();
+
+  // Initialize session store defaults and theme from user preferences
+  useEffect(() => {
+    if (settings?.userPreferences) {
+      // Initialize session store with user preferences
+      initializeFromSettings({
+        permissionMode: settings.userPreferences.default_permission_mode,
+        agent: settings.userPreferences.default_agent,
+      });
+
+      // Set theme from user preferences
+      setTheme(settings.userPreferences.default_theme);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings?.userPreferences]);
 
   // Sync projects from Claude CLI on mount
   // TanStack Query handles caching automatically (5-minute stale time)

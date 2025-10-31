@@ -62,7 +62,12 @@ export function CreateBranchDialog({
   const isValid = validateBranchName(values.branchName);
 
   return (
-    <BaseDialog open={open} onOpenChange={onOpenChange} onClose={reset}>
+    <BaseDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      onClose={reset}
+      contentProps={{ className: "sm:max-w-md" }}
+    >
       <DialogHeader>
         <DialogTitle>Create New Branch</DialogTitle>
         <DialogDescription>

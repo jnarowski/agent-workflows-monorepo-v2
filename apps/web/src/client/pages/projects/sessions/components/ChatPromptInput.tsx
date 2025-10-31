@@ -40,6 +40,7 @@ interface ChatPromptInputProps {
   totalTokens?: number; // Total session tokens
   currentMessageTokens?: number; // Current message tokens (to be added)
   agent?: AgentType; // Override agent (for /new page before session is created)
+  onKill?: () => void;
 }
 
 export interface ChatPromptInputHandle {
@@ -59,6 +60,7 @@ const ChatPromptInputInner = forwardRef<
       totalTokens,
       currentMessageTokens,
       agent: agentProp,
+      onKill,
     },
     ref
   ) => {
@@ -120,6 +122,7 @@ const ChatPromptInputInner = forwardRef<
       textareaRef,
       disabled,
       onSubmit,
+      onKill,
     });
 
     // Expose focus method to parent components

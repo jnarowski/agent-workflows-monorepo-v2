@@ -3,7 +3,7 @@
  * Provides access to application settings and feature flags
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/client/lib/api-client';
 
 type AgentType = 'claude' | 'codex' | 'gemini' | 'cursor';
@@ -21,6 +21,12 @@ interface AgentCapabilities {
   cliPath?: string;
 }
 
+interface UserPreferences {
+  default_permission_mode: 'default' | 'plan' | 'acceptEdits' | 'bypassPermissions';
+  default_theme: 'light' | 'dark' | 'system';
+  default_agent: AgentType;
+}
+
 interface Settings {
   features: {
     aiEnabled: boolean;
@@ -28,6 +34,7 @@ interface Settings {
     ghCliEnabled: boolean;
   };
   agents: Record<AgentType, AgentCapabilities>;
+  userPreferences: UserPreferences;
   version: string;
 }
 
@@ -69,4 +76,22 @@ export function useIsGhCliEnabled() {
 export function useAgentCapabilities(agentType: AgentType) {
   const { data: settings } = useSettings();
   return settings?.agents[agentType];
+}
+
+/**
+ * Update user preferences
+ */
+export function useUpdateSettings() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (updates: Partial<UserPreferences>) => {
+      const response = await api.patch<{ data: Settings }>('/api/settings', updates);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      // Update settings cache with new data
+      queryClient.setQueryData(['settings'], data);
+    },
+  });
 }
