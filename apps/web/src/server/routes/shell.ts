@@ -1,9 +1,9 @@
 import type { FastifyInstance } from 'fastify';
 import {
-  createSession,
-  getSession,
-  destroySession,
-} from '@/server/services/shell';
+  createShellSession,
+  getShellSession,
+  destroyShellSession,
+} from '@/server/domain/shell/services/index.js';
 import {
   shellMessageSchema,
   type InitMessage,
@@ -111,7 +111,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             fastify.log.info({ projectId, cols, rows, userId }, 'Initializing shell session');
 
             // Create shell session
-            const session = await createSession(
+            const session = await createShellSession(
               projectId,
               userId.toString(),
               cols,
@@ -200,7 +200,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             return;
           }
 
-          const session = getSession(sessionId);
+          const session = getShellSession(sessionId);
           if (!session) {
             socket.send(
               JSON.stringify({
@@ -238,7 +238,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             return;
           }
 
-          const session = getSession(sessionId);
+          const session = getShellSession(sessionId);
           if (!session) {
             socket.send(
               JSON.stringify({
@@ -263,7 +263,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
         // Handle disconnection
         socket.on('close', () => {
           if (sessionId) {
-            destroySession(sessionId, fastify.log);
+            destroyShellSession(sessionId, fastify.log);
             fastify.log.info({ sessionId }, 'Shell session destroyed');
           }
           fastify.log.info({ userId }, 'Shell WebSocket client disconnected');
@@ -273,7 +273,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
         socket.on('error', (error: Error) => {
           fastify.log.error({ error, sessionId }, 'Shell WebSocket error');
           if (sessionId) {
-            destroySession(sessionId, fastify.log);
+            destroyShellSession(sessionId, fastify.log);
           }
         });
         } catch (error) {

@@ -8,6 +8,7 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import { buildSuccessResponse } from "@/server/utils/response";
 import { getCapabilities } from "@repo/agent-cli-sdk";
+import { config } from "@/server/config/Configuration.js";
 
 const execAsync = promisify(exec);
 
@@ -40,61 +41,9 @@ export async function settingsRoutes(fastify: FastifyInstance) {
 
       fastify.log.info({ userId }, "Fetching settings");
 
-      // TEMPORARY DEBUG: Hard-coded capabilities to test different installation states
-      // Comment out this block and uncomment the real implementation below to restore normal behavior
-      // const settings = {
-      //   features: {
-      //     aiEnabled: !!process.env.ANTHROPIC_API_KEY,
-      //     gitEnabled: true, // Git operations are always available
-      //     ghCliEnabled: ghInstalled, // GitHub CLI for PR creation
-      //   },
-      //   agents: {
-      //     // Claude: Installed (to test working agent)
-      //     claude: {
-      //       supportsSlashCommands: true,
-      //       supportsModels: true,
-      //       models: [
-      //         { id: "claude-sonnet-4-5-20250929", name: "Sonnet 4.5" },
-      //         { id: "claude-opus-4-20250514", name: "Opus 4.1" },
-      //       ],
-      //       installed: true,
-      //       cliPath: "/usr/local/bin/claude",
-      //     },
-      //     // Codex: NOT installed (to test installation instructions)
-      //     codex: {
-      //       supportsSlashCommands: false,
-      //       supportsModels: true,
-      //       models: [
-      //         { id: "gpt-5-codex", name: "GPT-5 Codex" },
-      //         { id: "gpt-5", name: "GPT-5" },
-      //       ],
-      //       installed: true,
-      //       cliPath: undefined,
-      //     },
-      //     // Cursor: NOT installed (to test "coming soon" message)
-      //     cursor: {
-      //       supportsSlashCommands: false,
-      //       supportsModels: false,
-      //       models: [],
-      //       installed: false,
-      //       cliPath: undefined,
-      //     },
-      //     // Gemini: NOT installed (to test "coming soon" message)
-      //     gemini: {
-      //       supportsSlashCommands: false,
-      //       supportsModels: false,
-      //       models: [],
-      //       installed: false,
-      //       cliPath: undefined,
-      //     },
-      //   },
-      //   version: "0.1.0",
-      //   // Future: Add user-specific preferences here
-      // };
-
       const settings = {
         features: {
-          aiEnabled: !!process.env.ANTHROPIC_API_KEY,
+          aiEnabled: !!config.get('apiKeys').anthropicApiKey,
           gitEnabled: true, // Git operations are always available
           ghCliEnabled: ghInstalled, // GitHub CLI for PR creation
         },

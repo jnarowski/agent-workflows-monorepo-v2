@@ -55,16 +55,16 @@ export async function killProcess(
   }
 
   return new Promise((resolve) => {
-    let killTimeout: NodeJS.Timeout | undefined;
     let resolved = false;
+    const timeoutRef: { id?: NodeJS.Timeout } = {};
 
     // Handler for process exit
     const onExit = (signal: string) => {
       if (resolved) return;
       resolved = true;
 
-      if (killTimeout) {
-        clearTimeout(killTimeout);
+      if (timeoutRef.id) {
+        clearTimeout(timeoutRef.id);
       }
 
       process.removeListener('exit', onExit);
@@ -77,7 +77,7 @@ export async function killProcess(
     // Send SIGTERM for graceful shutdown
     try {
       process.kill('SIGTERM');
-    } catch (error) {
+    } catch {
       // Process might already be dead
       if (resolved) return;
       resolved = true;
@@ -86,14 +86,14 @@ export async function killProcess(
     }
 
     // Set timeout for force kill
-    killTimeout = setTimeout(() => {
+    timeoutRef.id = setTimeout(() => {
       if (resolved) return;
 
       // Force kill with SIGKILL
       try {
         process.kill('SIGKILL');
         process.once('exit', () => onExit('SIGKILL'));
-      } catch (error) {
+      } catch {
         // Process died between timeout and kill
         if (!resolved) {
           resolved = true;

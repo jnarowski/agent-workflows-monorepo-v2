@@ -195,19 +195,13 @@ describe('generateSessionName', () => {
   describe('error handling', () => {
     it('should return "Untitled Session" when generateText throws error', async () => {
       vi.mocked(generateText).mockRejectedValue(new Error('API error'));
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const result = await generateSessionName({
         userPrompt: 'Fix the bug',
       });
 
       expect(result).toBe('Untitled Session');
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Failed to generate session name:',
-        expect.any(Error)
-      );
-
-      consoleErrorSpy.mockRestore();
+      // Note: Error is silently caught as this is an optional feature
     });
 
     it('should return "Untitled Session" when generateText returns empty text', async () => {

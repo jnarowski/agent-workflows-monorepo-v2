@@ -4,17 +4,12 @@ import fastifyPlugin from "fastify-plugin";
 import { prisma } from "@/shared/prisma";
 import { JWTPayload } from "@/server/utils/auth";
 import { buildErrorResponse } from "@/server/utils/error";
-
-// JWT secret from environment - required for security
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required');
-}
+import { config } from "@/server/config/Configuration.js";
 
 async function authPluginFunction(fastify: FastifyInstance) {
-  // Register JWT plugin
+  // Register JWT plugin using config service
   await fastify.register(fastifyJwt, {
-    secret: JWT_SECRET,
+    secret: config.get('jwt').secret,
   });
 
   // Decorate request with authenticate method

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { prisma } from '@/shared/prisma';
-import type { ActiveSessionsManager } from '@/server/websocket/utils/active-sessions';
-import type { ReconnectionManager } from '@/server/websocket/utils/reconnection';
+import type { ActiveSessionsManager } from '@/server/websocket/infrastructure/active-sessions';
+import type { ReconnectionManager } from '@/server/websocket/infrastructure/reconnection';
 import { killProcess } from '@repo/agent-cli-sdk';
 
 /**

@@ -73,8 +73,8 @@ Your response must be ONLY the 3-5 word name, nothing else.`,
     const name = result.text.trim().replace(/['"]/g, "");
 
     return name || "Untitled Session";
-  } catch (error) {
-    console.error("Failed to generate session name:", error);
+  } catch {
+    // Silently fall back to default on error - this is an optional feature
     return "Untitled Session";
   }
 }

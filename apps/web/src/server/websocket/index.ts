@@ -1,13 +1,13 @@
 import type { FastifyInstance } from "fastify";
 import type { JWTPayload } from "@/server/utils/auth";
-import { sendMessage } from "./utils/send-message.js";
-import { wsMetrics } from "./utils/metrics.js";
-import { activeSessions } from "./utils/active-sessions.js";
-import { reconnectionManager } from "./utils/reconnection.js";
+import { sendMessage } from "./infrastructure/send-message.js";
+import { wsMetrics } from "./infrastructure/metrics.js";
+import { activeSessions } from "./infrastructure/active-sessions.js";
+import { reconnectionManager } from "./infrastructure/reconnection.js";
 import { handleSessionEvent } from "./handlers/session.handler.js";
 import { handleShellEvent } from "./handlers/shell.handler.js";
 import { handleGlobalEvent } from "./handlers/global.handler.js";
-import { unsubscribeAll } from "./utils/subscriptions.js";
+import { unsubscribeAll } from "./infrastructure/subscriptions.js";
 import { Channels, GlobalEventTypes } from "@/shared/websocket/index.js";
 
 /**

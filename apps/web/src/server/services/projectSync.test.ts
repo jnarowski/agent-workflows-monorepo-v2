@@ -4,12 +4,12 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { syncFromClaudeProjects, hasEnoughSessions } from './projectSync';
-import * as projectService from './project';
-import * as agentSessionService from './agentSession';
+import * as projectService from '@/server/domain/project/services';
+import * as agentSessionService from '@/server/domain/session/services';
 
 // Mock the services
-vi.mock('@/server/services/project');
-vi.mock('@/server/services/agentSession');
+vi.mock('@/server/domain/project/services');
+vi.mock('@/server/domain/session/services');
 
 describe('ProjectSyncService', () => {
   const originalHome = process.env.HOME;

@@ -91,6 +91,16 @@ pnpm vitest run src/path/to/file.test.ts
 │       ├── src/
 │       │   ├── client/         # React frontend (Vite)
 │       │   ├── server/         # Fastify backend
+│       │   │   ├── domain/     # Domain-driven business logic
+│       │   │   │   ├── project/    # Project management
+│       │   │   │   ├── session/    # Agent sessions
+│       │   │   │   ├── file/       # File operations
+│       │   │   │   ├── git/        # Git operations
+│       │   │   │   └── shell/      # Shell/terminal
+│       │   │   ├── routes/     # HTTP route handlers (thin)
+│       │   │   ├── websocket.ts # WebSocket transport (thin)
+│       │   │   ├── plugins/    # Fastify plugins
+│       │   │   └── config.ts   # Centralized configuration
 │       │   └── shared/         # Shared types, Prisma client
 │       ├── prisma/             # Database schema and migrations
 │       └── logs/               # Server logs (apps/web/logs/app.log)
@@ -163,6 +173,58 @@ All interactive tools in the web app follow a standardized pattern:
 - Images auto-parse to `UnifiedImageBlock`, other content stays as strings
 - Pattern documented in `.agent/docs/claude-tool-result-patterns.md`
 
+**6. Domain-Driven Backend Architecture**
+
+The web app backend (`apps/web/src/server/`) follows a domain-driven functional architecture:
+
+**Domain Structure:**
+```
+server/
+├── domain/                 # Business logic organized by domain
+│   ├── project/           # Project management domain
+│   │   ├── services/      # Pure functions (one per file)
+│   │   ├── types/         # Domain-specific types
+│   │   └── schemas/       # Zod validation schemas
+│   ├── session/           # Agent session domain
+│   ├── file/              # File operations domain
+│   ├── git/               # Git operations domain
+│   └── shell/             # Shell/terminal domain
+├── routes/                # Thin HTTP route handlers
+├── websocket.ts           # Thin WebSocket transport
+├── plugins/               # Fastify plugins (auth, etc.)
+└── config.ts              # Centralized configuration
+```
+
+**Key Principles:**
+- **One function per file** in `domain/*/services/` - file name matches exported function
+- **Group by domain**, not by technical layer (no generic "services/" folder)
+- **Pure functions** - all dependencies passed as parameters, no classes
+- **Routes are thin orchestrators** - delegate to domain services
+- **WebSocket is transport** - business logic stays in domain layer
+- **Centralized config** - all environment variables accessed via `config.ts`
+
+**Example Domain Function:**
+```typescript
+// domain/project/services/getProjectById.ts
+export async function getProjectById(id: string): Promise<Project | null> {
+  const project = await prisma.project.findUnique({ where: { id } });
+  if (!project) return null;
+
+  const currentBranch = await getCurrentBranch(project.path);
+  return transformProject(project, currentBranch);
+}
+```
+
+**Import Pattern:**
+```typescript
+// ✅ GOOD - Import from domain
+import { getProjectById } from '@/server/domain/project/services/getProjectById.js';
+import { readFile } from '@/server/domain/file/services/readFile.js';
+
+// ❌ BAD - Don't import from old services/ directory
+import { getProjectById } from '@/server/services/project.service.js';
+```
+
 ## Important Rules & Conventions
 
 ### General Monorepo Rules
@@ -174,6 +236,17 @@ All interactive tools in the web app follow a standardized pattern:
 5. **Unit tests are co-located**: Place `*.test.ts` next to source files, not in separate `tests/` folder
 
 ### Web App Specific Rules
+
+**Backend Domain Organization:**
+- ✅ **One function per file** in `domain/*/services/` - file name MUST match exported function name
+  - Example: `getProjectById.ts` exports `export async function getProjectById()`
+- ✅ **Group by domain**, not by technical layer - use `domain/project/`, `domain/session/`, etc.
+- ✅ **Pure functions** - pass all dependencies (logger, config) as parameters, no classes
+- ✅ **Thin route handlers** - delegate all business logic to domain services
+- ✅ **Import from domain/** - use `@/server/domain/project/services/getProjectById.js`
+- ❌ **Never import from services/** - old pattern, being phased out
+- ✅ **WebSocket handlers are thin** - orchestrate domain functions, don't contain business logic
+- ✅ **Use centralized config** - import from `@/server/config.js`, don't access `process.env` directly
 
 **Import Paths:**
 - ✅ Always use `@/` aliases: `@/client/*`, `@/server/*`, `@/shared/*`

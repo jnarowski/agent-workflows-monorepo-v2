@@ -3,7 +3,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import fs from "fs/promises";
 import path from "path";
 import os from "os";
-import { parseJSONLFile, syncProjectSessions } from "./agentSession";
+import { parseJSONLFile } from "@/server/domain/session/services/parseJSONLFile";
+import { syncProjectSessions } from "@/server/domain/session/services/syncProjectSessions";
 import { getSessionFilePath } from "@/server/utils/path";
 import { prisma } from "@/shared/prisma";
 

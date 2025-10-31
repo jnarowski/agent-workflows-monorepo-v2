@@ -15,7 +15,7 @@ import {
   getCommitHistory,
   getCommitsSinceBase,
   checkGhCliAvailable,
-} from './git.service';
+} from '@/server/domain/git/services';
 
 // Mock simple-git
 vi.mock('simple-git');

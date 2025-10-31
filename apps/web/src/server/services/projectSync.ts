@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
 import readline from "readline";
-import { createOrUpdateProject } from "@/server/services/project";
-import { syncProjectSessions } from "@/server/services/agentSession";
+import { createOrUpdateProject } from "@/server/domain/project/services";
+import { syncProjectSessions } from "@/server/domain/session/services";
 import { getClaudeProjectsDir } from "@/server/utils/path";
 import type { SyncProjectsResponse } from "@/shared/types/project-sync.types";
 
@@ -111,15 +110,12 @@ async function extractProjectDirectory(projectName: string): Promise<string> {
     }
 
     return extractedPath;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // If the directory doesn't exist, just use the decoded project name
-    if (error.code === "ENOENT") {
+    const err = error instanceof Error ? error : new Error(String(error));
+    if ('code' in err && (err as NodeJS.ErrnoException).code === "ENOENT") {
       extractedPath = decodeProjectPath(projectName);
     } else {
-      console.error(
-        `Error extracting project directory for ${projectName}:`,
-        error
-      );
       // Fall back to decoded project name for other errors
       extractedPath = decodeProjectPath(projectName);
     }
