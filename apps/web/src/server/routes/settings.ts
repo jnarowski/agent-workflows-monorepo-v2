@@ -6,11 +6,33 @@
 import type { FastifyInstance } from "fastify";
 import { exec } from "child_process";
 import { promisify } from "util";
+import { z } from "zod";
 import { buildSuccessResponse } from "@/server/utils/response";
 import { getCapabilities } from "@repo/agent-cli-sdk";
 import { config } from "@/server/config/Configuration.js";
+import { prisma } from "@/shared/prisma";
 
 const execAsync = promisify(exec);
+
+// Zod schema for user preferences (snake_case keys for database)
+const userPreferencesSchema = z.object({
+  default_permission_mode: z.enum(["default", "plan", "acceptEdits", "bypassPermissions"]),
+  default_theme: z.enum(["light", "dark", "system"]),
+  default_agent: z.enum(["claude", "codex", "cursor", "gemini"]),
+});
+
+// Zod schema for updating user preferences (all fields optional)
+const updateUserPreferencesSchema = userPreferencesSchema.partial();
+
+type UserPreferences = z.infer<typeof userPreferencesSchema>;
+type UpdateUserPreferences = z.infer<typeof updateUserPreferencesSchema>;
+
+// Default user preferences
+const DEFAULT_USER_PREFERENCES: UserPreferences = {
+  default_permission_mode: "acceptEdits",
+  default_theme: "dark",
+  default_agent: "claude",
+};
 
 /**
  * Check if GitHub CLI (gh) is installed and accessible
@@ -41,6 +63,17 @@ export async function settingsRoutes(fastify: FastifyInstance) {
 
       fastify.log.info({ userId }, "Fetching settings");
 
+      // Fetch user from database to get settings
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { settings: true },
+      });
+
+      // Parse user.settings JSON, use defaults if null
+      const userPreferences: UserPreferences = user?.settings
+        ? { ...DEFAULT_USER_PREFERENCES, ...(user.settings as object) }
+        : DEFAULT_USER_PREFERENCES;
+
       const settings = {
         features: {
           aiEnabled: !!config.get('apiKeys').anthropicApiKey,
@@ -53,8 +86,71 @@ export async function settingsRoutes(fastify: FastifyInstance) {
           cursor: await getCapabilities("cursor"),
           gemini: await getCapabilities("gemini"),
         },
+        userPreferences,
         version: "0.1.0",
-        // Future: Add user-specific preferences here
+      };
+
+      return reply.send(buildSuccessResponse(settings));
+    }
+  );
+
+  /**
+   * PATCH /api/settings
+   * Update user preferences
+   * Requires authentication
+   */
+  fastify.patch<{
+    Body: UpdateUserPreferences;
+  }>(
+    "/api/settings",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        body: updateUserPreferencesSchema,
+      },
+    },
+    async (request, reply) => {
+      const userId = request.user!.id;
+      const updates = request.body;
+
+      fastify.log.info({ userId, updates }, "Updating user settings");
+
+      // Fetch current settings
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { settings: true },
+      });
+
+      // Merge with existing settings
+      const currentSettings = user?.settings
+        ? { ...DEFAULT_USER_PREFERENCES, ...(user.settings as object) }
+        : DEFAULT_USER_PREFERENCES;
+
+      const updatedSettings = { ...currentSettings, ...updates };
+
+      // Update user.settings JSON field
+      await prisma.user.update({
+        where: { id: userId },
+        data: { settings: updatedSettings },
+      });
+
+      // Return updated settings in same format as GET
+      const ghInstalled = await checkGhInstalled();
+
+      const settings = {
+        features: {
+          aiEnabled: !!config.get('apiKeys').anthropicApiKey,
+          gitEnabled: true,
+          ghCliEnabled: ghInstalled,
+        },
+        agents: {
+          claude: await getCapabilities("claude"),
+          codex: await getCapabilities("codex"),
+          cursor: await getCapabilities("cursor"),
+          gemini: await getCapabilities("gemini"),
+        },
+        userPreferences: updatedSettings,
+        version: "0.1.0",
       };
 
       return reply.send(buildSuccessResponse(settings));

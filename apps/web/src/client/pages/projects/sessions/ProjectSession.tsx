@@ -61,7 +61,7 @@ export default function ProjectSession() {
   const { isConnected: globalIsConnected } = useWebSocket();
 
   // WebSocket hook (subscribes to session events)
-  const { sendMessage: wsSendMessage } = useSessionWebSocket({
+  const { sendMessage: wsSendMessage, killSession } = useSessionWebSocket({
     sessionId: sessionId || "",
     projectId: projectId || "",
   });
@@ -273,6 +273,7 @@ export default function ProjectSession() {
             isStreaming={session?.isStreaming || false}
             totalTokens={totalTokens}
             agent={session?.agent}
+            onKill={killSession}
           />
         </div>
       </div>

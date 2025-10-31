@@ -92,7 +92,12 @@ export function CreatePullRequestDialog({
   }, [prData, setValues]);
 
   return (
-    <BaseDialog open={open} onOpenChange={onOpenChange} onClose={reset}>
+    <BaseDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      onClose={reset}
+      contentProps={{ className: "sm:max-w-lg" }}
+    >
       <DialogHeader>
         <DialogTitle>Create Pull Request</DialogTitle>
         <DialogDescription>

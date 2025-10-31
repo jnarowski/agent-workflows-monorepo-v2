@@ -158,83 +158,92 @@ Update sessionStore to initialize defaults from user settings.
 ### Task Group 1: Database Layer
 
 <!-- prettier-ignore -->
-- [ ] db-schema Add `settings Json?` field to User model in Prisma schema
+- [x] db-schema Add `settings Json?` field to User model in Prisma schema
   - Add after `is_active` field
   - Type: `Json?` (nullable, SQLite stores as TEXT)
   - File: `prisma/schema.prisma`
-- [ ] db-migrate Create and apply Prisma migration
+- [x] db-migrate Create and apply Prisma migration
   - Run: `cd apps/web && pnpm prisma:migrate`
   - Migration name: "add_user_settings"
   - Verify: `pnpm prisma:studio` shows settings column
-- [ ] db-generate Regenerate Prisma client
+- [x] db-generate Regenerate Prisma client
   - Run: `cd apps/web && pnpm prisma:generate`
   - Verify: TypeScript recognizes `user.settings` field
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added `settings Json?` field to User model in Prisma schema
+- Created migration `20251031084315_add_user_settings` with SQL to alter users table
+- Applied migration successfully using `prisma migrate deploy`
+- Regenerated Prisma client - TypeScript now recognizes `user.settings` field
 
 ### Task Group 2: Backend - Zod Schemas
 
 <!-- prettier-ignore -->
-- [ ] be-schema-types Define UserPreferences Zod schema
+- [x] be-schema-types Define UserPreferences Zod schema
   - Create `userPreferencesSchema` with snake_case keys
   - Fields: `default_permission_mode`, `default_theme`, `default_agent`
   - File: `apps/web/src/server/routes/settings.ts`
-- [ ] be-schema-update Define UpdateUserPreferences Zod schema
+- [x] be-schema-update Define UpdateUserPreferences Zod schema
   - All fields optional (partial update support)
   - Validate permission mode enum, theme enum, agent enum
   - File: `apps/web/src/server/routes/settings.ts`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Created `userPreferencesSchema` with enum validation for permission modes, themes, and agents
+- Created `updateUserPreferencesSchema` using `.partial()` for optional updates
+- Defined `DEFAULT_USER_PREFERENCES` with acceptEdits, dark theme, and claude agent as defaults
 
 ### Task Group 3: Backend - GET Endpoint
 
 <!-- prettier-ignore -->
-- [ ] be-get-parse Parse user.settings JSON in GET handler
+- [x] be-get-parse Parse user.settings JSON in GET handler
   - Parse `request.user.settings` field
   - Use defaults if null: `{ default_permission_mode: "acceptEdits", default_theme: "dark", default_agent: "claude" }`
   - File: `apps/web/src/server/routes/settings.ts`
-- [ ] be-get-response Add userPreferences to GET response
+- [x] be-get-response Add userPreferences to GET response
   - Add `userPreferences` field to response object
   - Keep existing `features`, `agents`, `version` fields
   - File: `apps/web/src/server/routes/settings.ts`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Fetched user from database in GET handler to access settings field
+- Parsed user.settings JSON and merged with defaults using spread operator
+- Added `userPreferences` field to settings response while keeping existing fields
 
 ### Task Group 4: Backend - PATCH Endpoint
 
 <!-- prettier-ignore -->
-- [ ] be-patch-handler Create PATCH /api/settings endpoint
+- [x] be-patch-handler Create PATCH /api/settings endpoint
   - Use `fastify.patch()` with `/api/settings` route
   - Require authentication: `preHandler: fastify.authenticate`
   - Validate body with `updateUserPreferencesSchema`
   - File: `apps/web/src/server/routes/settings.ts`
-- [ ] be-patch-update Update user.settings JSON field
+- [x] be-patch-update Update user.settings JSON field
   - Merge new preferences with existing settings
   - Use Prisma `update()` to save to database
   - File: `apps/web/src/server/routes/settings.ts`
-- [ ] be-patch-response Return updated settings in response
+- [x] be-patch-response Return updated settings in response
   - Return same format as GET endpoint
   - Include updated `userPreferences` field
   - File: `apps/web/src/server/routes/settings.ts`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Created PATCH /api/settings endpoint with authentication and Zod validation
+- Fetched current settings, merged with updates, and persisted to database
+- Returned full settings response (matching GET format) including updated userPreferences
 
 ### Task Group 5: Frontend - Types & Hook
 
 <!-- prettier-ignore -->
-- [ ] fe-types-extend Extend Settings interface
+- [x] fe-types-extend Extend Settings interface
   - Add `userPreferences` field to Settings interface
   - Type: `{ default_permission_mode, default_theme, default_agent }`
   - File: `apps/web/src/client/hooks/useSettings.ts`
-- [ ] fe-mutation-add Add useUpdateSettings mutation hook
+- [x] fe-mutation-add Add useUpdateSettings mutation hook
   - Use `useMutation` from TanStack Query
   - PATCH request to `/api/settings`
   - Invalidate settings query on success
@@ -242,35 +251,37 @@ Update sessionStore to initialize defaults from user settings.
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Extended Settings interface with UserPreferences type containing all three fields
+- Created useUpdateSettings mutation hook using useMutation
+- Configured mutation to update query cache with setQueryData on success
 
 ### Task Group 6: Frontend - SettingsDialog Component
 
 <!-- prettier-ignore -->
-- [ ] fe-dialog-scaffold Create SettingsDialog component scaffold
+- [x] fe-dialog-scaffold Create SettingsDialog component scaffold
   - Use BaseDialog component
   - Props: `open`, `onOpenChange`
   - File: `apps/web/src/client/components/SettingsDialog.tsx`
-- [ ] fe-dialog-state Add form state management
+- [x] fe-dialog-state Add form state management
   - Use React state for form values
   - Initialize from `useSettings()` hook
   - Handle loading and error states
   - File: `apps/web/src/client/components/SettingsDialog.tsx`
-- [ ] fe-dialog-permission Add permission mode selector
+- [x] fe-dialog-permission Add permission mode selector
   - Use Select component from shadcn/ui
   - Options from `PERMISSION_MODES` constant
   - Show mode name and color badge
   - File: `apps/web/src/client/components/SettingsDialog.tsx`
-- [ ] fe-dialog-theme Add theme selector
+- [x] fe-dialog-theme Add theme selector
   - Use RadioGroup component from shadcn/ui
   - Options: Light, Dark, System (with icons)
   - File: `apps/web/src/client/components/SettingsDialog.tsx`
-- [ ] fe-dialog-agent Add agent selector
+- [x] fe-dialog-agent Add agent selector
   - Use Select component from shadcn/ui
   - Get agents from `useSettings()` hook
   - Show only installed agents
   - File: `apps/web/src/client/components/SettingsDialog.tsx`
-- [ ] fe-dialog-actions Add Save/Cancel buttons
+- [x] fe-dialog-actions Add Save/Cancel buttons
   - Save: Call `useUpdateSettings` mutation
   - Cancel: Close dialog without saving
   - Show loading spinner during save
@@ -278,41 +289,52 @@ Update sessionStore to initialize defaults from user settings.
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Created complete SettingsDialog component using BaseDialog, Select, RadioGroup
+- Implemented form state with useState and useEffect to sync with server data
+- Permission mode selector shows all 4 modes with color badges
+- Theme selector uses RadioGroup with Sun/Moon/Monitor icons
+- Agent selector filters to show only installed agents
+- Save button calls useUpdateSettings mutation and applies theme immediately
+- Cancel button resets form values and closes dialog
+- Loading states handled throughout with Loader2 spinner
 
 ### Task Group 7: Frontend - NavUser Integration
 
 <!-- prettier-ignore -->
-- [ ] fe-navuser-state Add settings dialog state
+- [x] fe-navuser-state Add settings dialog state
   - Add `isSettingsOpen` state (useState)
   - Handle open/close logic
   - File: `apps/web/src/client/components/NavUser.tsx`
-- [ ] fe-navuser-remove Remove inline ThemeToggle
+- [x] fe-navuser-remove Remove inline ThemeToggle
   - Delete `<ThemeToggle />` line (around line 101)
   - File: `apps/web/src/client/components/NavUser.tsx`
-- [ ] fe-navuser-settings Add Settings menu item
+- [x] fe-navuser-settings Add Settings menu item
   - Add after user info header, before version separator
   - Icon: Settings from lucide-react
   - onClick: Open settings dialog
   - File: `apps/web/src/client/components/NavUser.tsx`
-- [ ] fe-navuser-dialog Render SettingsDialog component
+- [x] fe-navuser-dialog Render SettingsDialog component
   - Add `<SettingsDialog />` at end of component
   - Pass `open` and `onOpenChange` props
   - File: `apps/web/src/client/components/NavUser.tsx`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added isSettingsOpen state with useState
+- Removed ThemeToggle component import and usage
+- Added Settings menu item with Settings icon from lucide-react
+- Rendered SettingsDialog component at end with proper props
+- Wrapped return in fragment to support multiple root elements
 
 ### Task Group 8: Frontend - Default Values Integration
 
 <!-- prettier-ignore -->
-- [ ] fe-session-defaults Update sessionStore defaults
+- [x] fe-session-defaults Update sessionStore defaults
   - Replace hard-coded permissionMode with value from settings
   - Replace hard-coded agent with value from settings
   - Fetch settings in store initialization
   - File: `apps/web/src/client/pages/projects/sessions/stores/sessionStore.ts`
-- [ ] fe-theme-init Initialize theme from settings
+- [x] fe-theme-init Initialize theme from settings
   - Fetch settings on app mount
   - Extract `userPreferences.default_theme`
   - Update ThemeProvider or call setTheme
@@ -320,7 +342,10 @@ Update sessionStore to initialize defaults from user settings.
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added `initializeFromSettings()` function to sessionStore for setting defaults dynamically
+- Updated ProtectedLayout to call initializeFromSettings with user preferences on mount
+- Integrated theme initialization in same useEffect hook using setTheme from ThemeProvider
+- Settings are fetched once and cached, initialization only runs when preferences change
 
 ## Testing Strategy
 

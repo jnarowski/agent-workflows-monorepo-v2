@@ -101,7 +101,9 @@ export function AppInnerSidebar({
     if (!activeProject?.sessions) return [];
     // Sort by created_at descending (most recent first)
     return [...activeProject.sessions].sort((a, b) => {
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      return (
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
     });
   }, [activeProject?.sessions]);
 
@@ -195,7 +197,12 @@ export function AppInnerSidebar({
       // Get the sync result from cache after invalidation completes
       const syncResult = queryClient.getQueryData(projectKeys.sync());
 
-      if (syncResult && typeof syncResult === 'object' && 'projectsImported' in syncResult && 'projectsUpdated' in syncResult) {
+      if (
+        syncResult &&
+        typeof syncResult === "object" &&
+        "projectsImported" in syncResult &&
+        "projectsUpdated" in syncResult
+      ) {
         toast.success(
           `Projects synced: ${syncResult.projectsImported} imported, ${syncResult.projectsUpdated} updated`
         );
@@ -261,46 +268,55 @@ export function AppInnerSidebar({
                                 <span className="sr-only">More</span>
                               </SidebarMenuAction>
                             </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            className="w-48 rounded-lg"
-                            side={isMobile ? "bottom" : "right"}
-                            align={isMobile ? "end" : "start"}
-                          >
-                            <DropdownMenuItem
-                              onClick={(e) =>
-                                handleToggleStarred(
-                                  project.id,
-                                  !project.is_starred,
-                                  e
-                                )
-                              }
+                            <DropdownMenuContent
+                              className="w-48 rounded-lg"
+                              side={isMobile ? "bottom" : "right"}
+                              align={isMobile ? "end" : "start"}
                             >
-                              <Star className="text-muted-foreground fill-current" />
-                              <span>Unfavorite</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={(e) => handleEditProject(project, e)}
-                            >
-                              <Edit className="text-muted-foreground" />
-                              <span>Edit Project</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={(e) =>
-                                handleToggleHidden(
-                                  project.id,
-                                  !project.is_hidden,
-                                  e
-                                )
-                              }
-                            >
-                              <EyeOff className="text-muted-foreground" />
-                              <span>Hide Project</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              <DropdownMenuItem
+                                onClick={(e) =>
+                                  handleToggleStarred(
+                                    project.id,
+                                    !project.is_starred,
+                                    e
+                                  )
+                                }
+                              >
+                                <Star className="text-muted-foreground fill-current" />
+                                <span>Unfavorite</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => handleEditProject(project, e)}
+                              >
+                                <Edit className="text-muted-foreground" />
+                                <span>Edit Project</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) =>
+                                  handleToggleHidden(
+                                    project.id,
+                                    !project.is_hidden,
+                                    e
+                                  )
+                                }
+                              >
+                                <EyeOff className="text-muted-foreground" />
+                                <span>Hide Project</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         )}
                         <CollapsibleContent>
                           <div className="ml-0 space-y-0.5 py-1">
+                            {isActive && (
+                              <div className="py-2 new-session-btn-wrapper">
+                                <NewSessionButton
+                                  projectId={project.id}
+                                  variant="default"
+                                  size="sm"
+                                />
+                              </div>
+                            )}
                             {isActive &&
                             sortedSessions &&
                             sortedSessions.length > 0 ? (
@@ -336,15 +352,6 @@ export function AppInnerSidebar({
                                 No sessions yet
                               </div>
                             ) : null}
-                            {isActive && (
-                              <div className="px-2 pt-1 pb-5">
-                                <NewSessionButton
-                                  projectId={project.id}
-                                  variant="default"
-                                  size="sm"
-                                />
-                              </div>
-                            )}
                           </div>
                         </CollapsibleContent>
                       </SidebarMenuItem>
@@ -357,7 +364,9 @@ export function AppInnerSidebar({
         )}
         <SidebarGroup>
           <div className="flex items-center justify-between px-2 py-1.5">
-            <SidebarGroupLabel className="flex-1">All Projects</SidebarGroupLabel>
+            <SidebarGroupLabel className="flex-1">
+              All Projects
+            </SidebarGroupLabel>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -367,7 +376,9 @@ export function AppInnerSidebar({
                     className="inline-flex items-center justify-center h-6 w-6 rounded-md hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     aria-label="Sync projects from Claude CLI"
                   >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                    <RefreshCw
+                      className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin" : ""}`}
+                    />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="max-w-[200px]">
@@ -425,55 +436,64 @@ export function AppInnerSidebar({
                               <span className="sr-only">More</span>
                             </SidebarMenuAction>
                           </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          className="w-48 rounded-lg"
-                          side={isMobile ? "bottom" : "right"}
-                          align={isMobile ? "end" : "start"}
-                        >
-                          <DropdownMenuItem
-                            onClick={(e) =>
-                              handleToggleStarred(
-                                project.id,
-                                !project.is_starred,
-                                e
-                              )
-                            }
+                          <DropdownMenuContent
+                            className="w-48 rounded-lg"
+                            side={isMobile ? "bottom" : "right"}
+                            align={isMobile ? "end" : "start"}
                           >
-                            <Star className="text-muted-foreground" />
-                            <span>Favorite</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={(e) => handleEditProject(project, e)}
-                          >
-                            <Edit className="text-muted-foreground" />
-                            <span>Edit Project</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={(e) =>
-                              handleToggleHidden(
-                                project.id,
-                                !project.is_hidden,
-                                e
-                              )
-                            }
-                          >
-                            {project.is_hidden ? (
-                              <>
-                                <Eye className="text-muted-foreground" />
-                                <span>Unhide Project</span>
-                              </>
-                            ) : (
-                              <>
-                                <EyeOff className="text-muted-foreground" />
-                                <span>Hide Project</span>
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            <DropdownMenuItem
+                              onClick={(e) =>
+                                handleToggleStarred(
+                                  project.id,
+                                  !project.is_starred,
+                                  e
+                                )
+                              }
+                            >
+                              <Star className="text-muted-foreground" />
+                              <span>Favorite</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={(e) => handleEditProject(project, e)}
+                            >
+                              <Edit className="text-muted-foreground" />
+                              <span>Edit Project</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={(e) =>
+                                handleToggleHidden(
+                                  project.id,
+                                  !project.is_hidden,
+                                  e
+                                )
+                              }
+                            >
+                              {project.is_hidden ? (
+                                <>
+                                  <Eye className="text-muted-foreground" />
+                                  <span>Unhide Project</span>
+                                </>
+                              ) : (
+                                <>
+                                  <EyeOff className="text-muted-foreground" />
+                                  <span>Hide Project</span>
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
                       <CollapsibleContent>
                         <div className="ml-0 space-y-0.5 py-1">
+                          {isActive && (
+                            <div className="py-2 new-session-btn-wrapper">
+                              <NewSessionButton
+                                projectId={project.id}
+                                variant="default"
+                                size="sm"
+                              />
+                            </div>
+                          )}
                           {isActive &&
                           sortedSessions &&
                           sortedSessions.length > 0 ? (
@@ -509,15 +529,6 @@ export function AppInnerSidebar({
                               No sessions yet
                             </div>
                           ) : null}
-                          {isActive && (
-                            <div className="px-2 pt-1 pb-5">
-                              <NewSessionButton
-                                projectId={project.id}
-                                variant="default"
-                                size="sm"
-                              />
-                            </div>
-                          )}
                         </div>
                       </CollapsibleContent>
                     </SidebarMenuItem>
@@ -558,8 +569,8 @@ export function AppInnerSidebar({
                               <Folder className="shrink-0" />
                               <div className="flex flex-1 flex-col items-start gap-0.5 min-w-0 overflow-hidden">
                                 <span className="font-medium text-base md:text-sm truncate block">
-                                  {project.name.length > 50
-                                    ? `${project.name.slice(0, 50)}...`
+                                  {project.name.length > 55
+                                    ? `${project.name.slice(0, 55)}...`
                                     : project.name}
                                 </span>
                               </div>
@@ -576,64 +587,73 @@ export function AppInnerSidebar({
                                   <span className="sr-only">More</span>
                                 </SidebarMenuAction>
                               </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              className="w-48 rounded-lg"
-                              side={isMobile ? "bottom" : "right"}
-                              align={isMobile ? "end" : "start"}
-                            >
-                              <DropdownMenuItem
-                                onClick={(e) =>
-                                  handleToggleStarred(
-                                    project.id,
-                                    !project.is_starred,
-                                    e
-                                  )
-                                }
+                              <DropdownMenuContent
+                                className="w-48 rounded-lg"
+                                side={isMobile ? "bottom" : "right"}
+                                align={isMobile ? "end" : "start"}
                               >
-                                {project.is_starred ? (
-                                  <>
-                                    <Star className="text-muted-foreground fill-current" />
-                                    <span>Unfavorite</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Star className="text-muted-foreground" />
-                                    <span>Favorite</span>
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={(e) => handleEditProject(project, e)}
-                              >
-                                <Edit className="text-muted-foreground" />
-                                <span>Edit Project</span>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={(e) =>
-                                  handleToggleHidden(
-                                    project.id,
-                                    !project.is_hidden,
-                                    e
-                                  )
-                                }
-                              >
-                                {project.is_hidden ? (
-                                  <>
-                                    <Eye className="text-muted-foreground" />
-                                    <span>Unhide Project</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <EyeOff className="text-muted-foreground" />
-                                    <span>Hide Project</span>
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                                <DropdownMenuItem
+                                  onClick={(e) =>
+                                    handleToggleStarred(
+                                      project.id,
+                                      !project.is_starred,
+                                      e
+                                    )
+                                  }
+                                >
+                                  {project.is_starred ? (
+                                    <>
+                                      <Star className="text-muted-foreground fill-current" />
+                                      <span>Unfavorite</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Star className="text-muted-foreground" />
+                                      <span>Favorite</span>
+                                    </>
+                                  )}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={(e) => handleEditProject(project, e)}
+                                >
+                                  <Edit className="text-muted-foreground" />
+                                  <span>Edit Project</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={(e) =>
+                                    handleToggleHidden(
+                                      project.id,
+                                      !project.is_hidden,
+                                      e
+                                    )
+                                  }
+                                >
+                                  {project.is_hidden ? (
+                                    <>
+                                      <Eye className="text-muted-foreground" />
+                                      <span>Unhide Project</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <EyeOff className="text-muted-foreground" />
+                                      <span>Hide Project</span>
+                                    </>
+                                  )}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           )}
                           <CollapsibleContent>
-                            <div className="ml-0 space-y-0.5">
+                            <div className="ml-0 space-y-0.5 py-1">
+                              {isActive && (
+                                <div className="py-2 new-session-btn-wrapper">
+                                  <NewSessionButton
+                                    projectId={project.id}
+                                    variant="default"
+                                    size="sm"
+                                  />
+                                </div>
+                              )}
                               {isActive &&
                               sortedSessions &&
                               sortedSessions.length > 0 ? (
@@ -669,15 +689,6 @@ export function AppInnerSidebar({
                                   No sessions yet
                                 </div>
                               ) : null}
-                              {isActive && (
-                                <div className="px-2 pt-1">
-                                  <NewSessionButton
-                                    projectId={project.id}
-                                    variant="default"
-                                    size="sm"
-                                  />
-                                </div>
-                              )}
                             </div>
                           </CollapsibleContent>
                         </SidebarMenuItem>

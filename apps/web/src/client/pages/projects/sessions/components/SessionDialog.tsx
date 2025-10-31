@@ -56,7 +56,12 @@ export function SessionDialog({
   const isValid = values.name.trim().length > 0;
 
   return (
-    <BaseDialog open={open} onOpenChange={onOpenChange} onClose={reset}>
+    <BaseDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      onClose={reset}
+      contentProps={{ className: "sm:max-w-md" }}
+    >
       <DialogHeader>
         <DialogTitle>Edit Session Name</DialogTitle>
         <DialogDescription>

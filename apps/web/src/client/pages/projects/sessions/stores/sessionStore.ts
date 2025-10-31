@@ -294,6 +294,9 @@ export interface SessionStore {
   // Model selection actions
   setModel: (model: string) => void;
   getModel: () => string;
+
+  // Initialize defaults from user settings
+  initializeFromSettings: (settings: { permissionMode?: ClaudePermissionMode; agent?: AgentType }) => void;
 }
 
 /**
@@ -599,6 +602,17 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   getModel: () => {
     const state = get();
     return state.form.model;
+  },
+
+  // Initialize defaults from user settings
+  initializeFromSettings: (settings) => {
+    set((state) => ({
+      form: {
+        ...state.form,
+        ...(settings.permissionMode && { permissionMode: settings.permissionMode }),
+        ...(settings.agent && { agent: settings.agent }),
+      },
+    }));
   },
 }));
 

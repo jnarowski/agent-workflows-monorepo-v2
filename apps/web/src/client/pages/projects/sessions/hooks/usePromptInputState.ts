@@ -17,6 +17,7 @@ export interface UsePromptInputStateParams {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   disabled?: boolean;
   onSubmit?: (message: string, images?: File[]) => void | Promise<void>;
+  onKill?: () => void;
 }
 
 export interface UsePromptInputStateReturn {
@@ -99,6 +100,7 @@ export function usePromptInputState({
   textareaRef,
   disabled = false,
   onSubmit,
+  onKill,
 }: UsePromptInputStateParams): UsePromptInputStateReturn {
   // State
   const [status, setStatus] = useState<"submitted" | "streaming" | "ready" | "error">("ready");
@@ -121,6 +123,13 @@ export function usePromptInputState({
   // Handle keyboard shortcuts
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // Escape to stop streaming
+      if (e.key === "Escape" && status === "streaming") {
+        e.preventDefault();
+        onKill?.();
+        return;
+      }
+
       // Handle Enter key for submission (before Tab handling)
       if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
         e.preventDefault();
@@ -136,7 +145,7 @@ export function usePromptInputState({
       }
       // Shift+Enter creates new line (default textarea behavior)
     },
-    [cyclePermissionMode]
+    [cyclePermissionMode, status, onKill]
   );
 
   // Handle text change and detect @ and / commands

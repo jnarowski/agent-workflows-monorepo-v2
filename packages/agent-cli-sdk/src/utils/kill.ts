@@ -51,8 +51,18 @@ export async function killProcess(
 
   // Check if process is already dead
   if (!process.pid || process.exitCode !== null || process.killed) {
+    console.log('[killProcess] Process already dead or no PID', {
+      pid: process.pid,
+      exitCode: process.exitCode,
+      killed: process.killed,
+    });
     return { killed: false };
   }
+
+  console.log('[killProcess] Starting kill sequence', {
+    pid: process.pid,
+    timeoutMs,
+  });
 
   return new Promise((resolve) => {
     let resolved = false;
@@ -62,6 +72,12 @@ export async function killProcess(
     const onExit = (signal: string) => {
       if (resolved) return;
       resolved = true;
+
+      console.log('[killProcess] Process exited', {
+        pid: process.pid,
+        signal,
+        exitCode: process.exitCode,
+      });
 
       if (timeoutRef.id) {
         clearTimeout(timeoutRef.id);
@@ -76,9 +92,14 @@ export async function killProcess(
 
     // Send SIGTERM for graceful shutdown
     try {
+      console.log('[killProcess] Sending SIGTERM', { pid: process.pid });
       process.kill('SIGTERM');
-    } catch {
+    } catch (err) {
       // Process might already be dead
+      console.log('[killProcess] Failed to send SIGTERM', {
+        pid: process.pid,
+        error: err instanceof Error ? err.message : String(err),
+      });
       if (resolved) return;
       resolved = true;
       resolve({ killed: false });
@@ -89,12 +110,20 @@ export async function killProcess(
     timeoutRef.id = setTimeout(() => {
       if (resolved) return;
 
+      console.log('[killProcess] Timeout reached, sending SIGKILL', {
+        pid: process.pid,
+      });
+
       // Force kill with SIGKILL
       try {
         process.kill('SIGKILL');
         process.once('exit', () => onExit('SIGKILL'));
-      } catch {
+      } catch (err) {
         // Process died between timeout and kill
+        console.log('[killProcess] Failed to send SIGKILL', {
+          pid: process.pid,
+          error: err instanceof Error ? err.message : String(err),
+        });
         if (!resolved) {
           resolved = true;
           resolve({ killed: true, signal: 'SIGTERM' });

@@ -7,7 +7,7 @@ import { useSidebar } from "@/client/components/ui/sidebar";
 import { useState } from "react";
 import { SessionDropdownMenu } from "./SessionDropdownMenu";
 import { getSessionDisplayName } from "@/client/utils/getSessionDisplayName";
-import { truncateMiddle } from "@/client/utils/truncate";
+import { truncate } from "@/client/utils/truncate";
 
 interface SessionListItemProps {
   session: SessionResponse;
@@ -34,9 +34,8 @@ export function SessionListItem({
   // Use utility function for consistent session naming
   const displayName = getSessionDisplayName(session);
 
-  // Truncate long names (like file paths) from the middle
-  // This keeps both start and end visible, which is useful for paths
-  const truncatedName = truncateMiddle(displayName, 60);
+  // Truncate long names from the left with ellipsis
+  const truncatedName = truncate(displayName, 30);
 
   const handleClick = () => {
     // Close mobile menu when clicking a session
@@ -55,13 +54,13 @@ export function SessionListItem({
         to={`/projects/${projectId}/session/${id}`}
         onClick={handleClick}
         className={cn(
-          "block px-3 py-3 rounded-lg overflow-hidden relative border transition-all hover:bg-accent/50",
+          "block px-2.5 py-2 rounded-lg overflow-hidden relative border transition-all hover:bg-accent/50",
           isActive
-            ? "border-primary/40 bg-accent/30 font-medium"
+            ? "border-primary/20 bg-accent/30"
             : "border-transparent"
         )}
       >
-        <div className="flex items-start gap-3 min-w-0">
+        <div className="flex items-start gap-2.5 min-w-0">
           <AgentIcon
             agent={session.agent}
             className={cn(
@@ -69,11 +68,9 @@ export function SessionListItem({
               isActive ? "text-primary" : "text-muted-foreground"
             )}
           />
-          <div className="space-y-1.5 min-w-0 flex-1">
-            <div className="text-sm leading-tight">
-              <span className="line-clamp-2 break-words" title={displayName}>
-                {truncatedName}
-              </span>
+          <div className="space-y-1 min-w-0 flex-1">
+            <div className="text-sm leading-tight truncate" title={displayName}>
+              {truncatedName}
             </div>
             <div className="flex items-center justify-between text-xs text-muted-foreground gap-2">
               <span className="truncate">{timeAgo}</span>
