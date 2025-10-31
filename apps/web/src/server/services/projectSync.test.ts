@@ -194,6 +194,88 @@ describe('ProjectSyncService', () => {
 
       expect(hasEnough).toBe(false);
     });
+
+    it('should ignore session files starting with agent-', async () => {
+      const projectName = '-Users-test-agent-files';
+      const projectDir = path.join(
+        testHomeDir,
+        '.claude',
+        'projects',
+        projectName
+      );
+      await fs.mkdir(projectDir, { recursive: true });
+
+      // Create 2 valid session files
+      await fs.writeFile(path.join(projectDir, 'valid-session-1.jsonl'), '{}');
+      await fs.writeFile(path.join(projectDir, 'valid-session-2.jsonl'), '{}');
+
+      // Create 5 agent- prefixed files (should be ignored)
+      await fs.writeFile(path.join(projectDir, 'agent-64613bb1.jsonl'), '{}');
+      await fs.writeFile(path.join(projectDir, 'agent-12345.jsonl'), '{}');
+      await fs.writeFile(path.join(projectDir, 'agent-abc.jsonl'), '{}');
+      await fs.writeFile(path.join(projectDir, 'agent-xyz.jsonl'), '{}');
+      await fs.writeFile(path.join(projectDir, 'agent-test.jsonl'), '{}');
+
+      const hasEnough = await hasEnoughSessions(
+        projectName
+      );
+
+      // Should be false because only 2 valid files (not >3)
+      // agent- files should not be counted
+      expect(hasEnough).toBe(false);
+    });
+
+    it('should accept files with agent in middle or end of filename', async () => {
+      const projectName = '-Users-test-agent-middle';
+      const projectDir = path.join(
+        testHomeDir,
+        '.claude',
+        'projects',
+        projectName
+      );
+      await fs.mkdir(projectDir, { recursive: true });
+
+      // Create 4 files with "agent" in middle/end (should be accepted)
+      await fs.writeFile(path.join(projectDir, 'my-agent-session.jsonl'), '{}');
+      await fs.writeFile(path.join(projectDir, 'session-agent.jsonl'), '{}');
+      await fs.writeFile(path.join(projectDir, 'agent.jsonl'), '{}'); // doesn't start with "agent-"
+      await fs.writeFile(path.join(projectDir, 'session-123.jsonl'), '{}');
+
+      const hasEnough = await hasEnoughSessions(
+        projectName
+      );
+
+      // Should be true because 4 valid files (>3)
+      expect(hasEnough).toBe(true);
+    });
+
+    it('should not count agent- files toward session minimum', async () => {
+      const projectName = '-Users-test-mostly-agent-files';
+      const projectDir = path.join(
+        testHomeDir,
+        '.claude',
+        'projects',
+        projectName
+      );
+      await fs.mkdir(projectDir, { recursive: true });
+
+      // Create 2 valid files
+      await fs.writeFile(path.join(projectDir, 'session-1.jsonl'), '{}');
+      await fs.writeFile(path.join(projectDir, 'session-2.jsonl'), '{}');
+
+      // Create 10 agent- prefixed files (should all be ignored)
+      for (let i = 1; i <= 10; i++) {
+        await fs.writeFile(path.join(projectDir, `agent-${i}.jsonl`), '{}');
+      }
+
+      const hasEnough = await hasEnoughSessions(
+        projectName,
+        3
+      );
+
+      // Should be false because only 2 valid files (needs >3)
+      expect(hasEnough).toBe(false);
+    });
   });
 
   describe('syncFromClaudeProjects', () => {
@@ -761,6 +843,56 @@ describe('ProjectSyncService', () => {
       expect(result.projectsImported).toBe(3);
       expect(result.totalSessionsSynced).toBe(19); // 4 + 5 + 10
       expect(vi.mocked(projectService.createOrUpdateProject)).toHaveBeenCalledTimes(3);
+    });
+
+    it('should ignore agent- prefixed files when syncing projects', async () => {
+      const projectName = '-Users-test-with-agent-files';
+      const projectDir = path.join(testHomeDir, '.claude', 'projects', projectName);
+      await fs.mkdir(projectDir, { recursive: true });
+
+      // Create 4 valid sessions (enough to qualify)
+      for (let i = 1; i <= 4; i++) {
+        await fs.writeFile(
+          path.join(projectDir, `valid-session-${i}.jsonl`),
+          JSON.stringify({
+            type: 'user',
+            message: { content: `Message ${i}` },
+            cwd: '/Users/test/with-agent-files',
+          })
+        );
+      }
+
+      // Create 5 agent- prefixed files (should be completely ignored)
+      await fs.writeFile(path.join(projectDir, 'agent-64613bb1.jsonl'), '{}');
+      await fs.writeFile(path.join(projectDir, 'agent-12345.jsonl'), '{}');
+      await fs.writeFile(path.join(projectDir, 'agent-test-1.jsonl'), '{}');
+      await fs.writeFile(path.join(projectDir, 'agent-test-2.jsonl'), '{}');
+      await fs.writeFile(path.join(projectDir, 'agent-xyz.jsonl'), '{}');
+
+      const mockProject = {
+        id: 'with-agent-files',
+        name: 'with-agent-files',
+        path: '/Users/test/with-agent-files',
+        is_hidden: false,
+        is_starred: false,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      vi.mocked(projectService.createOrUpdateProject).mockResolvedValue(mockProject);
+      vi.mocked(agentSessionService.syncProjectSessions).mockResolvedValue({
+        synced: 4,
+        created: 4,
+        updated: 0,
+      });
+
+      const result = await syncFromClaudeProjects(testUserId);
+
+      // Should import project (has 4 valid sessions)
+      expect(result.projectsImported).toBe(1);
+      // Should only sync the 4 valid sessions, not the agent- files
+      expect(result.totalSessionsSynced).toBe(4);
+      expect(vi.mocked(projectService.createOrUpdateProject)).toHaveBeenCalledTimes(1);
     });
   });
 });

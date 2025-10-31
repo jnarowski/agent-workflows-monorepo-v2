@@ -11,13 +11,13 @@
   },
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
     },
     "./cli": {
-      "import": "./dist/cli.js",
-      "types": "./dist/cli.d.ts"
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.js"
     }
   },
   "files": [

@@ -45,7 +45,7 @@ export const projectsWithSessionsResponseSchema = successResponse(
 // Auth schemas
 export const userSchema = z.object({
   id: z.string(),
-  username: z.string(),
+  email: z.string(),
 });
 
 // Auth status response (for /api/auth/status)

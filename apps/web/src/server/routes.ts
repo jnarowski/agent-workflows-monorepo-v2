@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { prisma } from "@/shared/prisma";
 import { authRoutes } from "@/server/routes/auth";
 import { projectRoutes } from "@/server/routes/projects";
 import { sessionRoutes } from "@/server/routes/sessions";
@@ -30,10 +31,29 @@ export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(registerWebSocketRoutes);
 
   // Health check endpoint
-  fastify.get("/api/health", async () => {
+  fastify.get("/api/health", async (request) => {
+    // Test database connectivity
+    let databaseConnected = false;
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      databaseConnected = true;
+    } catch (error) {
+      // Log warning but don't crash health endpoint
+      request.log.warn(
+        {
+          err: error instanceof Error ? error : new Error(String(error)),
+        },
+        "Database connectivity check failed"
+      );
+      databaseConnected = false;
+    }
+
     return {
-      status: "ok",
+      status: databaseConnected ? "ok" : "degraded",
       timestamp: new Date().toISOString(),
+      database: {
+        connected: databaseConnected,
+      },
       features: {
         aiEnabled: !!process.env.ANTHROPIC_API_KEY,
       },

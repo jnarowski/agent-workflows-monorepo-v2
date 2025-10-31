@@ -10,11 +10,11 @@ import { Input } from "@/client/components/ui/input";
 import type { FormEvent, ComponentProps } from "react";
 
 interface LoginFormProps extends ComponentProps<"div"> {
-  username: string;
+  email: string;
   password: string;
   isLoading?: boolean;
   error?: string;
-  onUsernameChange: (username: string) => void;
+  onEmailChange: (email: string) => void;
   onPasswordChange: (password: string) => void;
   onSubmit: (e: FormEvent) => void;
   onSignUpClick?: () => void;
@@ -22,11 +22,11 @@ interface LoginFormProps extends ComponentProps<"div"> {
 
 export function LoginForm({
   className,
-  username,
+  email,
   password,
   isLoading = false,
   error,
-  onUsernameChange,
+  onEmailChange,
   onPasswordChange,
   onSubmit,
   onSignUpClick,
@@ -36,18 +36,18 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <AuthFormCard
         title="Login to your account"
-        description="Enter your username below to login to your account"
+        description="Enter your email below to login to your account"
         error={error}
         onSubmit={onSubmit}
       >
         <Field>
-          <FieldLabel htmlFor="username">Username</FieldLabel>
+          <FieldLabel htmlFor="email">Email</FieldLabel>
           <Input
-            id="username"
-            type="text"
-            placeholder="username"
-            value={username}
-            onChange={(e) => onUsernameChange(e.target.value)}
+            id="email"
+            type="email"
+            placeholder="email@example.com"
+            value={email}
+            onChange={(e) => onEmailChange(e.target.value)}
             required
           />
         </Field>
