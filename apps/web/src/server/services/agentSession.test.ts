@@ -175,6 +175,27 @@ describe("AgentSessionService", () => {
       expect(metadata.firstMessagePreview).toBe("Untitled Session");
     });
 
+    it("should reject sessions with no user messages", async () => {
+      const sessionFile = path.join(testDir, "no-user-messages.jsonl");
+      const messages = [
+        JSON.stringify({
+          type: "assistant",
+          message: { content: "Hello from assistant" },
+          timestamp: "2025-01-01T10:00:00Z",
+        }),
+        JSON.stringify({
+          type: "assistant",
+          message: { content: "Another assistant message" },
+          timestamp: "2025-01-01T10:00:05Z",
+        }),
+      ];
+      await fs.writeFile(sessionFile, messages.join("\n"));
+
+      await expect(parseJSONLFile(sessionFile)).rejects.toThrow(
+        "Session has 2 messages but no user message"
+      );
+    });
+
     it("should handle file read errors", async () => {
       const nonexistentFile = path.join(testDir, "nonexistent.jsonl");
 

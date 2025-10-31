@@ -31,6 +31,7 @@ export async function parseJSONLFile(
     const lines = content.trim().split('\n').filter(Boolean);
 
     let messageCount = 0;
+    let hasUserMessage = false;
     let totalTokens = 0;
     let lastMessageAt = new Date().toISOString();
     let firstMessagePreview = '';
@@ -66,6 +67,9 @@ export async function parseJSONLFile(
 
         // Extract first user message for preview (skip "Warmup" and system messages)
         const isUserMessage = entry.type === 'user' || entry.role === 'user';
+        if (isUserMessage) {
+          hasUserMessage = true;
+        }
         if (isUserMessage && !firstMessagePreview) {
           // Handle both Claude CLI format (message.content) and API format (content)
           const content = entry.message?.content ?? entry.content;
@@ -111,6 +115,13 @@ export async function parseJSONLFile(
         // Skip malformed lines
         console.warn(`Failed to parse JSONL line: ${err}`);
       }
+    }
+
+    // Validate that session has at least one user message
+    if (messageCount > 0 && !hasUserMessage) {
+      throw new Error(
+        `Session has ${messageCount} messages but no user message - skipping import`
+      );
     }
 
     return {
