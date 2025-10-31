@@ -55,9 +55,8 @@ export async function killProcess(
   }
 
   return new Promise((resolve) => {
-    let resolved = false;
-    // eslint-disable-next-line prefer-const
     let killTimeout: NodeJS.Timeout | undefined;
+    let resolved = false;
 
     // Handler for process exit
     const onExit = (signal: string) => {
@@ -78,7 +77,7 @@ export async function killProcess(
     // Send SIGTERM for graceful shutdown
     try {
       process.kill('SIGTERM');
-    } catch {
+    } catch (error) {
       // Process might already be dead
       if (resolved) return;
       resolved = true;
@@ -94,7 +93,7 @@ export async function killProcess(
       try {
         process.kill('SIGKILL');
         process.once('exit', () => onExit('SIGKILL'));
-      } catch {
+      } catch (error) {
         // Process died between timeout and kill
         if (!resolved) {
           resolved = true;
