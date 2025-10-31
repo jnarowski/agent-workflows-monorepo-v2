@@ -837,8 +837,6 @@ export class AgentStrategyRegistry {
 
 (This will be filled in by the agent implementing this task group)
 
-<<<<<<< HEAD
-
 ### Task Group 12: Documentation Updates (Week 4)
 
 <!-- prettier-ignore -->
@@ -887,10 +885,13 @@ export class AgentStrategyRegistry {
 
 (This will be filled in by the agent implementing this task group)
 
+<<<<<<< HEAD
 =======
 
 > > > > > > > 0f936ddca9847077a32890a88a327f4d330935ee
 
+=======
+>>>>>>> 6e8f2c55544af3ca913c7bcc9c401c3809d7ac3f
 ## Testing Strategy
 
 ### Unit Tests
@@ -987,10 +988,15 @@ describe("Session WebSocket", () => {
 - [ ] Agent strategy pattern implemented
 - [ ] Error handling standardized
 - [ ] Integration test infrastructure in place
+<<<<<<< HEAD
       <<<<<<< HEAD
 - [ ] Documentation updated (CLAUDE.md, README.md, apps/web/CLAUDE.md)
 - [ ] # Domain organization rules documented
   > > > > > > > 0f936ddca9847077a32890a88a327f4d330935ee
+=======
+- [ ] Documentation updated (CLAUDE.md, README.md, apps/web/CLAUDE.md)
+- [ ] Domain organization rules documented
+>>>>>>> 6e8f2c55544af3ca913c7bcc9c401c3809d7ac3f
 - [ ] All existing functionality still works
 - [ ] No TypeScript errors
 - [ ] No ESLint errors
@@ -1059,13 +1065,20 @@ pnpm dev:server
 - All imports use domain/ paths
 - Configuration service used everywhere
 - Error classes used consistently
+<<<<<<< HEAD
   <<<<<<< HEAD
+=======
+>>>>>>> 6e8f2c55544af3ca913c7bcc9c401c3809d7ac3f
 - Documentation reflects new architecture:
   - CLAUDE.md has domain organization section
   - README.md architecture diagram updated
   - apps/web/CLAUDE.md documents backend patterns
+<<<<<<< HEAD
   - # Domain organization rules clearly stated
     > > > > > > > 0f936ddca9847077a32890a88a327f4d330935ee
+=======
+  - Domain organization rules clearly stated
+>>>>>>> 6e8f2c55544af3ca913c7bcc9c401c3809d7ac3f
 
 ## Implementation Notes
 
@@ -1129,6 +1142,7 @@ Session domain must be done sequentially due to WebSocket dependencies.
 | Agent strategy pattern   | 4 hours        |
 | WebSocket refactoring    | 8 hours        |
 | Testing infrastructure   | 8 hours        |
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 | Documentation updates | 4 hours |
@@ -1139,6 +1153,11 @@ Session domain must be done sequentially due to WebSocket dependencies.
 | **Total** | **84 hours** |
 
 > > > > > > > 0f936ddca9847077a32890a88a327f4d330935ee
+=======
+| Documentation updates    | 4 hours        |
+| Code cleanup             | 4 hours        |
+| **Total**                | **88 hours**   |
+>>>>>>> 6e8f2c55544af3ca913c7bcc9c401c3809d7ac3f
 
 ## References
 

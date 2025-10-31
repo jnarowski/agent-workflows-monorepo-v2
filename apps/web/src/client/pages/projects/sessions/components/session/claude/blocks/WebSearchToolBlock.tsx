@@ -2,8 +2,8 @@
  * WebSearch tool block component
  */
 
-import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
-import { ToolResultRenderer } from "../tools/ToolResultRenderer";
+import { ToolCollapsibleWrapper } from "@/client/pages/projects/sessions/components/session/claude/ToolCollapsibleWrapper";
+import { ToolResultRenderer } from "@/client/pages/projects/sessions/components/session/claude/tools/ToolResultRenderer";
 import type { WebSearchToolInput } from "@/shared/types/tool.types";
 import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 

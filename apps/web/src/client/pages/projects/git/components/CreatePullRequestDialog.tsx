@@ -28,7 +28,7 @@ import { Alert, AlertDescription } from '@/client/components/ui/alert';
 import { ErrorAlert } from '@/client/components/ui/error-alert';
 import { Info } from 'lucide-react';
 import { Skeleton } from '@/client/components/ui/skeleton';
-import { usePrData, useCreatePr } from '../hooks/useGitOperations';
+import { usePrData, useCreatePr } from '@/client/pages/projects/git/hooks/useGitOperations';
 
 interface CreatePullRequestDialogProps {
   open: boolean;

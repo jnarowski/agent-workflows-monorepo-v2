@@ -96,15 +96,13 @@ export function useShellWebSocket({
         setIsConnected(true);
         reconnectAttemptsRef.current = 0;
 
-        // Send init message to spawn shell
+        // Send init message to spawn shell (flat structure for client→server)
         ws.send(
           JSON.stringify({
             type: ShellEventTypes.INIT,
-            data: {
-              projectId,
-              cols,
-              rows,
-            },
+            projectId,
+            cols,
+            rows,
           })
         );
       };
@@ -124,6 +122,10 @@ export function useShellWebSocket({
           // Handle event with exhaustive type checking
           switch (shellEvent.type) {
             case ShellEventTypes.INIT: {
+              if (!shellEvent.data) {
+                console.warn('[Shell] INIT event missing data');
+                break;
+              }
               const { shellId } = shellEvent.data;
               if (import.meta.env.DEV) {
                 console.log('[Shell] Session initialized:', shellId);
@@ -134,6 +136,10 @@ export function useShellWebSocket({
             }
 
             case ShellEventTypes.OUTPUT: {
+              if (!shellEvent.data) {
+                console.warn('[Shell] OUTPUT event missing data');
+                break;
+              }
               const { data } = shellEvent.data;
               if (onOutput) {
                 onOutput(data);
@@ -142,6 +148,10 @@ export function useShellWebSocket({
             }
 
             case ShellEventTypes.EXIT: {
+              if (!shellEvent.data) {
+                console.warn('[Shell] EXIT event missing data');
+                break;
+              }
               const { code } = shellEvent.data;
               if (import.meta.env.DEV) {
                 console.log('[Shell] Process exited:', { code });
@@ -154,6 +164,11 @@ export function useShellWebSocket({
             }
 
             case ShellEventTypes.ERROR: {
+              if (!shellEvent.data) {
+                console.warn('[Shell] ERROR event missing data');
+                updateSessionStatus(sessionId, 'error', 'Unknown error');
+                break;
+              }
               const { error } = shellEvent.data;
               console.error('[Shell] Error:', error);
               updateSessionStatus(sessionId, 'error', error);
@@ -242,7 +257,7 @@ export function useShellWebSocket({
       wsRef.current.send(
         JSON.stringify({
           type: ShellEventTypes.INPUT,
-          data: { data },
+          data, // Flat structure for client→server
         })
       );
     }
@@ -253,7 +268,8 @@ export function useShellWebSocket({
       wsRef.current.send(
         JSON.stringify({
           type: ShellEventTypes.RESIZE,
-          data: { cols, rows },
+          cols,
+          rows, // Flat structure for client→server
         })
       );
     }
