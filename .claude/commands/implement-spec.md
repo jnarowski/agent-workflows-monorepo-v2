@@ -1,6 +1,6 @@
 ---
 description: Implements a feature based on provided context or spec file
-argument-hint: [specNameOrPath, format]
+argument-hint: [specNumberOrNameOrPath, format]
 ---
 
 # Implement
@@ -9,18 +9,27 @@ Follow the `Workflow` steps in the exact order to implement the spec then `Repor
 
 ## Variables
 
-- $specNameOrPath: $1 (provide a spec name like "config-sync-cli" or a full file path `.agent/specs/config-sync-cli-spec.md`)
+- $specNumberOrNameOrPath: $1 (required) - Either a spec number (e.g., `24`), feature name (e.g., `kill-claude-process`), or full path (e.g., `.agent/specs/todo/24-kill-claude-process-spec.md`)
 - $format: $2 (optional) - Output format: "text" or "json" (defaults to "text" if not provided)
 
 ## Instructions
 
-- If $specNameOrPath is a file path set $spec_path to $specNameOrPath
-- If $specNameOrPath is not a file path, search for the spec in this order:
-  1. Check `.agent/specs/todo/${feature-name}-spec.md`
-  2. Check `.agent/specs/done/${feature-name}-spec.md`
-  3. Check `.agent/specs/${feature-name}-spec.md` (legacy flat structure)
-  4. If spec number provided (e.g., "17"), search for `*-${number}-*-spec.md` in todo/, done/, and root
-- If $spec_path file is not present after searching all locations, stop IMMEDIATELY and let the user know that the file wasn't found and you cannot continue
+**Parse and resolve $specNumberOrNameOrPath:**
+- If it's a full file path (contains `/` or starts with `.`):
+  - Use the path as-is and set $spec_path to it
+- If it's a number (e.g., `24`):
+  - Search in this order:
+    1. `.agent/specs/todo/{number}-*-spec.md`
+    2. `.agent/specs/done/{number}-*-spec.md`
+    3. `.agent/specs/{number}-*-spec.md` (legacy flat structure)
+  - Use the first matching file and set $spec_path to it
+- If it's a feature name (e.g., `kill-claude-process`):
+  - Search in this order:
+    1. `.agent/specs/todo/*-{feature-name}-spec.md`
+    2. `.agent/specs/done/*-{feature-name}-spec.md`
+    3. `.agent/specs/{feature-name}-spec.md` (legacy flat structure)
+  - Use the first matching file and set $spec_path to it
+- If $spec_path file is not found after searching all locations, stop IMMEDIATELY and let the user know that the file wasn't found and you cannot continue
 
 ## Task Tracking Requirements
 
