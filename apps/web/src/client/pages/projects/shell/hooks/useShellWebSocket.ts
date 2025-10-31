@@ -96,15 +96,13 @@ export function useShellWebSocket({
         setIsConnected(true);
         reconnectAttemptsRef.current = 0;
 
-        // Send init message to spawn shell
+        // Send init message to spawn shell (flat structure for client→server)
         ws.send(
           JSON.stringify({
             type: ShellEventTypes.INIT,
-            data: {
-              projectId,
-              cols,
-              rows,
-            },
+            projectId,
+            cols,
+            rows,
           })
         );
       };
@@ -259,7 +257,7 @@ export function useShellWebSocket({
       wsRef.current.send(
         JSON.stringify({
           type: ShellEventTypes.INPUT,
-          data: { data },
+          data, // Flat structure for client→server
         })
       );
     }
@@ -270,7 +268,8 @@ export function useShellWebSocket({
       wsRef.current.send(
         JSON.stringify({
           type: ShellEventTypes.RESIZE,
-          data: { cols, rows },
+          cols,
+          rows, // Flat structure for client→server
         })
       );
     }
