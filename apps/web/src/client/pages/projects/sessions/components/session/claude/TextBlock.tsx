@@ -4,7 +4,7 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { CodeBlock } from "../../CodeBlock";
+import { CodeBlock } from "@/client/pages/projects/sessions/components/CodeBlock";
 
 interface TextBlockProps {
   text: string;

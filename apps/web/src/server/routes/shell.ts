@@ -34,7 +34,10 @@ export async function registerShellRoute(fastify: FastifyInstance) {
               socket.send(
                 JSON.stringify({
                   type: 'error',
-                  message: 'Authentication required',
+                  data: {
+                    shellId: 'unknown',
+                    error: 'Authentication required',
+                  },
                 })
               );
               socket.close();
@@ -52,7 +55,10 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             socket.send(
               JSON.stringify({
                 type: 'error',
-                message: 'Invalid authentication token',
+                data: {
+                  shellId: 'unknown',
+                  error: 'Invalid authentication token',
+                },
               })
             );
             socket.close();
@@ -84,8 +90,10 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             socket.send(
               JSON.stringify({
                 type: 'error',
-                message:
-                  error instanceof Error ? error.message : 'Unknown error',
+                data: {
+                  shellId: sessionId || 'unknown',
+                  error: error instanceof Error ? error.message : 'Unknown error',
+                },
               })
             );
           }
@@ -118,7 +126,10 @@ export async function registerShellRoute(fastify: FastifyInstance) {
               socket.send(
                 JSON.stringify({
                   type: 'output',
-                  data,
+                  data: {
+                    shellId: sessionId!,
+                    data,
+                  },
                 })
               );
             });
@@ -132,17 +143,23 @@ export async function registerShellRoute(fastify: FastifyInstance) {
               socket.send(
                 JSON.stringify({
                   type: 'exit',
-                  exitCode,
-                  signal,
+                  data: {
+                    shellId: sessionId!,
+                    code: exitCode,
+                  },
                 })
               );
             });
 
-            // Send success response
+            // Send success response (using 'init' type to match ShellEventTypes.INIT)
             socket.send(
               JSON.stringify({
-                type: 'initialized',
-                sessionId,
+                type: 'init',
+                data: {
+                  shellId: sessionId,
+                  rows,
+                  cols,
+                },
               })
             );
 
@@ -152,10 +169,13 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             socket.send(
               JSON.stringify({
                 type: 'error',
-                message:
-                  error instanceof Error
-                    ? error.message
-                    : 'Failed to initialize shell',
+                data: {
+                  shellId: sessionId || 'unknown',
+                  error:
+                    error instanceof Error
+                      ? error.message
+                      : 'Failed to initialize shell',
+                },
               })
             );
           }
@@ -171,7 +191,10 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             socket.send(
               JSON.stringify({
                 type: 'error',
-                message: 'Session not initialized',
+                data: {
+                  shellId: 'unknown',
+                  error: 'Session not initialized',
+                },
               })
             );
             return;
@@ -182,7 +205,10 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             socket.send(
               JSON.stringify({
                 type: 'error',
-                message: 'Session not found',
+                data: {
+                  shellId: sessionId,
+                  error: 'Session not found',
+                },
               })
             );
             return;
@@ -203,7 +229,10 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             socket.send(
               JSON.stringify({
                 type: 'error',
-                message: 'Session not initialized',
+                data: {
+                  shellId: 'unknown',
+                  error: 'Session not initialized',
+                },
               })
             );
             return;
@@ -214,7 +243,10 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             socket.send(
               JSON.stringify({
                 type: 'error',
-                message: 'Session not found',
+                data: {
+                  shellId: sessionId,
+                  error: 'Session not found',
+                },
               })
             );
             return;
@@ -259,7 +291,10 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             socket.send(
               JSON.stringify({
                 type: 'error',
-                message: errorMessage,
+                data: {
+                  shellId: 'unknown',
+                  error: errorMessage,
+                },
               })
             );
             socket.close();

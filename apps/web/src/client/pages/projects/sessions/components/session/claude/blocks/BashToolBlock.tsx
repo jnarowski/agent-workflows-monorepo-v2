@@ -2,8 +2,8 @@
  * Bash tool block component
  */
 
-import { ToolCollapsibleWrapper } from "../ToolCollapsibleWrapper";
-import { BashToolRenderer } from "../tools/BashToolRenderer";
+import { ToolCollapsibleWrapper } from "@/client/pages/projects/sessions/components/session/claude/ToolCollapsibleWrapper";
+import { BashToolRenderer } from "@/client/pages/projects/sessions/components/session/claude/tools/BashToolRenderer";
 import type { BashToolInput } from "@/shared/types/tool.types";
 import type { UnifiedImageBlock } from '@repo/agent-cli-sdk';
 

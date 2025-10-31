@@ -24,6 +24,12 @@ export interface FilesStore {
   expandDir: (path: string) => void;
 
   /**
+   * Expand multiple directories at once (batch operation)
+   * @param paths - Array of directory paths to expand
+   */
+  expandMultipleDirs: (paths: string[]) => void;
+
+  /**
    * Collapse a directory
    * @param path - Directory path to collapse
    */
@@ -75,6 +81,15 @@ export const useFilesStore = create<FilesStore>((set) => ({
     set((state) => {
       const newExpanded = new Set(state.expandedDirs);
       newExpanded.add(path);
+      return { expandedDirs: newExpanded };
+    });
+  },
+
+  // Expand multiple directories at once (batch operation)
+  expandMultipleDirs: (paths) => {
+    set((state) => {
+      const newExpanded = new Set(state.expandedDirs);
+      paths.forEach((path) => newExpanded.add(path));
       return { expandedDirs: newExpanded };
     });
   },

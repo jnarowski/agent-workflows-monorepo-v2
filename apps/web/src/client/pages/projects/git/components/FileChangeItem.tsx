@@ -7,7 +7,7 @@ import { Badge } from '@/client/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/client/components/ui/collapsible';
 import { ChevronRight } from 'lucide-react';
 import { DiffViewer } from '@/client/components/DiffViewer';
-import { useFileDiff } from '../hooks/useGitOperations';
+import { useFileDiff } from '@/client/pages/projects/git/hooks/useGitOperations';
 import type { GitFileStatus } from '@/shared/types/git.types';
 import { Skeleton } from '@/client/components/ui/skeleton';
 

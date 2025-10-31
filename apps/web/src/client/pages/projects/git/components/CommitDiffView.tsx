@@ -2,7 +2,7 @@
  * Expanded commit details showing metadata, stats, and diff
  */
 
-import { useCommitDiff } from '../hooks/useGitOperations';
+import { useCommitDiff } from '@/client/pages/projects/git/hooks/useGitOperations';
 import { Skeleton } from '@/client/components/ui/skeleton';
 import { Badge } from '@/client/components/ui/badge';
 import { Calendar, User, Hash } from 'lucide-react';
