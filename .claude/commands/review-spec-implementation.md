@@ -81,11 +81,23 @@ Use these guidelines to determine what issues to document:
 
 1. **Validate Inputs**
 
-   - If $specFilePath is not a full file path, search for the spec in this order:
-     1. Check `.agent/specs/todo/${feature-name}-spec.md`
-     2. Check `.agent/specs/done/${feature-name}-spec.md`
-     3. Check `.agent/specs/${feature-name}-spec.md` (legacy flat structure)
-   - Verify spec file exists at resolved path
+   - **Parse and resolve $specNumberOrNameOrPath:**
+     - If it's a full file path (contains `/` or starts with `.`):
+       - Use the path as-is
+     - If it's a number (e.g., `24`):
+       - Search in this order:
+         1. `.agent/specs/todo/{number}-*-spec.md`
+         2. `.agent/specs/done/{number}-*-spec.md`
+         3. `.agent/specs/{number}-*-spec.md` (legacy flat structure)
+       - Use the first matching file
+     - If it's a feature name (e.g., `kill-claude-process`):
+       - Search in this order:
+         1. `.agent/specs/todo/*-{feature-name}-spec.md`
+         2. `.agent/specs/done/*-{feature-name}-spec.md`
+         3. `.agent/specs/{feature-name}-spec.md` (legacy flat structure)
+       - Use the first matching file
+   - Verify spec file exists at resolved path (exit with error if not found)
+   - Set `$specFilePath` to the resolved full path for use in subsequent steps
    - Determine main branch (main/master) using `git branch` or git config
    - **Auto-detect review iteration:**
      - Scan spec file for existing "Review Findings" sections
@@ -373,10 +385,10 @@ Otherwise, provide this human-readable information to the user:
 
    ```bash
    # First, fix the issues
-   /implement-spec $specFilePath
+   /implement-spec $specNumberOrNameOrPath
 
    # Then, review again (iteration will auto-increment)
-   /review-spec-implementation $specFilePath
+   /review-spec-implementation $specNumberOrNameOrPath
    ```
 
    If NO issues were found:

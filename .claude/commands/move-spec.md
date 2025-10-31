@@ -1,6 +1,6 @@
 ---
 description: Move a spec file between workflow folders (todo/done)
-argument-hint: [specNameOrPath, targetFolder]
+argument-hint: [specNumberOrNameOrPath, targetFolder]
 ---
 
 # Move Spec
@@ -9,7 +9,7 @@ Move a spec file between workflow folders (todo/done) and optionally update its 
 
 ## Variables
 
-- $specNameOrPath: $1 (required) - Spec name (e.g., "17" or "auth-improvements") or full path (e.g., `.agent/specs/todo/17-auth-improvements-spec.md`)
+- $specNumberOrNameOrPath: $1 (required) - Either a spec number (e.g., `24`), feature name (e.g., `kill-claude-process`), or full path (e.g., `.agent/specs/todo/24-kill-claude-process-spec.md`)
 - $targetFolder: $2 (required) - Target workflow folder: "todo" or "done"
 
 ## Instructions
@@ -23,11 +23,21 @@ Move a spec file between workflow folders (todo/done) and optionally update its 
 
 1. **Find the Spec File**
 
-   - If $specNameOrPath is a full path, use it directly
-   - Otherwise, search in this order:
-     1. `.agent/specs/todo/${specNameOrPath}*-spec.md`
-     2. `.agent/specs/done/${specNameOrPath}*-spec.md`
-     3. `.agent/specs/${specNameOrPath}*-spec.md` (legacy)
+   - **Parse and resolve $specNumberOrNameOrPath:**
+     - If it's a full file path (contains `/` or starts with `.`):
+       - Use the path as-is
+     - If it's a number (e.g., `24`):
+       - Search in this order:
+         1. `.agent/specs/todo/{number}-*-spec.md`
+         2. `.agent/specs/done/{number}-*-spec.md`
+         3. `.agent/specs/{number}-*-spec.md` (legacy flat structure)
+       - Use the first matching file
+     - If it's a feature name (e.g., `kill-claude-process`):
+       - Search in this order:
+         1. `.agent/specs/todo/*-{feature-name}-spec.md`
+         2. `.agent/specs/done/*-{feature-name}-spec.md`
+         3. `.agent/specs/{feature-name}-spec.md` (legacy flat structure)
+       - Use the first matching file
    - If multiple matches found, list them and ask user to specify
    - If no matches found, report error and exit
 
