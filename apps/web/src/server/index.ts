@@ -2,6 +2,7 @@
 import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import fastifyWebsocket from '@fastify/websocket';
+import fastifyMultipart from '@fastify/multipart';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import {
@@ -294,6 +295,13 @@ export async function createServer() {
 
   // Register auth plugin (JWT)
   await fastify.register(authPlugin);
+
+  // Register multipart/form-data support for file uploads
+  await fastify.register(fastifyMultipart, {
+    limits: {
+      fileSize: 100 * 1024 * 1024, // 100MB
+    },
+  });
 
   // Register WebSocket support
   await fastify.register(fastifyWebsocket);

@@ -170,7 +170,7 @@ describe('extractFileReferences', () => {
     const text = 'See src/utils.ts and lib/helpers.js for details';
     const result = extractFileReferences(text);
     expect(result).toContain('src/utils.ts');
-    expect(result).toContain('lib/helpers');
+    expect(result).toContain('lib/helpers.js');
     expect(result).toHaveLength(2);
   });
 
@@ -181,10 +181,10 @@ describe('extractFileReferences', () => {
   });
 
   it('should handle paths with hyphens and underscores', () => {
-    const text = 'Files: my-component.tsx and test_utils';
+    const text = 'Files: my-component.tsx and test_utils.ts';
     const result = extractFileReferences(text);
     expect(result).toContain('my-component.tsx');
-    expect(result).toContain('test_utils');
+    expect(result).toContain('test_utils.ts');
   });
 
   it('should not match incomplete paths', () => {
@@ -280,7 +280,7 @@ describe('removeAllOccurrences', () => {
 
   it('should handle paths with dots and slashes', () => {
     const text = 'Check ../utils/helper.js for reference';
-    const result = removeAllOccurrences(text, '../utils/helper');
+    const result = removeAllOccurrences(text, '../utils/helper.js');
     expect(result).toBe('Check  for reference');
   });
 });

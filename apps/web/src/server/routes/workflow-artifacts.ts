@@ -1,0 +1,170 @@
+import type { FastifyInstance } from 'fastify';
+import { z } from 'zod';
+import * as fs from 'node:fs/promises';
+import {
+  uploadArtifact,
+  downloadArtifact,
+  attachArtifactToComment,
+  detachArtifactFromComment,
+} from '@/server/domain/workflow/services';
+import { attachArtifactSchema } from '@/server/domain/workflow/schemas';
+import type { ArtifactType } from '@/server/domain/workflow/types';
+import { NotFoundError } from '@/server/utils/error';
+
+const artifactIdSchema = z.object({
+  id: z.string().cuid(),
+});
+
+export async function workflowArtifactRoutes(fastify: FastifyInstance) {
+  /**
+   * POST /api/workflow-executions/:id/artifacts
+   * Upload an artifact (multipart form data)
+   */
+  fastify.post<{
+    Params: { id: string };
+  }>(
+    '/api/workflow-executions/:id/artifacts',
+    {
+      preHandler: fastify.authenticate,
+    },
+    async (request, reply) => {
+      const data = await request.file({ limits: { fileSize: 100 * 1024 * 1024 } }); // 100MB limit
+
+      if (!data) {
+        return reply.code(400).send({ error: { message: 'No file provided', statusCode: 400 } });
+      }
+
+      // Parse form fields
+      const fields = data.fields as Record<string, { value: string }>;
+      const stepId = fields.step_id?.value;
+      const name = fields.name?.value || data.filename;
+      const fileType = fields.file_type?.value;
+
+      if (!stepId || !fileType) {
+        return reply.code(400).send({ error: { message: 'step_id and file_type are required', statusCode: 400 } });
+      }
+
+      // Read file buffer
+      const buffer = await data.toBuffer();
+
+      // Generate relative file path
+      const executionId = request.params.id;
+      const filePath = `.agent/workflows/executions/${executionId}/artifacts/${stepId}/${data.filename}`;
+
+      const artifact = await uploadArtifact(
+        {
+          workflow_execution_step_id: stepId,
+          name,
+          file_path: filePath,
+          file_type: fileType as ArtifactType,
+          mime_type: data.mimetype || 'application/octet-stream',
+          size_bytes: buffer.length,
+        },
+        buffer
+      );
+
+      if (!artifact) {
+        throw new NotFoundError('Workflow step not found');
+      }
+
+      return reply.code(201).send({ data: artifact });
+    }
+  );
+
+  /**
+   * GET /api/artifacts/:id
+   * Download an artifact
+   */
+  fastify.get<{
+    Params: z.infer<typeof artifactIdSchema>;
+  }>(
+    '/api/artifacts/:id',
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: artifactIdSchema,
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+
+      const result = await downloadArtifact(id);
+
+      if (!result) {
+        throw new NotFoundError('Artifact not found');
+      }
+
+      const { artifact, filePath } = result;
+
+      // Check file exists
+      try {
+        await fs.access(filePath);
+      } catch {
+        throw new NotFoundError('Artifact file not found on filesystem');
+      }
+
+      // Stream file
+      return reply
+        .type(artifact.mime_type)
+        .header('Content-Disposition', `attachment; filename="${artifact.name}"`)
+        .send(await fs.readFile(filePath));
+    }
+  );
+
+  /**
+   * PATCH /api/artifacts/:id/attach
+   * Attach an artifact to a comment
+   */
+  fastify.patch<{
+    Params: z.infer<typeof artifactIdSchema>;
+    Body: z.infer<typeof attachArtifactSchema>;
+  }>(
+    '/api/artifacts/:id/attach',
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: artifactIdSchema,
+        body: attachArtifactSchema,
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+      const { comment_id } = request.body;
+
+      const artifact = await attachArtifactToComment(id, comment_id);
+
+      if (!artifact) {
+        throw new NotFoundError('Artifact or comment not found, or they do not belong to the same workflow execution');
+      }
+
+      return reply.send({ data: artifact });
+    }
+  );
+
+  /**
+   * DELETE /api/artifacts/:id/detach
+   * Detach an artifact from a comment
+   */
+  fastify.delete<{
+    Params: z.infer<typeof artifactIdSchema>;
+  }>(
+    '/api/artifacts/:id/detach',
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: artifactIdSchema,
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+
+      const artifact = await detachArtifactFromComment(id);
+
+      if (!artifact) {
+        throw new NotFoundError('Artifact not found');
+      }
+
+      return reply.send({ data: artifact });
+    }
+  );
+}

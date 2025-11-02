@@ -19,17 +19,25 @@ Follow the `Workflow` steps in the exact order to implement the spec then `Repor
   - Use the path as-is and set $spec_path to it
 - If it's a number (e.g., `24`):
   - Search in this order:
-    1. `.agent/specs/todo/{number}-*-spec.md`
-    2. `.agent/specs/done/{number}-*-spec.md`
-    3. `.agent/specs/{number}-*-spec.md` (legacy flat structure)
+    1. `.agent/specs/doing/{number}-*-spec.md`
+    2. `.agent/specs/todo/{number}-*-spec.md`
+    3. `.agent/specs/done/{number}-*-spec.md`
+    4. `.agent/specs/{number}-*-spec.md` (legacy flat structure)
   - Use the first matching file and set $spec_path to it
 - If it's a feature name (e.g., `kill-claude-process`):
   - Search in this order:
-    1. `.agent/specs/todo/*-{feature-name}-spec.md`
-    2. `.agent/specs/done/*-{feature-name}-spec.md`
-    3. `.agent/specs/{feature-name}-spec.md` (legacy flat structure)
+    1. `.agent/specs/doing/*-{feature-name}-spec.md`
+    2. `.agent/specs/todo/*-{feature-name}-spec.md`
+    3. `.agent/specs/done/*-{feature-name}-spec.md`
+    4. `.agent/specs/{feature-name}-spec.md` (legacy flat structure)
   - Use the first matching file and set $spec_path to it
 - If $spec_path file is not found after searching all locations, stop IMMEDIATELY and let the user know that the file wasn't found and you cannot continue
+
+**Move spec to doing folder:**
+- Before starting implementation, move the spec file to `.agent/specs/doing/` folder if it's not already there
+- Use `mv` command to move the file: `mv "$spec_path" ".agent/specs/doing/[filename]"`
+- Update $spec_path to the new location: `.agent/specs/doing/[filename]`
+- This indicates the spec is actively being worked on
 
 ## Task Tracking Requirements
 
@@ -88,15 +96,17 @@ Follow the `Workflow` steps in the exact order to implement the spec then `Repor
 
 ## Workflow
 
-1. Read $spec_path file, think hard about the plan
-2. Implement the plan, one phase at a time:
+1. Parse and resolve the spec file path according to the instructions above
+2. Move the spec file to `.agent/specs/doing/` folder if not already there
+3. Read $spec_path file, think hard about the plan
+4. Implement the plan, one phase at a time:
    - Work through tasks in order, top to bottom
    - **IMMEDIATELY check off each task** in $spec_path after completing it
    - Run validation after each logical step
-3. After completing each task group/phase:
+5. After completing each task group/phase:
    - **Fill in the "Completion Notes" section** with implementation context
    - Include any deviations, decisions, or important notes for reviewers
-4. Continue until all tasks are checked off and all completion notes are filled
+6. Continue until all tasks are checked off and all completion notes are filled
 
 ## Report
 
