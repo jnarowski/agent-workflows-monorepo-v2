@@ -18,6 +18,7 @@ So that I can orchestrate complex multi-step AI agent tasks with automatic state
 ## Technical Approach
 
 **Architecture Pattern**: Separate package following agent-cli-sdk structure with:
+
 - Pure workflow orchestration logic (no database, no HTTP, no WebSocket dependencies)
 - Parser layer for TypeScript and YAML workflow definitions
 - Execution engine with WorkflowContext API for step execution
@@ -26,6 +27,7 @@ So that I can orchestrate complex multi-step AI agent tasks with automatic state
 - Callback-based integration with web app (database updates, WebSocket events)
 
 **Integration Strategy**:
+
 - Workflow engine package is pure business logic
 - Web app provides callbacks for database/WebSocket operations
 - Agent steps executed via existing `@repo/agent-cli-sdk`
@@ -144,14 +146,17 @@ packages/workflow-engine/
 ### Integration Points
 
 **Web App Domain Services** (`apps/web/src/server/domain/workflow/services/`):
+
 - `executeWorkflow.ts` - Remove stub, instantiate WorkflowExecutor with callbacks
 - `resumeWorkflow.ts` - Remove stub, instantiate WorkflowExecutor with resumeFromCheckpoint=true
 
 **Agent CLI SDK** (`@repo/agent-cli-sdk`):
+
 - Used as peer dependency for executing agent steps (Claude, Codex, Gemini)
 - WorkflowContext imports executeClaude, executeCodex, executeGemini
 
 **Filesystem** (`.agent/workflows/`):
+
 - `definitions/` - Workflow template files (code/YAML)
 - `executions/{id}/` - Per-execution directories with checkpoints, logs, artifacts
 
@@ -162,6 +167,7 @@ packages/workflow-engine/
 Following agent-cli-sdk conventions exactly:
 
 **package.json**:
+
 - Name: `@repo/workflow-engine`
 - Version: `0.1.0`
 - Type: `module` (ESM-only)
@@ -176,6 +182,7 @@ Following agent-cli-sdk conventions exactly:
 - Engines: node >=22.0.0
 
 **tsconfig.json**:
+
 - Exact copy from agent-cli-sdk
 - Target: ES2022
 - Module: ESNext
@@ -184,24 +191,28 @@ Following agent-cli-sdk conventions exactly:
 - Output to dist/ with declaration maps and source maps
 
 **vitest.config.ts**:
+
 - Exact copy from agent-cli-sdk
 - Node environment
 - Coverage with v8
 - Exclude e2e tests from regular suite
 
 **vitest.e2e.config.ts**:
+
 - Sequential execution (singleFork: true)
 - 180s timeout for workflow execution
-- Include only tests/e2e/**/*.test.ts
+- Include only tests/e2e/\*_/_.test.ts
 
 ### 2. Type Definitions
 
 **src/types/workflow.ts**:
+
 - `WorkflowStatus` - 'pending' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled'
 - `WorkflowConfig` - TypeScript workflow definition (name, phases, argsSchema, execute)
 - `WorkflowDefinition` - Unified model from parsers (supports both code and YAML)
 
 **src/types/step.ts**:
+
 - `StepStatus` - 'pending' | 'running' | 'completed' | 'failed' | 'skipped'
 - `StepConfig` - Union type: AgentStepConfig | ScriptStepConfig | FunctionStepConfig
 - `AgentStepConfig` - Agent step (agent: 'claude'|'codex'|'gemini', prompt, permission)
@@ -210,6 +221,7 @@ Following agent-cli-sdk conventions exactly:
 - `StepResult` - Result object (stepId, status, data, error, timestamps)
 
 **src/types/context.ts**:
+
 - `WorkflowContext` - Interface for workflow execution context
   - `executionId`, `projectPath`, `args` - Execution metadata
   - `step(id, config)` - Execute step
@@ -222,6 +234,7 @@ Following agent-cli-sdk conventions exactly:
 ### 3. YAML Parser
 
 **src/parser/yamlParser.ts**:
+
 - `parseYamlWorkflow(content: string): WorkflowDefinition`
 - Parse YAML files using `yaml` package
 - Validate required fields (name, phases, steps)
@@ -230,6 +243,7 @@ Following agent-cli-sdk conventions exactly:
 - Convert args_schema JSON schema to WorkflowDefinition format
 
 **Example YAML workflow**:
+
 ```yaml
 name: Build Pipeline
 description: Build, test, and deploy
@@ -254,6 +268,7 @@ steps:
 ### 4. TypeScript Parser
 
 **src/parser/codeParser.ts**:
+
 - `loadCodeWorkflow(filePath: string): Promise<WorkflowDefinition>`
 - Dynamic import of TypeScript workflow file
 - Validate WorkflowConfig structure (name, phases, execute)
@@ -261,6 +276,7 @@ steps:
 - Return WorkflowDefinition with execute function
 
 **Example TypeScript workflow**:
+
 ```typescript
 export default defineWorkflow({
   name: "Implement Feature",
@@ -288,6 +304,7 @@ export default defineWorkflow({
 ### 5. WorkflowContext Implementation
 
 **src/execution/WorkflowContext.ts**:
+
 - `WorkflowContextImpl` - Implementation of WorkflowContext interface
 - Constructor accepts executionId, projectPath, args, callbacks
 - `step()` method:
@@ -315,6 +332,7 @@ export default defineWorkflow({
 ### 6. WorkflowExecutor
 
 **src/execution/WorkflowExecutor.ts**:
+
 - `WorkflowExecutor` - Main execution engine class
 - Constructor config:
   - executionId, projectPath, args - Required
@@ -338,6 +356,7 @@ export default defineWorkflow({
 ### 7. CheckpointManager
 
 **src/checkpoint/CheckpointManager.ts**:
+
 - `CheckpointManager` - Handles checkpoint save/restore
 - Constructor: executionId, basePath
 - `save(checkpoint: Checkpoint)` - Save to filesystem
@@ -357,6 +376,7 @@ export default defineWorkflow({
 ### 8. FileSystemStorage
 
 **src/storage/FileSystemStorage.ts**:
+
 - `FileSystemStorage` - Handles filesystem operations for workflow execution
 - Constructor: executionId, projectPath
 - `initialize()` - Create directory structure
@@ -379,18 +399,19 @@ export default defineWorkflow({
 Remove stubs from web app domain services and integrate with workflow engine:
 
 **apps/web/src/server/domain/workflow/services/executeWorkflow.ts**:
+
 ```typescript
-import { WorkflowExecutor } from '@repo/workflow-engine';
-import { prisma } from '@/shared/prisma';
-import { emitWorkflowEvent } from '@/server/websocket/handlers/workflow.handler';
+import { WorkflowExecutor } from "@repo/workflow-engine";
+import { prisma } from "@/shared/prisma";
+import { emitWorkflowEvent } from "@/server/websocket/handlers/workflow.handler";
 
 export async function executeWorkflow(executionId: string): Promise<void> {
   const execution = await prisma.workflowExecution.findUnique({
     where: { id: executionId },
-    include: { project: true, workflow_definition: true }
+    include: { project: true, workflow_definition: true },
   });
 
-  if (!execution) throw new Error('Execution not found');
+  if (!execution) throw new Error("Execution not found");
 
   const executor = new WorkflowExecutor({
     executionId,
@@ -400,9 +421,9 @@ export async function executeWorkflow(executionId: string): Promise<void> {
     onStepStart: async (stepId) => {
       await prisma.workflowExecutionStep.update({
         where: { id: stepId },
-        data: { status: 'running', started_at: new Date() }
+        data: { status: "running", started_at: new Date() },
       });
-      emitWorkflowEvent('workflow.step.started', { executionId, stepId });
+      emitWorkflowEvent("workflow.step.started", { executionId, stepId });
     },
 
     onStepComplete: async (stepId, result) => {
@@ -411,19 +432,22 @@ export async function executeWorkflow(executionId: string): Promise<void> {
         data: {
           status: result.status,
           completed_at: new Date(),
-          error_message: result.error
-        }
+          error_message: result.error,
+        },
       });
-      emitWorkflowEvent('workflow.step.completed', { executionId, stepId });
+      emitWorkflowEvent("workflow.step.completed", { executionId, stepId });
     },
 
     onPhaseChange: async (phase) => {
       await prisma.workflowExecution.update({
         where: { id: executionId },
-        data: { current_phase: phase }
+        data: { current_phase: phase },
       });
-      emitWorkflowEvent('workflow.execution.phase_changed', { executionId, phase });
-    }
+      emitWorkflowEvent("workflow.execution.phase_changed", {
+        executionId,
+        phase,
+      });
+    },
   });
 
   await executor.execute();
@@ -431,26 +455,35 @@ export async function executeWorkflow(executionId: string): Promise<void> {
 ```
 
 **apps/web/src/server/domain/workflow/services/resumeWorkflow.ts**:
+
 ```typescript
-export async function resumeWorkflow(executionId: string): Promise<WorkflowExecution> {
+export async function resumeWorkflow(
+  executionId: string
+): Promise<WorkflowExecution> {
   const execution = await getWorkflowExecutionById(executionId);
-  if (!execution) throw new Error('Execution not found');
+  if (!execution) throw new Error("Execution not found");
 
   const executor = new WorkflowExecutor({
     executionId,
     projectPath: execution.project.path,
     args: execution.args as Record<string, any>,
     resumeFromCheckpoint: true,
-    onStepStart: async (stepId) => { /* same as executeWorkflow */ },
-    onStepComplete: async (stepId, result) => { /* same */ },
-    onPhaseChange: async (phase) => { /* same */ },
+    onStepStart: async (stepId) => {
+      /* same as executeWorkflow */
+    },
+    onStepComplete: async (stepId, result) => {
+      /* same */
+    },
+    onPhaseChange: async (phase) => {
+      /* same */
+    },
   });
 
   await executor.resume();
 
   return await prisma.workflowExecution.update({
     where: { id: executionId },
-    data: { status: 'running' }
+    data: { status: "running" },
   });
 }
 ```
@@ -460,53 +493,27 @@ export async function resumeWorkflow(executionId: string): Promise<WorkflowExecu
 ### New Files (30)
 
 **Package Configuration (4 files)**:
+
 1. `packages/workflow-engine/package.json` - Package manifest
 2. `packages/workflow-engine/tsconfig.json` - TypeScript config
 3. `packages/workflow-engine/vitest.config.ts` - Unit test config
 4. `packages/workflow-engine/vitest.e2e.config.ts` - E2E test config
 
-**Type Definitions (4 files)**:
-5. `packages/workflow-engine/src/types/workflow.ts` - Workflow types
-6. `packages/workflow-engine/src/types/step.ts` - Step types
-7. `packages/workflow-engine/src/types/context.ts` - Context types
-8. `packages/workflow-engine/src/types/index.ts` - Barrel export
+**Type Definitions (4 files)**: 5. `packages/workflow-engine/src/types/workflow.ts` - Workflow types 6. `packages/workflow-engine/src/types/step.ts` - Step types 7. `packages/workflow-engine/src/types/context.ts` - Context types 8. `packages/workflow-engine/src/types/index.ts` - Barrel export
 
-**Parser (5 files)**:
-9. `packages/workflow-engine/src/parser/yamlParser.ts` - YAML parser
-10. `packages/workflow-engine/src/parser/yamlParser.test.ts` - YAML parser tests
-11. `packages/workflow-engine/src/parser/codeParser.ts` - TypeScript parser
-12. `packages/workflow-engine/src/parser/codeParser.test.ts` - TypeScript parser tests
-13. `packages/workflow-engine/src/parser/index.ts` - Barrel export
+**Parser (5 files)**: 9. `packages/workflow-engine/src/parser/yamlParser.ts` - YAML parser 10. `packages/workflow-engine/src/parser/yamlParser.test.ts` - YAML parser tests 11. `packages/workflow-engine/src/parser/codeParser.ts` - TypeScript parser 12. `packages/workflow-engine/src/parser/codeParser.test.ts` - TypeScript parser tests 13. `packages/workflow-engine/src/parser/index.ts` - Barrel export
 
-**Execution (5 files)**:
-14. `packages/workflow-engine/src/execution/WorkflowContext.ts` - Context implementation
-15. `packages/workflow-engine/src/execution/WorkflowContext.test.ts` - Context tests
-16. `packages/workflow-engine/src/execution/WorkflowExecutor.ts` - Executor implementation
-17. `packages/workflow-engine/src/execution/WorkflowExecutor.test.ts` - Executor tests
-18. `packages/workflow-engine/src/execution/index.ts` - Barrel export
+**Execution (5 files)**: 14. `packages/workflow-engine/src/execution/WorkflowContext.ts` - Context implementation 15. `packages/workflow-engine/src/execution/WorkflowContext.test.ts` - Context tests 16. `packages/workflow-engine/src/execution/WorkflowExecutor.ts` - Executor implementation 17. `packages/workflow-engine/src/execution/WorkflowExecutor.test.ts` - Executor tests 18. `packages/workflow-engine/src/execution/index.ts` - Barrel export
 
-**Checkpoint (3 files)**:
-19. `packages/workflow-engine/src/checkpoint/CheckpointManager.ts` - Checkpoint manager
-20. `packages/workflow-engine/src/checkpoint/CheckpointManager.test.ts` - Checkpoint tests
-21. `packages/workflow-engine/src/checkpoint/index.ts` - Barrel export
+**Checkpoint (3 files)**: 19. `packages/workflow-engine/src/checkpoint/CheckpointManager.ts` - Checkpoint manager 20. `packages/workflow-engine/src/checkpoint/CheckpointManager.test.ts` - Checkpoint tests 21. `packages/workflow-engine/src/checkpoint/index.ts` - Barrel export
 
-**Storage (3 files)**:
-22. `packages/workflow-engine/src/storage/FileSystemStorage.ts` - Storage implementation
-23. `packages/workflow-engine/src/storage/FileSystemStorage.test.ts` - Storage tests
-24. `packages/workflow-engine/src/storage/index.ts` - Barrel export
+**Storage (3 files)**: 22. `packages/workflow-engine/src/storage/FileSystemStorage.ts` - Storage implementation 23. `packages/workflow-engine/src/storage/FileSystemStorage.test.ts` - Storage tests 24. `packages/workflow-engine/src/storage/index.ts` - Barrel export
 
-**Package Export (1 file)**:
-25. `packages/workflow-engine/src/index.ts` - Main package export
+**Package Export (1 file)**: 25. `packages/workflow-engine/src/index.ts` - Main package export
 
-**E2E Tests (3 files)**:
-26. `packages/workflow-engine/tests/e2e/basic-execution.test.ts` - Basic execution test
-27. `packages/workflow-engine/tests/e2e/checkpoint-resume.test.ts` - Checkpoint/resume test
-28. `packages/workflow-engine/tests/e2e/agent-integration.test.ts` - Agent integration test
+**E2E Tests (3 files)**: 26. `packages/workflow-engine/tests/e2e/basic-execution.test.ts` - Basic execution test 27. `packages/workflow-engine/tests/e2e/checkpoint-resume.test.ts` - Checkpoint/resume test 28. `packages/workflow-engine/tests/e2e/agent-integration.test.ts` - Agent integration test
 
-**Documentation (3 files)**:
-29. `packages/workflow-engine/README.md` - Package documentation
-30. `packages/workflow-engine/CLAUDE.md` - Claude-specific guidance
-31. `packages/workflow-engine/CHANGELOG.md` - Version history
+**Documentation (3 files)**: 29. `packages/workflow-engine/README.md` - Package documentation 30. `packages/workflow-engine/CLAUDE.md` - Claude-specific guidance 31. `packages/workflow-engine/CHANGELOG.md` - Version history
 
 ### Modified Files (3)
 
@@ -878,22 +885,27 @@ export async function resumeWorkflow(executionId: string): Promise<WorkflowExecu
 Following agent-cli-sdk pattern:
 
 **Parser Tests**:
+
 - `src/parser/yamlParser.test.ts` - Parse valid/invalid YAML, template variables
 - `src/parser/codeParser.test.ts` - Parse valid/invalid TypeScript, Zod schema conversion
 
 **Execution Tests**:
+
 - `src/execution/WorkflowContext.test.ts` - Step execution (agent/script/function), callbacks, error handling
 - `src/execution/WorkflowExecutor.test.ts` - Execute/resume workflows, load definitions, error handling
 
 **Checkpoint Tests**:
+
 - `src/checkpoint/CheckpointManager.test.ts` - Save/load checkpoints, multiple checkpoints
 
 **Storage Tests**:
+
 - `src/storage/FileSystemStorage.test.ts` - Initialize directories, save logs/artifacts
 
 ### E2E Tests (Sequential Execution)
 
 **`tests/e2e/basic-execution.test.ts`**:
+
 ```typescript
 describe('Basic Workflow Execution', () => {
   it('should execute simple YAML workflow', async () => {
@@ -915,9 +927,10 @@ describe('Basic Workflow Execution', () => {
 ```
 
 **`tests/e2e/checkpoint-resume.test.ts`**:
+
 ```typescript
-describe('Checkpoint and Resume', () => {
-  it('should save checkpoint and resume', async () => {
+describe("Checkpoint and Resume", () => {
+  it("should save checkpoint and resume", async () => {
     // Execute workflow partially
     // Save checkpoint
     // Create new executor with resumeFromCheckpoint=true
@@ -928,9 +941,10 @@ describe('Checkpoint and Resume', () => {
 ```
 
 **`tests/e2e/agent-integration.test.ts`**:
+
 ```typescript
-describe('Agent Integration', () => {
-  it('should execute agent step via agent-cli-sdk', async () => {
+describe("Agent Integration", () => {
+  it("should execute agent step via agent-cli-sdk", async () => {
     // Mock agent-cli-sdk
     // Execute workflow with agent step
     // Verify agent called with correct params
@@ -1023,6 +1037,7 @@ pnpm check-types
 ### 1. File Naming Conventions
 
 Following agent-cli-sdk:
+
 - **camelCase** for all files: `yamlParser.ts`, `WorkflowContext.ts`, `loadSession.ts`
 - **PascalCase** for classes: `WorkflowExecutor`, `CheckpointManager`, `FileSystemStorage`
 - **One primary export per file**: File name matches primary export
@@ -1031,48 +1046,59 @@ Following agent-cli-sdk:
 ### 2. Barrel Exports
 
 Each subdirectory has `index.ts` for clean imports:
+
 ```typescript
 // packages/workflow-engine/src/execution/index.ts
-export { WorkflowExecutor } from './WorkflowExecutor';
-export { WorkflowContextImpl } from './WorkflowContext';
+export { WorkflowExecutor } from "./WorkflowExecutor";
+export { WorkflowContextImpl } from "./WorkflowContext";
 ```
 
 Usage:
+
 ```typescript
-import { WorkflowExecutor } from '@repo/workflow-engine';
+import { WorkflowExecutor } from "@repo/workflow-engine";
 // or
-import { WorkflowExecutor } from '@repo/workflow-engine/execution';
+import { WorkflowExecutor } from "@repo/workflow-engine/execution";
 ```
 
 ### 3. Agent-CLI-SDK Integration
 
 Agent steps use peer dependency:
+
 ```typescript
-import { executeClaude, executeCodex, executeGemini } from '@repo/agent-cli-sdk';
+import {
+  executeClaude,
+  executeCodex,
+  executeGemini,
+} from "@repo/agent-cli-sdk";
 
 // In WorkflowContext
-const executeAgent = config.agent === 'claude' ? executeClaude
-  : config.agent === 'codex' ? executeCodex
-  : executeGemini;
+const executeAgent =
+  config.agent === "claude"
+    ? executeClaude
+    : config.agent === "codex"
+      ? executeCodex
+      : executeGemini;
 
 const result = await executeAgent(prompt, {
   cwd: this.projectPath,
-  permissionMode: config.permission || 'default',
+  permissionMode: config.permission || "default",
 });
 ```
 
 ### 4. Error Handling
 
 Use try/catch in context methods, return StepResult with error:
+
 ```typescript
 try {
   const data = await executeAgent(prompt, options);
-  return { stepId, status: 'completed', data };
+  return { stepId, status: "completed", data };
 } catch (error) {
   return {
     stepId,
-    status: 'failed',
-    error: error instanceof Error ? error.message : String(error)
+    status: "failed",
+    error: error instanceof Error ? error.message : String(error),
   };
 }
 ```
@@ -1080,6 +1106,7 @@ try {
 ### 5. Checkpoint Format
 
 JSON structure saved to filesystem:
+
 ```json
 {
   "execution_id": "cuid",
@@ -1096,14 +1123,17 @@ JSON structure saved to filesystem:
 ## Dependencies
 
 **Production**:
+
 - `yaml` - YAML parsing for workflow definitions
 - `simple-git` - Git operations (already in monorepo)
 
 **Peer Dependencies**:
+
 - `zod` - Schema validation (optional peer dependency)
 - `@repo/agent-cli-sdk` - Agent execution (workspace peer dependency)
 
 **Development** (Same as agent-cli-sdk):
+
 - `typescript` - Type checking
 - `bunchee` - Build tool
 - `vitest` - Test runner
@@ -1113,22 +1143,22 @@ JSON structure saved to filesystem:
 
 ## Timeline
 
-| Task                              | Estimated Time |
-| --------------------------------- | -------------- |
-| Task Group 1: Package Setup       | 2 hours        |
-| Task Group 2: Type Definitions    | 3 hours        |
-| Task Group 3: YAML Parser         | 6 hours        |
-| Task Group 4: TypeScript Parser   | 5 hours        |
-| Task Group 5: WorkflowContext     | 8 hours        |
-| Task Group 6: WorkflowExecutor    | 8 hours        |
-| Task Group 7: CheckpointManager   | 5 hours        |
-| Task Group 8: FileSystemStorage   | 4 hours        |
-| Task Group 9: Package Export      | 2 hours        |
-| Task Group 10: E2E Tests          | 6 hours        |
-| Task Group 11: Documentation      | 2 hours        |
-| Task Group 12: Web App Integration| 4 hours        |
-| Task Group 13: Final Validation   | 2 hours        |
-| **Total**                         | **57 hours**   |
+| Task                               | Estimated Time |
+| ---------------------------------- | -------------- |
+| Task Group 1: Package Setup        | 2 hours        |
+| Task Group 2: Type Definitions     | 3 hours        |
+| Task Group 3: YAML Parser          | 6 hours        |
+| Task Group 4: TypeScript Parser    | 5 hours        |
+| Task Group 5: WorkflowContext      | 8 hours        |
+| Task Group 6: WorkflowExecutor     | 8 hours        |
+| Task Group 7: CheckpointManager    | 5 hours        |
+| Task Group 8: FileSystemStorage    | 4 hours        |
+| Task Group 9: Package Export       | 2 hours        |
+| Task Group 10: E2E Tests           | 6 hours        |
+| Task Group 11: Documentation       | 2 hours        |
+| Task Group 12: Web App Integration | 4 hours        |
+| Task Group 13: Final Validation    | 2 hours        |
+| **Total**                          | **57 hours**   |
 
 ## References
 
