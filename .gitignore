@@ -15,6 +15,14 @@ node_modules
 .env.development.local
 .env.test.local
 .env.production.local
+*.env
+
+# Database files
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+apps/web/prisma/dev.db
 
 # Testing
 coverage

@@ -1,6 +1,23 @@
 # Agent Workflows Monorepo
 
-A Turborepo monorepo for AI agent workflow tools: a full-stack web application for managing AI agent sessions (chat, file editor, terminal) and TypeScript SDKs for programmatically orchestrating AI CLI tools (Claude Code, OpenAI Codex).
+> A full-stack web application and TypeScript SDKs for orchestrating AI agent workflows with chat, file editing, and terminal capabilities.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-8.0+-orange.svg)](https://pnpm.io/)
+
+AI agent workflow management platform built with React, Fastify, and Turborepo. Interact with AI agents (Claude Code, OpenAI Codex) through a modern web interface with real-time chat, file editing, and terminal access.
+
+## ✨ Features
+
+- **Multi-Agent Chat Interface** - Interact with Claude Code, OpenAI Codex, and other AI agents
+- **Real-Time File Editor** - Syntax highlighting, auto-save, and collaborative editing
+- **Integrated Terminal** - Full terminal access with WebSocket streaming
+- **Session Management** - Save, resume, and organize agent conversations
+- **Git Integration** - Commit, branch, and PR creation from the interface
+- **Project Workspaces** - Manage multiple projects with isolated environments
+- **Slash Commands** - Extend agent capabilities with custom commands
+- **Remote Access** - Use Tailscale VPN to access from any device
 
 ## What's Inside?
 
@@ -32,60 +49,50 @@ This monorepo includes the following packages and apps:
 - **`@repo/eslint-config`** - Shared ESLint configs
 - **`@repo/typescript-config`** - Shared TypeScript configs
 
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
-- Node.js >= 22.0.0
-- pnpm >= 8.0.0
+- **Node.js** >= 22.0.0
+- **pnpm** >= 8.0.0
+- **Anthropic API Key** (get one at <https://console.anthropic.com/>)
 
-### First-Time Setup
+### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd agent-workflows-monorepo-v2
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/sourceborn/agent-workflows-monorepo.git
+cd agent-workflows-monorepo
 
-2. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
-   This will:
-   - Install all dependencies across the monorepo
-   - Automatically generate Prisma client (for database access)
+# Install dependencies
+pnpm install
 
-3. **Set up the web application** (first-time only)
-   ```bash
-   pnpm dev:setup
-   ```
-   This will:
-   - Create `.env` file with secure JWT_SECRET (if it doesn't exist)
-   - Create and migrate the database (`prisma/dev.db`)
-   - Set up the development environment
+# Set up the web app (creates .env, database, etc.)
+pnpm dev:setup
 
-   Note: This command works from the monorepo root directory.
+# Build packages
+pnpm build
 
-4. **Configure environment variables** (optional)
-   ```bash
-   # Edit .env and add your API keys (especially ANTHROPIC_API_KEY)
-   ```
+# Start development server
+cd apps/web
+pnpm dev
+```
 
-5. **Build all packages**
-   ```bash
-   # From monorepo root
-   pnpm build
-   ```
-   This builds all workspace packages that other apps depend on.
+The application will be available at:
 
-6. **Start development server**
-   ```bash
-   cd apps/web
-   pnpm dev
-   ```
-   The application will be available at:
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:3456
+- **Frontend**: <http://localhost:5173>
+- **Backend API**: <http://localhost:3456>
+
+Default login: `admin` / `password` (change in production!)
+
+### Configuration
+
+Edit `apps/web/.env` to add your API keys:
+
+```bash
+ANTHROPIC_API_KEY=your-api-key-here
+JWT_SECRET=auto-generated-on-setup
+```
 
 ## Development Workflow
 
@@ -145,65 +152,16 @@ pnpm lint
 pnpm check-types
 ```
 
-## When Do Builds Happen?
+## Build System
 
-Understanding when TypeScript packages are built is important for efficient development:
+This monorepo uses Turborepo for fast, cached builds:
 
-### ✅ Builds DO Happen:
+- **First run**: Builds all packages (~30 seconds)
+- **Subsequent runs**: Uses cache (<2 seconds)
+- **Automatic**: Packages rebuild when you change source code
+- **On-demand**: TypeScript packages don't build during `pnpm install` (exception: Prisma client)
 
-- **Explicit builds** - When you run `pnpm build` (from root or in a package)
-- **Development mode** - Turborepo rebuilds packages when you change source code
-- **Publishing** - Before publishing to npm (via `prepublishOnly` hook)
-- **Prisma generation** - Always runs after `pnpm install` in `apps/web` (via `postinstall` hook, required for TypeScript types)
-
-### ❌ Builds DON'T Happen:
-
-- **During `pnpm install`** - TypeScript packages are NOT built automatically
-  - Exception: Prisma client generation in `apps/web` (runs via `postinstall`, intentional and required)
-  - This makes `pnpm install` ~80% faster!
-
-### Why This Design?
-
-The old behavior (`prepare` scripts) caused TypeScript packages to build on every `pnpm install`, which:
-- Made fresh installs take 2+ minutes instead of ~30 seconds
-- Rebuilt packages unnecessarily when you only needed to install dependencies
-- Slowed down CI/CD pipelines
-
-The new behavior:
-- ✅ Fast installs (no unnecessary builds)
-- ✅ On-demand builds via Turborepo (only when needed)
-- ✅ Automatic builds before publishing (via `prepublishOnly`)
-- ✅ Prisma generation uses `postinstall` (Prisma's recommended pattern, only runs in apps/web)
-- ✅ First-time setup is explicit via `pnpm dev:setup` command
-
-### Troubleshooting
-
-If you see import errors or "module not found" errors:
-```bash
-# Make sure packages are built
-pnpm build
-
-# Or build just the packages you need
-pnpm --filter @repo/agent-cli-sdk build
-pnpm --filter @repo/agent-workflows build
-```
-
-## Turborepo Caching
-
-This monorepo uses Turborepo for intelligent build caching:
-
-- **Local caching** - Build artifacts are cached on your machine
-- **Incremental builds** - Only changed packages rebuild
-- **Task dependencies** - Packages build in the correct order
-
-Example:
-```bash
-# First build (builds everything)
-pnpm build
-
-# Second build (uses cache, completes in <2 seconds)
-pnpm build
-```
+**Note**: If you see "module not found" errors, run `pnpm build`
 
 ## Project Structure
 
@@ -242,29 +200,14 @@ pnpm build
 
 ## Publishing Packages
 
-### `@repo/agent-cli-sdk`
+To publish a package to npm:
 
 ```bash
-cd packages/agent-cli-sdk
+cd packages/<package-name>
 pnpm ship
 ```
 
-This will:
-1. Build the package (via `prepublishOnly` hook)
-2. Run all checks (tests, lint, type-check)
-3. Bump version
-4. Create git commit and tag
-5. Push to GitHub
-6. Publish to npm
-
-### `@repo/agent-workflows`
-
-```bash
-cd packages/agent-workflows
-pnpm ship
-```
-
-This package publishes to both npm (`@repo/agent-workflows`) and a private registry (`@spectora/agent-workflows`).
+This will build, test, version bump, commit, tag, and publish automatically.
 
 ## Database (Prisma)
 
@@ -290,8 +233,176 @@ Database file location: `apps/web/prisma/dev.db`
 The web app requires environment variables. When you run `pnpm dev:setup` for the first time, a `.env` file is created automatically from `.env.example` with:
 - **JWT_SECRET** - Auto-generated secure random value
 - **ANTHROPIC_API_KEY** - Placeholder (you need to add your own)
+- **VITE_WS_HOST** - Optional WebSocket host override for remote access (see Tailscale setup below)
 
 See `apps/web/.env.example` for all available options.
+
+## Remote Access via Tailscale
+
+You can access the web app running on your local machine from other devices (iPhone, iPad, other computers) using **Tailscale**, a zero-configuration mesh VPN service.
+
+### What is Tailscale?
+
+Tailscale creates a secure, private network between your devices without complex VPN configuration. It's perfect for:
+
+- Accessing your development server from your phone/tablet
+- Working on the app from multiple computers
+- Sharing access with trusted team members
+
+### Requirements
+
+- A free Tailscale account: <https://tailscale.com/>
+- Tailscale installed on both your local machine and remote device(s)
+
+### Setup Instructions
+
+#### 1. Install Tailscale on Your Local Machine
+
+**macOS:**
+
+```bash
+brew install tailscale
+sudo tailscale up
+```
+
+**Linux:**
+
+```bash
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up
+```
+
+**Windows:**
+
+Download from <https://tailscale.com/download>
+
+#### 2. Install Tailscale on Remote Devices
+
+- **iOS/iPadOS**: Install "Tailscale" from the App Store
+- **Android**: Install "Tailscale" from Google Play Store
+- **Other computers**: Follow installation instructions at <https://tailscale.com/download>
+
+Sign in to the same Tailscale account on all devices.
+
+#### 3. Get Your Tailscale IP Address
+
+On the machine where you'll run the web app server, find your Tailscale IP:
+
+```bash
+# IPv4 address (recommended)
+tailscale ip -4
+
+# Example output: 100.101.102.103
+```
+
+#### 4. Configure Environment Variables
+
+Edit your `apps/web/.env` file and add the `VITE_WS_HOST` variable:
+
+```bash
+# Set to your Tailscale IP address with port 3456
+VITE_WS_HOST=100.101.102.103:3456
+
+# Also update ALLOWED_ORIGINS to include your Tailscale IP
+ALLOWED_ORIGINS=http://localhost:5173,http://100.101.102.103:5173
+```
+
+**Important**: Replace `100.101.102.103` with your actual Tailscale IP address from step 3.
+
+#### 5. Start the Development Server
+
+```bash
+cd apps/web
+pnpm dev
+```
+
+The app will now be accessible at:
+
+- **Local**: <http://localhost:5173>
+- **Via Tailscale**: <http://100.101.102.103:5173> (use your Tailscale IP)
+
+#### 6. Access from Remote Devices
+
+On your iPhone, iPad, or other device connected to Tailscale:
+
+1. Open a browser
+2. Navigate to: `http://<your-tailscale-ip>:5173`
+3. Log in and use the app normally
+
+The WebSocket connection will automatically use your Tailscale IP for real-time features (chat, terminal, file editing).
+
+### Testing the Connection
+
+**Verify Tailscale is working:**
+
+```bash
+# On local machine - should see your devices
+tailscale status
+
+# On remote device - ping your local machine
+ping 100.101.102.103
+```
+
+**Check the app is accessible:**
+
+```bash
+# From remote device (or local terminal)
+curl http://100.101.102.103:5173
+```
+
+### Troubleshooting Tailscale
+
+#### WebSocket Connection Fails
+
+**Symptom**: Chat/terminal won't connect, browser shows WebSocket errors
+
+**Solution**:
+
+1. Verify `VITE_WS_HOST` is set correctly in `.env`
+2. Check `ALLOWED_ORIGINS` includes your Tailscale IP
+3. Restart the dev server: `pnpm dev:kill && pnpm dev`
+4. Check browser console for exact WebSocket URL being used
+
+#### Can't Access from Remote Device
+
+**Symptom**: Browser times out, can't load the page
+
+**Solution**:
+
+1. Verify Tailscale is running on both devices: `tailscale status`
+2. Check firewall settings aren't blocking ports 3456 (backend) or 5173 (frontend)
+3. Try pinging the Tailscale IP: `ping <tailscale-ip>`
+4. On macOS, allow Node.js to accept incoming connections in System Preferences > Security & Privacy > Firewall
+
+#### CORS Errors in Browser Console
+
+**Symptom**: "CORS policy: No 'Access-Control-Allow-Origin' header"
+
+**Solution**:
+
+Update `ALLOWED_ORIGINS` in `.env`:
+
+```bash
+ALLOWED_ORIGINS=http://localhost:5173,http://100.101.102.103:5173
+```
+
+Restart the server after changing environment variables.
+
+### Security Considerations
+
+- **Tailscale is secure**: All traffic is encrypted end-to-end using WireGuard
+- **Private network only**: Your app is only accessible to devices on your Tailscale network
+- **No public exposure**: Unlike ngrok or port forwarding, Tailscale doesn't expose your app to the internet
+- **Single-user app**: This app is designed for single-user use; authentication is minimal
+
+### Alternative: Production Deployment
+
+For more permanent remote access, consider:
+
+- Deploy to a cloud server (AWS, DigitalOcean, Fly.io)
+- Use proper domain name and SSL certificate
+- Set `NODE_ENV=production` and use strong `JWT_SECRET`
+- See "Deployment Considerations" in `apps/web/CLAUDE.md`
 
 ## Tech Stack
 
@@ -343,7 +454,7 @@ await workflow.executeStep('analyze', {
 });
 ```
 
-## Troubleshooting
+## Common Issues
 
 | Issue | Solution |
 |-------|----------|
@@ -352,6 +463,33 @@ await workflow.executeStep('analyze', {
 | WebSocket issues | Check logs: `tail -f apps/web/logs/app.log` |
 | Port conflicts | `cd apps/web && pnpm dev:kill && pnpm dev` |
 
+## Contributing
+
+We welcome contributions! Please follow these guidelines:
+
+1. **Fork the repository** and create a feature branch
+2. **Follow the code style** - Run `pnpm lint` and `pnpm check-types`
+3. **Write tests** for new features
+4. **Update documentation** - Keep README and CLAUDE.md files current
+5. **Submit a PR** with a clear description of changes
+
+See `CLAUDE.md` and `apps/web/CLAUDE.md` for detailed development guidelines.
+
+### Development Setup
+
+```bash
+# Fork and clone your fork
+git clone https://github.com/your-username/agent-workflows-monorepo-v2.git
+
+# Create feature branch
+git checkout -b feature/your-feature-name
+
+# Make changes, commit, push
+git push origin feature/your-feature-name
+
+# Open a PR on GitHub
+```
+
 ## License
 
-MIT
+MIT License - see [LICENSE](LICENSE) for details

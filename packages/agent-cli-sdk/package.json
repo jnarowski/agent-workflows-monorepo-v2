@@ -41,6 +41,15 @@
     "workflow",
     "orchestration"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sourceborn/agent-workflows-monorepo.git",
+    "directory": "packages/agent-cli-sdk"
+  },
+  "homepage": "https://github.com/sourceborn/agent-workflows-monorepo/tree/main/packages/agent-cli-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/sourceborn/agent-workflows-monorepo/issues"
+  },
   "files": [
     "dist",
     "README.md"

@@ -33,8 +33,7 @@
     "check-types": "tsc --noEmit",
     "check": "pnpm lint && pnpm check-types && pnpm test",
     "prepublishOnly": "pnpm run build",
-    "publish:spectora": "./scripts/publish-spectora.sh",
-    "ship": "pnpm ship:prepare && pnpm publish && pnpm publish:spectora",
+    "ship": "pnpm ship:prepare && pnpm publish",
     "ship:prepare": "pnpm build && git add . && git commit -m 'chore: prepare release' || true && pnpm version patch && git push && git push --tags",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -42,13 +41,20 @@
   "keywords": [
     "agent",
     "workflow",
-    "spectora"
+    "ai",
+    "automation",
+    "typescript"
   ],
   "author": "Sourceborn",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/spectorasoftware/agent-workflows"
+    "url": "https://github.com/sourceborn/agent-workflows-monorepo.git",
+    "directory": "packages/agent-workflows"
+  },
+  "homepage": "https://github.com/sourceborn/agent-workflows-monorepo/tree/main/packages/agent-workflows#readme",
+  "bugs": {
+    "url": "https://github.com/sourceborn/agent-workflows-monorepo/issues"
   },
   "publishConfig": {
     "access": "public"

@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a **Turborepo monorepo** for AI agent workflow tools, featuring:
 
 - **`apps/web`**: Full-stack application (React + Vite frontend, Fastify backend) for managing and visualizing AI agent workflows with chat interface, file editor, and terminal
-- **`@repo/agent-cli-sdk`**: TypeScript SDK for orchestrating AI-powered CLI tools (Claude Code, OpenAI Codex) programmatically
+- **`@repo/agent-cli-sdk`**: TypeScript SDK for orchestrating AI-powered CLI tools (Claude Code, OpenAI Codex, Gemini) programmatically
 - **`@repo/agent-workflows`**: Core workflow utilities library with automatic state persistence, logging, and error handling
 - **Shared packages**: UI components, ESLint configs, TypeScript configs
 
@@ -22,16 +22,14 @@ pnpm install
 # Build all packages (Turborepo handles dependencies)
 pnpm build
 
-# Run all tests across monorepo
-pnpm test
-
 # Lint all packages
 pnpm lint
 
 # Type-check all packages
 pnpm check-types
 
-# Validate everything (lint + type-check + tests)
+# Validate everything (lint + type-check)
+# Note: Tests run at package level, not monorepo level
 pnpm check
 
 # Format code
@@ -41,10 +39,11 @@ pnpm format
 ### Web App Development (from `apps/web/`)
 
 ```bash
-# First-time setup (creates .env, migrates database)
+# First-time setup (creates .env, applies database migrations)
 pnpm dev:setup
 
-# Start dev servers (client + server)
+# Start dev servers (client + server concurrently)
+# Note: Automatically runs 'prisma migrate deploy' on startup
 pnpm dev
 
 # Start only backend (port 3456)
@@ -55,8 +54,13 @@ pnpm dev:client
 
 # Database operations
 pnpm prisma:generate     # Generate Prisma client
-pnpm prisma:migrate      # Run migrations
+pnpm prisma:migrate      # Create and run migrations (development)
 pnpm prisma:studio       # Open database GUI
+
+# Testing
+pnpm test                # Run tests
+pnpm test:watch          # Watch mode
+pnpm test:ui             # Open Vitest UI
 
 # Build and start production
 pnpm build
@@ -74,10 +78,19 @@ pnpm --filter @repo/agent-workflows build
 cd packages/agent-cli-sdk
 pnpm test                # Run all tests
 pnpm test:watch          # Watch mode
-pnpm test:e2e            # E2E tests with real CLI
+pnpm test:e2e            # E2E tests with real CLI (180s timeout)
+pnpm test:e2e:claude     # Claude-specific E2E tests
+pnpm test:e2e:codex      # Codex-specific E2E tests
+pnpm test:e2e:gemini     # Gemini-specific E2E tests
 
 # Run single test file
 pnpm vitest run src/path/to/file.test.ts
+
+# agent-workflows package
+cd packages/agent-workflows
+pnpm test                # Run all tests
+pnpm test:watch          # Watch mode
+pnpm check               # Run lint + type-check + tests
 ```
 
 ## Architecture Overview
@@ -86,66 +99,138 @@ pnpm vitest run src/path/to/file.test.ts
 
 ```
 .
+├── .agent/                      # Agent workflow artifacts
+│   └── docs/                   # Extended documentation
+│       ├── claude-tool-result-patterns.md
+│       ├── testing-best-practices.md
+│       └── websockets.md
+│
 ├── apps/
 │   └── web/                    # Full-stack workflow UI application
 │       ├── src/
+│       │   ├── cli/            # CLI tool for running web app
 │       │   ├── client/         # React frontend (Vite)
+│       │   │   ├── assets/
+│       │   │   ├── components/ # Shared components
+│       │   │   │   ├── ai-elements/  # AI chat UI components
+│       │   │   │   ├── backgrounds/  # Animated backgrounds
+│       │   │   │   └── ui/           # shadcn/ui components (kebab-case)
+│       │   │   ├── contexts/   # React contexts (AuthContext)
+│       │   │   ├── hooks/      # Shared hooks
+│       │   │   ├── layouts/    # Layout components
+│       │   │   ├── lib/        # Client utilities
+│       │   │   ├── pages/      # Route pages (feature-based)
+│       │   │   │   ├── auth/   # Authentication feature
+│       │   │   │   ├── projects/ # Projects feature
+│       │   │   │   │   ├── components/
+│       │   │   │   │   ├── hooks/
+│       │   │   │   │   ├── sessions/  # Chat/agent sessions
+│       │   │   │   │   ├── files/     # File editor
+│       │   │   │   │   └── shell/     # Terminal
+│       │   │   │   └── *.tsx   # Top-level pages
+│       │   │   ├── providers/  # React providers
+│       │   │   ├── stores/     # Zustand stores (global state)
+│       │   │   └── utils/      # Client utilities
+│       │   │
 │       │   ├── server/         # Fastify backend
+│       │   │   ├── config/     # Configuration
 │       │   │   ├── domain/     # Domain-driven business logic
-│       │   │   │   ├── project/    # Project management
-│       │   │   │   ├── session/    # Agent sessions
-│       │   │   │   ├── file/       # File operations
-│       │   │   │   ├── git/        # Git operations
-│       │   │   │   └── shell/      # Shell/terminal
+│       │   │   │   ├── file/       # File operations domain
+│       │   │   │   │   ├── services/    # One function per file
+│       │   │   │   │   ├── schemas/     # Zod validation
+│       │   │   │   │   └── types/       # Domain types
+│       │   │   │   ├── git/        # Git operations domain
+│       │   │   │   ├── project/    # Project management domain
+│       │   │   │   ├── session/    # Agent sessions domain
+│       │   │   │   └── shell/      # Shell/terminal domain
+│       │   │   ├── errors/     # Custom error classes
+│       │   │   ├── plugins/    # Fastify plugins (auth)
 │       │   │   ├── routes/     # HTTP route handlers (thin)
-│       │   │   ├── websocket.ts # WebSocket transport (thin)
-│       │   │   ├── plugins/    # Fastify plugins
-│       │   │   └── config.ts   # Centralized configuration
-│       │   └── shared/         # Shared types, Prisma client
+│       │   │   ├── schemas/    # Legacy schemas (being migrated to domain/)
+│       │   │   ├── services/   # Legacy services (being migrated to domain/)
+│       │   │   ├── utils/      # Server utilities
+│       │   │   ├── websocket/  # WebSocket infrastructure
+│       │   │   │   ├── handlers/       # WebSocket handlers
+│       │   │   │   └── infrastructure/ # WebSocket core
+│       │   │   └── index.ts    # Server entry point
+│       │   │
+│       │   └── shared/         # Code shared between client/server
+│       │       ├── types/      # Shared TypeScript types
+│       │       ├── utils/      # Shared utilities
+│       │       ├── websocket/  # WebSocket types
+│       │       └── prisma.ts   # Prisma client singleton
+│       │
 │       ├── prisma/             # Database schema and migrations
-│       └── logs/               # Server logs (apps/web/logs/app.log)
+│       │   ├── migrations/     # Migration files
+│       │   ├── schema.prisma   # Database schema
+│       │   └── dev.db          # SQLite database (development)
+│       │
+│       ├── logs/               # Server logs
+│       │   └── app.log         # Primary log file
+│       │
+│       └── scripts/            # Build and setup scripts
 │
 ├── packages/
 │   ├── agent-cli-sdk/          # SDK for AI CLI tools
 │   │   ├── src/
 │   │   │   ├── claude/         # Claude Code integration
+│   │   │   ├── codex/          # OpenAI Codex integration
+│   │   │   ├── gemini/         # Google Gemini integration
 │   │   │   ├── types/          # Unified types across tools
 │   │   │   └── utils/          # Process spawning, JSON extraction
-│   │   └── tests/
-│   │       ├── fixtures/       # JSONL examples for testing
-│   │       └── e2e/            # Integration tests with real CLI
+│   │   ├── tests/
+│   │   │   ├── fixtures/       # JSONL examples for testing
+│   │   │   │   ├── claude/
+│   │   │   │   ├── codex/
+│   │   │   │   └── gemini/
+│   │   │   └── e2e/            # E2E tests with real CLI
+│   │   │       ├── claude/
+│   │   │       ├── codex/
+│   │   │       └── gemini/
+│   │   └── scripts/            # Fixture extraction scripts
 │   │
 │   ├── agent-workflows/        # Workflow orchestration library
 │   │   ├── src/
-│   │   │   ├── workflow/       # Workflow class
+│   │   │   ├── cli/            # CLI tool for workflows
 │   │   │   ├── storage/        # Storage adapters (FileStorage)
 │   │   │   ├── types/          # Core type definitions
-│   │   │   └── utils/          # Helpers (logging, formatting)
-│   │   └── examples/           # Reference implementations
+│   │   │   ├── utils/          # Helpers (logging, formatting)
+│   │   │   └── workflow/       # Workflow class
+│   │   ├── examples/           # Reference implementations
+│   │   └── bin/                # CLI entry point
 │   │
 │   ├── ui/                     # Shared React components
 │   ├── eslint-config/          # Shared ESLint configs
 │   └── typescript-config/      # Shared TypeScript configs
 │
+├── .claude/                    # Claude Code configuration
+├── .cursor/                    # Cursor IDE configuration
+├── .vscode/                    # VS Code configuration
+├── mocks/                      # Mock data for development
+├── scripts/                    # Monorepo-level scripts
 ├── turbo.json                  # Turborepo task configuration
 ├── pnpm-workspace.yaml         # pnpm workspace definition
-└── CLAUDE.md                   # This file
+├── package.json                # Root package.json
+├── CLAUDE.md                   # This file
+├── README.md                   # Project README
+├── AGENTS.md                   # Agent documentation
+└── LICENSE                     # MIT license
 ```
 
 ### Key Architectural Concepts
 
 **1. Turborepo Build Pipeline**
 
-- Tasks depend on each other: `build` → `lint` → `check-types` → `test`
-- Use `^build` syntax to ensure dependencies build first
-- Caching enabled for faster rebuilds
+- Tasks depend on each other: `build` → `lint`, `build` → `check-types`, `build` → `test`
+- Use `^build` syntax in turbo.json to ensure dependencies build first
+- Caching enabled for faster rebuilds (`.turbo/` directory)
 - Run tasks with `pnpm build` from root or `turbo run build`
 
 **2. Workspace Dependencies**
 
 - Packages use `workspace:*` protocol (e.g., `"@repo/agent-cli-sdk": "workspace:*"`)
 - Changes to workspace packages require rebuilding dependents
-- No builds happen during `pnpm install` (except Prisma generation)
+- Prisma client generation happens automatically after `pnpm install` in apps/web
 
 **3. Module Resolution**
 
@@ -165,8 +250,9 @@ pnpm vitest run src/path/to/file.test.ts
 
 The web app supports multiple AI CLI tools:
 - **Claude Code** (primary): Full integration with session loading, JSONL parsing
-- **OpenAI Codex**: Planned integration via agent-cli-sdk
-- **Cursor, Gemini**: Stubbed for future support
+- **OpenAI Codex**: Full integration via agent-cli-sdk
+- **Google Gemini**: Full integration via agent-cli-sdk
+- **Cursor**: Future support planned
 
 All agents normalized to `UnifiedMessage` format via agent-cli-sdk.
 
@@ -188,18 +274,22 @@ The web app backend (`apps/web/src/server/`) follows a domain-driven functional 
 ```
 server/
 ├── domain/                 # Business logic organized by domain
-│   ├── project/           # Project management domain
-│   │   ├── services/      # Pure functions (one per file)
-│   │   ├── types/         # Domain-specific types
-│   │   └── schemas/       # Zod validation schemas
-│   ├── session/           # Agent session domain
 │   ├── file/              # File operations domain
+│   │   ├── services/      # Pure functions (one per file)
+│   │   ├── schemas/       # Zod validation schemas
+│   │   └── types/         # Domain-specific types
 │   ├── git/               # Git operations domain
+│   ├── project/           # Project management domain
+│   ├── session/           # Agent session domain
 │   └── shell/             # Shell/terminal domain
 ├── routes/                # Thin HTTP route handlers
-├── websocket.ts           # Thin WebSocket transport
+├── websocket/             # WebSocket infrastructure
+│   ├── handlers/          # WebSocket message handlers
+│   └── infrastructure/    # WebSocket core (EventBus)
 ├── plugins/               # Fastify plugins (auth, etc.)
-└── config.ts              # Centralized configuration
+├── config/                # Centralized configuration
+├── errors/                # Custom error classes
+└── index.ts               # Server entry point
 ```
 
 **Key Principles:**
@@ -207,7 +297,7 @@ server/
 - **Group by domain**, not by technical layer (no generic "services/" folder)
 - **Pure functions** - all dependencies passed as parameters, no classes
 - **Routes are thin orchestrators** - delegate to domain services
-- **WebSocket is transport** - business logic stays in domain layer
+- **WebSocket handlers are thin** - business logic stays in domain layer
 - **Centralized config** - all environment variables accessed via `config.ts`
 
 **Example Domain Function:**
@@ -225,11 +315,11 @@ export async function getProjectById(id: string): Promise<Project | null> {
 **Import Pattern:**
 ```typescript
 // ✅ GOOD - Import from domain
-import { getProjectById } from '@/server/domain/project/services/getProjectById.js';
-import { readFile } from '@/server/domain/file/services/readFile.js';
+import { getProjectById } from '@/server/domain/project/services/getProjectById';
+import { readFile } from '@/server/domain/file/services/readFile';
 
 // ❌ BAD - Don't import from old services/ directory
-import { getProjectById } from '@/server/services/project.service.js';
+import { getProjectById } from '@/server/services/project.service';
 ```
 
 ## Important Rules & Conventions
@@ -239,7 +329,7 @@ import { getProjectById } from '@/server/services/project.service.js';
 1. **Build packages before using them**: If you see "module not found" errors, run `pnpm build`
 2. **Use workspace protocol**: Always use `workspace:*` for internal package dependencies
 3. **Turborepo caching**: Second builds complete in <2s due to caching
-4. **Import extensions**: Use `.js` in imports even for `.ts` files
+4. **No import extensions**: Use `import { foo } from "./bar"` not `import { foo } from "./bar.js"`
 5. **Unit tests are co-located**: Place `*.test.ts` next to source files, not in separate `tests/` folder
 
 ### Web App Specific Rules
@@ -250,14 +340,14 @@ import { getProjectById } from '@/server/services/project.service.js';
 - ✅ **Group by domain**, not by technical layer - use `domain/project/`, `domain/session/`, etc.
 - ✅ **Pure functions** - pass all dependencies (logger, config) as parameters, no classes
 - ✅ **Thin route handlers** - delegate all business logic to domain services
-- ✅ **Import from domain/** - use `@/server/domain/project/services/getProjectById.js`
+- ✅ **Import from domain/** - use `@/server/domain/project/services/getProjectById`
 - ❌ **Never import from services/** - old pattern, being phased out
 - ✅ **WebSocket handlers are thin** - orchestrate domain functions, don't contain business logic
-- ✅ **Use centralized config** - import from `@/server/config.js`, don't access `process.env` directly
+- ✅ **Use centralized config** - import from `@/server/config`, don't access `process.env` directly
 
 **Import Paths:**
 - ✅ Always use `@/` aliases: `@/client/*`, `@/server/*`, `@/shared/*`
-- ❌ Never use relative imports: `../`, `./`
+- ❌ Never use relative imports beyond the same directory
 
 **React Hooks:**
 - Import directly: `import { useEffect, useState } from 'react'`
@@ -300,12 +390,13 @@ import { getProjectById } from '@/server/services/project.service.js';
 - Feature-based structure under `pages/{feature}/`
 - Each feature has: `components/`, `hooks/`, `stores/`, `lib/`, `utils/`
 - Only truly shared components go in top-level `components/`
-- PascalCase for components, kebab-case only for shadcn/ui components
+- PascalCase for components, kebab-case only for shadcn/ui components in `components/ui/`
 
 **Testing:**
 - Tests go next to the file: `component.tsx` → `component.test.tsx`
 - Use `@testing-library/react` for component tests
 - Use `happy-dom` as test environment
+- Web app has 31 test files
 
 ### Package-Specific Rules
 
@@ -314,7 +405,8 @@ import { getProjectById } from '@/server/services/project.service.js';
 - One primary export per file matching filename
 - Use exhaustive type checking with `never` for tool selection
 - E2E tests run sequentially (`singleFork: true`)
-- Permission modes: `default` (safe), `acceptEdits` (auto-accept), `bypassPermissions` (dangerous)
+- Permission modes: `default` (safe), `plan` (read-only), `acceptEdits` (auto-accept), `bypassPermissions` (dangerous)
+- Supports Claude, Codex, and Gemini
 
 **agent-workflows:**
 - Config-based API (pass config objects, not individual params)
@@ -378,21 +470,28 @@ pnpm prisma:migrate     # Create and run migration
 ### Running Tests
 
 ```bash
-# All tests across monorepo
-pnpm test
+# Web app tests
+cd apps/web
+pnpm test               # Run all tests
+pnpm test:watch         # Watch mode
+pnpm test:ui            # Vitest UI
 
-# Specific package
+# agent-cli-sdk tests
 cd packages/agent-cli-sdk
 pnpm test               # Unit tests
 pnpm test:watch         # Watch mode
-pnpm test:e2e           # E2E with real CLI (180s timeout)
+pnpm test:e2e           # All E2E tests (180s timeout)
+pnpm test:e2e:claude    # Claude E2E tests
+pnpm test:e2e:codex     # Codex E2E tests
+pnpm test:e2e:gemini    # Gemini E2E tests
+
+# agent-workflows tests
+cd packages/agent-workflows
+pnpm test               # Run all tests
+pnpm test:watch         # Watch mode
 
 # Single test file
-pnpm vitest run src/claude/parse.test.ts
-
-# Web app tests
-cd apps/web
-pnpm test
+pnpm vitest run src/path/to/file.test.ts
 ```
 
 ### Build System Details
@@ -431,7 +530,7 @@ tail -f apps/web/logs/app.log
 # Pretty-printed with jq
 tail -f apps/web/logs/app.log | jq .
 
-# Filter for errors
+# Filter for errors (level >= 50)
 tail -f apps/web/logs/app.log | jq 'select(.level >= 50)'
 ```
 
@@ -439,7 +538,7 @@ tail -f apps/web/logs/app.log | jq 'select(.level >= 50)'
 
 1. **WebSocket connection failures**: Check logs, verify server running, check JWT token
 2. **Database locked**: Kill node processes, restart dev server
-3. **Agent not streaming**: Verify Claude CLI installed (`which claude`), check WebSocket events
+3. **Agent not streaming**: Verify CLI installed (`which claude`), check WebSocket events
 4. **File operations failing**: Check permissions, verify project path
 5. **Auth issues**: Check JWT_SECRET, regenerate token
 
@@ -495,13 +594,24 @@ pnpm vitest run path/to/test.test.ts
 - **Frontend**: React 19, Vite, React Router, TanStack Query, Zustand
 - **Backend**: Fastify, WebSocket, Prisma (SQLite), JWT auth
 - **UI**: Tailwind CSS v4, shadcn/ui (Radix UI components)
-- **Code Editor**: CodeMirror with syntax highlighting
-- **Terminal**: xterm.js with node-pty
+- **Code Editor**: CodeMirror (via @uiw/react-codemirror) with syntax highlighting
+- **Terminal**: xterm.js (via @xterm/xterm) with node-pty
+- **AI SDK**: Vercel AI SDK (@ai-sdk/anthropic, @ai-sdk/openai)
 
 ### Packages
-- **agent-cli-sdk**: TypeScript, cross-spawn, Zod, Vitest
-- **agent-workflows**: TypeScript, simple-git, gray-matter, Vitest
+- **agent-cli-sdk**: TypeScript, cross-spawn, Vitest, boxen, chalk
+- **agent-workflows**: TypeScript, simple-git, gray-matter, Zod, Vitest
 - **Build Tools**: Turborepo, Bunchee, TSX, ESBuild
+
+### Key Dependencies
+- **Node.js**: >= 22.0.0 (agent-cli-sdk, agent-workflows), >= 18.0.0 (monorepo)
+- **pnpm**: 10.19.0 (package manager)
+- **TypeScript**: 5.9.x
+- **React**: 19.1.x
+- **Fastify**: 5.6.x
+- **Prisma**: 6.17.x
+- **Vite**: 7.1.x
+- **Vitest**: 4.0.x (web), 3.2.x (agent-workflows), 2.0.x (agent-cli-sdk)
 
 ## Environment Variables
 
@@ -509,15 +619,21 @@ pnpm vitest run path/to/test.test.ts
 
 **Required:**
 - `JWT_SECRET`: JWT signing key (generate: `openssl rand -base64 32`)
+- `DATABASE_URL`: SQLite database path (default: `file:./dev.db`)
 
 **Optional (with defaults):**
 - `PORT`: Backend port (default: 3456)
 - `VITE_PORT`: Frontend port (default: 5173)
 - `HOST`: Server host (default: 127.0.0.1)
-- `LOG_LEVEL`: Logging level (default: info)
+- `LOG_LEVEL`: Logging level (default: info) - Options: trace, debug, info, warn, error, fatal
+- `LOG_FILE`: Log file path (default: ./logs/app.log)
 - `ALLOWED_ORIGINS`: CORS origins (default: http://localhost:5173)
 - `NODE_ENV`: Environment (default: development)
-- `ANTHROPIC_API_KEY`: For AI features (optional)
+- `VITE_ENABLE_BACKGROUNDS`: Enable animated backgrounds (default: true)
+- `VITE_WS_HOST`: WebSocket host override for remote access (e.g., Tailscale IP)
+- `ANTHROPIC_API_KEY`: For AI features (session name generation, etc.)
+
+See `.env.example` for complete configuration template.
 
 **First-time setup:**
 ```bash
@@ -530,19 +646,25 @@ pnpm dev:setup    # Auto-generates .env from .env.example
 ### agent-cli-sdk
 ```bash
 cd packages/agent-cli-sdk
-pnpm ship
-# Runs: build → tests → version bump → commit → tag → push → publish
+# Build and publish manually
+pnpm build
+npm publish
 ```
 
 ### agent-workflows
 ```bash
 cd packages/agent-workflows
 pnpm ship
-# Publishes to both npm (@repo/agent-workflows) and private registry (@spectora/agent-workflows)
+# Runs: build → version patch → commit → tag → push → publish
 ```
 
 ## Additional Resources
 
+- **Extended Documentation**: See `.agent/docs/` for detailed guides:
+  - `claude-tool-result-patterns.md`: Tool result matching pattern
+  - `testing-best-practices.md`: Testing conventions
+  - `websockets.md`: WebSocket architecture
+  - Agent-specific docs: `claude.md`, `codex.md`, `gemini.md`, `cursor-agent.md`
 - **Web App Guide**: See `apps/web/CLAUDE.md` for detailed web app architecture
 - **agent-cli-sdk Guide**: See `packages/agent-cli-sdk/CLAUDE.md` for SDK details
 - **agent-workflows Guide**: See `packages/agent-workflows/CLAUDE.md` for workflow utilities
@@ -556,6 +678,7 @@ pnpm ship
 - Database: `apps/web/prisma/dev.db`
 - Workflow logs: `.agent/workflows/logs/{workflowId}/`
 - Build output: `dist/` in each package/app
+- Extended docs: `.agent/docs/`
 
 **Port Numbers:**
 - Frontend dev server: 5173
