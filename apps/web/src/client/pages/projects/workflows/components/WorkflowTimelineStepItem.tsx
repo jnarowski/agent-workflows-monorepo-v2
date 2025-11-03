@@ -57,65 +57,64 @@ export function WorkflowTimelineStepItem({
 
   return (
     <div className="relative pl-10">
-      {/* Timeline dot */}
-      <div className="absolute left-[7px] top-4 h-[14px] w-[14px] rounded-full border-4 border-background bg-primary" />
+      {/* Timeline Icon */}
+      <div className="absolute left-0 -translate-x-1/2 h-9 w-9 flex items-center justify-center rounded-full bg-primary text-primary-foreground ring-8 ring-background">
+        <FileText className="h-5 w-5" />
+      </div>
 
-      {/* Card */}
-      <div className="rounded-lg border bg-card shadow-sm">
-        {/* Header (clickable to expand/collapse) */}
+      {/* Content */}
+      <div className="pt-2 sm:pt-1 space-y-2">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex w-full items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors"
+          className="w-full text-left"
         >
-          {/* Expand icon */}
-          {isExpanded ? (
-            <ChevronDown className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-          ) : (
-            <ChevronRight className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-          )}
-
-          {/* Step name */}
-          <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-sm truncate">
-              {formatStepName(step.step_name)}
-            </h3>
+          {/* Step Type Badge */}
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="rounded-full text-xs">
+              Step
+            </Badge>
+            <WorkflowStatusBadge status={step.status} size="sm" />
           </div>
 
-          {/* Phase badge */}
-          <Badge variant="outline" className="text-xs">
-            {step.phase_name}
-          </Badge>
-
-          {/* Status badge */}
-          <WorkflowStatusBadge status={step.status} size="sm" />
-
-          {/* Timestamp */}
-          <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
-            <Clock className="h-3 w-3" />
-            {getTimeDisplay()}
+          {/* Step Title & Timestamp */}
+          <div className="mt-2">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-base font-semibold">
+                {formatStepName(step.step_name)}
+              </h3>
+              <span className="flex-shrink-0">
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              <span>{getTimeDisplay()}</span>
+              {step.phase_name && (
+                <>
+                  <span>•</span>
+                  <span>{step.phase_name}</span>
+                </>
+              )}
+              {getDuration() && (
+                <>
+                  <span>•</span>
+                  <span>{getDuration()}</span>
+                </>
+              )}
+            </div>
           </div>
         </button>
 
         {/* Expanded content */}
         {isExpanded && (
-          <div className="border-t px-4 pb-4">
-            {/* Duration and completed_at */}
-            {step.completed_at && (
-              <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground mb-1">Duration</p>
-                  <p className="font-medium">{getDuration() || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground mb-1">Completed</p>
-                  <p className="font-medium">{formatRelativeTime(step.completed_at)}</p>
-                </div>
-              </div>
-            )}
-
+          <div className="pt-2 space-y-3">
             {/* Agent session link */}
             {step.agent_session_id && (
-              <div className="mt-3 flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-2 text-sm">
                 <ExternalLink className="h-4 w-4 text-muted-foreground" />
                 <a
                   href={`/sessions/${step.agent_session_id}`}
@@ -130,7 +129,7 @@ export function WorkflowTimelineStepItem({
 
             {/* Error message */}
             {hasError && (
-              <div className="mt-3 rounded-md bg-destructive/10 p-3">
+              <div className="rounded-md bg-destructive/10 p-3">
                 <p className="text-sm font-medium text-destructive mb-1">Error</p>
                 <pre className="text-xs text-destructive whitespace-pre-wrap font-mono">
                   {step.error_message}
@@ -140,7 +139,7 @@ export function WorkflowTimelineStepItem({
 
             {/* Logs */}
             {hasLogs && (
-              <div className="mt-3">
+              <div>
                 <p className="text-sm font-medium mb-2">Logs</p>
                 <div className="rounded-md bg-muted p-3 max-h-64 overflow-y-auto">
                   <pre className="text-xs whitespace-pre-wrap font-mono text-foreground/90">
@@ -152,7 +151,7 @@ export function WorkflowTimelineStepItem({
 
             {/* Artifacts */}
             {hasArtifacts && (
-              <div className="mt-3">
+              <div>
                 <p className="text-sm font-medium mb-2">Artifacts</p>
                 <div className="space-y-2">
                   {step.artifacts?.map((artifact) => (
@@ -178,7 +177,7 @@ export function WorkflowTimelineStepItem({
 
             {/* Step comments */}
             {hasComments && (
-              <div className="mt-3">
+              <div>
                 <p className="text-sm font-medium mb-2">Comments</p>
                 <div className="space-y-2">
                   {stepEvents.map((event) => (
@@ -193,9 +192,8 @@ export function WorkflowTimelineStepItem({
               !hasError &&
               !hasArtifacts &&
               !hasComments &&
-              !step.agent_session_id &&
-              !step.completed_at && (
-                <div className="mt-3 py-6 text-center text-sm text-muted-foreground">
+              !step.agent_session_id && (
+                <div className="py-4 text-center text-sm text-muted-foreground">
                   No additional details available
                 </div>
               )}

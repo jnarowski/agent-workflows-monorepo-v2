@@ -1,6 +1,5 @@
 import type { TimelineItem, WorkflowEvent } from '../types';
-import { WorkflowTimelineStepItem } from './WorkflowTimelineStepItem';
-import { WorkflowTimelineEventItem } from './WorkflowTimelineEventItem';
+import { WorkflowTimelineItem } from './WorkflowTimelineItem';
 
 interface WorkflowTimelineProps {
   items: TimelineItem[];
@@ -22,23 +21,20 @@ export function WorkflowTimeline({ items }: WorkflowTimelineProps) {
   }
 
   return (
-    <div className="relative space-y-4">
-      {/* Vertical timeline connector line */}
-      <div className="absolute left-4 top-0 bottom-0 w-[2px] bg-border" />
+    <div className="max-w-(--breakpoint-sm) mx-auto py-12 md:py-20 px-6">
+      <div className="relative ml-4 space-y-6">
+        {/* Vertical timeline connector line */}
+        <div className="absolute left-0 inset-y-0 border-l-2" />
 
-      {/* Timeline items */}
-      {items.map((item) => (
-        <div key={`${item.type}-${item.data.id}`} className="relative">
-          {item.type === 'step' ? (
-            <WorkflowTimelineStepItem
-              step={item.data}
-              stepEvents={getStepEvents(items, item.data.id)}
-            />
-          ) : (
-            <WorkflowTimelineEventItem event={item.data} />
-          )}
-        </div>
-      ))}
+        {/* Timeline items */}
+        {items.map((item) => (
+          <WorkflowTimelineItem
+            key={`${item.type}-${item.data.id}`}
+            item={item}
+            stepEvents={item.type === 'step' ? getStepEvents(items, item.data.id) : undefined}
+          />
+        ))}
+      </div>
     </div>
   );
 }

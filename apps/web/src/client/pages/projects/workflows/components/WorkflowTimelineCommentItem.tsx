@@ -37,34 +37,36 @@ export function WorkflowTimelineCommentItem({ event }: WorkflowTimelineCommentIt
   const userName = event.created_by_user?.username || 'Unknown User';
 
   return (
-    <div className={`rounded-lg border p-4 ${styleClass}`}>
-      {/* Header */}
-      <div className="mb-2 flex items-center gap-2">
-        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted">
-          <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+    <div className="pt-2 sm:pt-1 space-y-2">
+      {/* Header - User/Type badge and timestamp on same line as title */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted flex-shrink-0">
+            <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+          </div>
+          <Badge variant="outline" className="text-xs rounded-full">
+            {commentType === 'system'
+              ? 'System'
+              : commentType === 'agent'
+                ? 'Agent'
+                : userName}
+          </Badge>
         </div>
-        <Badge variant="outline" className="text-xs">
-          {commentType === 'system'
-            ? 'System'
-            : commentType === 'agent'
-              ? 'Agent'
-              : userName}
-        </Badge>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
           {formatRelativeTime(event.created_at)}
         </span>
       </div>
 
       {/* Content */}
-      <p className="text-sm whitespace-pre-wrap">{commentText}</p>
+      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{commentText}</p>
 
       {/* Artifacts */}
       {event.artifacts && event.artifacts.length > 0 && (
-        <div className="mt-3 space-y-2">
+        <div className="space-y-2">
           {event.artifacts.map((artifact) => (
             <div
               key={artifact.id}
-              className="flex items-center gap-2 rounded-md bg-muted/50 p-2 text-xs"
+              className="flex items-center gap-2 rounded-md bg-muted p-2 text-xs"
             >
               <FileText className="h-3.5 w-3.5 text-muted-foreground" />
               <span className="flex-1 truncate">{artifact.file_name}</span>
