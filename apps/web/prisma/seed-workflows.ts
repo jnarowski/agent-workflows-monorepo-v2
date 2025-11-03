@@ -519,7 +519,9 @@ async function main() {
   const createLifecycleEvent = async (
     execution: any,
     eventType: string,
-    eventData: any,
+    title: string,
+    body: string,
+    additionalData: Record<string, any> = {},
     createdAt: Date
   ) => {
     return await prisma.workflowEvent.create({
@@ -527,7 +529,11 @@ async function main() {
         workflow_execution_id: execution.id,
         created_by_user_id: users[0].id,
         event_type: eventType,
-        event_data: eventData,
+        event_data: {
+          title,
+          body,
+          ...additionalData,
+        },
         created_at: createdAt
       }
     });
@@ -540,94 +546,74 @@ async function main() {
     await createLifecycleEvent(
       executions[2],
       'workflow_started',
-      { message: 'Workflow execution started' },
+      'Workflow Started',
+      'Workflow execution has begun',
+      {},
       new Date(Date.now() - 1000 * 60 * 45)
     ),
     await createLifecycleEvent(
       executions[2],
       'phase_started',
-      { phase: 'Research', message: 'Started Research phase' },
+      'Research Phase Started',
+      'Started Research phase',
+      { phase: 'Research' },
       new Date(Date.now() - 1000 * 60 * 44)
     ),
     await createLifecycleEvent(
       executions[2],
       'phase_completed',
-      { phase: 'Research', message: 'Completed Research phase - all requirements analyzed' },
+      'Research Phase Completed',
+      'Completed Research phase - all requirements analyzed',
+      { phase: 'Research' },
       new Date(Date.now() - 1000 * 60 * 36)
     ),
     await createLifecycleEvent(
       executions[2],
       'phase_started',
-      { phase: 'Design', message: 'Started Design phase' },
+      'Design Phase Started',
+      'Started Design phase',
+      { phase: 'Design' },
       new Date(Date.now() - 1000 * 60 * 35)
     ),
     await createLifecycleEvent(
       executions[2],
       'phase_completed',
-      { phase: 'Design', message: 'Completed Design phase - technical spec approved' },
+      'Design Phase Completed',
+      'Completed Design phase - technical spec approved',
+      { phase: 'Design' },
       new Date(Date.now() - 1000 * 60 * 31)
     ),
     await createLifecycleEvent(
       executions[2],
       'phase_started',
-      { phase: 'Implementation', message: 'Started Implementation phase' },
+      'Implementation Phase Started',
+      'Started Implementation phase',
+      { phase: 'Implementation' },
       new Date(Date.now() - 1000 * 60 * 30)
     )
   );
 
   // Bug Fix (execution[3]) - Started → Phase transitions → Currently running
   events.push(
-    await createLifecycleEvent(
-      executions[3],
-      'workflow_started',
-      { message: 'Workflow execution started' },
-      new Date(Date.now() - 1000 * 60 * 20)
+    await createLifecycleEvent(executions[3], 'workflow_started', 'Workflow Started', 'Workflow execution started', {}, new Date(Date.now() - 1000 * 60 * 20)
     ),
-    await createLifecycleEvent(
-      executions[3],
-      'phase_started',
-      { phase: 'Investigation', message: 'Started Investigation phase' },
-      new Date(Date.now() - 1000 * 60 * 19)
+    await createLifecycleEvent(executions[3], 'phase_started', 'Investigation Phase Started', 'Started Investigation phase', { phase: 'Investigation' }, new Date(Date.now() - 1000 * 60 * 19)
     ),
-    await createLifecycleEvent(
-      executions[3],
-      'phase_completed',
-      { phase: 'Investigation', message: 'Completed Investigation phase - root cause identified' },
-      new Date(Date.now() - 1000 * 60 * 16)
+    await createLifecycleEvent(executions[3], 'phase_completed', 'Investigation Phase Completed', 'Completed Investigation phase - root cause identified', { phase: 'Investigation' }, new Date(Date.now() - 1000 * 60 * 16)
     ),
-    await createLifecycleEvent(
-      executions[3],
-      'phase_started',
-      { phase: 'Fix', message: 'Started Fix phase' },
-      new Date(Date.now() - 1000 * 60 * 15)
+    await createLifecycleEvent(executions[3], 'phase_started', 'Fix Phase Started', 'Started Fix phase', { phase: 'Fix' }, new Date(Date.now() - 1000 * 60 * 15)
     )
   );
 
   // Code Review (execution[4]) - Started → Phase transitions → Currently running
   events.push(
-    await createLifecycleEvent(
-      executions[4],
-      'workflow_started',
-      { message: 'Workflow execution started' },
-      new Date(Date.now() - 1000 * 60 * 15)
+    await createLifecycleEvent(executions[4], 'workflow_started', 'Workflow Started', 'Workflow execution started', {}, new Date(Date.now() - 1000 * 60 * 15)
     ),
-    await createLifecycleEvent(
-      executions[4],
-      'phase_started',
-      { phase: 'Analysis', message: 'Started Analysis phase' },
-      new Date(Date.now() - 1000 * 60 * 14)
+    await createLifecycleEvent(executions[4], 'phase_started', 'Analysis Phase Started', 'Started Analysis phase', { phase: 'Analysis' }, new Date(Date.now() - 1000 * 60 * 14)
     ),
-    await createLifecycleEvent(
-      executions[4],
-      'phase_completed',
-      { phase: 'Analysis', message: 'Completed Analysis phase - all checks passed' },
-      new Date(Date.now() - 1000 * 60 * 13)
+    await createLifecycleEvent(executions[4], 'phase_completed', 'Analysis Phase Completed', 'Completed Analysis phase - all checks passed', { phase: 'Analysis' }, new Date(Date.now() - 1000 * 60 * 13)
     ),
-    await createLifecycleEvent(
-      executions[4],
-      'phase_started',
-      { phase: 'Feedback', message: 'Started Feedback phase' },
-      new Date(Date.now() - 1000 * 60 * 12)
+    await createLifecycleEvent(executions[4], 'phase_started', 'Feedback Phase Started', 'Started Feedback phase', { phase: 'Feedback' }, new Date(Date.now() - 1000 * 60 * 12)
     )
   );
 
@@ -635,81 +621,33 @@ async function main() {
 
   // Export to CSV (execution[5]) - Started → Paused
   events.push(
-    await createLifecycleEvent(
-      executions[5],
-      'workflow_started',
-      { message: 'Workflow execution started' },
-      new Date(Date.now() - 1000 * 60 * 60 * 4)
+    await createLifecycleEvent(executions[5], 'workflow_started', 'Workflow Started', 'Workflow execution started', {}, new Date(Date.now() - 1000 * 60 * 60 * 4)
     ),
-    await createLifecycleEvent(
-      executions[5],
-      'phase_started',
-      { phase: 'Research', message: 'Started Research phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 4)
+    await createLifecycleEvent(executions[5], 'phase_started', 'Research Phase Started', 'Started Research phase', { phase: 'Research' }, new Date(Date.now() - 1000 * 60 * 60 * 4)
     ),
-    await createLifecycleEvent(
-      executions[5],
-      'phase_completed',
-      { phase: 'Research', message: 'Completed Research phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 3)
+    await createLifecycleEvent(executions[5], 'phase_completed', 'Research Phase Completed', 'Completed Research phase', { phase: 'Research' }, new Date(Date.now() - 1000 * 60 * 60 * 3)
     ),
-    await createLifecycleEvent(
-      executions[5],
-      'phase_started',
-      { phase: 'Design', message: 'Started Design phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 3)
+    await createLifecycleEvent(executions[5], 'phase_started', 'Design Phase Started', 'Started Design phase', { phase: 'Design' }, new Date(Date.now() - 1000 * 60 * 60 * 3)
     ),
-    await createLifecycleEvent(
-      executions[5],
-      'phase_completed',
-      { phase: 'Design', message: 'Completed Design phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 2)
+    await createLifecycleEvent(executions[5], 'phase_completed', 'Design Phase Completed', 'Completed Design phase', { phase: 'Design' }, new Date(Date.now() - 1000 * 60 * 60 * 2)
     ),
-    await createLifecycleEvent(
-      executions[5],
-      'phase_started',
-      { phase: 'Implementation', message: 'Started Implementation phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 2)
+    await createLifecycleEvent(executions[5], 'phase_started', 'Implementation Phase Started', 'Started Implementation phase', { phase: 'Implementation' }, new Date(Date.now() - 1000 * 60 * 60 * 2)
     ),
-    await createLifecycleEvent(
-      executions[5],
-      'phase_completed',
-      { phase: 'Implementation', message: 'Completed Implementation phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 1.5)
+    await createLifecycleEvent(executions[5], 'phase_completed', 'Implementation Phase Completed', 'Completed Implementation phase', { phase: 'Implementation' }, new Date(Date.now() - 1000 * 60 * 60 * 1.5)
     ),
-    await createLifecycleEvent(
-      executions[5],
-      'phase_started',
-      { phase: 'Testing', message: 'Started Testing phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 1.5)
+    await createLifecycleEvent(executions[5], 'phase_started', 'Testing Phase Started', 'Started Testing phase', { phase: 'Testing' }, new Date(Date.now() - 1000 * 60 * 60 * 1.5)
     ),
-    await createLifecycleEvent(
-      executions[5],
-      'workflow_paused',
-      { reason: 'user_request', message: 'Workflow paused by user - waiting for QA team' },
-      new Date(Date.now() - 1000 * 60 * 60)
+    await createLifecycleEvent(executions[5], 'workflow_paused', 'Workflow Paused', 'Workflow paused by user - waiting for QA team', { reason: 'user_request' }, new Date(Date.now() - 1000 * 60 * 60)
     )
   );
 
   // Memory Leak (execution[6]) - Started → Paused
   events.push(
-    await createLifecycleEvent(
-      executions[6],
-      'workflow_started',
-      { message: 'Workflow execution started' },
-      new Date(Date.now() - 1000 * 60 * 60 * 6)
+    await createLifecycleEvent(executions[6], 'workflow_started', 'Workflow Started', 'Workflow execution started', {}, new Date(Date.now() - 1000 * 60 * 60 * 6)
     ),
-    await createLifecycleEvent(
-      executions[6],
-      'phase_started',
-      { phase: 'Investigation', message: 'Started Investigation phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 5)
+    await createLifecycleEvent(executions[6], 'phase_started', 'Investigation Phase Started', 'Started Investigation phase', { phase: 'Investigation' }, new Date(Date.now() - 1000 * 60 * 60 * 5)
     ),
-    await createLifecycleEvent(
-      executions[6],
-      'workflow_paused',
-      { reason: 'user_request', message: 'Workflow paused by user - need more time to analyze profiling data' },
-      new Date(Date.now() - 1000 * 60 * 60 * 2)
+    await createLifecycleEvent(executions[6], 'workflow_paused', 'Workflow Paused', 'Workflow paused by user - need more time to analyze profiling data', { reason: 'user_request' }, new Date(Date.now() - 1000 * 60 * 60 * 2)
     )
   );
 
@@ -717,193 +655,73 @@ async function main() {
 
   // Notification System (execution[7]) - Complete lifecycle
   events.push(
-    await createLifecycleEvent(
-      executions[7],
-      'workflow_started',
-      { message: 'Workflow execution started' },
-      new Date(Date.now() - 1000 * 60 * 60 * 24 * 3)
+    await createLifecycleEvent(executions[7], 'workflow_started', 'Workflow Started', 'Workflow execution started', {}, new Date(Date.now() - 1000 * 60 * 60 * 24 * 3)
     ),
-    await createLifecycleEvent(
-      executions[7],
-      'phase_started',
-      { phase: 'Research', message: 'Started Research phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 24 * 3)
+    await createLifecycleEvent(executions[7], 'phase_started', 'Research Phase Started', 'Started Research phase', { phase: 'Research' }, new Date(Date.now() - 1000 * 60 * 60 * 24 * 3)
     ),
-    await createLifecycleEvent(
-      executions[7],
-      'phase_completed',
-      { phase: 'Research', message: 'Completed Research phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 24 * 2.5)
+    await createLifecycleEvent(executions[7], 'phase_completed', 'Research Phase Completed', 'Completed Research phase', { phase: 'Research' }, new Date(Date.now() - 1000 * 60 * 60 * 24 * 2.5)
     ),
-    await createLifecycleEvent(
-      executions[7],
-      'phase_started',
-      { phase: 'Design', message: 'Started Design phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 24 * 2.5)
+    await createLifecycleEvent(executions[7], 'phase_started', 'Design Phase Started', 'Started Design phase', { phase: 'Design' }, new Date(Date.now() - 1000 * 60 * 60 * 24 * 2.5)
     ),
-    await createLifecycleEvent(
-      executions[7],
-      'phase_completed',
-      { phase: 'Design', message: 'Completed Design phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
+    await createLifecycleEvent(executions[7], 'phase_completed', 'Design Phase Completed', 'Completed Design phase', { phase: 'Design' }, new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
     ),
-    await createLifecycleEvent(
-      executions[7],
-      'phase_started',
-      { phase: 'Implementation', message: 'Started Implementation phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
+    await createLifecycleEvent(executions[7], 'phase_started', 'Implementation Phase Started', 'Started Implementation phase', { phase: 'Implementation' }, new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
     ),
-    await createLifecycleEvent(
-      executions[7],
-      'phase_completed',
-      { phase: 'Implementation', message: 'Completed Implementation phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.5)
+    await createLifecycleEvent(executions[7], 'phase_completed', 'Implementation Phase Completed', 'Completed Implementation phase', { phase: 'Implementation' }, new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.5)
     ),
-    await createLifecycleEvent(
-      executions[7],
-      'phase_started',
-      { phase: 'Testing', message: 'Started Testing phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.5)
+    await createLifecycleEvent(executions[7], 'phase_started', 'Testing Phase Started', 'Started Testing phase', { phase: 'Testing' }, new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.5)
     ),
-    await createLifecycleEvent(
-      executions[7],
-      'phase_completed',
-      { phase: 'Testing', message: 'Completed Testing phase - all tests passed' },
-      new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.2)
+    await createLifecycleEvent(executions[7], 'phase_completed', 'Testing Phase Completed', 'Completed Testing phase - all tests passed', { phase: 'Testing' }, new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.2)
     ),
-    await createLifecycleEvent(
-      executions[7],
-      'phase_started',
-      { phase: 'Deployment', message: 'Started Deployment phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.2)
+    await createLifecycleEvent(executions[7], 'phase_started', 'Deployment Phase Started', 'Started Deployment phase', { phase: 'Deployment' }, new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.2)
     ),
-    await createLifecycleEvent(
-      executions[7],
-      'phase_completed',
-      { phase: 'Deployment', message: 'Completed Deployment phase - production deployment successful' },
-      new Date(Date.now() - 1000 * 60 * 60 * 24)
+    await createLifecycleEvent(executions[7], 'phase_completed', 'Deployment Phase Completed', 'Completed Deployment phase - production deployment successful', { phase: 'Deployment' }, new Date(Date.now() - 1000 * 60 * 60 * 24)
     ),
-    await createLifecycleEvent(
-      executions[7],
-      'workflow_completed',
-      { message: 'Workflow completed successfully' },
-      new Date(Date.now() - 1000 * 60 * 60 * 24)
+    await createLifecycleEvent(executions[7], 'workflow_completed', 'Workflow Completed', 'Workflow completed successfully', {}, new Date(Date.now() - 1000 * 60 * 60 * 24)
     )
   );
 
   // Date Formatting Bug (execution[8]) - Complete lifecycle
   events.push(
-    await createLifecycleEvent(
-      executions[8],
-      'workflow_started',
-      { message: 'Workflow execution started' },
-      new Date(Date.now() - 1000 * 60 * 60 * 30)
+    await createLifecycleEvent(executions[8], 'workflow_started', 'Workflow Started', 'Workflow execution started', {}, new Date(Date.now() - 1000 * 60 * 60 * 30)
     ),
-    await createLifecycleEvent(
-      executions[8],
-      'phase_started',
-      { phase: 'Investigation', message: 'Started Investigation phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 29)
+    await createLifecycleEvent(executions[8], 'phase_started', 'Investigation Phase Started', 'Started Investigation phase', { phase: 'Investigation' }, new Date(Date.now() - 1000 * 60 * 60 * 29)
     ),
-    await createLifecycleEvent(
-      executions[8],
-      'phase_completed',
-      { phase: 'Investigation', message: 'Completed Investigation phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 26)
+    await createLifecycleEvent(executions[8], 'phase_completed', 'Investigation Phase Completed', 'Completed Investigation phase', { phase: 'Investigation' }, new Date(Date.now() - 1000 * 60 * 60 * 26)
     ),
-    await createLifecycleEvent(
-      executions[8],
-      'phase_started',
-      { phase: 'Fix', message: 'Started Fix phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 26)
+    await createLifecycleEvent(executions[8], 'phase_started', 'Fix Phase Started', 'Started Fix phase', { phase: 'Fix' }, new Date(Date.now() - 1000 * 60 * 60 * 26)
     ),
-    await createLifecycleEvent(
-      executions[8],
-      'phase_completed',
-      { phase: 'Fix', message: 'Completed Fix phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 18)
+    await createLifecycleEvent(executions[8], 'phase_completed', 'Fix Phase Completed', 'Completed Fix phase', { phase: 'Fix' }, new Date(Date.now() - 1000 * 60 * 60 * 18)
     ),
-    await createLifecycleEvent(
-      executions[8],
-      'phase_started',
-      { phase: 'Verification', message: 'Started Verification phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 18)
+    await createLifecycleEvent(executions[8], 'phase_started', 'Verification Phase Started', 'Started Verification phase', { phase: 'Verification' }, new Date(Date.now() - 1000 * 60 * 60 * 18)
     ),
-    await createLifecycleEvent(
-      executions[8],
-      'phase_completed',
-      { phase: 'Verification', message: 'Completed Verification phase - fix verified in staging' },
-      new Date(Date.now() - 1000 * 60 * 60 * 12)
+    await createLifecycleEvent(executions[8], 'phase_completed', 'Verification Phase Completed', 'Completed Verification phase - fix verified in staging', { phase: 'Verification' }, new Date(Date.now() - 1000 * 60 * 60 * 12)
     ),
-    await createLifecycleEvent(
-      executions[8],
-      'workflow_completed',
-      { message: 'Workflow completed successfully' },
-      new Date(Date.now() - 1000 * 60 * 60 * 12)
+    await createLifecycleEvent(executions[8], 'workflow_completed', 'Workflow Completed', 'Workflow completed successfully', {}, new Date(Date.now() - 1000 * 60 * 60 * 12)
     )
   );
 
   // API Rate Limiting PR (execution[9]) - Complete lifecycle
   events.push(
-    await createLifecycleEvent(
-      executions[9],
-      'workflow_started',
-      { message: 'Workflow execution started' },
-      new Date(Date.now() - 1000 * 60 * 60 * 12)
+    await createLifecycleEvent(executions[9], 'workflow_started', 'Workflow Started', 'Workflow execution started', {}, new Date(Date.now() - 1000 * 60 * 60 * 12)
     ),
-    await createLifecycleEvent(
-      executions[9],
-      'phase_started',
-      { phase: 'Analysis', message: 'Started Analysis phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 11)
+    await createLifecycleEvent(executions[9], 'phase_started', 'Analysis Phase Started', 'Started Analysis phase', { phase: 'Analysis' }, new Date(Date.now() - 1000 * 60 * 60 * 11)
     ),
-    await createLifecycleEvent(
-      executions[9],
-      'phase_completed',
-      { phase: 'Analysis', message: 'Completed Analysis phase - all automated checks passed' },
-      new Date(Date.now() - 1000 * 60 * 60 * 10)
+    await createLifecycleEvent(executions[9], 'phase_completed', 'Analysis Phase Completed', 'Completed Analysis phase - all automated checks passed', { phase: 'Analysis' }, new Date(Date.now() - 1000 * 60 * 60 * 10)
     ),
-    await createLifecycleEvent(
-      executions[9],
-      'phase_started',
-      { phase: 'Feedback', message: 'Started Feedback phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 10)
+    await createLifecycleEvent(executions[9], 'phase_started', 'Feedback Phase Started', 'Started Feedback phase', { phase: 'Feedback' }, new Date(Date.now() - 1000 * 60 * 60 * 10)
     ),
-    await createLifecycleEvent(
-      executions[9],
-      'phase_completed',
-      { phase: 'Feedback', message: 'Completed Feedback phase - code review approved' },
-      new Date(Date.now() - 1000 * 60 * 60 * 8)
+    await createLifecycleEvent(executions[9], 'phase_completed', 'Feedback Phase Completed', 'Completed Feedback phase - code review approved', { phase: 'Feedback' }, new Date(Date.now() - 1000 * 60 * 60 * 8)
     ),
-    await createLifecycleEvent(
-      executions[9],
-      'phase_started',
-      { phase: 'Revision', message: 'Started Revision phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 8)
+    await createLifecycleEvent(executions[9], 'phase_started', 'Revision Phase Started', 'Started Revision phase', { phase: 'Revision' }, new Date(Date.now() - 1000 * 60 * 60 * 8)
     ),
-    await createLifecycleEvent(
-      executions[9],
-      'phase_completed',
-      { phase: 'Revision', message: 'Completed Revision phase - feedback addressed' },
-      new Date(Date.now() - 1000 * 60 * 60 * 7)
+    await createLifecycleEvent(executions[9], 'phase_completed', 'Revision Phase Completed', 'Completed Revision phase - feedback addressed', { phase: 'Revision' }, new Date(Date.now() - 1000 * 60 * 60 * 7)
     ),
-    await createLifecycleEvent(
-      executions[9],
-      'phase_started',
-      { phase: 'Approval', message: 'Started Approval phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 7)
+    await createLifecycleEvent(executions[9], 'phase_started', 'Approval Phase Started', 'Started Approval phase', { phase: 'Approval' }, new Date(Date.now() - 1000 * 60 * 60 * 7)
     ),
-    await createLifecycleEvent(
-      executions[9],
-      'phase_completed',
-      { phase: 'Approval', message: 'Completed Approval phase - PR approved and merged' },
-      new Date(Date.now() - 1000 * 60 * 60 * 6)
+    await createLifecycleEvent(executions[9], 'phase_completed', 'Approval Phase Completed', 'Completed Approval phase - PR approved and merged', { phase: 'Approval' }, new Date(Date.now() - 1000 * 60 * 60 * 6)
     ),
-    await createLifecycleEvent(
-      executions[9],
-      'workflow_completed',
-      { message: 'Workflow completed successfully' },
-      new Date(Date.now() - 1000 * 60 * 60 * 6)
+    await createLifecycleEvent(executions[9], 'workflow_completed', 'Workflow Completed', 'Workflow completed successfully', {}, new Date(Date.now() - 1000 * 60 * 60 * 6)
     )
   );
 
@@ -911,101 +729,37 @@ async function main() {
 
   // Advanced Search (execution[10]) - Failed at Testing phase
   events.push(
-    await createLifecycleEvent(
-      executions[10],
-      'workflow_started',
-      { message: 'Workflow execution started' },
-      new Date(Date.now() - 1000 * 60 * 60 * 10)
+    await createLifecycleEvent(executions[10], 'workflow_started', 'Workflow Started', 'Workflow execution started', {}, new Date(Date.now() - 1000 * 60 * 60 * 10)
     ),
-    await createLifecycleEvent(
-      executions[10],
-      'phase_started',
-      { phase: 'Research', message: 'Started Research phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 10)
+    await createLifecycleEvent(executions[10], 'phase_started', 'Research Phase Started', 'Started Research phase', { phase: 'Research' }, new Date(Date.now() - 1000 * 60 * 60 * 10)
     ),
-    await createLifecycleEvent(
-      executions[10],
-      'phase_completed',
-      { phase: 'Research', message: 'Completed Research phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 9)
+    await createLifecycleEvent(executions[10], 'phase_completed', 'Research Phase Completed', 'Completed Research phase', { phase: 'Research' }, new Date(Date.now() - 1000 * 60 * 60 * 9)
     ),
-    await createLifecycleEvent(
-      executions[10],
-      'phase_started',
-      { phase: 'Design', message: 'Started Design phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 9)
+    await createLifecycleEvent(executions[10], 'phase_started', 'Design Phase Started', 'Started Design phase', { phase: 'Design' }, new Date(Date.now() - 1000 * 60 * 60 * 9)
     ),
-    await createLifecycleEvent(
-      executions[10],
-      'phase_completed',
-      { phase: 'Design', message: 'Completed Design phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 8)
+    await createLifecycleEvent(executions[10], 'phase_completed', 'Design Phase Completed', 'Completed Design phase', { phase: 'Design' }, new Date(Date.now() - 1000 * 60 * 60 * 8)
     ),
-    await createLifecycleEvent(
-      executions[10],
-      'phase_started',
-      { phase: 'Implementation', message: 'Started Implementation phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 8)
+    await createLifecycleEvent(executions[10], 'phase_started', 'Implementation Phase Started', 'Started Implementation phase', { phase: 'Implementation' }, new Date(Date.now() - 1000 * 60 * 60 * 8)
     ),
-    await createLifecycleEvent(
-      executions[10],
-      'phase_completed',
-      { phase: 'Implementation', message: 'Completed Implementation phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 7)
+    await createLifecycleEvent(executions[10], 'phase_completed', 'Implementation Phase Completed', 'Completed Implementation phase', { phase: 'Implementation' }, new Date(Date.now() - 1000 * 60 * 60 * 7)
     ),
-    await createLifecycleEvent(
-      executions[10],
-      'phase_started',
-      { phase: 'Testing', message: 'Started Testing phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 7)
+    await createLifecycleEvent(executions[10], 'phase_started', 'Testing Phase Started', 'Started Testing phase', { phase: 'Testing' }, new Date(Date.now() - 1000 * 60 * 60 * 7)
     ),
-    await createLifecycleEvent(
-      executions[10],
-      'workflow_failed',
-      {
-        phase: 'Testing',
-        error: 'Integration tests failed: 3 tests failed with timeout errors',
-        message: 'Workflow failed during Testing phase'
-      },
-      new Date(Date.now() - 1000 * 60 * 60 * 6)
+    await createLifecycleEvent(executions[10], 'workflow_failed', 'Workflow Failed', 'Workflow failed during Testing phase', { phase: 'Testing', error: 'Integration tests failed: 3 tests failed with timeout errors' }, new Date(Date.now() - 1000 * 60 * 60 * 6)
     )
   );
 
   // API Endpoint 500 Error (execution[11]) - Failed at Fix phase
   events.push(
-    await createLifecycleEvent(
-      executions[11],
-      'workflow_started',
-      { message: 'Workflow execution started' },
-      new Date(Date.now() - 1000 * 60 * 60 * 5)
+    await createLifecycleEvent(executions[11], 'workflow_started', 'Workflow Started', 'Workflow execution started', {}, new Date(Date.now() - 1000 * 60 * 60 * 5)
     ),
-    await createLifecycleEvent(
-      executions[11],
-      'phase_started',
-      { phase: 'Investigation', message: 'Started Investigation phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 5)
+    await createLifecycleEvent(executions[11], 'phase_started', 'Investigation Phase Started', 'Started Investigation phase', { phase: 'Investigation' }, new Date(Date.now() - 1000 * 60 * 60 * 5)
     ),
-    await createLifecycleEvent(
-      executions[11],
-      'phase_completed',
-      { phase: 'Investigation', message: 'Completed Investigation phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 4.5)
+    await createLifecycleEvent(executions[11], 'phase_completed', 'Investigation Phase Completed', 'Completed Investigation phase', { phase: 'Investigation' }, new Date(Date.now() - 1000 * 60 * 60 * 4.5)
     ),
-    await createLifecycleEvent(
-      executions[11],
-      'phase_started',
-      { phase: 'Fix', message: 'Started Fix phase' },
-      new Date(Date.now() - 1000 * 60 * 60 * 4.5)
+    await createLifecycleEvent(executions[11], 'phase_started', 'Fix Phase Started', 'Started Fix phase', { phase: 'Fix' }, new Date(Date.now() - 1000 * 60 * 60 * 4.5)
     ),
-    await createLifecycleEvent(
-      executions[11],
-      'workflow_failed',
-      {
-        phase: 'Fix',
-        error: 'Code review failed: Security vulnerability detected in SQL query',
-        message: 'Workflow failed during Fix phase - security vulnerability detected'
-      },
-      new Date(Date.now() - 1000 * 60 * 60 * 3)
+    await createLifecycleEvent(executions[11], 'workflow_failed', 'Workflow Failed', 'Workflow failed during Fix phase - security vulnerability detected', { phase: 'Fix', error: 'Code review failed: Security vulnerability detected in SQL query' }, new Date(Date.now() - 1000 * 60 * 60 * 3)
     )
   );
 
@@ -1018,10 +772,7 @@ async function main() {
         workflow_execution_id: executions[2].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Starting implementation of dark mode theme system',
-          comment_type: 'user'
-        },
+        event_data: { title: 'Comment', body: 'Starting implementation of dark mode theme system' },
         created_at: new Date(Date.now() - 1000 * 60 * 40)
       }
     }),
@@ -1030,10 +781,7 @@ async function main() {
         workflow_execution_id: executions[2].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Research phase completed successfully. Moving to Design phase.',
-          comment_type: 'system'
-        },
+        event_data: { title: 'Comment', body: 'Research phase completed successfully. Moving to Design phase.' },
         created_at: new Date(Date.now() - 1000 * 60 * 35)
       }
     }),
@@ -1042,10 +790,7 @@ async function main() {
         workflow_execution_id: executions[2].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Design phase completed. Technical spec approved. Starting implementation.',
-          comment_type: 'system'
-        },
+        event_data: { title: 'Comment', body: 'Design phase completed. Technical spec approved. Starting implementation.' },
         created_at: new Date(Date.now() - 1000 * 60 * 30)
       }
     }),
@@ -1054,10 +799,7 @@ async function main() {
         workflow_execution_id: executions[3].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Found the issue - missing required field validation on password input',
-          comment_type: 'user'
-        },
+        event_data: { title: 'Comment', body: 'Found the issue - missing required field validation on password input' },
         created_at: new Date(Date.now() - 1000 * 60 * 18)
       }
     }),
@@ -1066,10 +808,7 @@ async function main() {
         workflow_execution_id: executions[3].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Investigation phase completed. Root cause identified: Missing required field validation.',
-          comment_type: 'system'
-        },
+        event_data: { title: 'Comment', body: 'Investigation phase completed. Root cause identified: Missing required field validation.' },
         created_at: new Date(Date.now() - 1000 * 60 * 15)
       }
     }),
@@ -1078,10 +817,7 @@ async function main() {
         workflow_execution_id: executions[3].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Fix applied successfully. Added password validation check to form handler.',
-          comment_type: 'agent'
-        },
+        event_data: { title: 'Comment', body: 'Fix applied successfully. Added password validation check to form handler.' },
         created_at: new Date(Date.now() - 1000 * 60 * 10)
       }
     }),
@@ -1090,10 +826,7 @@ async function main() {
         workflow_execution_id: executions[4].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Migration files look good. Need to verify index performance on large tables.',
-          comment_type: 'user'
-        },
+        event_data: { title: 'Comment', body: 'Migration files look good. Need to verify index performance on large tables.' },
         created_at: new Date(Date.now() - 1000 * 60 * 12)
       }
     })
@@ -1106,10 +839,7 @@ async function main() {
         workflow_execution_id: executions[5].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Great work on this feature! The notification system works perfectly.',
-          comment_type: 'user'
-        },
+        event_data: { title: 'Comment', body: 'Great work on this feature! The notification system works perfectly.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 24)
       }
     }),
@@ -1118,10 +848,7 @@ async function main() {
         workflow_execution_id: executions[5].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'All phases completed successfully. Workflow finished.',
-          comment_type: 'system'
-        },
+        event_data: { title: 'Comment', body: 'All phases completed successfully. Workflow finished.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 24)
       }
     }),
@@ -1130,10 +857,7 @@ async function main() {
         workflow_execution_id: executions[5].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Tests passed: 45 unit tests, 12 integration tests. Code coverage: 92%.',
-          comment_type: 'agent'
-        },
+        event_data: { title: 'Comment', body: 'Tests passed: 45 unit tests, 12 integration tests. Code coverage: 92%.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 26)
       }
     }),
@@ -1142,10 +866,7 @@ async function main() {
         workflow_execution_id: executions[6].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Bug fixed and verified in staging. Ready for production.',
-          comment_type: 'user'
-        },
+        event_data: { title: 'Comment', body: 'Bug fixed and verified in staging. Ready for production.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 12)
       }
     }),
@@ -1154,10 +875,7 @@ async function main() {
         workflow_execution_id: executions[6].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Fix verified successfully. No regressions detected.',
-          comment_type: 'agent'
-        },
+        event_data: { title: 'Comment', body: 'Fix verified successfully. No regressions detected.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 13)
       }
     })
@@ -1170,10 +888,7 @@ async function main() {
         workflow_execution_id: executions[8].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Integration tests are timing out. Need to investigate query performance.',
-          comment_type: 'user'
-        },
+        event_data: { title: 'Comment', body: 'Integration tests are timing out. Need to investigate query performance.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 6)
       }
     }),
@@ -1182,10 +897,7 @@ async function main() {
         workflow_execution_id: executions[8].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Workflow failed during Testing phase. Error: Integration tests failed with timeout errors.',
-          comment_type: 'system'
-        },
+        event_data: { title: 'Comment', body: 'Workflow failed during Testing phase. Error: Integration tests failed with timeout errors.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 6)
       }
     }),
@@ -1194,10 +906,7 @@ async function main() {
         workflow_execution_id: executions[9].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Security review flagged SQL injection vulnerability. Need to use parameterized queries.',
-          comment_type: 'user'
-        },
+        event_data: { title: 'Comment', body: 'Security review flagged SQL injection vulnerability. Need to use parameterized queries.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 3)
       }
     }),
@@ -1206,10 +915,7 @@ async function main() {
         workflow_execution_id: executions[9].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Workflow failed during Fix phase. Error: Security vulnerability detected in SQL query.',
-          comment_type: 'system'
-        },
+        event_data: { title: 'Comment', body: 'Workflow failed during Fix phase. Error: Security vulnerability detected in SQL query.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 3)
       }
     })
@@ -1222,10 +928,7 @@ async function main() {
         workflow_execution_id: executions[6].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Pausing to wait for QA team availability. Will resume tomorrow.',
-          comment_type: 'user'
-        },
+        event_data: { title: 'Comment', body: 'Pausing to wait for QA team availability. Will resume tomorrow.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60)
       }
     }),
@@ -1234,10 +937,7 @@ async function main() {
         workflow_execution_id: executions[6].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Workflow paused by user.',
-          comment_type: 'system'
-        },
+        event_data: { title: 'Comment', body: 'Workflow paused by user.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60)
       }
     }),
@@ -1246,10 +946,7 @@ async function main() {
         workflow_execution_id: executions[7].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Need more time to analyze memory profiling data. Pausing for now.',
-          comment_type: 'user'
-        },
+        event_data: { title: 'Comment', body: 'Need more time to analyze memory profiling data. Pausing for now.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 2)
       }
     }),
@@ -1258,10 +955,7 @@ async function main() {
         workflow_execution_id: executions[7].id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Workflow paused by user.',
-          comment_type: 'system'
-        },
+        event_data: { title: 'Comment', body: 'Workflow paused by user.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 2)
       }
     })
@@ -1483,10 +1177,7 @@ async function main() {
         workflow_execution_step_id: steps[5]?.id, // Dark mode design step
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Dark mode design mockup completed. Attached the final design for review.',
-          comment_type: 'user'
-        },
+        event_data: { title: 'Comment', body: 'Dark mode design mockup completed. Attached the final design for review.' },
         created_at: new Date(Date.now() - 1000 * 60 * 34),
         artifacts: {
           connect: {
@@ -1505,10 +1196,7 @@ async function main() {
         workflow_execution_step_id: stepsWithArtifacts[3]?.id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Test suite executed successfully. All 45 unit tests and 12 integration tests passed. See attached test results and coverage report.',
-          comment_type: 'agent'
-        },
+        event_data: { title: 'Comment', body: 'Test suite executed successfully. All 45 unit tests and 12 integration tests passed. See attached test results and coverage report.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 26),
         artifacts: {
           connect: [
@@ -1528,10 +1216,7 @@ async function main() {
         workflow_execution_step_id: stepsWithArtifacts[4]?.id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Deployment to staging environment completed. Detailed deployment logs attached for verification.',
-          comment_type: 'system'
-        },
+        event_data: { title: 'Comment', body: 'Deployment to staging environment completed. Detailed deployment logs attached for verification.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 24),
         artifacts: {
           connect: {
@@ -1550,10 +1235,7 @@ async function main() {
         workflow_execution_step_id: steps[2]?.id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Bug fix verified on staging. Password validation now working correctly - see attached verification screenshot.',
-          comment_type: 'user'
-        },
+        event_data: { title: 'Comment', body: 'Bug fix verified on staging. Password validation now working correctly - see attached verification screenshot.' },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 12),
         artifacts: {
           connect: {
@@ -1572,10 +1254,7 @@ async function main() {
         workflow_execution_step_id: steps[3]?.id,
         created_by_user_id: users[0].id,
         event_type: 'comment_added',
-        event_data: {
-          text: 'Database migration schema created and performance analysis completed. Both files attached for review before applying to production.',
-          comment_type: 'agent'
-        },
+        event_data: { title: 'Comment', body: 'Database migration schema created and performance analysis completed. Both files attached for review before applying to production.' },
         created_at: new Date(Date.now() - 1000 * 60 * 11),
         artifacts: {
           connect: [

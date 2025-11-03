@@ -13,38 +13,35 @@ export type WorkflowEventType =
   | 'phase_completed'
   | 'step_started';
 
-// Comment types (preserved from old CommentType)
-export type CommentType = 'user' | 'system' | 'agent';
+// Base event data structure - all events have at minimum title and body
+export interface BaseEventData {
+  title: string;
+  body: string;
+}
 
 // Event data map for type-safe event_data
+// All events use the same base structure (title + body) with optional additional fields
 export interface EventDataMap {
-  comment_added: {
-    text: string;
-    comment_type: CommentType;
+  comment_added: BaseEventData;
+  workflow_started: BaseEventData;
+  workflow_completed: BaseEventData;
+  workflow_failed: BaseEventData & {
+    error?: string;
   };
-  workflow_started: Record<string, never>; // Empty object
-  workflow_completed: Record<string, never>;
-  workflow_failed: {
-    error_message?: string;
-  };
-  workflow_paused: {
-    user_id?: string;
+  workflow_paused: BaseEventData & {
     reason?: string;
   };
-  workflow_resumed: {
-    user_id?: string;
-  };
-  workflow_cancelled: {
-    user_id?: string;
+  workflow_resumed: BaseEventData;
+  workflow_cancelled: BaseEventData & {
     reason?: string;
   };
-  phase_started: {
-    phase_name: string;
+  phase_started: BaseEventData & {
+    phase: string;
   };
-  phase_completed: {
-    phase_name: string;
+  phase_completed: BaseEventData & {
+    phase: string;
   };
-  step_started: {
+  step_started: BaseEventData & {
     step_id: string;
     step_name: string;
   };

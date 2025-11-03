@@ -99,6 +99,7 @@ export function WorkflowExecutionDetail() {
             <h2 className="text-xl font-bold mb-4">Execution Timeline</h2>
             <WorkflowTimeline
               items={buildTimeline(execution.steps || [], execution.events || [])}
+              projectId={projectId!}
             />
           </section>
         </div>

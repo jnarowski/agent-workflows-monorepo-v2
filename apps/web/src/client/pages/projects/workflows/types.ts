@@ -22,14 +22,6 @@ export const StepStatus = {
 
 export type StepStatus = typeof StepStatus[keyof typeof StepStatus];
 
-export const CommentType = {
-  USER: 'user',
-  SYSTEM: 'system',
-  AGENT: 'agent',
-} as const;
-
-export type CommentType = typeof CommentType[keyof typeof CommentType];
-
 // Workflow event types (matching backend)
 export type WorkflowEventType =
   | 'comment_added'
@@ -103,35 +95,35 @@ export interface User {
   username: string;
 }
 
+// Base event data structure - all events have at minimum title and body
+export interface BaseEventData {
+  title: string;
+  body: string;
+}
+
 // Event data type map (matching backend EventDataMap)
+// All events use the same base structure (title + body) with optional additional fields
 export interface EventDataMap {
-  comment_added: {
-    text: string;
-    comment_type: CommentType;
+  comment_added: BaseEventData;
+  workflow_started: BaseEventData;
+  workflow_completed: BaseEventData;
+  workflow_failed: BaseEventData & {
+    error?: string;
   };
-  workflow_started: Record<string, never>; // Empty object
-  workflow_completed: Record<string, never>;
-  workflow_failed: {
-    error_message?: string;
-  };
-  workflow_paused: {
-    user_id?: string;
+  workflow_paused: BaseEventData & {
     reason?: string;
   };
-  workflow_resumed: {
-    user_id?: string;
-  };
-  workflow_cancelled: {
-    user_id?: string;
+  workflow_resumed: BaseEventData;
+  workflow_cancelled: BaseEventData & {
     reason?: string;
   };
-  phase_started: {
-    phase_name: string;
+  phase_started: BaseEventData & {
+    phase: string;
   };
-  phase_completed: {
-    phase_name: string;
+  phase_completed: BaseEventData & {
+    phase: string;
   };
-  step_started: {
+  step_started: BaseEventData & {
     step_id: string;
     step_name: string;
   };
@@ -156,8 +148,9 @@ export interface WorkflowArtifact {
   id: string;
   workflow_execution_step_id: string | null;
   workflow_event_id: string | null;
-  file_name: string;
+  name: string;
   file_path: string;
+  file_type: string;
   mime_type: string;
   size_bytes: number;
   created_at: Date;
