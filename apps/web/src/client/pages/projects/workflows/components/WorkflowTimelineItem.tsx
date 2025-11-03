@@ -1,9 +1,12 @@
-import { useState } from 'react';
-import type { WorkflowExecutionStep, WorkflowEvent } from '../types';
-import { WorkflowStatusBadge } from './WorkflowStatusBadge';
-import { WorkflowTimelineCommentItem } from './WorkflowTimelineCommentItem';
-import { formatStepName, formatRelativeTime } from '../utils/workflowFormatting';
-import { Badge } from '@/client/components/ui/badge';
+import { useState } from "react";
+import type { WorkflowExecutionStep, WorkflowEvent } from "../types";
+import { WorkflowStatusBadge } from "./WorkflowStatusBadge";
+import { WorkflowTimelineCommentItem } from "./WorkflowTimelineCommentItem";
+import {
+  formatStepName,
+  formatRelativeTime,
+} from "../utils/workflowFormatting";
+import { Badge } from "@/client/components/ui/badge";
 import {
   ChevronDown,
   ChevronRight,
@@ -17,12 +20,12 @@ import {
   Ban,
   RefreshCw,
   Layers,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 export interface WorkflowTimelineItemProps {
   item: {
-    type: 'step' | 'event';
+    type: "step" | "event";
     data: WorkflowExecutionStep | WorkflowEvent;
   };
   stepEvents?: WorkflowEvent[];
@@ -35,8 +38,13 @@ export function WorkflowTimelineItem({
   item,
   stepEvents = [],
 }: WorkflowTimelineItemProps) {
-  if (item.type === 'step') {
-    return <StepItem step={item.data as WorkflowExecutionStep} stepEvents={stepEvents} />;
+  if (item.type === "step") {
+    return (
+      <StepItem
+        step={item.data as WorkflowExecutionStep}
+        stepEvents={stepEvents}
+      />
+    );
   }
 
   return <EventItem event={item.data as WorkflowEvent} />;
@@ -53,7 +61,7 @@ function StepItem({
   stepEvents: WorkflowEvent[];
 }) {
   const [isExpanded, setIsExpanded] = useState(
-    step.status === 'running' || step.status === 'failed'
+    step.status === "running" || step.status === "failed"
   );
 
   const hasLogs = step.logs && step.logs.trim().length > 0;
@@ -76,65 +84,69 @@ function StepItem({
     if (step.started_at) {
       return formatRelativeTime(step.started_at);
     }
-    return 'Not started';
+    return "Not started";
   };
 
   return (
-    <div className="relative pl-10">
+    <div className="relative pl-7">
       {/* Timeline Icon */}
       <div className="absolute left-0 -translate-x-1/2 h-9 w-9 flex items-center justify-center rounded-full bg-primary text-primary-foreground ring-8 ring-background">
         <FileText className="h-5 w-5" />
       </div>
 
       {/* Content */}
-      <div className="pt-2 sm:pt-1 space-y-2">
+      <div
+        className={`pt-2 pl-3 pr-3 pb-3 sm:pt-1 space-y-2 rounded-lg transition-colors ${isExpanded ? "bg-muted/30" : ""}`}
+      >
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full text-left"
+          className="w-full text-left flex items-stretch gap-3"
         >
-          {/* Step Title & Badge */}
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-base font-semibold">
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            {/* Step Title */}
+            <h3 className="text-base font-semibold truncate">
               {formatStepName(step.step_name)}
             </h3>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Badge variant="outline" className="rounded-full text-xs">
-                Step
-              </Badge>
-              <span>
-                {isExpanded ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronRight className="h-4 w-4" />
-                )}
-              </span>
+
+            {/* Step Number & Time */}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+              <span>Step {step.step_number}</span>
+              <span>•</span>
+              <span>{getTimeDisplay()}</span>
+              {getDuration() && (
+                <>
+                  <span>•</span>
+                  <span>{getDuration()}</span>
+                </>
+              )}
+              {step.phase_name && (
+                <>
+                  <span>•</span>
+                  <span>{step.phase_name}</span>
+                </>
+              )}
+            </div>
+
+            {/* Status Badge */}
+            <div className="mt-2">
+              <WorkflowStatusBadge status={step.status} size="sm" />
             </div>
           </div>
 
-          {/* Timestamp & Status */}
-          <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4" />
-            <span>{getTimeDisplay()}</span>
-            {step.phase_name && (
-              <>
-                <span>•</span>
-                <span>{step.phase_name}</span>
-              </>
+          {/* Chevron - centered vertically on the right */}
+          <div className="flex items-center self-stretch flex-shrink-0">
+            {isExpanded ? (
+              <ChevronDown className="h-5 w-5" />
+            ) : (
+              <ChevronRight className="h-5 w-5" />
             )}
-            {getDuration() && (
-              <>
-                <span>•</span>
-                <span>{getDuration()}</span>
-              </>
-            )}
-            <span>•</span>
-            <WorkflowStatusBadge status={step.status} size="sm" />
           </div>
         </button>
 
         {/* Expanded content */}
         {isExpanded && (
-          <div className="pt-2 space-y-3">
+          <div className="pt-5 space-y-3 border-t mt-5">
             {/* Agent session link */}
             {step.agent_session_id && (
               <div className="flex items-center gap-2 text-sm">
@@ -153,7 +165,9 @@ function StepItem({
             {/* Error message */}
             {hasError && (
               <div className="rounded-md bg-destructive/10 p-3">
-                <p className="text-sm font-medium text-destructive mb-1">Error</p>
+                <p className="text-sm font-medium text-destructive mb-1">
+                  Error
+                </p>
                 <pre className="text-xs text-destructive whitespace-pre-wrap font-mono">
                   {step.error_message}
                 </pre>
@@ -183,10 +197,15 @@ function StepItem({
                       className="flex items-center gap-2 rounded-md bg-muted p-2 text-sm"
                     >
                       <FileText className="h-4 w-4 text-muted-foreground" />
-                      <span className="flex-1 truncate">{artifact.file_name}</span>
+                      <span className="flex-1 truncate">
+                        {artifact.file_name}
+                      </span>
                       <button
                         onClick={() => {
-                          window.open(`/api/artifacts/${artifact.id}/download`, '_blank');
+                          window.open(
+                            `/api/artifacts/${artifact.id}/download`,
+                            "_blank"
+                          );
                         }}
                         className="text-primary hover:underline text-xs"
                       >
@@ -234,7 +253,7 @@ function EventItem({ event }: { event: WorkflowEvent }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Comment events are handled by WorkflowTimelineCommentItem
-  if (event.event_type === 'comment_added') {
+  if (event.event_type === "comment_added") {
     return (
       <div className="relative pl-10">
         {/* Timeline Icon */}
@@ -269,7 +288,9 @@ function EventItem({ event }: { event: WorkflowEvent }) {
           >
             {/* Event Title & Badge */}
             <div className="flex items-center justify-between gap-2">
-              <h3 className="text-base font-semibold">{getEventTitle(event)}</h3>
+              <h3 className="text-base font-semibold">
+                {getEventTitle(event)}
+              </h3>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <Badge variant={variant} className="rounded-full text-xs">
                   {label}
@@ -294,7 +315,9 @@ function EventItem({ event }: { event: WorkflowEvent }) {
           <>
             {/* Event Title & Badge */}
             <div className="flex items-center justify-between gap-2">
-              <h3 className="text-base font-semibold">{getEventTitle(event)}</h3>
+              <h3 className="text-base font-semibold">
+                {getEventTitle(event)}
+              </h3>
               <Badge variant={variant} className="rounded-full text-xs">
                 {label}
               </Badge>
@@ -328,87 +351,87 @@ function EventItem({ event }: { event: WorkflowEvent }) {
 function getEventDisplay(event: WorkflowEvent): {
   icon: LucideIcon;
   label: string;
-  variant: 'default' | 'secondary' | 'destructive' | 'outline';
+  variant: "default" | "secondary" | "destructive" | "outline";
   description?: string;
 } {
   switch (event.event_type) {
-    case 'workflow_started':
+    case "workflow_started":
       return {
         icon: PlayCircle,
-        label: 'Workflow',
-        variant: 'default',
+        label: "Workflow",
+        variant: "default",
       };
 
-    case 'workflow_completed':
+    case "workflow_completed":
       return {
         icon: CheckCircle,
-        label: 'Workflow',
-        variant: 'default',
+        label: "Workflow",
+        variant: "default",
       };
 
-    case 'workflow_failed': {
+    case "workflow_failed": {
       const data = event.event_data as { error_message?: string };
       return {
         icon: XCircle,
-        label: 'Workflow',
-        variant: 'destructive',
+        label: "Workflow",
+        variant: "destructive",
         description: data.error_message,
       };
     }
 
-    case 'workflow_paused': {
+    case "workflow_paused": {
       const data = event.event_data as { user_id?: string; reason?: string };
       return {
         icon: PauseCircle,
-        label: 'Workflow',
-        variant: 'secondary',
+        label: "Workflow",
+        variant: "secondary",
         description: data.reason,
       };
     }
 
-    case 'workflow_resumed':
+    case "workflow_resumed":
       return {
         icon: RefreshCw,
-        label: 'Workflow',
-        variant: 'default',
+        label: "Workflow",
+        variant: "default",
       };
 
-    case 'workflow_cancelled': {
+    case "workflow_cancelled": {
       const data = event.event_data as { user_id?: string; reason?: string };
       return {
         icon: Ban,
-        label: 'Workflow',
-        variant: 'destructive',
+        label: "Workflow",
+        variant: "destructive",
         description: data.reason,
       };
     }
 
-    case 'phase_started': {
+    case "phase_started": {
       const data = event.event_data as { phase_name: string };
       return {
         icon: Layers,
-        label: 'Phase',
-        variant: 'outline',
+        label: "Phase",
+        variant: "outline",
         description: data.phase_name,
       };
     }
 
-    case 'phase_completed': {
+    case "phase_completed": {
       const data = event.event_data as { phase_name: string };
       return {
         icon: Layers,
-        label: 'Phase',
-        variant: 'outline',
+        label: "Phase",
+        variant: "outline",
         description: data.phase_name,
       };
     }
 
-    case 'step_started': {
+    case "step_started": {
       const data = event.event_data as { step_id: string; step_name: string };
       return {
         icon: PlayCircle,
-        label: 'Step',
-        variant: 'outline',
+        label: "Step",
+        variant: "outline",
         description: data.step_name,
       };
     }
@@ -416,8 +439,8 @@ function getEventDisplay(event: WorkflowEvent): {
     default:
       return {
         icon: Clock,
-        label: 'Event',
-        variant: 'outline',
+        label: "Event",
+        variant: "outline",
       };
   }
 }
@@ -427,23 +450,23 @@ function getEventDisplay(event: WorkflowEvent): {
  */
 function getEventBgColor(eventType: string): string {
   switch (eventType) {
-    case 'workflow_started':
-    case 'workflow_resumed':
-      return 'bg-primary text-primary-foreground';
-    case 'workflow_completed':
-      return 'bg-green-500 text-white';
-    case 'workflow_failed':
-    case 'workflow_cancelled':
-      return 'bg-destructive text-destructive-foreground';
-    case 'workflow_paused':
-      return 'bg-yellow-500 text-white';
-    case 'phase_started':
-    case 'phase_completed':
-      return 'bg-blue-500 text-white';
-    case 'step_started':
-      return 'bg-purple-500 text-white';
+    case "workflow_started":
+    case "workflow_resumed":
+      return "bg-primary text-primary-foreground";
+    case "workflow_completed":
+      return "bg-green-500 text-white";
+    case "workflow_failed":
+    case "workflow_cancelled":
+      return "bg-destructive text-destructive-foreground";
+    case "workflow_paused":
+      return "bg-yellow-500 text-white";
+    case "phase_started":
+    case "phase_completed":
+      return "bg-blue-500 text-white";
+    case "step_started":
+      return "bg-purple-500 text-white";
     default:
-      return 'bg-accent';
+      return "bg-accent";
   }
 }
 
@@ -452,32 +475,32 @@ function getEventBgColor(eventType: string): string {
  */
 function getEventTitle(event: WorkflowEvent): string {
   switch (event.event_type) {
-    case 'workflow_started':
-      return 'Workflow Started';
-    case 'workflow_completed':
-      return 'Workflow Completed Successfully';
-    case 'workflow_failed':
-      return 'Workflow Failed';
-    case 'workflow_paused':
-      return 'Workflow Paused';
-    case 'workflow_resumed':
-      return 'Workflow Resumed';
-    case 'workflow_cancelled':
-      return 'Workflow Cancelled';
-    case 'phase_started': {
+    case "workflow_started":
+      return "Workflow Started";
+    case "workflow_completed":
+      return "Workflow Completed Successfully";
+    case "workflow_failed":
+      return "Workflow Failed";
+    case "workflow_paused":
+      return "Workflow Paused";
+    case "workflow_resumed":
+      return "Workflow Resumed";
+    case "workflow_cancelled":
+      return "Workflow Cancelled";
+    case "phase_started": {
       const data = event.event_data as { phase_name: string };
       return `Phase "${data.phase_name}" Started`;
     }
-    case 'phase_completed': {
+    case "phase_completed": {
       const data = event.event_data as { phase_name: string };
       return `Phase "${data.phase_name}" Completed`;
     }
-    case 'step_started': {
+    case "step_started": {
       const data = event.event_data as { step_name: string };
       return `Step "${data.step_name}" Started`;
     }
     default:
-      return 'Event';
+      return "Event";
   }
 }
 
@@ -488,11 +511,11 @@ function renderEventData(event: WorkflowEvent): JSX.Element | null {
   const data = event.event_data as Record<string, unknown>;
 
   const excludedKeys = [
-    'phase_name',
-    'step_name',
-    'error_message',
-    'reason',
-    'user_id',
+    "phase_name",
+    "step_name",
+    "error_message",
+    "reason",
+    "user_id",
   ];
   const additionalData = Object.entries(data || {}).filter(
     ([key]) => !excludedKeys.includes(key)
