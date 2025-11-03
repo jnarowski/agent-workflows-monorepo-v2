@@ -65,43 +65,47 @@ export function WorkflowTimelineEventItem({ event }: WorkflowTimelineEventItemPr
             onClick={() => setIsExpanded(!isExpanded)}
             className="w-full text-left"
           >
-            {/* Event Type Label */}
-            <Badge variant={variant} className="rounded-full text-xs">
-              {label}
-            </Badge>
+            {/* Title with chevron */}
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-base font-semibold">{getEventTitle(event)}</h3>
+              <span className="flex-shrink-0">
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </span>
+            </div>
 
-            {/* Event Title & Timestamp */}
+            {/* Event Type Badge */}
             <div className="mt-2">
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="text-base font-semibold">{getEventTitle(event)}</h3>
-                <span className="flex-shrink-0">
-                  {isExpanded ? (
-                    <ChevronDown className="h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>{formatRelativeTime(event.created_at)}</span>
-              </div>
+              <Badge variant={variant} className="rounded-full text-xs">
+                {label}
+              </Badge>
+            </div>
+
+            {/* Timestamp */}
+            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              <span>{formatRelativeTime(event.created_at)}</span>
             </div>
           </button>
         ) : (
           <>
-            {/* Event Type Label */}
-            <Badge variant={variant} className="rounded-full text-xs">
-              {label}
-            </Badge>
+            {/* Title */}
+            <h3 className="text-base font-semibold">{getEventTitle(event)}</h3>
 
-            {/* Event Title & Timestamp */}
-            <div>
-              <h3 className="text-base font-semibold">{getEventTitle(event)}</h3>
-              <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>{formatRelativeTime(event.created_at)}</span>
-              </div>
+            {/* Event Type Badge */}
+            <div className="mt-2">
+              <Badge variant={variant} className="rounded-full text-xs">
+                {label}
+              </Badge>
+            </div>
+
+            {/* Timestamp */}
+            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              <span>{formatRelativeTime(event.created_at)}</span>
             </div>
           </>
         )}

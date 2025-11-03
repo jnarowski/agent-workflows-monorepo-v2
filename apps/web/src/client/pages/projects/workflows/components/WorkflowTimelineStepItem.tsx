@@ -68,44 +68,44 @@ export function WorkflowTimelineStepItem({
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-full text-left"
         >
-          {/* Step Type Badge */}
-          <div className="flex items-center gap-2">
+          {/* Title with chevron */}
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-base font-semibold">
+              {formatStepName(step.step_name)}
+            </h3>
+            <span className="flex-shrink-0">
+              {isExpanded ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </span>
+          </div>
+
+          {/* Type & Status Badges */}
+          <div className="flex items-center gap-2 mt-2">
             <Badge variant="outline" className="rounded-full text-xs">
               Step
             </Badge>
             <WorkflowStatusBadge status={step.status} size="sm" />
           </div>
 
-          {/* Step Title & Timestamp */}
-          <div className="mt-2">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-base font-semibold">
-                {formatStepName(step.step_name)}
-              </h3>
-              <span className="flex-shrink-0">
-                {isExpanded ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronRight className="h-4 w-4" />
-                )}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              <span>{getTimeDisplay()}</span>
-              {step.phase_name && (
-                <>
-                  <span>•</span>
-                  <span>{step.phase_name}</span>
-                </>
-              )}
-              {getDuration() && (
-                <>
-                  <span>•</span>
-                  <span>{getDuration()}</span>
-                </>
-              )}
-            </div>
+          {/* Timestamp & Metadata */}
+          <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            <span>{getTimeDisplay()}</span>
+            {step.phase_name && (
+              <>
+                <span>•</span>
+                <span>{step.phase_name}</span>
+              </>
+            )}
+            {getDuration() && (
+              <>
+                <span>•</span>
+                <span>{getDuration()}</span>
+              </>
+            )}
           </div>
         </button>
 
