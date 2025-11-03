@@ -3,7 +3,7 @@ import type { WorkflowExecutionStep } from '@prisma/client';
 
 /**
  * Get a workflow execution step by ID
- * Includes: agent session, artifacts, comments
+ * Includes: agent session, artifacts, events
  */
 export async function getWorkflowStepById(id: string): Promise<WorkflowExecutionStep | null> {
   const step = await prisma.workflowExecutionStep.findUnique({
@@ -11,9 +11,9 @@ export async function getWorkflowStepById(id: string): Promise<WorkflowExecution
     include: {
       session: true, // Agent session if present
       artifacts: true,
-      comments: {
+      events: {
         include: {
-          creator: {
+          created_by_user: {
             select: {
               id: true,
               email: true,

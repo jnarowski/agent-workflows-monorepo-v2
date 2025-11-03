@@ -4,7 +4,7 @@ import type { WorkflowExecution } from '@prisma/client';
 
 /**
  * Query workflow executions with filters
- * Includes: steps, workflow_definition, counts for comments/artifacts
+ * Includes: steps, workflow_definition, counts for events/artifacts
  * Orders by started_at desc (or created_at if not started)
  */
 export async function getWorkflowExecutions(
@@ -23,7 +23,7 @@ export async function getWorkflowExecutions(
       },
       _count: {
         select: {
-          comments: true,
+          events: true,
           steps: true,
         },
       },

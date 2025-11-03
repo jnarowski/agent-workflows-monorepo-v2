@@ -3,7 +3,7 @@ import type { WorkflowExecution } from '@prisma/client';
 
 /**
  * Gets a single workflow execution by ID with all relations
- * Includes: steps (with agent sessions), comments, workflow_definition
+ * Includes: steps (with agent sessions), events, workflow_definition
  */
 export async function getWorkflowExecutionById(id: string): Promise<WorkflowExecution | null> {
   const execution = await prisma.workflowExecution.findUnique({
@@ -14,19 +14,19 @@ export async function getWorkflowExecutionById(id: string): Promise<WorkflowExec
         include: {
           session: true, // Agent session relation
           artifacts: true,
-          comments: true,
         },
         orderBy: { created_at: 'asc' },
       },
-      comments: {
+      events: {
         include: {
-          creator: {
+          created_by_user: {
             select: {
               id: true,
               email: true,
             },
           },
           artifacts: true,
+          step: true, // Include step relation for step-level events
         },
         orderBy: { created_at: 'asc' },
       },
@@ -60,11 +60,13 @@ export async function getWorkflowExecutionById(id: string): Promise<WorkflowExec
       phase_name: step.phase,
       logs: step.log_directory_path,
     })),
-    // Transform comments to match frontend types (text -> content, artifact name -> file_name)
-    comments: execution.comments.map(comment => ({
-      ...comment,
-      content: comment.text,
-      artifacts: comment.artifacts?.map(artifact => ({
+    // Transform events to match frontend types (parse event_data JSON, artifact name -> file_name)
+    events: execution.events.map(event => ({
+      ...event,
+      event_data: event.event_data && typeof event.event_data === 'string'
+        ? JSON.parse(event.event_data)
+        : event.event_data,
+      artifacts: event.artifacts?.map(artifact => ({
         ...artifact,
         file_name: artifact.name,
       })),

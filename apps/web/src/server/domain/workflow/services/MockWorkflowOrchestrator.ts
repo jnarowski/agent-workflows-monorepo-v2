@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { prisma } from '@/shared/prisma';
 import type { FastifyBaseLogger } from 'fastify';
+import { createWorkflowEvent } from './createWorkflowEvent';
 
 /**
  * Mock workflow orchestrator that auto-progresses workflows through steps.
@@ -88,27 +89,63 @@ export class MockWorkflowOrchestrator {
       projectId = execution.project_id;
 
       // Update status to running and emit started event
+      const startedAt = new Date();
       await prisma.workflowExecution.update({
         where: { id: executionId },
         data: {
           status: 'running',
-          started_at: new Date()
+          started_at: startedAt
         }
+      });
+
+      // Create workflow_started event
+      await createWorkflowEvent({
+        workflow_execution_id: executionId,
+        event_type: 'workflow_started',
+        event_data: {},
+        created_at: startedAt,
+        logger: this.logger
       });
 
       this.eventBus.emit('workflow:started', {
         executionId,
         projectId: execution.project_id,
-        timestamp: new Date().toISOString()
+        timestamp: startedAt.toISOString()
       });
 
       // Process each step sequentially
+      let currentPhase: string | null = null;
       for (const step of execution.steps) {
         try {
+          // Check if entering a new phase
+          if (currentPhase !== step.phase) {
+            currentPhase = step.phase;
+
+            // Create phase_started event
+            await createWorkflowEvent({
+              workflow_execution_id: executionId,
+              event_type: 'phase_started',
+              event_data: {
+                phase_name: step.phase
+              },
+              logger: this.logger
+            });
+          }
+
           await this.processStep(execution, step);
 
           // Check if phase is complete
           if (await this.isPhaseComplete(execution, step.phase)) {
+            // Create phase_completed event
+            await createWorkflowEvent({
+              workflow_execution_id: executionId,
+              event_type: 'phase_completed',
+              event_data: {
+                phase_name: step.phase
+              },
+              logger: this.logger
+            });
+
             this.eventBus.emit('workflow:phase:completed', {
               executionId,
               projectId: execution.project_id,
@@ -120,19 +157,31 @@ export class MockWorkflowOrchestrator {
           // Step failed - halt workflow
           this.logger?.error({ executionId, stepId: step.id, error }, 'Step failed, halting workflow');
 
+          const failedAt = new Date();
           await prisma.workflowExecution.update({
             where: { id: executionId },
             data: {
               status: 'failed',
-              completed_at: new Date()
+              completed_at: failedAt
             }
+          });
+
+          // Create workflow_failed event
+          await createWorkflowEvent({
+            workflow_execution_id: executionId,
+            event_type: 'workflow_failed',
+            event_data: {
+              error: error instanceof Error ? error.message : 'Unknown error'
+            },
+            created_at: failedAt,
+            logger: this.logger
           });
 
           this.eventBus.emit('workflow:failed', {
             executionId,
             projectId: execution.project_id,
             error: error instanceof Error ? error.message : 'Unknown error',
-            timestamp: new Date().toISOString()
+            timestamp: failedAt.toISOString()
           });
 
           return; // Stop processing
@@ -140,18 +189,28 @@ export class MockWorkflowOrchestrator {
       }
 
       // All steps completed successfully
+      const completedAt = new Date();
       await prisma.workflowExecution.update({
         where: { id: executionId },
         data: {
           status: 'completed',
-          completed_at: new Date()
+          completed_at: completedAt
         }
+      });
+
+      // Create workflow_completed event
+      await createWorkflowEvent({
+        workflow_execution_id: executionId,
+        event_type: 'workflow_completed',
+        event_data: {},
+        created_at: completedAt,
+        logger: this.logger
       });
 
       this.eventBus.emit('workflow:completed', {
         executionId,
         projectId: execution.project_id,
-        timestamp: new Date().toISOString()
+        timestamp: completedAt.toISOString()
       });
 
       this.logger?.info({ executionId }, 'Workflow execution completed successfully');
@@ -159,12 +218,24 @@ export class MockWorkflowOrchestrator {
     } catch (error) {
       this.logger?.error({ executionId, error }, 'Error processing workflow');
 
+      const failedAt = new Date();
       await prisma.workflowExecution.update({
         where: { id: executionId },
         data: {
           status: 'failed',
-          completed_at: new Date()
+          completed_at: failedAt
         }
+      });
+
+      // Create workflow_failed event
+      await createWorkflowEvent({
+        workflow_execution_id: executionId,
+        event_type: 'workflow_failed',
+        event_data: {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        },
+        created_at: failedAt,
+        logger: this.logger
       });
 
       if (projectId) {
@@ -172,7 +243,7 @@ export class MockWorkflowOrchestrator {
           executionId,
           projectId,
           error: error instanceof Error ? error.message : 'Unknown error',
-          timestamp: new Date().toISOString()
+          timestamp: failedAt.toISOString()
         });
       }
     }
@@ -188,12 +259,26 @@ export class MockWorkflowOrchestrator {
     this.logger?.info({ executionId: execution.id, stepId: step.id, stepName: step.name }, 'Processing step');
 
     // Update step status to running
+    const startedAt = new Date();
     await prisma.workflowExecutionStep.update({
       where: { id: step.id },
       data: {
         status: 'running',
-        started_at: new Date()
+        started_at: startedAt
       }
+    });
+
+    // Create step_started event (using step's started_at timestamp)
+    await createWorkflowEvent({
+      workflow_execution_id: execution.id,
+      event_type: 'step_started',
+      event_data: {
+        step_id: step.id,
+        step_name: step.name
+      },
+      workflow_execution_step_id: step.id,
+      created_at: startedAt,
+      logger: this.logger
     });
 
     this.eventBus.emit('workflow:step:started', {
@@ -202,7 +287,7 @@ export class MockWorkflowOrchestrator {
       stepId: step.id,
       stepName: step.name,
       phase: step.phase,
-      timestamp: new Date().toISOString()
+      timestamp: startedAt.toISOString()
     });
 
     // Simulate work with random delay (3-5 seconds)

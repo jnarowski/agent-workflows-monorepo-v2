@@ -13,3 +13,4 @@ export * from './attachArtifactToComment';
 export * from './detachArtifactFromComment';
 export * from './createComment';
 export * from './getComments';
+export * from './createWorkflowEvent';

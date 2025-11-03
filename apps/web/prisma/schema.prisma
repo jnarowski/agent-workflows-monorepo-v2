@@ -52,7 +52,7 @@ model WorkflowExecution {
   user                User                    @relation(fields: [user_id], references: [id], onDelete: Cascade)
   workflow_definition WorkflowDefinition      @relation(fields: [workflow_definition_id], references: [id], onDelete: Cascade)
   steps               WorkflowExecutionStep[]
-  comments            WorkflowComment[]
+  events              WorkflowEvent[]
 
   @@index([project_id, status])
   @@index([user_id, status])
@@ -79,7 +79,7 @@ model WorkflowExecutionStep {
   workflow_execution WorkflowExecution @relation(fields: [workflow_execution_id], references: [id], onDelete: Cascade)
   session            AgentSession?     @relation(fields: [agent_session_id], references: [id], onDelete: Cascade)
   artifacts          WorkflowArtifact[]
-  comments           WorkflowComment[]
+  events             WorkflowEvent[]
 
   @@index([workflow_execution_id, status])
   @@index([agent_session_id])
@@ -87,31 +87,31 @@ model WorkflowExecutionStep {
   @@map("workflow_execution_steps")
 }
 
-model WorkflowComment {
+model WorkflowEvent {
   id                         String    @id @default(cuid())
   workflow_execution_id      String
-  workflow_execution_step_id String?   // Nullable - workflow-level comments have no step
-  text                       String
-  comment_type               String    @default("user") // 'user', 'system', 'agent'
-  created_by                 String    // User ID
+  event_type                 String    // 'comment_added', 'workflow_started', 'workflow_completed', 'workflow_failed', 'workflow_paused', 'workflow_resumed', 'workflow_cancelled', 'phase_started', 'phase_completed', 'step_started'
+  event_data                 Json      // Event-specific data (comment text, phase name, step info, etc.)
+  workflow_execution_step_id String?   // Nullable - only for step-related events
+  created_by_user_id         String?   // Nullable - only for user-generated events
   created_at                 DateTime  @default(now())
   updated_at                 DateTime  @updatedAt
 
   workflow_execution WorkflowExecution      @relation(fields: [workflow_execution_id], references: [id], onDelete: Cascade)
   step               WorkflowExecutionStep? @relation(fields: [workflow_execution_step_id], references: [id], onDelete: Cascade)
-  creator            User                   @relation(fields: [created_by], references: [id], onDelete: Cascade)
+  created_by_user    User?                  @relation(fields: [created_by_user_id], references: [id], onDelete: Cascade)
   artifacts          WorkflowArtifact[]
 
-  @@index([workflow_execution_id])
+  @@index([workflow_execution_id, created_at])
+  @@index([event_type])
   @@index([workflow_execution_step_id])
-  @@index([created_by])
-  @@map("workflow_comments")
+  @@map("workflow_events")
 }
 
 model WorkflowArtifact {
   id                         String    @id @default(cuid())
   workflow_execution_step_id String
-  workflow_comment_id        String?   // Nullable - can attach artifact to comment
+  workflow_event_id          String?   // Nullable - can attach artifact to event
   name                       String
   file_path                  String    // Relative to project root
   file_type                  String    // 'image', 'video', 'document', 'code', 'other'
@@ -120,11 +120,11 @@ model WorkflowArtifact {
   created_at                 DateTime  @default(now())
   updated_at                 DateTime  @updatedAt
 
-  step    WorkflowExecutionStep @relation(fields: [workflow_execution_step_id], references: [id], onDelete: Cascade)
-  comment WorkflowComment?      @relation(fields: [workflow_comment_id], references: [id], onDelete: SetNull)
+  step  WorkflowExecutionStep @relation(fields: [workflow_execution_step_id], references: [id], onDelete: Cascade)
+  event WorkflowEvent?        @relation(fields: [workflow_event_id], references: [id], onDelete: SetNull)
 
   @@index([workflow_execution_step_id])
-  @@index([workflow_comment_id])
+  @@index([workflow_event_id])
   @@map("workflow_artifacts")
 }
 
@@ -153,7 +153,7 @@ model User {
   settings            Json?
   sessions            AgentSession[]
   workflow_executions WorkflowExecution[]
-  workflow_comments   WorkflowComment[]
+  workflow_events     WorkflowEvent[]
 
   @@map("users")
 }

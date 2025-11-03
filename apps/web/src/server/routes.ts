@@ -10,7 +10,6 @@ import { registerWebSocketRoutes } from "@/server/routes/websocket";
 import { workflowRoutes } from "@/server/routes/workflows";
 import { workflowStepRoutes } from "@/server/routes/workflow-steps";
 import { workflowArtifactRoutes } from "@/server/routes/workflow-artifacts";
-import { workflowCommentRoutes } from "@/server/routes/workflow-comments";
 import { registerWorkflowDefinitionRoutes } from "@/server/routes/workflow-definitions";
 
 export async function registerRoutes(fastify: FastifyInstance) {
@@ -36,7 +35,6 @@ export async function registerRoutes(fastify: FastifyInstance) {
   await fastify.register(workflowRoutes);
   await fastify.register(workflowStepRoutes);
   await fastify.register(workflowArtifactRoutes);
-  await fastify.register(workflowCommentRoutes);
   await fastify.register(registerWorkflowDefinitionRoutes);
 
   // Register websocket metrics routes

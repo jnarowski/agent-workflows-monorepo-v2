@@ -37,7 +37,7 @@ export async function createWorkflowExecution(
     include: {
       workflow_definition: true,
       steps: true,
-      comments: true,
+      events: true,
     },
   });
 

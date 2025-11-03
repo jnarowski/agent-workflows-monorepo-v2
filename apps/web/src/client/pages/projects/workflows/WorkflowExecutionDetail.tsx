@@ -2,8 +2,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { WorkflowExecutionHeader } from './components/WorkflowExecutionHeader';
-import { WorkflowExecutionStepsList } from './components/WorkflowExecutionStepsList';
-import { WorkflowExecutionComments } from './components/WorkflowExecutionComments';
+import { WorkflowTimeline } from './components/WorkflowTimeline';
+import { buildTimeline } from './utils/buildTimeline';
 import { useWorkflowExecution } from './hooks/useWorkflowExecution';
 import { useWorkflowDefinition } from './hooks/useWorkflowDefinition';
 import { useWorkflowWebSocket } from './hooks/useWorkflowWebSocket';
@@ -93,27 +93,14 @@ export function WorkflowExecutionDetail() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-5xl mx-auto space-y-8">
-          {/* Steps section */}
+        <div className="max-w-5xl mx-auto">
+          {/* Timeline section */}
           <section>
-            <h2 className="text-xl font-bold mb-4">Execution Steps</h2>
-            <WorkflowExecutionStepsList
-              steps={execution.steps || []}
-              comments={execution.comments || []}
-              projectId={projectId!}
+            <h2 className="text-xl font-bold mb-4">Execution Timeline</h2>
+            <WorkflowTimeline
+              items={buildTimeline(execution.steps || [], execution.events || [])}
             />
           </section>
-
-          {/* Workflow-level comments section (not associated with steps) */}
-          {execution.comments && execution.comments.some(c => !c.workflow_execution_step_id) && (
-            <section>
-              <h2 className="text-xl font-bold mb-4">Workflow Comments</h2>
-              <WorkflowExecutionComments
-                comments={execution.comments.filter(c => !c.workflow_execution_step_id)}
-                executionId={executionId!}
-              />
-            </section>
-          )}
         </div>
       </div>
     </div>

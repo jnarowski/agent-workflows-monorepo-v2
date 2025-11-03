@@ -187,7 +187,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
           });
       }
 
-      const updated = await pauseWorkflow(id);
+      const updated = await pauseWorkflow(id, userId, fastify.log);
 
       return reply.send({ data: updated });
     }
@@ -236,7 +236,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
           });
       }
 
-      const updated = await resumeWorkflow(id, fastify.log);
+      const updated = await resumeWorkflow(id, userId, fastify.log);
 
       return reply.send({ data: updated });
     }
@@ -277,7 +277,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
           .send({ error: { message: "Access denied", statusCode: 403 } });
       }
 
-      const updated = await cancelWorkflow(id);
+      const updated = await cancelWorkflow(id, userId, undefined, fastify.log);
 
       return reply.send({ data: updated });
     }

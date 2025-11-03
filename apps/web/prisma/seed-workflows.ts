@@ -81,7 +81,7 @@ async function main() {
       }
     });
 
-    await prisma.workflowComment.deleteMany({
+    await prisma.workflowEvent.deleteMany({
       where: { workflow_execution_id: { in: executionIds } }
     });
 
@@ -94,6 +94,7 @@ async function main() {
     });
   }
 
+  // Delete workflow definitions for the target project(s)
   if (definitionIds.length > 0) {
     await prisma.workflowDefinition.deleteMany({
       where: { id: { in: definitionIds } }
@@ -511,206 +512,762 @@ async function main() {
 
   console.log(`Created ${stepCount} workflow execution steps`);
 
-  // Create Comments
-  const comments = [];
+  // Create Events (workflow lifecycle + comments)
+  const events = [];
 
-  // Comments for running workflows
-  comments.push(
-    await prisma.workflowComment.create({
+  // Helper to create workflow lifecycle events
+  const createLifecycleEvent = async (
+    execution: any,
+    eventType: string,
+    eventData: any,
+    createdAt: Date
+  ) => {
+    return await prisma.workflowEvent.create({
+      data: {
+        workflow_execution_id: execution.id,
+        created_by_user_id: users[0].id,
+        event_type: eventType,
+        event_data: eventData,
+        created_at: createdAt
+      }
+    });
+  };
+
+  // RUNNING WORKFLOWS - Add lifecycle events
+
+  // Dark Mode Support (execution[2]) - Started → Phase transitions → Currently running
+  events.push(
+    await createLifecycleEvent(
+      executions[2],
+      'workflow_started',
+      { message: 'Workflow execution started' },
+      new Date(Date.now() - 1000 * 60 * 45)
+    ),
+    await createLifecycleEvent(
+      executions[2],
+      'phase_started',
+      { phase: 'Research', message: 'Started Research phase' },
+      new Date(Date.now() - 1000 * 60 * 44)
+    ),
+    await createLifecycleEvent(
+      executions[2],
+      'phase_completed',
+      { phase: 'Research', message: 'Completed Research phase - all requirements analyzed' },
+      new Date(Date.now() - 1000 * 60 * 36)
+    ),
+    await createLifecycleEvent(
+      executions[2],
+      'phase_started',
+      { phase: 'Design', message: 'Started Design phase' },
+      new Date(Date.now() - 1000 * 60 * 35)
+    ),
+    await createLifecycleEvent(
+      executions[2],
+      'phase_completed',
+      { phase: 'Design', message: 'Completed Design phase - technical spec approved' },
+      new Date(Date.now() - 1000 * 60 * 31)
+    ),
+    await createLifecycleEvent(
+      executions[2],
+      'phase_started',
+      { phase: 'Implementation', message: 'Started Implementation phase' },
+      new Date(Date.now() - 1000 * 60 * 30)
+    )
+  );
+
+  // Bug Fix (execution[3]) - Started → Phase transitions → Currently running
+  events.push(
+    await createLifecycleEvent(
+      executions[3],
+      'workflow_started',
+      { message: 'Workflow execution started' },
+      new Date(Date.now() - 1000 * 60 * 20)
+    ),
+    await createLifecycleEvent(
+      executions[3],
+      'phase_started',
+      { phase: 'Investigation', message: 'Started Investigation phase' },
+      new Date(Date.now() - 1000 * 60 * 19)
+    ),
+    await createLifecycleEvent(
+      executions[3],
+      'phase_completed',
+      { phase: 'Investigation', message: 'Completed Investigation phase - root cause identified' },
+      new Date(Date.now() - 1000 * 60 * 16)
+    ),
+    await createLifecycleEvent(
+      executions[3],
+      'phase_started',
+      { phase: 'Fix', message: 'Started Fix phase' },
+      new Date(Date.now() - 1000 * 60 * 15)
+    )
+  );
+
+  // Code Review (execution[4]) - Started → Phase transitions → Currently running
+  events.push(
+    await createLifecycleEvent(
+      executions[4],
+      'workflow_started',
+      { message: 'Workflow execution started' },
+      new Date(Date.now() - 1000 * 60 * 15)
+    ),
+    await createLifecycleEvent(
+      executions[4],
+      'phase_started',
+      { phase: 'Analysis', message: 'Started Analysis phase' },
+      new Date(Date.now() - 1000 * 60 * 14)
+    ),
+    await createLifecycleEvent(
+      executions[4],
+      'phase_completed',
+      { phase: 'Analysis', message: 'Completed Analysis phase - all checks passed' },
+      new Date(Date.now() - 1000 * 60 * 13)
+    ),
+    await createLifecycleEvent(
+      executions[4],
+      'phase_started',
+      { phase: 'Feedback', message: 'Started Feedback phase' },
+      new Date(Date.now() - 1000 * 60 * 12)
+    )
+  );
+
+  // PAUSED WORKFLOWS - Add started → paused events
+
+  // Export to CSV (execution[5]) - Started → Paused
+  events.push(
+    await createLifecycleEvent(
+      executions[5],
+      'workflow_started',
+      { message: 'Workflow execution started' },
+      new Date(Date.now() - 1000 * 60 * 60 * 4)
+    ),
+    await createLifecycleEvent(
+      executions[5],
+      'phase_started',
+      { phase: 'Research', message: 'Started Research phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 4)
+    ),
+    await createLifecycleEvent(
+      executions[5],
+      'phase_completed',
+      { phase: 'Research', message: 'Completed Research phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 3)
+    ),
+    await createLifecycleEvent(
+      executions[5],
+      'phase_started',
+      { phase: 'Design', message: 'Started Design phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 3)
+    ),
+    await createLifecycleEvent(
+      executions[5],
+      'phase_completed',
+      { phase: 'Design', message: 'Completed Design phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 2)
+    ),
+    await createLifecycleEvent(
+      executions[5],
+      'phase_started',
+      { phase: 'Implementation', message: 'Started Implementation phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 2)
+    ),
+    await createLifecycleEvent(
+      executions[5],
+      'phase_completed',
+      { phase: 'Implementation', message: 'Completed Implementation phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 1.5)
+    ),
+    await createLifecycleEvent(
+      executions[5],
+      'phase_started',
+      { phase: 'Testing', message: 'Started Testing phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 1.5)
+    ),
+    await createLifecycleEvent(
+      executions[5],
+      'workflow_paused',
+      { reason: 'user_request', message: 'Workflow paused by user - waiting for QA team' },
+      new Date(Date.now() - 1000 * 60 * 60)
+    )
+  );
+
+  // Memory Leak (execution[6]) - Started → Paused
+  events.push(
+    await createLifecycleEvent(
+      executions[6],
+      'workflow_started',
+      { message: 'Workflow execution started' },
+      new Date(Date.now() - 1000 * 60 * 60 * 6)
+    ),
+    await createLifecycleEvent(
+      executions[6],
+      'phase_started',
+      { phase: 'Investigation', message: 'Started Investigation phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 5)
+    ),
+    await createLifecycleEvent(
+      executions[6],
+      'workflow_paused',
+      { reason: 'user_request', message: 'Workflow paused by user - need more time to analyze profiling data' },
+      new Date(Date.now() - 1000 * 60 * 60 * 2)
+    )
+  );
+
+  // COMPLETED WORKFLOWS - Add full lifecycle
+
+  // Notification System (execution[7]) - Complete lifecycle
+  events.push(
+    await createLifecycleEvent(
+      executions[7],
+      'workflow_started',
+      { message: 'Workflow execution started' },
+      new Date(Date.now() - 1000 * 60 * 60 * 24 * 3)
+    ),
+    await createLifecycleEvent(
+      executions[7],
+      'phase_started',
+      { phase: 'Research', message: 'Started Research phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 24 * 3)
+    ),
+    await createLifecycleEvent(
+      executions[7],
+      'phase_completed',
+      { phase: 'Research', message: 'Completed Research phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 24 * 2.5)
+    ),
+    await createLifecycleEvent(
+      executions[7],
+      'phase_started',
+      { phase: 'Design', message: 'Started Design phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 24 * 2.5)
+    ),
+    await createLifecycleEvent(
+      executions[7],
+      'phase_completed',
+      { phase: 'Design', message: 'Completed Design phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
+    ),
+    await createLifecycleEvent(
+      executions[7],
+      'phase_started',
+      { phase: 'Implementation', message: 'Started Implementation phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
+    ),
+    await createLifecycleEvent(
+      executions[7],
+      'phase_completed',
+      { phase: 'Implementation', message: 'Completed Implementation phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.5)
+    ),
+    await createLifecycleEvent(
+      executions[7],
+      'phase_started',
+      { phase: 'Testing', message: 'Started Testing phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.5)
+    ),
+    await createLifecycleEvent(
+      executions[7],
+      'phase_completed',
+      { phase: 'Testing', message: 'Completed Testing phase - all tests passed' },
+      new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.2)
+    ),
+    await createLifecycleEvent(
+      executions[7],
+      'phase_started',
+      { phase: 'Deployment', message: 'Started Deployment phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 24 * 1.2)
+    ),
+    await createLifecycleEvent(
+      executions[7],
+      'phase_completed',
+      { phase: 'Deployment', message: 'Completed Deployment phase - production deployment successful' },
+      new Date(Date.now() - 1000 * 60 * 60 * 24)
+    ),
+    await createLifecycleEvent(
+      executions[7],
+      'workflow_completed',
+      { message: 'Workflow completed successfully' },
+      new Date(Date.now() - 1000 * 60 * 60 * 24)
+    )
+  );
+
+  // Date Formatting Bug (execution[8]) - Complete lifecycle
+  events.push(
+    await createLifecycleEvent(
+      executions[8],
+      'workflow_started',
+      { message: 'Workflow execution started' },
+      new Date(Date.now() - 1000 * 60 * 60 * 30)
+    ),
+    await createLifecycleEvent(
+      executions[8],
+      'phase_started',
+      { phase: 'Investigation', message: 'Started Investigation phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 29)
+    ),
+    await createLifecycleEvent(
+      executions[8],
+      'phase_completed',
+      { phase: 'Investigation', message: 'Completed Investigation phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 26)
+    ),
+    await createLifecycleEvent(
+      executions[8],
+      'phase_started',
+      { phase: 'Fix', message: 'Started Fix phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 26)
+    ),
+    await createLifecycleEvent(
+      executions[8],
+      'phase_completed',
+      { phase: 'Fix', message: 'Completed Fix phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 18)
+    ),
+    await createLifecycleEvent(
+      executions[8],
+      'phase_started',
+      { phase: 'Verification', message: 'Started Verification phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 18)
+    ),
+    await createLifecycleEvent(
+      executions[8],
+      'phase_completed',
+      { phase: 'Verification', message: 'Completed Verification phase - fix verified in staging' },
+      new Date(Date.now() - 1000 * 60 * 60 * 12)
+    ),
+    await createLifecycleEvent(
+      executions[8],
+      'workflow_completed',
+      { message: 'Workflow completed successfully' },
+      new Date(Date.now() - 1000 * 60 * 60 * 12)
+    )
+  );
+
+  // API Rate Limiting PR (execution[9]) - Complete lifecycle
+  events.push(
+    await createLifecycleEvent(
+      executions[9],
+      'workflow_started',
+      { message: 'Workflow execution started' },
+      new Date(Date.now() - 1000 * 60 * 60 * 12)
+    ),
+    await createLifecycleEvent(
+      executions[9],
+      'phase_started',
+      { phase: 'Analysis', message: 'Started Analysis phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 11)
+    ),
+    await createLifecycleEvent(
+      executions[9],
+      'phase_completed',
+      { phase: 'Analysis', message: 'Completed Analysis phase - all automated checks passed' },
+      new Date(Date.now() - 1000 * 60 * 60 * 10)
+    ),
+    await createLifecycleEvent(
+      executions[9],
+      'phase_started',
+      { phase: 'Feedback', message: 'Started Feedback phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 10)
+    ),
+    await createLifecycleEvent(
+      executions[9],
+      'phase_completed',
+      { phase: 'Feedback', message: 'Completed Feedback phase - code review approved' },
+      new Date(Date.now() - 1000 * 60 * 60 * 8)
+    ),
+    await createLifecycleEvent(
+      executions[9],
+      'phase_started',
+      { phase: 'Revision', message: 'Started Revision phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 8)
+    ),
+    await createLifecycleEvent(
+      executions[9],
+      'phase_completed',
+      { phase: 'Revision', message: 'Completed Revision phase - feedback addressed' },
+      new Date(Date.now() - 1000 * 60 * 60 * 7)
+    ),
+    await createLifecycleEvent(
+      executions[9],
+      'phase_started',
+      { phase: 'Approval', message: 'Started Approval phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 7)
+    ),
+    await createLifecycleEvent(
+      executions[9],
+      'phase_completed',
+      { phase: 'Approval', message: 'Completed Approval phase - PR approved and merged' },
+      new Date(Date.now() - 1000 * 60 * 60 * 6)
+    ),
+    await createLifecycleEvent(
+      executions[9],
+      'workflow_completed',
+      { message: 'Workflow completed successfully' },
+      new Date(Date.now() - 1000 * 60 * 60 * 6)
+    )
+  );
+
+  // FAILED WORKFLOWS - Add lifecycle with failure
+
+  // Advanced Search (execution[10]) - Failed at Testing phase
+  events.push(
+    await createLifecycleEvent(
+      executions[10],
+      'workflow_started',
+      { message: 'Workflow execution started' },
+      new Date(Date.now() - 1000 * 60 * 60 * 10)
+    ),
+    await createLifecycleEvent(
+      executions[10],
+      'phase_started',
+      { phase: 'Research', message: 'Started Research phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 10)
+    ),
+    await createLifecycleEvent(
+      executions[10],
+      'phase_completed',
+      { phase: 'Research', message: 'Completed Research phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 9)
+    ),
+    await createLifecycleEvent(
+      executions[10],
+      'phase_started',
+      { phase: 'Design', message: 'Started Design phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 9)
+    ),
+    await createLifecycleEvent(
+      executions[10],
+      'phase_completed',
+      { phase: 'Design', message: 'Completed Design phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 8)
+    ),
+    await createLifecycleEvent(
+      executions[10],
+      'phase_started',
+      { phase: 'Implementation', message: 'Started Implementation phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 8)
+    ),
+    await createLifecycleEvent(
+      executions[10],
+      'phase_completed',
+      { phase: 'Implementation', message: 'Completed Implementation phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 7)
+    ),
+    await createLifecycleEvent(
+      executions[10],
+      'phase_started',
+      { phase: 'Testing', message: 'Started Testing phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 7)
+    ),
+    await createLifecycleEvent(
+      executions[10],
+      'workflow_failed',
+      {
+        phase: 'Testing',
+        error: 'Integration tests failed: 3 tests failed with timeout errors',
+        message: 'Workflow failed during Testing phase'
+      },
+      new Date(Date.now() - 1000 * 60 * 60 * 6)
+    )
+  );
+
+  // API Endpoint 500 Error (execution[11]) - Failed at Fix phase
+  events.push(
+    await createLifecycleEvent(
+      executions[11],
+      'workflow_started',
+      { message: 'Workflow execution started' },
+      new Date(Date.now() - 1000 * 60 * 60 * 5)
+    ),
+    await createLifecycleEvent(
+      executions[11],
+      'phase_started',
+      { phase: 'Investigation', message: 'Started Investigation phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 5)
+    ),
+    await createLifecycleEvent(
+      executions[11],
+      'phase_completed',
+      { phase: 'Investigation', message: 'Completed Investigation phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 4.5)
+    ),
+    await createLifecycleEvent(
+      executions[11],
+      'phase_started',
+      { phase: 'Fix', message: 'Started Fix phase' },
+      new Date(Date.now() - 1000 * 60 * 60 * 4.5)
+    ),
+    await createLifecycleEvent(
+      executions[11],
+      'workflow_failed',
+      {
+        phase: 'Fix',
+        error: 'Code review failed: Security vulnerability detected in SQL query',
+        message: 'Workflow failed during Fix phase - security vulnerability detected'
+      },
+      new Date(Date.now() - 1000 * 60 * 60 * 3)
+    )
+  );
+
+  // Now add comment events
+
+  // Events for running workflows
+  events.push(
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[2].id,
-        created_by: users[0].id,
-        text: 'Starting implementation of dark mode theme system',
-        comment_type: 'user',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Starting implementation of dark mode theme system',
+          comment_type: 'user'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 40)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[2].id,
-        created_by: users[0].id,
-        text: 'Research phase completed successfully. Moving to Design phase.',
-        comment_type: 'system',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Research phase completed successfully. Moving to Design phase.',
+          comment_type: 'system'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 35)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[2].id,
-        created_by: users[0].id,
-        text: 'Design phase completed. Technical spec approved. Starting implementation.',
-        comment_type: 'system',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Design phase completed. Technical spec approved. Starting implementation.',
+          comment_type: 'system'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 30)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[3].id,
-        created_by: users[0].id,
-        text: 'Found the issue - missing required field validation on password input',
-        comment_type: 'user',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Found the issue - missing required field validation on password input',
+          comment_type: 'user'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 18)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[3].id,
-        created_by: users[0].id,
-        text: 'Investigation phase completed. Root cause identified: Missing required field validation.',
-        comment_type: 'system',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Investigation phase completed. Root cause identified: Missing required field validation.',
+          comment_type: 'system'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 15)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[3].id,
-        created_by: users[0].id,
-        text: 'Fix applied successfully. Added password validation check to form handler.',
-        comment_type: 'agent',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Fix applied successfully. Added password validation check to form handler.',
+          comment_type: 'agent'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 10)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[4].id,
-        created_by: users[0].id,
-        text: 'Migration files look good. Need to verify index performance on large tables.',
-        comment_type: 'user',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Migration files look good. Need to verify index performance on large tables.',
+          comment_type: 'user'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 12)
       }
     })
   );
 
-  // Comments for completed workflows
-  comments.push(
-    await prisma.workflowComment.create({
+  // Events for completed workflows
+  events.push(
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[5].id,
-        created_by: users[0].id,
-        text: 'Great work on this feature! The notification system works perfectly.',
-        comment_type: 'user',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Great work on this feature! The notification system works perfectly.',
+          comment_type: 'user'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 24)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[5].id,
-        created_by: users[0].id,
-        text: 'All phases completed successfully. Workflow finished.',
-        comment_type: 'system',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'All phases completed successfully. Workflow finished.',
+          comment_type: 'system'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 24)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[5].id,
-        created_by: users[0].id,
-        text: 'Tests passed: 45 unit tests, 12 integration tests. Code coverage: 92%.',
-        comment_type: 'agent',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Tests passed: 45 unit tests, 12 integration tests. Code coverage: 92%.',
+          comment_type: 'agent'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 26)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[6].id,
-        created_by: users[0].id,
-        text: 'Bug fixed and verified in staging. Ready for production.',
-        comment_type: 'user',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Bug fixed and verified in staging. Ready for production.',
+          comment_type: 'user'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 12)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[6].id,
-        created_by: users[0].id,
-        text: 'Fix verified successfully. No regressions detected.',
-        comment_type: 'agent',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Fix verified successfully. No regressions detected.',
+          comment_type: 'agent'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 13)
       }
     })
   );
 
-  // Comments for failed workflows
-  comments.push(
-    await prisma.workflowComment.create({
+  // Events for failed workflows
+  events.push(
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[8].id,
-        created_by: users[0].id,
-        text: 'Integration tests are timing out. Need to investigate query performance.',
-        comment_type: 'user',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Integration tests are timing out. Need to investigate query performance.',
+          comment_type: 'user'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 6)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[8].id,
-        created_by: users[0].id,
-        text: 'Workflow failed during Testing phase. Error: Integration tests failed with timeout errors.',
-        comment_type: 'system',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Workflow failed during Testing phase. Error: Integration tests failed with timeout errors.',
+          comment_type: 'system'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 6)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[9].id,
-        created_by: users[0].id,
-        text: 'Security review flagged SQL injection vulnerability. Need to use parameterized queries.',
-        comment_type: 'user',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Security review flagged SQL injection vulnerability. Need to use parameterized queries.',
+          comment_type: 'user'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 3)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[9].id,
-        created_by: users[0].id,
-        text: 'Workflow failed during Fix phase. Error: Security vulnerability detected in SQL query.',
-        comment_type: 'system',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Workflow failed during Fix phase. Error: Security vulnerability detected in SQL query.',
+          comment_type: 'system'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 3)
       }
     })
   );
 
-  // Comments for paused workflows
-  comments.push(
-    await prisma.workflowComment.create({
+  // Events for paused workflows
+  events.push(
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[6].id,
-        created_by: users[0].id,
-        text: 'Pausing to wait for QA team availability. Will resume tomorrow.',
-        comment_type: 'user',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Pausing to wait for QA team availability. Will resume tomorrow.',
+          comment_type: 'user'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[6].id,
-        created_by: users[0].id,
-        text: 'Workflow paused by user.',
-        comment_type: 'system',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Workflow paused by user.',
+          comment_type: 'system'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[7].id,
-        created_by: users[0].id,
-        text: 'Need more time to analyze memory profiling data. Pausing for now.',
-        comment_type: 'user',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Need more time to analyze memory profiling data. Pausing for now.',
+          comment_type: 'user'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 2)
       }
     }),
-    await prisma.workflowComment.create({
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[7].id,
-        created_by: users[0].id,
-        text: 'Workflow paused by user.',
-        comment_type: 'system',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Workflow paused by user.',
+          comment_type: 'system'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 2)
       }
     })
   );
 
-  console.log(`Created ${comments.length} workflow comments`);
+  console.log(`Created ${events.length} workflow events`);
 
   // Create Artifacts
   const artifacts = [];
@@ -915,18 +1472,21 @@ async function main() {
     console.log(`     Run the app and create some sessions first, then re-run this seed script`);
   }
 
-  // Create Comments with Attachments
-  const commentsWithAttachments = [];
+  // Create Events with Attachments (step-level comment events)
+  const eventsWithAttachments = [];
 
   // Example 1: User comment with screenshot attachment
-  commentsWithAttachments.push(
-    await prisma.workflowComment.create({
+  eventsWithAttachments.push(
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[2].id,
         workflow_execution_step_id: steps[5]?.id, // Dark mode design step
-        created_by: users[0].id,
-        text: 'Dark mode design mockup completed. Attached the final design for review.',
-        comment_type: 'user',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Dark mode design mockup completed. Attached the final design for review.',
+          comment_type: 'user'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 34),
         artifacts: {
           connect: {
@@ -938,14 +1498,17 @@ async function main() {
   );
 
   // Example 2: Agent comment with test results
-  commentsWithAttachments.push(
-    await prisma.workflowComment.create({
+  eventsWithAttachments.push(
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[5].id,
         workflow_execution_step_id: stepsWithArtifacts[3]?.id,
-        created_by: users[0].id,
-        text: 'Test suite executed successfully. All 45 unit tests and 12 integration tests passed. See attached test results and coverage report.',
-        comment_type: 'agent',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Test suite executed successfully. All 45 unit tests and 12 integration tests passed. See attached test results and coverage report.',
+          comment_type: 'agent'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 26),
         artifacts: {
           connect: [
@@ -958,14 +1521,17 @@ async function main() {
   );
 
   // Example 3: System comment with deployment logs
-  commentsWithAttachments.push(
-    await prisma.workflowComment.create({
+  eventsWithAttachments.push(
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[5].id,
         workflow_execution_step_id: stepsWithArtifacts[4]?.id,
-        created_by: users[0].id,
-        text: 'Deployment to staging environment completed. Detailed deployment logs attached for verification.',
-        comment_type: 'system',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Deployment to staging environment completed. Detailed deployment logs attached for verification.',
+          comment_type: 'system'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 24),
         artifacts: {
           connect: {
@@ -977,14 +1543,17 @@ async function main() {
   );
 
   // Example 4: User comment with verification screenshot
-  commentsWithAttachments.push(
-    await prisma.workflowComment.create({
+  eventsWithAttachments.push(
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[3].id,
         workflow_execution_step_id: steps[2]?.id,
-        created_by: users[0].id,
-        text: 'Bug fix verified on staging. Password validation now working correctly - see attached verification screenshot.',
-        comment_type: 'user',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Bug fix verified on staging. Password validation now working correctly - see attached verification screenshot.',
+          comment_type: 'user'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 60 * 12),
         artifacts: {
           connect: {
@@ -996,14 +1565,17 @@ async function main() {
   );
 
   // Example 5: Agent comment with multiple attachments (code + analysis)
-  commentsWithAttachments.push(
-    await prisma.workflowComment.create({
+  eventsWithAttachments.push(
+    await prisma.workflowEvent.create({
       data: {
         workflow_execution_id: executions[4].id,
         workflow_execution_step_id: steps[3]?.id,
-        created_by: users[0].id,
-        text: 'Database migration schema created and performance analysis completed. Both files attached for review before applying to production.',
-        comment_type: 'agent',
+        created_by_user_id: users[0].id,
+        event_type: 'comment_added',
+        event_data: {
+          text: 'Database migration schema created and performance analysis completed. Both files attached for review before applying to production.',
+          comment_type: 'agent'
+        },
         created_at: new Date(Date.now() - 1000 * 60 * 11),
         artifacts: {
           connect: [
@@ -1015,7 +1587,7 @@ async function main() {
     })
   );
 
-  console.log(`Created ${commentsWithAttachments.length} comments with attachments`);
+  console.log(`Created ${eventsWithAttachments.length} events with attachments`);
 
   // Output direct links to workflow executions for easy preview
   const baseUrl = process.env.VITE_WS_HOST
@@ -1068,7 +1640,7 @@ async function main() {
   console.log(`  - ${executions.length} workflow executions`);
   console.log(`  - ${stepCount} workflow execution steps`);
   console.log(`  - ${agentSessions.length} agent sessions (linked to real Claude sessions)`);
-  console.log(`  - ${comments.length} comments`);
+  console.log(`  - ${events.length} workflow events`);
   console.log(`  - ${artifacts.length} artifacts`);
 }
 
