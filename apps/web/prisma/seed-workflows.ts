@@ -1,9 +1,24 @@
+/**
+ * Seed workflow data for testing and development.
+ *
+ * Usage:
+ *   pnpm prisma:seed                    # Seed workflows for first available project
+ *   pnpm prisma:seed <project-id>       # Seed workflows for specific project
+ *
+ * Examples:
+ *   pnpm prisma:seed
+ *   pnpm prisma:seed cmhj99cvg0000ya2nunnnglq9
+ */
+
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Starting workflow seeding...');
+
+  // Parse command line arguments for optional project ID
+  const targetProjectId = process.argv[2];
 
   // Clear existing workflow data
   console.log('Clearing existing workflow data...');
@@ -15,25 +30,38 @@ async function main() {
   console.log('✅ Cleared existing workflow data');
 
   // Get existing projects and users for linking
-  const projects = await prisma.project.findMany({ take: 3 });
+  const projects = targetProjectId
+    ? await prisma.project.findMany({ where: { id: targetProjectId } })
+    : await prisma.project.findMany({ take: 3 });
   const users = await prisma.user.findMany({ take: 3 });
 
   if (projects.length === 0) {
-    console.log('No projects found. Please seed projects first.');
+    if (targetProjectId) {
+      console.log(`❌ Project with ID "${targetProjectId}" not found.`);
+    } else {
+      console.log('❌ No projects found. Please seed projects first.');
+    }
     return;
   }
 
   if (users.length === 0) {
-    console.log('No users found. Please seed users first.');
+    console.log('❌ No users found. Please seed users first.');
     return;
   }
 
-  console.log(`Found ${projects.length} projects and ${users.length} users`);
+  if (targetProjectId) {
+    console.log(`🎯 Seeding workflows for project: ${projects[0].name} (${projects[0].id})`);
+  } else {
+    console.log(`Found ${projects.length} projects and ${users.length} users`);
+  }
+
+  // Use single project for all workflows when targeting specific project
+  const projectId = projects[0].id;
 
   // Create Workflow Definitions (Templates)
   const featureWorkflow = await prisma.workflowDefinition.create({
     data: {
-      project_id: projects[0].id,
+      project_id: projectId,
       name: 'Feature Implementation Workflow',
       description: 'Complete workflow for implementing a new feature from research to deployment',
       type: 'code',
@@ -75,7 +103,7 @@ async function main() {
 
   const bugFixWorkflow = await prisma.workflowDefinition.create({
     data: {
-      project_id: projects[1].id,
+      project_id: projectId,
       name: 'Bug Fix Workflow',
       description: 'Streamlined workflow for investigating and fixing bugs',
       type: 'code',
@@ -109,7 +137,7 @@ async function main() {
 
   const codeReviewWorkflow = await prisma.workflowDefinition.create({
     data: {
-      project_id: projects[2] ? projects[2].id : projects[0].id,
+      project_id: projectId,
       name: 'Code Review Workflow',
       description: 'Comprehensive code review process with automated checks and feedback',
       type: 'code',
@@ -156,7 +184,7 @@ async function main() {
       data: {
         name: 'Feature: User Profile Settings',
         workflow_definition_id: featureWorkflow.id,
-        project_id: projects[0].id,
+        project_id: projectId,
         user_id: users[0].id,
         status: 'pending',
         current_phase: null,
@@ -168,7 +196,7 @@ async function main() {
       data: {
         name: 'Review: PR #456 - Authentication Updates',
         workflow_definition_id: codeReviewWorkflow.id,
-        project_id: projects[1].id,
+        project_id: projectId,
         user_id: users[0].id,
         status: 'pending',
         current_phase: null,
@@ -184,7 +212,7 @@ async function main() {
       data: {
         name: 'Feature: Dark Mode Support',
         workflow_definition_id: featureWorkflow.id,
-        project_id: projects[0].id,
+        project_id: projectId,
         user_id: users[0].id,
         status: 'running',
         current_phase: 'Implementation',
@@ -197,7 +225,7 @@ async function main() {
       data: {
         name: 'Bug Fix: Login Form Validation Error',
         workflow_definition_id: bugFixWorkflow.id,
-        project_id: projects[1].id,
+        project_id: projectId,
         user_id: users[0].id,
         status: 'running',
         current_phase: 'Fix',
@@ -210,8 +238,8 @@ async function main() {
       data: {
         name: 'Review: PR #789 - Database Migration',
         workflow_definition_id: codeReviewWorkflow.id,
-        project_id: projects[2] ? projects[2].id : projects[0].id,
-        user_id: users[0] ? users[0].id : users[0].id,
+        project_id: projectId,
+        user_id: users[0].id,
         status: 'running',
         current_phase: 'Feedback',
         args: JSON.stringify({ prNumber: 789, branch: 'feature/db-migration' }),
@@ -227,7 +255,7 @@ async function main() {
       data: {
         name: 'Feature: Export to CSV',
         workflow_definition_id: featureWorkflow.id,
-        project_id: projects[0].id,
+        project_id: projectId,
         user_id: users[0].id,
         status: 'paused',
         current_phase: 'Testing',
@@ -241,7 +269,7 @@ async function main() {
       data: {
         name: 'Bug Fix: Memory Leak in Dashboard',
         workflow_definition_id: bugFixWorkflow.id,
-        project_id: projects[1].id,
+        project_id: projectId,
         user_id: users[0].id,
         status: 'paused',
         current_phase: 'Investigation',
@@ -259,7 +287,7 @@ async function main() {
       data: {
         name: 'Feature: Notification System',
         workflow_definition_id: featureWorkflow.id,
-        project_id: projects[0].id,
+        project_id: projectId,
         user_id: users[0].id,
         status: 'completed',
         current_phase: 'Deployment',
@@ -273,7 +301,7 @@ async function main() {
       data: {
         name: 'Bug Fix: Incorrect Date Formatting',
         workflow_definition_id: bugFixWorkflow.id,
-        project_id: projects[1].id,
+        project_id: projectId,
         user_id: users[0].id,
         status: 'completed',
         current_phase: 'Verification',
@@ -287,8 +315,8 @@ async function main() {
       data: {
         name: 'Review: PR #234 - API Rate Limiting',
         workflow_definition_id: codeReviewWorkflow.id,
-        project_id: projects[2] ? projects[2].id : projects[0].id,
-        user_id: users[0] ? users[0].id : users[0].id,
+        project_id: projectId,
+        user_id: users[0].id,
         status: 'completed',
         current_phase: 'Approval',
         args: JSON.stringify({ prNumber: 234, branch: 'feature/rate-limiting', autoMerge: true }),
@@ -305,7 +333,7 @@ async function main() {
       data: {
         name: 'Feature: Advanced Search',
         workflow_definition_id: featureWorkflow.id,
-        project_id: projects[0].id,
+        project_id: projectId,
         user_id: users[0].id,
         status: 'failed',
         current_phase: 'Testing',
@@ -319,7 +347,7 @@ async function main() {
       data: {
         name: 'Bug Fix: API Endpoint 500 Error',
         workflow_definition_id: bugFixWorkflow.id,
-        project_id: projects[1].id,
+        project_id: projectId,
         user_id: users[0].id,
         status: 'failed',
         current_phase: 'Fix',

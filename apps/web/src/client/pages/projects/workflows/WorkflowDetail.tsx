@@ -105,10 +105,10 @@ export function WorkflowDetail() {
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           </div>
         ) : (
-          <div className="flex gap-4 min-w-max h-full">
+          <div className="flex gap-4 h-full min-w-full">
             {/* Add "Not Started" column first */}
             {executionsByPhase['Not Started'] && (
-              <div className="w-80 h-full">
+              <div className="flex-1 min-w-80 h-full">
                 <WorkflowPhaseKanbanColumn
                   phase="Not Started"
                   executions={executionsByPhase['Not Started']}
@@ -121,7 +121,7 @@ export function WorkflowDetail() {
             {phases.map((phase: any) => {
               const phaseName = typeof phase === 'string' ? phase : phase.name;
               return (
-                <div key={phaseName} className="w-80 h-full">
+                <div key={phaseName} className="flex-1 min-w-80 h-full">
                   <WorkflowPhaseKanbanColumn
                     phase={phaseName}
                     executions={executionsByPhase[phaseName] || []}
