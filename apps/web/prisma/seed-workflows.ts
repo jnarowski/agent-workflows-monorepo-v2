@@ -20,15 +20,6 @@ async function main() {
   // Parse command line arguments for optional project ID
   const targetProjectId = process.argv[2];
 
-  // Clear existing workflow data
-  console.log('Clearing existing workflow data...');
-  await prisma.workflowArtifact.deleteMany({});
-  await prisma.workflowComment.deleteMany({});
-  await prisma.workflowExecutionStep.deleteMany({});
-  await prisma.workflowExecution.deleteMany({});
-  await prisma.workflowDefinition.deleteMany({});
-  console.log('✅ Cleared existing workflow data');
-
   // Get existing projects and users for linking
   const projects = targetProjectId
     ? await prisma.project.findMany({ where: { id: targetProjectId } })
@@ -57,6 +48,59 @@ async function main() {
 
   // Use single project for all workflows when targeting specific project
   const projectId = projects[0].id;
+
+  // Clear existing workflow data for the target project(s)
+  if (targetProjectId) {
+    console.log(`\n🧹 Clearing existing workflow data for project: ${projects[0].name}...`);
+  } else {
+    console.log(`\n🧹 Clearing existing workflow data for ${projects.length} project(s)...`);
+  }
+
+  // Get workflow executions for the target project(s)
+  const projectIds = projects.map(p => p.id);
+  const existingExecutions = await prisma.workflowExecution.findMany({
+    where: { project_id: { in: projectIds } },
+    select: { id: true }
+  });
+  const executionIds = existingExecutions.map(e => e.id);
+
+  // Get workflow definitions for the target project(s)
+  const existingDefinitions = await prisma.workflowDefinition.findMany({
+    where: { project_id: { in: projectIds } },
+    select: { id: true }
+  });
+  const definitionIds = existingDefinitions.map(d => d.id);
+
+  // Delete in correct order (respecting foreign key constraints)
+  if (executionIds.length > 0) {
+    await prisma.workflowArtifact.deleteMany({
+      where: {
+        step: {
+          workflow_execution_id: { in: executionIds }
+        }
+      }
+    });
+
+    await prisma.workflowComment.deleteMany({
+      where: { workflow_execution_id: { in: executionIds } }
+    });
+
+    await prisma.workflowExecutionStep.deleteMany({
+      where: { workflow_execution_id: { in: executionIds } }
+    });
+
+    await prisma.workflowExecution.deleteMany({
+      where: { id: { in: executionIds } }
+    });
+  }
+
+  if (definitionIds.length > 0) {
+    await prisma.workflowDefinition.deleteMany({
+      where: { id: { in: definitionIds } }
+    });
+  }
+
+  console.log(`✅ Cleared workflow data (${executionIds.length} executions, ${definitionIds.length} definitions)`);
 
   // Create Workflow Definitions (Templates)
   const featureWorkflow = await prisma.workflowDefinition.create({
@@ -811,165 +855,65 @@ async function main() {
 
   console.log(`Created ${artifacts.length} workflow artifacts`);
 
-  // Create Agent Sessions linked to real Claude sessions
+  // Use existing agent sessions from the database instead of scanning filesystem
+  console.log('\n📂 Finding existing agent sessions in database...');
+
+  // Get up to 5 most recent agent sessions for this project
+  const existingAgentSessions = await prisma.agentSession.findMany({
+    where: { projectId: projectId },
+    orderBy: { updated_at: 'desc' },
+    take: 5
+  });
+
   const agentSessions = [];
-  const claudeSessionsDir = '/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2';
 
-  // Use real Claude session IDs from existing sessions
-  const realSessionIds = [
-    '03ab3659-6e23-4706-a769-ff775961e2dd',
-    '0455831e-78f2-4526-9edd-94f2ab3dcd3e',
-    '0614cd0a-93a7-43de-968d-e33e8c24b149',
-    '026256b8-ae83-4356-a593-91782854a119',
-    '02e697ce-e279-4c32-917c-5dc3ee5ef966'
-  ];
+  if (existingAgentSessions.length > 0) {
+    console.log(`\n  Found ${existingAgentSessions.length} existing agent session(s) to link to workflows...`);
 
-  // Create agent sessions for some of the workflow steps
-  // Dark Mode workflow - Implementation step
-  const darkModeSession = await prisma.agentSession.create({
-    data: {
-      projectId: projectId,
-      userId: users[0].id,
-      name: 'Dark Mode Implementation',
-      agent: 'claude',
-      cli_session_id: realSessionIds[0],
-      session_path: `${claudeSessionsDir}/${realSessionIds[0]}.jsonl`,
-      metadata: {
-        totalTokens: 15432,
-        messageCount: 24,
-        lastMessageAt: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
-        firstMessagePreview: 'Implement dark mode theme system for the application'
-      },
-      state: 'idle',
-      created_at: new Date(Date.now() - 1000 * 60 * 45),
-      updated_at: new Date(Date.now() - 1000 * 60 * 25)
+    for (const session of existingAgentSessions) {
+      agentSessions.push(session);
+      const displayName = session.name || session.cli_session_id || 'Unnamed session';
+      console.log(`    ✅ Using: ${displayName.substring(0, 60)}`);
     }
-  });
-  agentSessions.push(darkModeSession);
 
-  // Bug Fix workflow - Fix step
-  const bugFixSession = await prisma.agentSession.create({
-    data: {
-      projectId: projectId,
-      userId: users[0].id,
-      name: 'Login Form Validation Fix',
-      agent: 'claude',
-      cli_session_id: realSessionIds[1],
-      session_path: `${claudeSessionsDir}/${realSessionIds[1]}.jsonl`,
-      metadata: {
-        totalTokens: 8234,
-        messageCount: 15,
-        lastMessageAt: new Date(Date.now() - 1000 * 60 * 8).toISOString(),
-        firstMessagePreview: 'Fix password validation in login form'
-      },
-      state: 'idle',
-      created_at: new Date(Date.now() - 1000 * 60 * 20),
-      updated_at: new Date(Date.now() - 1000 * 60 * 8)
+    // Link agent sessions to workflow steps (if we have enough sessions and steps)
+    if (agentSessions.length > 0 && steps.length > 0) {
+      console.log(`\n  Linking agent sessions to workflow steps...`);
+
+      // Map sessions to meaningful workflow steps
+      const stepMappings = [
+        { stepIndex: 7, sessionIndex: 0 },   // Dark Mode - Implementation step
+        { stepIndex: 14, sessionIndex: 1 },  // Bug Fix - Fix step
+        { stepIndex: 20, sessionIndex: 2 },  // Code Review - Manual review step
+      ];
+
+      // Add mappings for completed/failed workflows if we have enough sessions
+      if (agentSessions.length > 3 && steps.length > 31) {
+        stepMappings.push({ stepIndex: 31, sessionIndex: 3 }); // Notification System - Implementation
+      }
+      if (agentSessions.length > 4 && steps.length > 44) {
+        stepMappings.push({ stepIndex: 44, sessionIndex: 4 }); // Advanced Search - Implementation
+      }
+
+      let linkedCount = 0;
+      for (const { stepIndex, sessionIndex } of stepMappings) {
+        if (steps[stepIndex] && agentSessions[sessionIndex]) {
+          await prisma.workflowExecutionStep.update({
+            where: { id: steps[stepIndex].id },
+            data: { agent_session_id: agentSessions[sessionIndex].id }
+          });
+          linkedCount++;
+        }
+      }
+
+      console.log(`    ✅ Linked ${linkedCount} session(s) to workflow steps`);
     }
-  });
-  agentSessions.push(bugFixSession);
 
-  // Code Review workflow - Analysis step
-  const codeReviewSession = await prisma.agentSession.create({
-    data: {
-      projectId: projectId,
-      userId: users[0].id,
-      name: 'Database Migration Review',
-      agent: 'claude',
-      cli_session_id: realSessionIds[2],
-      session_path: `${claudeSessionsDir}/${realSessionIds[2]}.jsonl`,
-      metadata: {
-        totalTokens: 12876,
-        messageCount: 18,
-        lastMessageAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-        firstMessagePreview: 'Review database migration schema and performance'
-      },
-      state: 'working',
-      created_at: new Date(Date.now() - 1000 * 60 * 15),
-      updated_at: new Date(Date.now() - 1000 * 60 * 5)
-    }
-  });
-  agentSessions.push(codeReviewSession);
-
-  // Completed workflow - Notification System
-  const notificationSession = await prisma.agentSession.create({
-    data: {
-      projectId: projectId,
-      userId: users[0].id,
-      name: 'Notification System Implementation',
-      agent: 'claude',
-      cli_session_id: realSessionIds[3],
-      session_path: `${claudeSessionsDir}/${realSessionIds[3]}.jsonl`,
-      metadata: {
-        totalTokens: 45789,
-        messageCount: 67,
-        lastMessageAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-        firstMessagePreview: 'Build a complete notification system with real-time updates'
-      },
-      state: 'idle',
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-      updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24)
-    }
-  });
-  agentSessions.push(notificationSession);
-
-  // Failed workflow - Advanced Search
-  const searchSession = await prisma.agentSession.create({
-    data: {
-      projectId: projectId,
-      userId: users[0].id,
-      name: 'Advanced Search Feature',
-      agent: 'claude',
-      cli_session_id: realSessionIds[4],
-      session_path: `${claudeSessionsDir}/${realSessionIds[4]}.jsonl`,
-      metadata: {
-        totalTokens: 28432,
-        messageCount: 42,
-        lastMessageAt: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
-        firstMessagePreview: 'Implement advanced search with filters and sorting'
-      },
-      state: 'error',
-      error_message: 'Integration tests failed with timeout errors',
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 10),
-      updated_at: new Date(Date.now() - 1000 * 60 * 60 * 8)
-    }
-  });
-  agentSessions.push(searchSession);
-
-  console.log(`Created ${agentSessions.length} agent sessions`);
-
-  // Link agent sessions to workflow steps
-  // Dark Mode - Implementation step (running)
-  await prisma.workflowExecutionStep.update({
-    where: { id: steps[7].id },
-    data: { agent_session_id: darkModeSession.id }
-  });
-
-  // Bug Fix - Fix step (running)
-  await prisma.workflowExecutionStep.update({
-    where: { id: steps[14].id },
-    data: { agent_session_id: bugFixSession.id }
-  });
-
-  // Code Review - Manual review step (running)
-  await prisma.workflowExecutionStep.update({
-    where: { id: steps[20].id },
-    data: { agent_session_id: codeReviewSession.id }
-  });
-
-  // Notification System - Implementation step (completed)
-  await prisma.workflowExecutionStep.update({
-    where: { id: steps[31].id },
-    data: { agent_session_id: notificationSession.id }
-  });
-
-  // Advanced Search - Implementation step (failed)
-  await prisma.workflowExecutionStep.update({
-    where: { id: steps[44].id },
-    data: { agent_session_id: searchSession.id }
-  });
-
-  console.log(`Linked agent sessions to workflow steps`);
+    console.log(`\n✅ Using ${agentSessions.length} existing agent session(s) from database`);
+  } else {
+    console.log(`  ℹ️  No agent sessions found in database`);
+    console.log(`     Run the app and create some sessions first, then re-run this seed script`);
+  }
 
   // Create Comments with Attachments
   const commentsWithAttachments = [];
@@ -1072,6 +1016,51 @@ async function main() {
   );
 
   console.log(`Created ${commentsWithAttachments.length} comments with attachments`);
+
+  // Output direct links to workflow executions for easy preview
+  const baseUrl = process.env.VITE_WS_HOST
+    ? `http://${process.env.VITE_WS_HOST}:${process.env.VITE_PORT || 5173}`
+    : `http://localhost:${process.env.VITE_PORT || 5173}`;
+
+  console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('📋 WORKFLOW EXECUTION PREVIEW LINKS');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
+  console.log('🟡 PENDING WORKFLOWS (2):');
+  console.log(`   1. ${baseUrl}/projects/${projectId}/workflows/${executions[0].workflow_definition_id}/executions/${executions[0].id}`);
+  console.log(`      └─ Feature: User Profile Settings (no steps started)`);
+  console.log(`   2. ${baseUrl}/projects/${projectId}/workflows/${executions[1].workflow_definition_id}/executions/${executions[1].id}`);
+  console.log(`      └─ Review: PR #456 - Authentication Updates (no steps started)\n`);
+
+  console.log('🔵 RUNNING WORKFLOWS (3):');
+  console.log(`   3. ${baseUrl}/projects/${projectId}/workflows/${executions[2].workflow_definition_id}/executions/${executions[2].id}`);
+  console.log(`      └─ Feature: Dark Mode Support (Implementation phase, 8/10 steps done, has comments + artifacts + agent session)`);
+  console.log(`   4. ${baseUrl}/projects/${projectId}/workflows/${executions[3].workflow_definition_id}/executions/${executions[3].id}`);
+  console.log(`      └─ Bug Fix: Login Form Validation (Fix phase, 5/7 steps done, has comments + artifact + agent session)`);
+  console.log(`   5. ${baseUrl}/projects/${projectId}/workflows/${executions[4].workflow_definition_id}/executions/${executions[4].id}`);
+  console.log(`      └─ Review: PR #789 - Database Migration (Feedback phase, 4/6 steps done, has comments + artifacts)\n`);
+
+  console.log('⏸️  PAUSED WORKFLOWS (2):');
+  console.log(`   6. ${baseUrl}/projects/${projectId}/workflows/${executions[5].workflow_definition_id}/executions/${executions[5].id}`);
+  console.log(`      └─ Feature: Export to CSV (Testing phase, paused for QA, has comments)`);
+  console.log(`   7. ${baseUrl}/projects/${projectId}/workflows/${executions[6].workflow_definition_id}/executions/${executions[6].id}`);
+  console.log(`      └─ Bug Fix: Memory Leak in Dashboard (Investigation phase, paused for analysis, has comments + artifact)\n`);
+
+  console.log('✅ COMPLETED WORKFLOWS (3):');
+  console.log(`   8. ${baseUrl}/projects/${projectId}/workflows/${executions[7].workflow_definition_id}/executions/${executions[7].id}`);
+  console.log(`      └─ Feature: Notification System (All phases complete, 16 steps, has comments + artifacts)`);
+  console.log(`   9. ${baseUrl}/projects/${projectId}/workflows/${executions[8].workflow_definition_id}/executions/${executions[8].id}`);
+  console.log(`      └─ Bug Fix: Incorrect Date Formatting (Fully complete, has comments)`);
+  console.log(`  10. ${baseUrl}/projects/${projectId}/workflows/${executions[9].workflow_definition_id}/executions/${executions[9].id}`);
+  console.log(`      └─ Review: PR #234 - API Rate Limiting (Fully complete, has comments)\n`);
+
+  console.log('❌ FAILED WORKFLOWS (2):');
+  console.log(`  11. ${baseUrl}/projects/${projectId}/workflows/${executions[10].workflow_definition_id}/executions/${executions[10].id}`);
+  console.log(`      └─ Feature: Advanced Search (Failed at Testing phase, integration test timeouts, has comments + error)`);
+  console.log(`  12. ${baseUrl}/projects/${projectId}/workflows/${executions[11].workflow_definition_id}/executions/${executions[11].id}`);
+  console.log(`      └─ Bug Fix: API Endpoint 500 Error (Failed at Fix phase, security vulnerability, has comments + error)\n`);
+
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
   console.log('\nWorkflow seeding complete!');
   console.log(`Summary:`);
