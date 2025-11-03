@@ -4,8 +4,8 @@ import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } f
 import { useNavigate, useParams } from 'react-router-dom';
 import { Plus, Search } from 'lucide-react';
 import { WorkflowStatus } from './types';
-import type { WorkflowExecution } from './types';
 import { WorkflowKanbanColumn } from './components/WorkflowKanbanColumn';
+import { WorkflowDefinitionsList } from './components/WorkflowDefinitionsList';
 import { NewWorkflowModal } from './components/NewWorkflowModal';
 import { useWorkflowExecutions } from './hooks/useWorkflowExecutions';
 import { useWorkflowDefinitions } from './hooks/useWorkflowDefinitions';
@@ -74,7 +74,10 @@ export function ProjectWorkflowsView({ projectId: propProjectId }: ProjectWorkfl
   };
 
   const handleExecutionClick = (execution: any) => {
-    navigate(`/projects/${projectId}/workflows/${execution.id}`);
+    // Navigate to execution detail page
+    const definitionId = execution.workflow_definition_id;
+    const executionId = execution.id;
+    navigate(`/projects/${projectId}/workflows/${definitionId}/executions/${executionId}`);
   };
 
   const handleCreateWorkflow = async (data: any) => {
@@ -147,6 +150,13 @@ export function ProjectWorkflowsView({ projectId: propProjectId }: ProjectWorkfl
           </select>
         </div>
       </div>
+
+      {/* Workflow Definitions List */}
+      <WorkflowDefinitionsList
+        projectId={projectId}
+        definitions={definitions || []}
+        executions={executions || []}
+      />
 
       {/* Kanban Board */}
       <div className="flex-1 overflow-x-auto p-4">

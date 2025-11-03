@@ -811,11 +811,274 @@ async function main() {
 
   console.log(`Created ${artifacts.length} workflow artifacts`);
 
+  // Create Agent Sessions linked to real Claude sessions
+  const agentSessions = [];
+  const claudeSessionsDir = '/Users/jnarowski/.claude/projects/-Users-jnarowski-Dev-sourceborn-src-agent-workflows-monorepo-v2';
+
+  // Use real Claude session IDs from existing sessions
+  const realSessionIds = [
+    '03ab3659-6e23-4706-a769-ff775961e2dd',
+    '0455831e-78f2-4526-9edd-94f2ab3dcd3e',
+    '0614cd0a-93a7-43de-968d-e33e8c24b149',
+    '026256b8-ae83-4356-a593-91782854a119',
+    '02e697ce-e279-4c32-917c-5dc3ee5ef966'
+  ];
+
+  // Create agent sessions for some of the workflow steps
+  // Dark Mode workflow - Implementation step
+  const darkModeSession = await prisma.agentSession.create({
+    data: {
+      projectId: projectId,
+      userId: users[0].id,
+      name: 'Dark Mode Implementation',
+      agent: 'claude',
+      cli_session_id: realSessionIds[0],
+      session_path: `${claudeSessionsDir}/${realSessionIds[0]}.jsonl`,
+      metadata: {
+        totalTokens: 15432,
+        messageCount: 24,
+        lastMessageAt: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
+        firstMessagePreview: 'Implement dark mode theme system for the application'
+      },
+      state: 'idle',
+      created_at: new Date(Date.now() - 1000 * 60 * 45),
+      updated_at: new Date(Date.now() - 1000 * 60 * 25)
+    }
+  });
+  agentSessions.push(darkModeSession);
+
+  // Bug Fix workflow - Fix step
+  const bugFixSession = await prisma.agentSession.create({
+    data: {
+      projectId: projectId,
+      userId: users[0].id,
+      name: 'Login Form Validation Fix',
+      agent: 'claude',
+      cli_session_id: realSessionIds[1],
+      session_path: `${claudeSessionsDir}/${realSessionIds[1]}.jsonl`,
+      metadata: {
+        totalTokens: 8234,
+        messageCount: 15,
+        lastMessageAt: new Date(Date.now() - 1000 * 60 * 8).toISOString(),
+        firstMessagePreview: 'Fix password validation in login form'
+      },
+      state: 'idle',
+      created_at: new Date(Date.now() - 1000 * 60 * 20),
+      updated_at: new Date(Date.now() - 1000 * 60 * 8)
+    }
+  });
+  agentSessions.push(bugFixSession);
+
+  // Code Review workflow - Analysis step
+  const codeReviewSession = await prisma.agentSession.create({
+    data: {
+      projectId: projectId,
+      userId: users[0].id,
+      name: 'Database Migration Review',
+      agent: 'claude',
+      cli_session_id: realSessionIds[2],
+      session_path: `${claudeSessionsDir}/${realSessionIds[2]}.jsonl`,
+      metadata: {
+        totalTokens: 12876,
+        messageCount: 18,
+        lastMessageAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+        firstMessagePreview: 'Review database migration schema and performance'
+      },
+      state: 'working',
+      created_at: new Date(Date.now() - 1000 * 60 * 15),
+      updated_at: new Date(Date.now() - 1000 * 60 * 5)
+    }
+  });
+  agentSessions.push(codeReviewSession);
+
+  // Completed workflow - Notification System
+  const notificationSession = await prisma.agentSession.create({
+    data: {
+      projectId: projectId,
+      userId: users[0].id,
+      name: 'Notification System Implementation',
+      agent: 'claude',
+      cli_session_id: realSessionIds[3],
+      session_path: `${claudeSessionsDir}/${realSessionIds[3]}.jsonl`,
+      metadata: {
+        totalTokens: 45789,
+        messageCount: 67,
+        lastMessageAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+        firstMessagePreview: 'Build a complete notification system with real-time updates'
+      },
+      state: 'idle',
+      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+      updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24)
+    }
+  });
+  agentSessions.push(notificationSession);
+
+  // Failed workflow - Advanced Search
+  const searchSession = await prisma.agentSession.create({
+    data: {
+      projectId: projectId,
+      userId: users[0].id,
+      name: 'Advanced Search Feature',
+      agent: 'claude',
+      cli_session_id: realSessionIds[4],
+      session_path: `${claudeSessionsDir}/${realSessionIds[4]}.jsonl`,
+      metadata: {
+        totalTokens: 28432,
+        messageCount: 42,
+        lastMessageAt: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
+        firstMessagePreview: 'Implement advanced search with filters and sorting'
+      },
+      state: 'error',
+      error_message: 'Integration tests failed with timeout errors',
+      created_at: new Date(Date.now() - 1000 * 60 * 60 * 10),
+      updated_at: new Date(Date.now() - 1000 * 60 * 60 * 8)
+    }
+  });
+  agentSessions.push(searchSession);
+
+  console.log(`Created ${agentSessions.length} agent sessions`);
+
+  // Link agent sessions to workflow steps
+  // Dark Mode - Implementation step (running)
+  await prisma.workflowExecutionStep.update({
+    where: { id: steps[7].id },
+    data: { agent_session_id: darkModeSession.id }
+  });
+
+  // Bug Fix - Fix step (running)
+  await prisma.workflowExecutionStep.update({
+    where: { id: steps[14].id },
+    data: { agent_session_id: bugFixSession.id }
+  });
+
+  // Code Review - Manual review step (running)
+  await prisma.workflowExecutionStep.update({
+    where: { id: steps[20].id },
+    data: { agent_session_id: codeReviewSession.id }
+  });
+
+  // Notification System - Implementation step (completed)
+  await prisma.workflowExecutionStep.update({
+    where: { id: steps[31].id },
+    data: { agent_session_id: notificationSession.id }
+  });
+
+  // Advanced Search - Implementation step (failed)
+  await prisma.workflowExecutionStep.update({
+    where: { id: steps[44].id },
+    data: { agent_session_id: searchSession.id }
+  });
+
+  console.log(`Linked agent sessions to workflow steps`);
+
+  // Create Comments with Attachments
+  const commentsWithAttachments = [];
+
+  // Example 1: User comment with screenshot attachment
+  commentsWithAttachments.push(
+    await prisma.workflowComment.create({
+      data: {
+        workflow_execution_id: executions[2].id,
+        workflow_execution_step_id: steps[5]?.id, // Dark mode design step
+        created_by: users[0].id,
+        text: 'Dark mode design mockup completed. Attached the final design for review.',
+        comment_type: 'user',
+        created_at: new Date(Date.now() - 1000 * 60 * 34),
+        artifacts: {
+          connect: {
+            id: artifacts[6].id // dark-mode-design-mockup.png
+          }
+        }
+      }
+    })
+  );
+
+  // Example 2: Agent comment with test results
+  commentsWithAttachments.push(
+    await prisma.workflowComment.create({
+      data: {
+        workflow_execution_id: executions[5].id,
+        workflow_execution_step_id: stepsWithArtifacts[3]?.id,
+        created_by: users[0].id,
+        text: 'Test suite executed successfully. All 45 unit tests and 12 integration tests passed. See attached test results and coverage report.',
+        comment_type: 'agent',
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 26),
+        artifacts: {
+          connect: [
+            { id: artifacts[0].id }, // test-results.json
+            { id: artifacts[1].id }  // coverage-report.html
+          ]
+        }
+      }
+    })
+  );
+
+  // Example 3: System comment with deployment logs
+  commentsWithAttachments.push(
+    await prisma.workflowComment.create({
+      data: {
+        workflow_execution_id: executions[5].id,
+        workflow_execution_step_id: stepsWithArtifacts[4]?.id,
+        created_by: users[0].id,
+        text: 'Deployment to staging environment completed. Detailed deployment logs attached for verification.',
+        comment_type: 'system',
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 24),
+        artifacts: {
+          connect: {
+            id: artifacts[2].id // deployment-logs.txt
+          }
+        }
+      }
+    })
+  );
+
+  // Example 4: User comment with verification screenshot
+  commentsWithAttachments.push(
+    await prisma.workflowComment.create({
+      data: {
+        workflow_execution_id: executions[3].id,
+        workflow_execution_step_id: steps[2]?.id,
+        created_by: users[0].id,
+        text: 'Bug fix verified on staging. Password validation now working correctly - see attached verification screenshot.',
+        comment_type: 'user',
+        created_at: new Date(Date.now() - 1000 * 60 * 60 * 12),
+        artifacts: {
+          connect: {
+            id: artifacts[3].id // bug-fix-verification.png
+          }
+        }
+      }
+    })
+  );
+
+  // Example 5: Agent comment with multiple attachments (code + analysis)
+  commentsWithAttachments.push(
+    await prisma.workflowComment.create({
+      data: {
+        workflow_execution_id: executions[4].id,
+        workflow_execution_step_id: steps[3]?.id,
+        created_by: users[0].id,
+        text: 'Database migration schema created and performance analysis completed. Both files attached for review before applying to production.',
+        comment_type: 'agent',
+        created_at: new Date(Date.now() - 1000 * 60 * 11),
+        artifacts: {
+          connect: [
+            { id: artifacts[8].id },  // migration-schema.sql
+            { id: artifacts[9].id }   // performance-analysis.md
+          ]
+        }
+      }
+    })
+  );
+
+  console.log(`Created ${commentsWithAttachments.length} comments with attachments`);
+
   console.log('\nWorkflow seeding complete!');
   console.log(`Summary:`);
   console.log(`  - 3 workflow definitions`);
   console.log(`  - ${executions.length} workflow executions`);
   console.log(`  - ${stepCount} workflow execution steps`);
+  console.log(`  - ${agentSessions.length} agent sessions (linked to real Claude sessions)`);
   console.log(`  - ${comments.length} comments`);
   console.log(`  - ${artifacts.length} artifacts`);
 }

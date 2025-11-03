@@ -38,6 +38,7 @@ export async function getWorkflowExecutionById(id: string): Promise<WorkflowExec
   }
 
   // Parse JSON fields (Prisma stores JSON as strings in SQLite)
+  // Transform field names to match frontend types
   const parsedExecution = {
     ...execution,
     args: execution.args && typeof execution.args === 'string'
@@ -52,6 +53,22 @@ export async function getWorkflowExecutionById(id: string): Promise<WorkflowExec
         ? JSON.parse(execution.workflow_definition.args_schema)
         : execution.workflow_definition.args_schema,
     } : execution.workflow_definition,
+    // Transform steps to match frontend types (step_name, phase_name, logs)
+    steps: execution.steps.map(step => ({
+      ...step,
+      step_name: step.name,
+      phase_name: step.phase,
+      logs: step.log_directory_path,
+    })),
+    // Transform comments to match frontend types (text -> content, artifact name -> file_name)
+    comments: execution.comments.map(comment => ({
+      ...comment,
+      content: comment.text,
+      artifacts: comment.artifacts?.map(artifact => ({
+        ...artifact,
+        file_name: artifact.name,
+      })),
+    })),
   };
 
   return parsedExecution as WorkflowExecution;
