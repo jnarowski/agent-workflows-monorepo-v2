@@ -36,7 +36,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = request.user!.id;
+      const userId = (request.user!.id as string);
       const body = request.body;
 
       fastify.log.info(
@@ -56,8 +56,8 @@ export async function workflowRoutes(fastify: FastifyInstance) {
         throw new NotFoundError('Workflow definition not found');
       }
 
-      // Start execution (stub for now)
-      await executeWorkflow(execution.id);
+      // Start execution via orchestrator
+      await executeWorkflow(execution.id, fastify.workflowOrchestrator);
 
       return reply.code(201).send({ data: execution });
     }
@@ -78,7 +78,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = request.user!.id;
+      const userId = (request.user!.id as string);
       const { project_id, status } = request.query;
 
       if (!project_id) {
@@ -120,7 +120,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = request.user!.id;
+      const userId = (request.user!.id as string);
 
       fastify.log.info(
         { userId, executionId: id },
@@ -160,7 +160,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = request.user!.id;
+      const userId = (request.user!.id as string);
 
       fastify.log.info(
         { userId, executionId: id },
@@ -209,7 +209,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = request.user!.id;
+      const userId = (request.user!.id as string);
 
       fastify.log.info(
         { userId, executionId: id },
@@ -258,7 +258,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = request.user!.id;
+      const userId = (request.user!.id as string);
 
       fastify.log.info(
         { userId, executionId: id },

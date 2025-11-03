@@ -277,6 +277,175 @@ export type ShellEvent =
     };
 
 // ============================================================================
+// Workflow Events
+// ============================================================================
+
+/**
+ * Workflow event type constants
+ * Used for project:* channels (workflow execution lifecycle)
+ *
+ * Note: Uses room-based broadcasting - all events scoped to project rooms
+ * Clients filter by executionId in the payload
+ */
+export const WorkflowEventTypes = {
+  CREATED: "workflow:created",
+  STARTED: "workflow:started",
+  STEP_STARTED: "workflow:step:started",
+  STEP_COMPLETED: "workflow:step:completed",
+  STEP_FAILED: "workflow:step:failed",
+  PHASE_COMPLETED: "workflow:phase:completed",
+  COMPLETED: "workflow:completed",
+  FAILED: "workflow:failed",
+  PAUSED: "workflow:paused",
+  RESUMED: "workflow:resumed",
+  CANCELLED: "workflow:cancelled",
+  COMMENT_CREATED: "workflow:comment:created",
+} as const;
+
+/**
+ * Data interfaces for workflow events
+ */
+export interface WorkflowCreatedData {
+  executionId: string;
+  projectId: string;
+  definitionId: string;
+  timestamp: string;
+}
+
+export interface WorkflowStartedData {
+  executionId: string;
+  projectId: string;
+  timestamp: string;
+}
+
+export interface WorkflowStepStartedData {
+  executionId: string;
+  projectId: string;
+  stepId: string;
+  stepName: string;
+  phase: string;
+  timestamp: string;
+}
+
+export interface WorkflowStepCompletedData {
+  executionId: string;
+  projectId: string;
+  stepId: string;
+  stepName: string;
+  phase: string;
+  logs: string;
+  timestamp: string;
+}
+
+export interface WorkflowStepFailedData {
+  executionId: string;
+  projectId: string;
+  stepId: string;
+  stepName: string;
+  phase: string;
+  error: string;
+  timestamp: string;
+}
+
+export interface WorkflowPhaseCompletedData {
+  executionId: string;
+  projectId: string;
+  phase: string;
+  timestamp: string;
+}
+
+export interface WorkflowCompletedData {
+  executionId: string;
+  projectId: string;
+  timestamp: string;
+}
+
+export interface WorkflowFailedData {
+  executionId: string;
+  projectId: string;
+  error: string;
+  timestamp: string;
+}
+
+export interface WorkflowPausedData {
+  executionId: string;
+  projectId: string;
+  timestamp: string;
+}
+
+export interface WorkflowResumedData {
+  executionId: string;
+  projectId: string;
+  timestamp: string;
+}
+
+export interface WorkflowCancelledData {
+  executionId: string;
+  projectId: string;
+  timestamp: string;
+}
+
+export interface WorkflowCommentCreatedData {
+  executionId: string;
+  projectId: string;
+  commentId: string;
+  timestamp: string;
+}
+
+/**
+ * Discriminated union for all workflow events
+ */
+export type WorkflowEvent =
+  | {
+      type: typeof WorkflowEventTypes.CREATED;
+      data: WorkflowCreatedData;
+    }
+  | {
+      type: typeof WorkflowEventTypes.STARTED;
+      data: WorkflowStartedData;
+    }
+  | {
+      type: typeof WorkflowEventTypes.STEP_STARTED;
+      data: WorkflowStepStartedData;
+    }
+  | {
+      type: typeof WorkflowEventTypes.STEP_COMPLETED;
+      data: WorkflowStepCompletedData;
+    }
+  | {
+      type: typeof WorkflowEventTypes.STEP_FAILED;
+      data: WorkflowStepFailedData;
+    }
+  | {
+      type: typeof WorkflowEventTypes.PHASE_COMPLETED;
+      data: WorkflowPhaseCompletedData;
+    }
+  | {
+      type: typeof WorkflowEventTypes.COMPLETED;
+      data: WorkflowCompletedData;
+    }
+  | {
+      type: typeof WorkflowEventTypes.FAILED;
+      data: WorkflowFailedData;
+    }
+  | {
+      type: typeof WorkflowEventTypes.PAUSED;
+      data: WorkflowPausedData;
+    }
+  | {
+      type: typeof WorkflowEventTypes.RESUMED;
+      data: WorkflowResumedData;
+    }
+  | {
+      type: typeof WorkflowEventTypes.CANCELLED;
+      data: WorkflowCancelledData;
+    }
+  | {
+      type: typeof WorkflowEventTypes.COMMENT_CREATED;
+      data: WorkflowCommentCreatedData;
+    };
+
+// ============================================================================
 // Combined Types
 // ============================================================================
 
@@ -284,7 +453,7 @@ export type ShellEvent =
  * Union of all possible channel events
  * Useful for generic event handling
  */
-export type AnyChannelEvent = SessionEvent | GlobalEvent | ShellEvent;
+export type AnyChannelEvent = SessionEvent | GlobalEvent | ShellEvent | WorkflowEvent;
 
 /**
  * WebSocket message format sent over the wire

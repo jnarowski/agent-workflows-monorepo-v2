@@ -31,12 +31,30 @@ export async function handleGlobalEvent(
 
   // Handle subscription events
   if (type === "subscribe") {
-    await handleSubscribe(socket, data as SubscribeMessageData, userId, fastify);
+    // Support both formats:
+    // 1. New format: {channel: "global", type: "subscribe", data: {channels: ["project:xxx"]}}
+    // 2. Legacy format: {channel: "project:xxx", type: "subscribe"}
+    let subscribeData = data as SubscribeMessageData | undefined;
+
+    if (channel !== "global" && !subscribeData) {
+      // Legacy format: channel field contains the channel to subscribe to
+      subscribeData = { channels: [channel] };
+    }
+
+    await handleSubscribe(socket, subscribeData!, userId, fastify);
     return;
   }
 
   if (type === "unsubscribe") {
-    await handleUnsubscribe(socket, data as UnsubscribeMessageData, fastify);
+    // Support both formats for unsubscribe as well
+    let unsubscribeData = data as UnsubscribeMessageData | undefined;
+
+    if (channel !== "global" && !unsubscribeData) {
+      // Legacy format: channel field contains the channel to unsubscribe from
+      unsubscribeData = { channels: [channel] };
+    }
+
+    await handleUnsubscribe(socket, unsubscribeData!, fastify);
     return;
   }
 

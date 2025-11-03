@@ -9,6 +9,7 @@ import {
   ChevronDown,
   GitBranch,
   ChevronRight,
+  Workflow,
 } from "lucide-react";
 import { Separator } from "@/client/components/ui/separator";
 import { SidebarTrigger } from "@/client/components/ui/sidebar";
@@ -18,9 +19,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/client/components/ui/dropdown-menu";
+import { Badge } from "@/client/components/ui/badge";
 import type { SessionResponse } from "@/shared/types";
 import { SessionHeader } from "@/client/components/SessionHeader";
 import { GitOperationsModal } from "@/client/components/GitOperationsModal";
+import { useWorkflowExecutions } from "@/client/pages/projects/workflows/hooks/useWorkflowExecutions";
 
 interface ProjectHeaderProps {
   projectId: string;
@@ -28,12 +31,18 @@ interface ProjectHeaderProps {
   projectPath: string;
   currentBranch?: string;
   currentSession?: SessionResponse | null;
+  showSidebarTrigger?: boolean;
+  sidebarTriggerAlwaysVisible?: boolean; // When true, shows on all screen sizes
 }
 
-export function ProjectHeader({ projectId, projectName, projectPath, currentBranch, currentSession }: ProjectHeaderProps) {
+export function ProjectHeader({ projectId, projectName, projectPath, currentBranch, currentSession, showSidebarTrigger = true, sidebarTriggerAlwaysVisible = false }: ProjectHeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [gitModalOpen, setGitModalOpen] = useState(false);
+
+  // Fetch running workflow count for badge
+  const { data: executions } = useWorkflowExecutions(projectId, { status: 'running' });
+  const runningCount = executions?.length || 0;
 
   // Define navigation items
   const navItems = useMemo(
@@ -55,8 +64,14 @@ export function ProjectHeader({ projectId, projectName, projectPath, currentBran
         label: "Git",
         icon: GitBranch,
       },
+      {
+        to: `/projects/${projectId}/workflows`,
+        label: "Workflows",
+        icon: Workflow,
+        badge: runningCount,
+      },
     ],
-    [projectId]
+    [projectId, runningCount]
   );
 
   // Get current active nav item
@@ -75,8 +90,12 @@ export function ProjectHeader({ projectId, projectName, projectPath, currentBran
     <>
       <div className="flex items-center justify-between border-b px-4 md:px-6 py-3">
         <div className="flex items-center gap-2 min-w-0">
-          <SidebarTrigger className="md:hidden shrink-0" />
-          <Separator orientation="vertical" className="md:hidden h-4 shrink-0" />
+          {showSidebarTrigger && (
+            <>
+              <SidebarTrigger className={sidebarTriggerAlwaysVisible ? "shrink-0" : "md:hidden shrink-0"} />
+              <Separator orientation="vertical" className={sidebarTriggerAlwaysVisible ? "h-4 shrink-0" : "md:hidden h-4 shrink-0"} />
+            </>
+          )}
           <div className="flex flex-col gap-1 min-w-0">
             <div className="text-base font-medium truncate">{projectName}</div>
             {currentBranch && (
@@ -110,6 +129,11 @@ export function ProjectHeader({ projectId, projectName, projectPath, currentBran
             >
               <item.icon className="h-4 w-4" />
               {item.label}
+              {item.badge && item.badge > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  {item.badge}
+                </Badge>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -134,6 +158,11 @@ export function ProjectHeader({ projectId, projectName, projectPath, currentBran
                 >
                   <Icon className="h-4 w-4 mr-2" />
                   {item.label}
+                  {item.badge && item.badge > 0 && (
+                    <Badge variant="secondary" className="ml-auto h-5 px-1.5 text-xs">
+                      {item.badge}
+                    </Badge>
+                  )}
                 </DropdownMenuItem>
               );
             })}

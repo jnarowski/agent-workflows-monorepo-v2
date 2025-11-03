@@ -33,5 +33,26 @@ export async function getWorkflowExecutionById(id: string): Promise<WorkflowExec
     },
   });
 
-  return execution;
+  if (!execution) {
+    return null;
+  }
+
+  // Parse JSON fields (Prisma stores JSON as strings in SQLite)
+  const parsedExecution = {
+    ...execution,
+    args: execution.args && typeof execution.args === 'string'
+      ? JSON.parse(execution.args)
+      : execution.args,
+    workflow_definition: execution.workflow_definition ? {
+      ...execution.workflow_definition,
+      phases: typeof execution.workflow_definition.phases === 'string'
+        ? JSON.parse(execution.workflow_definition.phases)
+        : execution.workflow_definition.phases,
+      args_schema: execution.workflow_definition.args_schema && typeof execution.workflow_definition.args_schema === 'string'
+        ? JSON.parse(execution.workflow_definition.args_schema)
+        : execution.workflow_definition.args_schema,
+    } : execution.workflow_definition,
+  };
+
+  return parsedExecution as WorkflowExecution;
 }

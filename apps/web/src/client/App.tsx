@@ -5,6 +5,7 @@ import { WebSocketDevTools } from "@/client/components/WebSocketDevTools";
 import ProtectedLayout from "@/client/layouts/ProtectedLayout";
 import AuthLayout from "@/client/layouts/AuthLayout";
 import ProjectDetailLayout from "@/client/layouts/ProjectDetailLayout";
+import WorkflowLayout from "@/client/layouts/WorkflowLayout";
 import Projects from "@/client/pages/Projects";
 import ProjectHome from "@/client/pages/ProjectHome";
 import NewSession from "@/client/pages/projects/sessions/NewSession";
@@ -12,6 +13,8 @@ import ProjectSession from "@/client/pages/projects/sessions/ProjectSession";
 import ProjectShell from "@/client/pages/projects/shell/ProjectShell";
 import ProjectFiles from "@/client/pages/projects/files/ProjectFiles";
 import ProjectSourceControl from "@/client/pages/projects/git/ProjectSourceControl";
+import { ProjectWorkflowsView } from "@/client/pages/projects/workflows/ProjectWorkflowsView";
+import { WorkflowDetail } from "@/client/pages/projects/workflows/WorkflowDetail";
 import Login from "@/client/pages/auth/Login";
 import Signup from "@/client/pages/auth/Signup";
 import Components from "@/client/pages/Components";
@@ -30,7 +33,7 @@ function AppContent() {
             <Route path="/signup" element={<Signup />} />
           </Route>
 
-          {/* Protected routes */}
+          {/* Protected routes with sidebar */}
           <Route element={<ProtectedLayout />}>
             {/* Root redirect to projects */}
             <Route index element={<Navigate to="/projects" replace />} />
@@ -51,6 +54,12 @@ function AppContent() {
               <Route path="files" element={<ProjectFiles />} />
               <Route path="source-control" element={<ProjectSourceControl />} />
             </Route>
+          </Route>
+
+          {/* Workflow routes with dedicated layout (no sidebar) */}
+          <Route path="/projects/:projectId" element={<WorkflowLayout />}>
+            <Route path="workflows" element={<ProjectWorkflowsView />} />
+            <Route path="workflows/:executionId" element={<WorkflowDetail />} />
           </Route>
         </Routes>
       </ShellProvider>

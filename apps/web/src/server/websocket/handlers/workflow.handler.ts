@@ -1,67 +1,143 @@
-import type { WebSocket } from '@fastify/websocket';
+import type { EventEmitter } from 'node:events';
 import type { FastifyBaseLogger } from 'fastify';
+import { Channels, WorkflowEventTypes } from '@/shared/websocket/index';
+import { broadcast } from '../infrastructure/subscriptions';
+import type {
+  WorkflowStartedData,
+  WorkflowStepStartedData,
+  WorkflowStepCompletedData,
+  WorkflowStepFailedData,
+  WorkflowPhaseCompletedData,
+  WorkflowCompletedData,
+  WorkflowFailedData,
+  WorkflowPausedData,
+  WorkflowResumedData,
+  WorkflowCancelledData,
+  WorkflowCommentCreatedData,
+} from '@/shared/websocket/types';
 
 /**
  * Workflow WebSocket Handler
- * Emits events for workflow execution status changes, steps, comments, and artifacts
+ *
+ * Listens to EventBus events from MockWorkflowOrchestrator and broadcasts
+ * to WebSocket clients subscribed to project channels.
+ *
+ * Pattern: Room-based broadcasting
+ * - Events scoped to project:${projectId} channels
+ * - Clients subscribe to project channels and filter by executionId
+ * - Generic event names (workflow:step:completed) not per-execution names
  */
-
-// Event types
-export type WorkflowEventType =
-  | 'workflow.execution.status_changed'
-  | 'workflow.execution.phase_changed'
-  | 'workflow.step.started'
-  | 'workflow.step.completed'
-  | 'workflow.step.progress'
-  | 'workflow.comment.created'
-  | 'workflow.artifact.created'
-  | 'workflow.artifact.attached';
-
-export interface WorkflowEvent {
-  type: WorkflowEventType;
-  data: Record<string, unknown>;
-}
 
 /**
- * Emit a workflow event to all connected clients subscribed to the project
- * Note: Actual implementation will integrate with EventBus once created
+ * Register workflow event listeners on the EventBus
+ *
+ * @param eventBus - Node EventEmitter instance from MockWorkflowOrchestrator
+ * @param logger - Optional Fastify logger
  */
-export function emitWorkflowEvent(
-  event: WorkflowEvent,
+export function registerWorkflowEventListeners(
+  eventBus: EventEmitter,
   logger?: FastifyBaseLogger
 ): void {
-  // STUB: Future implementation will broadcast to connected WebSocket clients
-  logger?.debug({ event }, 'Workflow event emitted (stub)');
+  logger?.info('Registering workflow WebSocket event listeners');
 
-  // Future: Use EventBus to broadcast event to subscribers
-  // eventBus.emit(event.type, event.data);
-}
+  // Workflow started
+  eventBus.on('workflow:started', (data: WorkflowStartedData) => {
+    logger?.debug({ data }, 'Workflow started event');
+    broadcast(Channels.project(data.projectId), {
+      type: WorkflowEventTypes.STARTED,
+      data,
+    });
+  });
 
-/**
- * Send workflow event to a specific socket
- */
-export function sendWorkflowEvent(
-  socket: WebSocket,
-  event: WorkflowEvent
-): void {
-  if (socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify(event));
-  }
-}
+  // Step started
+  eventBus.on('workflow:step:started', (data: WorkflowStepStartedData) => {
+    logger?.debug({ data }, 'Workflow step started event');
+    broadcast(Channels.project(data.projectId), {
+      type: WorkflowEventTypes.STEP_STARTED,
+      data,
+    });
+  });
 
-/**
- * Handle workflow WebSocket messages
- * Note: WebSocket handler registration will be added when integrating with EventBus
- */
-export async function handleWorkflowMessage(
-  message: unknown,
-  _socket: WebSocket,
-  logger: FastifyBaseLogger
-): Promise<void> {
-  logger.debug({ message }, 'Workflow message received (stub)');
+  // Step completed
+  eventBus.on('workflow:step:completed', (data: WorkflowStepCompletedData) => {
+    logger?.debug({ data }, 'Workflow step completed event');
+    broadcast(Channels.project(data.projectId), {
+      type: WorkflowEventTypes.STEP_COMPLETED,
+      data,
+    });
+  });
 
-  // Future: Handle workflow control messages
-  // - Subscribe to workflow execution updates
-  // - Request step logs
-  // - Send control commands (pause/resume/cancel)
+  // Step failed
+  eventBus.on('workflow:step:failed', (data: WorkflowStepFailedData) => {
+    logger?.debug({ data }, 'Workflow step failed event');
+    broadcast(Channels.project(data.projectId), {
+      type: WorkflowEventTypes.STEP_FAILED,
+      data,
+    });
+  });
+
+  // Phase completed
+  eventBus.on('workflow:phase:completed', (data: WorkflowPhaseCompletedData) => {
+    logger?.debug({ data }, 'Workflow phase completed event');
+    broadcast(Channels.project(data.projectId), {
+      type: WorkflowEventTypes.PHASE_COMPLETED,
+      data,
+    });
+  });
+
+  // Workflow completed
+  eventBus.on('workflow:completed', (data: WorkflowCompletedData) => {
+    logger?.info({ data }, 'Workflow completed event');
+    broadcast(Channels.project(data.projectId), {
+      type: WorkflowEventTypes.COMPLETED,
+      data,
+    });
+  });
+
+  // Workflow failed
+  eventBus.on('workflow:failed', (data: WorkflowFailedData) => {
+    logger?.warn({ data }, 'Workflow failed event');
+    broadcast(Channels.project(data.projectId), {
+      type: WorkflowEventTypes.FAILED,
+      data,
+    });
+  });
+
+  // Workflow paused
+  eventBus.on('workflow:paused', (data: WorkflowPausedData) => {
+    logger?.debug({ data }, 'Workflow paused event');
+    broadcast(Channels.project(data.projectId), {
+      type: WorkflowEventTypes.PAUSED,
+      data,
+    });
+  });
+
+  // Workflow resumed
+  eventBus.on('workflow:resumed', (data: WorkflowResumedData) => {
+    logger?.debug({ data }, 'Workflow resumed event');
+    broadcast(Channels.project(data.projectId), {
+      type: WorkflowEventTypes.RESUMED,
+      data,
+    });
+  });
+
+  // Workflow cancelled
+  eventBus.on('workflow:cancelled', (data: WorkflowCancelledData) => {
+    logger?.debug({ data }, 'Workflow cancelled event');
+    broadcast(Channels.project(data.projectId), {
+      type: WorkflowEventTypes.CANCELLED,
+      data,
+    });
+  });
+
+  // Comment created
+  eventBus.on('workflow:comment:created', (data: WorkflowCommentCreatedData) => {
+    logger?.debug({ data }, 'Workflow comment created event');
+    broadcast(Channels.project(data.projectId), {
+      type: WorkflowEventTypes.COMMENT_CREATED,
+      data,
+    });
+  });
+
+  logger?.info('Workflow WebSocket event listeners registered (12 events)');
 }

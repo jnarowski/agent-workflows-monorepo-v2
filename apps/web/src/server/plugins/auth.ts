@@ -54,6 +54,7 @@ declare module "fastify" {
       request: FastifyRequest,
       reply: FastifyReply
     ) => Promise<void>;
+    workflowOrchestrator: import('@/server/domain/workflow/services/MockWorkflowOrchestrator').MockWorkflowOrchestrator;
   }
 
   interface FastifyRequest {

@@ -106,6 +106,10 @@ export async function registerWebSocket(
                 await handleSessionEvent(socket, channel, type, data, userId!, fastify);
               } else if (channel?.startsWith("shell:")) {
                 await handleShellEvent(socket, channel, type, data, userId!, fastify);
+              } else if (channel?.startsWith("project:")) {
+                // Project channels are used for workflow events (broadcast-only)
+                // Route subscribe/unsubscribe to global handler
+                await handleGlobalEvent(socket, channel, type, data, userId!, fastify);
               } else if (channel === "global") {
                 await handleGlobalEvent(socket, channel, type, data, userId!, fastify);
               } else {

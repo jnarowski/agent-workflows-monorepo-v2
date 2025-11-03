@@ -10,6 +10,7 @@ generator client {
 // Workflow orchestration models
 model WorkflowDefinition {
   id          String   @id @default(cuid())
+  project_id  String
   name        String
   description String?
   type        String   // 'code' or 'yaml'
@@ -20,10 +21,12 @@ model WorkflowDefinition {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
+  project    Project              @relation(fields: [project_id], references: [id], onDelete: Cascade)
   executions WorkflowExecution[]
 
   @@index([type])
   @@index([is_template])
+  @@index([project_id])
   @@map("workflow_definitions")
 }
 
@@ -126,15 +129,16 @@ model WorkflowArtifact {
 }
 
 model Project {
-  id                  String              @id @default(cuid())
-  name                String
-  path                String              @unique
-  is_hidden           Boolean             @default(false)
-  is_starred          Boolean             @default(false)
-  created_at          DateTime            @default(now())
-  updated_at          DateTime            @updatedAt
-  sessions            AgentSession[]
-  workflow_executions WorkflowExecution[]
+  id                   String                @id @default(cuid())
+  name                 String
+  path                 String                @unique
+  is_hidden            Boolean               @default(false)
+  is_starred           Boolean               @default(false)
+  created_at           DateTime              @default(now())
+  updated_at           DateTime              @updatedAt
+  sessions             AgentSession[]
+  workflow_definitions WorkflowDefinition[]
+  workflow_executions  WorkflowExecution[]
 
   @@map("projects")
 }

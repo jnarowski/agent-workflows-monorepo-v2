@@ -1,11 +1,15 @@
 import { prisma } from '@/shared/prisma';
+import type { MockWorkflowOrchestrator } from './MockWorkflowOrchestrator';
 
 /**
- * STUB: Execute a workflow (future implementation)
- * Currently just updates status to 'pending' and sets started_at
- * Returns immediately - no actual execution
+ * Execute a workflow by delegating to the MockWorkflowOrchestrator.
+ * The orchestrator will process steps asynchronously in the background.
  */
-export async function executeWorkflow(executionId: string): Promise<void> {
+export async function executeWorkflow(
+  executionId: string,
+  orchestrator: MockWorkflowOrchestrator
+): Promise<void> {
+  // Update execution status to pending (queued for processing)
   await prisma.workflowExecution.update({
     where: { id: executionId },
     data: {
@@ -14,6 +18,8 @@ export async function executeWorkflow(executionId: string): Promise<void> {
     },
   });
 
-  // Returns immediately - no actual execution
-  // Future: This will spawn workflow engine and execute steps
+  // Execute workflow asynchronously (no queue needed)
+  await orchestrator.executeWorkflow(executionId);
+
+  // Returns immediately - workflow will be processed in the background
 }
