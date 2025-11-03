@@ -2,14 +2,13 @@ import { useState } from "react";
 import type { WorkflowExecutionStep, WorkflowEvent } from "../types";
 import { WorkflowStatusBadge } from "./WorkflowStatusBadge";
 import { WorkflowTimelineCommentItem } from "./WorkflowTimelineCommentItem";
+import { WorkflowTimelineItemHeader } from "./WorkflowTimelineItemHeader";
 import {
   formatStepName,
   formatRelativeTime,
 } from "../utils/workflowFormatting";
 import { Badge } from "@/client/components/ui/badge";
 import {
-  ChevronDown,
-  ChevronRight,
   ExternalLink,
   FileText,
   Clock,
@@ -95,58 +94,33 @@ function StepItem({
       </div>
 
       {/* Content */}
-      <div
-        className={`pt-2 pl-3 pr-3 pb-3 sm:pt-1 space-y-2 rounded-lg transition-colors ${isExpanded ? "bg-muted/30" : ""}`}
-      >
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full text-left flex items-stretch gap-3"
-        >
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            {/* Step Title */}
-            <h3 className="text-base font-semibold truncate">
-              {formatStepName(step.step_name)}
-            </h3>
-
-            {/* Step Number & Time */}
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-              <span>Step {step.step_number}</span>
-              <span>•</span>
-              <span>{getTimeDisplay()}</span>
-              {getDuration() && (
-                <>
-                  <span>•</span>
-                  <span>{getDuration()}</span>
-                </>
-              )}
-              {step.phase_name && (
-                <>
-                  <span>•</span>
-                  <span>{step.phase_name}</span>
-                </>
-              )}
-            </div>
-
-            {/* Status Badge */}
-            <div className="mt-2">
-              <WorkflowStatusBadge status={step.status} size="sm" />
-            </div>
-          </div>
-
-          {/* Chevron - centered vertically on the right */}
-          <div className="flex items-center self-stretch flex-shrink-0">
-            {isExpanded ? (
-              <ChevronDown className="h-5 w-5" />
-            ) : (
-              <ChevronRight className="h-5 w-5" />
+      <WorkflowTimelineItemHeader
+        title={formatStepName(step.step_name)}
+        isExpanded={isExpanded}
+        onToggle={() => setIsExpanded(!isExpanded)}
+        metadata={
+          <>
+            <span>Step {step.step_number}</span>
+            <span>•</span>
+            <span>{getTimeDisplay()}</span>
+            {getDuration() && (
+              <>
+                <span>•</span>
+                <span>{getDuration()}</span>
+              </>
             )}
-          </div>
-        </button>
-
+            {step.phase_name && (
+              <>
+                <span>•</span>
+                <span>{step.phase_name}</span>
+              </>
+            )}
+          </>
+        }
+        badge={<WorkflowStatusBadge status={step.status} size="sm" />}
+      >
         {/* Expanded content */}
-        {isExpanded && (
-          <div className="pt-5 space-y-3 border-t mt-5">
+        <div className="space-y-3">
             {/* Agent session link */}
             {step.agent_session_id && (
               <div className="flex items-center gap-2 text-sm">
@@ -229,19 +203,18 @@ function StepItem({
               </div>
             )}
 
-            {/* Empty state */}
-            {!hasLogs &&
-              !hasError &&
-              !hasArtifacts &&
-              !hasComments &&
-              !step.agent_session_id && (
-                <div className="py-4 text-center text-sm text-muted-foreground">
-                  No additional details available
-                </div>
-              )}
-          </div>
-        )}
-      </div>
+          {/* Empty state */}
+          {!hasLogs &&
+            !hasError &&
+            !hasArtifacts &&
+            !hasComments &&
+            !step.agent_session_id && (
+              <div className="py-4 text-center text-sm text-muted-foreground">
+                No additional details available
+              </div>
+            )}
+        </div>
+      </WorkflowTimelineItemHeader>
     </div>
   );
 }
@@ -280,67 +253,49 @@ function EventItem({ event }: { event: WorkflowEvent }) {
       </div>
 
       {/* Content */}
-      <div className="pt-2 sm:pt-1 space-y-2">
-        {hasExpandableContent ? (
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="w-full text-left"
-          >
-            {/* Event Title & Badge */}
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-base font-semibold">
-                {getEventTitle(event)}
-              </h3>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Badge variant={variant} className="rounded-full text-xs">
-                  {label}
-                </Badge>
-                <span>
-                  {isExpanded ? (
-                    <ChevronDown className="h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
-                </span>
-              </div>
-            </div>
+      {hasExpandableContent ? (
+        <WorkflowTimelineItemHeader
+          title={getEventTitle(event)}
+          isExpanded={isExpanded}
+          onToggle={() => setIsExpanded(!isExpanded)}
+          metadata={<span>{formatRelativeTime(event.created_at)}</span>}
+          badge={
+            <Badge variant={variant} className="rounded-full text-xs">
+              {label}
+            </Badge>
+          }
+        >
+          {/* Expanded content */}
+          <div className="space-y-3">
+            {/* Description */}
+            {description && (
+              <p className="text-sm text-muted-foreground text-pretty">
+                {description}
+              </p>
+            )}
 
-            {/* Timestamp */}
-            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              <span>{formatRelativeTime(event.created_at)}</span>
-            </div>
-          </button>
-        ) : (
-          <>
-            {/* Event Title & Badge */}
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-base font-semibold">
-                {getEventTitle(event)}
-              </h3>
-              <Badge variant={variant} className="rounded-full text-xs">
-                {label}
-              </Badge>
-            </div>
+            {/* Event Data (if any additional metadata) */}
+            {renderEventData(event)}
+          </div>
+        </WorkflowTimelineItemHeader>
+      ) : (
+        <div className="pt-2 sm:pt-1 space-y-2">
+          {/* Title */}
+          <h3 className="text-base font-semibold">{getEventTitle(event)}</h3>
 
-            {/* Timestamp */}
-            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              <span>{formatRelativeTime(event.created_at)}</span>
-            </div>
-          </>
-        )}
+          {/* Timestamp */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+            <span>{formatRelativeTime(event.created_at)}</span>
+          </div>
 
-        {/* Description (collapsible if present) */}
-        {hasExpandableContent && isExpanded && (
-          <p className="text-sm text-muted-foreground text-pretty pt-1">
-            {description}
-          </p>
-        )}
-
-        {/* Event Data (if any additional metadata) */}
-        {isExpanded && renderEventData(event)}
-      </div>
+          {/* Event Type Badge */}
+          <div className="mt-2">
+            <Badge variant={variant} className="rounded-full text-xs">
+              {label}
+            </Badge>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
