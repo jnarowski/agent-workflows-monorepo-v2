@@ -489,23 +489,26 @@ describe('ProjectSyncService', () => {
       );
 
       // Mock responses
+      const now = new Date();
       const mockProject1 = {
         id: 'project-1',
         name: 'project1',
         path: '/Users/test/project1',
         is_hidden: false,
         is_starred: false,
-        created_at: new Date(),
-        updated_at: new Date(),
+        created_at: now,
+        updated_at: now, // Same as created_at = new project
       };
+      const past = new Date('2024-01-01');
+      const later = new Date('2024-01-02');
       const mockProject2 = {
         id: 'project-2',
         name: 'project2',
         path: '/Users/test/project2',
         is_hidden: false,
         is_starred: false,
-        created_at: new Date('2024-01-01'),
-        updated_at: new Date('2024-01-02'),
+        created_at: past,
+        updated_at: later, // Different from created_at = existing project
       };
 
       vi.mocked(projectService.createOrUpdateProject)

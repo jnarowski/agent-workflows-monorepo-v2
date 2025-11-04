@@ -13,6 +13,7 @@ import {
   formatRelativeTime,
 } from "../../utils/workflowFormatting";
 import { ExternalLink, Workflow, MessageSquare } from "lucide-react";
+import { Button } from "@/client/components/ui/button";
 
 export interface StepItemProps {
   item: StepTimelineItem;
@@ -90,19 +91,20 @@ function StepItemComponent({ item, projectId }: StepItemProps) {
           <div className="space-y-3">
             {/* Agent session link */}
             {metadata.agentSessionId && (
-              <div className="flex items-center gap-2 text-sm">
-                <button
+              <div className="flex items-center gap-2">
+                <Button
                   onClick={() =>
                     handleSessionClick(
                       metadata.agentSessionId!,
                       formatStepName(metadata.name)
                     )
                   }
-                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                  variant="outline"
+                  size="sm"
                 >
-                  <MessageSquare className="h-3 w-3" />
+                  <MessageSquare />
                   View Agent Session
-                </button>
+                </Button>
 
                 {/* Fallback link for new tab */}
                 <a

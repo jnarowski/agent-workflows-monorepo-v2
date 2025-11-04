@@ -185,7 +185,7 @@ describe('applyWorkflowUpdate - Step Started', () => {
     expect(result.steps![0].started_at).toEqual(startedAt);
   });
 
-  it('should create step_started event', () => {
+  it('should not create step_started event (backend handles)', () => {
     const step = createMockStep({ id: 'step-1' });
     const execution = createMockExecution({ steps: [step], events: [] });
     const startedAt = new Date('2025-01-01T00:05:00Z');
@@ -199,10 +199,8 @@ describe('applyWorkflowUpdate - Step Started', () => {
 
     const result = applyWorkflowUpdate(execution, update);
 
-    expect(result.events).toHaveLength(1);
-    expect(result.events![0].event_type).toBe('step_started');
-    expect(result.events![0].workflow_execution_step_id).toBe('step-1');
-    expect(result.events![0].event_data.step_name).toBe('Build Phase');
+    // Backend creates events, not client
+    expect(result.events).toHaveLength(0);
   });
 
   it('should update current_step field', () => {
@@ -242,7 +240,7 @@ describe('applyWorkflowUpdate - Step Started', () => {
     expect(result.steps![1].status).toBe('running'); // step-2 updated
   });
 
-  it('should append event to existing events', () => {
+  it('should preserve existing events without adding new ones', () => {
     const existingEvent = createMockEvent();
     const step = createMockStep({ id: 'step-1' });
     const execution = createMockExecution({
@@ -259,9 +257,9 @@ describe('applyWorkflowUpdate - Step Started', () => {
 
     const result = applyWorkflowUpdate(execution, update);
 
-    expect(result.events).toHaveLength(2);
+    // Backend creates events, client preserves existing
+    expect(result.events).toHaveLength(1);
     expect(result.events![0]).toEqual(existingEvent);
-    expect(result.events![1].event_type).toBe('step_started');
   });
 });
 
@@ -735,7 +733,8 @@ describe('applyWorkflowUpdate - Edge Cases', () => {
     const result = applyWorkflowUpdate(execution, update);
 
     expect(result.steps).toHaveLength(0);
-    expect(result.events).toHaveLength(1); // event still created
+    // Backend creates events, not client
+    expect(result.events).toHaveLength(0);
   });
 
   it('should handle undefined steps array', () => {
