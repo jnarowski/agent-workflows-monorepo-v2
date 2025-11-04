@@ -10,7 +10,7 @@ import {
   type WebSocketUpdate,
 } from "../lib/applyWorkflowUpdate";
 import type { WorkflowExecution } from "../types";
-import type { WorkflowWebSocketMessage } from "@/shared/websocket/workflow.schemas";
+import type { WorkflowEvent } from "@/shared/websocket/types";
 
 export function useWorkflowWebSocket(projectId: string) {
   const { eventBus, sendMessage, isConnected } = useWebSocket();
@@ -66,10 +66,10 @@ export function useWorkflowWebSocket(projectId: string) {
 
     // Workflow started
     const handleStarted = (
-      event: Extract<WorkflowWebSocketMessage, { type: "workflow:started" }>
+      event: Extract<WorkflowEvent, { type: "workflow:started" }>
     ) => {
-      handleWorkflowStarted({ executionId: event.executionId });
-      applyIncrementalUpdate(event.executionId, {
+      handleWorkflowStarted({ executionId: event.data.executionId });
+      applyIncrementalUpdate(event.data.executionId, {
         type: "workflow_status_updated",
         status: "running",
       });
@@ -78,20 +78,20 @@ export function useWorkflowWebSocket(projectId: string) {
     // Step started
     const handleStepStart = (
       event: Extract<
-        WorkflowWebSocketMessage,
+        WorkflowEvent,
         { type: "workflow:step:started" }
       >
     ) => {
       handleStepStarted({
-        executionId: event.executionId,
+        executionId: event.data.executionId,
         stepId: event.data.stepId,
         stepName: event.data.stepName,
-        phaseName: event.data.phase || "unknown",
+        phaseName: event.data.phase,
       });
-      applyIncrementalUpdate(event.executionId, {
+      applyIncrementalUpdate(event.data.executionId, {
         type: "step_started",
         stepId: event.data.stepId,
-        startedAt: new Date(event.timestamp),
+        startedAt: new Date(event.data.timestamp),
         stepName: event.data.stepName,
       });
     };
@@ -99,51 +99,51 @@ export function useWorkflowWebSocket(projectId: string) {
     // Step completed
     const handleStepComplete = (
       event: Extract<
-        WorkflowWebSocketMessage,
+        WorkflowEvent,
         { type: "workflow:step:completed" }
       >
     ) => {
       handleStepCompleted({
-        executionId: event.executionId,
+        executionId: event.data.executionId,
         stepId: event.data.stepId,
-        logs: event.data.logs || "",
+        logs: event.data.logs,
       });
-      applyIncrementalUpdate(event.executionId, {
+      applyIncrementalUpdate(event.data.executionId, {
         type: "step_completed",
         stepId: event.data.stepId,
-        completedAt: new Date(event.timestamp),
+        completedAt: new Date(event.data.timestamp),
         logs: event.data.logs,
       });
     };
 
     // Step failed
     const handleStepFail = (
-      event: Extract<WorkflowWebSocketMessage, { type: "workflow:step:failed" }>
+      event: Extract<WorkflowEvent, { type: "workflow:step:failed" }>
     ) => {
       handleStepFailed({
-        executionId: event.executionId,
+        executionId: event.data.executionId,
         stepId: event.data.stepId,
         error: event.data.error,
       });
-      applyIncrementalUpdate(event.executionId, {
+      applyIncrementalUpdate(event.data.executionId, {
         type: "step_failed",
         stepId: event.data.stepId,
-        completedAt: new Date(event.timestamp),
+        completedAt: new Date(event.data.timestamp),
         errorMessage: event.data.error,
       });
-      toast.error(`Step failed: ${event.data.stepName || "Unknown step"}`);
+      toast.error(`Step failed: ${event.data.stepName}`);
     };
 
     // Phase completed
     const handlePhaseComplete = (
       event: Extract<
-        WorkflowWebSocketMessage,
+        WorkflowEvent,
         { type: "workflow:phase:completed" }
       >
     ) => {
       handlePhaseCompleted({
-        executionId: event.executionId,
-        phaseName: event.data.phaseName,
+        executionId: event.data.executionId,
+        phaseName: event.data.phase,
         nextPhase: null, // TODO: Backend should provide nextPhase
       });
       // Phase completion may need to trigger other updates, but for now we can skip
@@ -152,13 +152,13 @@ export function useWorkflowWebSocket(projectId: string) {
 
     // Workflow completed
     const handleComplete = (
-      event: Extract<WorkflowWebSocketMessage, { type: "workflow:completed" }>
+      event: Extract<WorkflowEvent, { type: "workflow:completed" }>
     ) => {
-      handleWorkflowCompleted({ executionId: event.executionId });
-      applyIncrementalUpdate(event.executionId, {
+      handleWorkflowCompleted({ executionId: event.data.executionId });
+      applyIncrementalUpdate(event.data.executionId, {
         type: "workflow_status_updated",
         status: "completed",
-        completedAt: new Date(event.timestamp),
+        completedAt: new Date(event.data.timestamp),
       });
       // Invalidate list to update workflow status
       queryClient.invalidateQueries({
@@ -169,31 +169,31 @@ export function useWorkflowWebSocket(projectId: string) {
 
     // Workflow failed
     const handleFail = (
-      event: Extract<WorkflowWebSocketMessage, { type: "workflow:failed" }>
+      event: Extract<WorkflowEvent, { type: "workflow:failed" }>
     ) => {
       handleWorkflowFailed({
-        executionId: event.executionId,
+        executionId: event.data.executionId,
         error: event.data.error,
       });
-      applyIncrementalUpdate(event.executionId, {
+      applyIncrementalUpdate(event.data.executionId, {
         type: "workflow_status_updated",
         status: "failed",
-        completedAt: new Date(event.timestamp),
+        completedAt: new Date(event.data.timestamp),
         errorMessage: event.data.error,
       });
       // Invalidate list to update workflow status
       queryClient.invalidateQueries({
         queryKey: ["workflow-executions", projectId],
       });
-      toast.error(`Workflow failed: ${event.data.error || "Unknown error"}`);
+      toast.error(`Workflow failed: ${event.data.error}`);
     };
 
     // Workflow paused
     const handlePause = (
-      event: Extract<WorkflowWebSocketMessage, { type: "workflow:paused" }>
+      event: Extract<WorkflowEvent, { type: "workflow:paused" }>
     ) => {
-      handleWorkflowPaused({ executionId: event.executionId });
-      applyIncrementalUpdate(event.executionId, {
+      handleWorkflowPaused({ executionId: event.data.executionId });
+      applyIncrementalUpdate(event.data.executionId, {
         type: "workflow_status_updated",
         status: "paused",
       });
@@ -201,10 +201,10 @@ export function useWorkflowWebSocket(projectId: string) {
 
     // Workflow resumed
     const handleResume = (
-      event: Extract<WorkflowWebSocketMessage, { type: "workflow:resumed" }>
+      event: Extract<WorkflowEvent, { type: "workflow:resumed" }>
     ) => {
-      handleWorkflowResumed({ executionId: event.executionId });
-      applyIncrementalUpdate(event.executionId, {
+      handleWorkflowResumed({ executionId: event.data.executionId });
+      applyIncrementalUpdate(event.data.executionId, {
         type: "workflow_status_updated",
         status: "running",
       });
@@ -212,13 +212,13 @@ export function useWorkflowWebSocket(projectId: string) {
 
     // Workflow cancelled
     const handleCancel = (
-      event: Extract<WorkflowWebSocketMessage, { type: "workflow:cancelled" }>
+      event: Extract<WorkflowEvent, { type: "workflow:cancelled" }>
     ) => {
-      handleWorkflowCancelled({ executionId: event.executionId });
-      applyIncrementalUpdate(event.executionId, {
+      handleWorkflowCancelled({ executionId: event.data.executionId });
+      applyIncrementalUpdate(event.data.executionId, {
         type: "workflow_status_updated",
         status: "cancelled",
-        completedAt: new Date(event.timestamp),
+        completedAt: new Date(event.data.timestamp),
       });
       // Invalidate list to update workflow status
       queryClient.invalidateQueries({
@@ -230,14 +230,14 @@ export function useWorkflowWebSocket(projectId: string) {
     // Annotation created
     const handleAnnotation = (
       event: Extract<
-        WorkflowWebSocketMessage,
+        WorkflowEvent,
         { type: "workflow:annotation:created" }
       >
     ) => {
       // Create WorkflowEvent for the annotation
       const annotationEvent = {
         id: event.data.commentId,
-        workflow_execution_id: event.executionId,
+        workflow_execution_id: event.data.executionId,
         workflow_execution_step_id: event.data.stepId || null,
         event_type: "annotation_added" as const,
         event_data: {
@@ -245,26 +245,26 @@ export function useWorkflowWebSocket(projectId: string) {
           body: event.data.text || event.data.body || "",
         },
         created_by_user_id: event.data.userId || null,
-        created_at: new Date(event.timestamp),
+        created_at: new Date(event.data.timestamp),
       };
 
       handleEventCreated({
-        executionId: event.executionId,
+        executionId: event.data.executionId,
         event: annotationEvent,
       });
 
-      applyIncrementalUpdate(event.executionId, {
+      applyIncrementalUpdate(event.data.executionId, {
         type: "annotation_added",
         annotationId: event.data.commentId,
         text: event.data.text || event.data.body || "",
         stepId: event.data.stepId || undefined,
         userId: event.data.userId || null,
-        createdAt: new Date(event.timestamp),
+        createdAt: new Date(event.data.timestamp),
       });
     };
 
     // Single event handler that dispatches by event type
-    const handleWorkflowEvent = (event: WorkflowWebSocketMessage) => {
+    const handleWorkflowEvent = (event: WorkflowEvent) => {
       switch (event.type) {
         case WorkflowEventTypes.CREATED:
           handleCreated();
@@ -272,7 +272,7 @@ export function useWorkflowWebSocket(projectId: string) {
         case WorkflowEventTypes.STARTED:
           handleStarted(
             event as Extract<
-              WorkflowWebSocketMessage,
+              WorkflowEvent,
               { type: "workflow:started" }
             >
           );
@@ -280,7 +280,7 @@ export function useWorkflowWebSocket(projectId: string) {
         case WorkflowEventTypes.STEP_STARTED:
           handleStepStart(
             event as Extract<
-              WorkflowWebSocketMessage,
+              WorkflowEvent,
               { type: "workflow:step:started" }
             >
           );
@@ -288,7 +288,7 @@ export function useWorkflowWebSocket(projectId: string) {
         case WorkflowEventTypes.STEP_COMPLETED:
           handleStepComplete(
             event as Extract<
-              WorkflowWebSocketMessage,
+              WorkflowEvent,
               { type: "workflow:step:completed" }
             >
           );
@@ -296,7 +296,7 @@ export function useWorkflowWebSocket(projectId: string) {
         case WorkflowEventTypes.STEP_FAILED:
           handleStepFail(
             event as Extract<
-              WorkflowWebSocketMessage,
+              WorkflowEvent,
               { type: "workflow:step:failed" }
             >
           );
@@ -304,7 +304,7 @@ export function useWorkflowWebSocket(projectId: string) {
         case WorkflowEventTypes.PHASE_COMPLETED:
           handlePhaseComplete(
             event as Extract<
-              WorkflowWebSocketMessage,
+              WorkflowEvent,
               { type: "workflow:phase:completed" }
             >
           );
@@ -312,7 +312,7 @@ export function useWorkflowWebSocket(projectId: string) {
         case WorkflowEventTypes.COMPLETED:
           handleComplete(
             event as Extract<
-              WorkflowWebSocketMessage,
+              WorkflowEvent,
               { type: "workflow:completed" }
             >
           );
@@ -320,7 +320,7 @@ export function useWorkflowWebSocket(projectId: string) {
         case WorkflowEventTypes.FAILED:
           handleFail(
             event as Extract<
-              WorkflowWebSocketMessage,
+              WorkflowEvent,
               { type: "workflow:failed" }
             >
           );
@@ -328,7 +328,7 @@ export function useWorkflowWebSocket(projectId: string) {
         case WorkflowEventTypes.PAUSED:
           handlePause(
             event as Extract<
-              WorkflowWebSocketMessage,
+              WorkflowEvent,
               { type: "workflow:paused" }
             >
           );
@@ -336,7 +336,7 @@ export function useWorkflowWebSocket(projectId: string) {
         case WorkflowEventTypes.RESUMED:
           handleResume(
             event as Extract<
-              WorkflowWebSocketMessage,
+              WorkflowEvent,
               { type: "workflow:resumed" }
             >
           );
@@ -344,7 +344,7 @@ export function useWorkflowWebSocket(projectId: string) {
         case WorkflowEventTypes.CANCELLED:
           handleCancel(
             event as Extract<
-              WorkflowWebSocketMessage,
+              WorkflowEvent,
               { type: "workflow:cancelled" }
             >
           );
@@ -352,7 +352,7 @@ export function useWorkflowWebSocket(projectId: string) {
         case WorkflowEventTypes.ANNOTATION_CREATED:
           handleAnnotation(
             event as Extract<
-              WorkflowWebSocketMessage,
+              WorkflowEvent,
               { type: "workflow:annotation:created" }
             >
           );
@@ -360,15 +360,11 @@ export function useWorkflowWebSocket(projectId: string) {
       }
     };
 
-    // Type assertion needed because WorkflowWebSocketMessage has additional fields
-    // (executionId, projectId, timestamp) beyond ChannelEvent's { type, data } structure
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    eventBus.on(channel, handleWorkflowEvent as any);
+    eventBus.on(channel, handleWorkflowEvent);
 
     // Cleanup
     return () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      eventBus.off(channel, handleWorkflowEvent as any);
+      eventBus.off(channel, handleWorkflowEvent);
     };
     // Zustand store functions (handle*, setConnected) are stable and omitted per convention
     // eslint-disable-next-line react-hooks/exhaustive-deps

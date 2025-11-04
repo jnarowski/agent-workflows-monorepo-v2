@@ -14,7 +14,6 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { existsSync } from 'fs';
 import { Prisma } from '@prisma/client';
-import { EventEmitter } from 'node:events';
 import { registerRoutes } from '@/server/routes';
 import { registerWebSocket, activeSessions, reconnectionManager } from '@/server/websocket/index';
 import { registerShellRoute } from '@/server/routes/shell';
@@ -23,6 +22,7 @@ import { setupGracefulShutdown } from '@/server/utils/shutdown';
 import { config } from '@/server/config/Configuration';
 import { MockWorkflowOrchestrator } from '@/server/domain/workflow/services/MockWorkflowOrchestrator';
 import { registerWorkflowEventListeners } from '@/server/websocket/handlers/workflow.handler';
+import { eventBus } from '@/server/websocket/infrastructure/EventBus';
 import {
   AppError,
   ConflictError,
@@ -318,19 +318,15 @@ export async function createServer() {
   // Register Shell WebSocket handler
   await registerShellRoute(fastify);
 
-  // Create EventBus for workflow events
-  const workflowEventBus = new EventEmitter();
-  workflowEventBus.setMaxListeners(50); // Increase for multiple event types
-
-  // Initialize MockWorkflowOrchestrator
-  const workflowOrchestrator = new MockWorkflowOrchestrator(workflowEventBus, fastify.log);
+  // Initialize MockWorkflowOrchestrator with singleton eventBus
+  const workflowOrchestrator = new MockWorkflowOrchestrator(eventBus, fastify.log);
   fastify.log.info('MockWorkflowOrchestrator initialized');
 
   // Start the workflow runner
   workflowOrchestrator.start();
 
   // Register workflow WebSocket event listeners
-  registerWorkflowEventListeners(workflowEventBus, fastify.log);
+  registerWorkflowEventListeners(eventBus, fastify.log);
 
   // Store orchestrator on fastify instance for access in routes
   fastify.decorate('workflowOrchestrator', workflowOrchestrator);

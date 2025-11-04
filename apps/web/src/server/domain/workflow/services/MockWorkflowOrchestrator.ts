@@ -107,10 +107,13 @@ export class MockWorkflowOrchestrator {
         logger: this.logger
       });
 
-      this.eventBus.emit('workflow:started', {
-        executionId,
-        projectId: execution.project_id,
-        timestamp: startedAt.toISOString()
+      this.eventBus.emit(`project:${execution.project_id}`, {
+        type: 'workflow:started',
+        data: {
+          executionId,
+          projectId: execution.project_id,
+          timestamp: startedAt.toISOString()
+        }
       });
 
       // Process each step sequentially
@@ -146,11 +149,14 @@ export class MockWorkflowOrchestrator {
               logger: this.logger
             });
 
-            this.eventBus.emit('workflow:phase:completed', {
-              executionId,
-              projectId: execution.project_id,
-              phase: step.phase,
-              timestamp: new Date().toISOString()
+            this.eventBus.emit(`project:${execution.project_id}`, {
+              type: 'workflow:phase:completed',
+              data: {
+                executionId,
+                projectId: execution.project_id,
+                phase: step.phase,
+                timestamp: new Date().toISOString()
+              }
             });
           }
         } catch (error) {
@@ -177,11 +183,14 @@ export class MockWorkflowOrchestrator {
             logger: this.logger
           });
 
-          this.eventBus.emit('workflow:failed', {
-            executionId,
-            projectId: execution.project_id,
-            error: error instanceof Error ? error.message : 'Unknown error',
-            timestamp: failedAt.toISOString()
+          this.eventBus.emit(`project:${execution.project_id}`, {
+            type: 'workflow:failed',
+            data: {
+              executionId,
+              projectId: execution.project_id,
+              error: error instanceof Error ? error.message : 'Unknown error',
+              timestamp: failedAt.toISOString()
+            }
           });
 
           return; // Stop processing
@@ -207,10 +216,13 @@ export class MockWorkflowOrchestrator {
         logger: this.logger
       });
 
-      this.eventBus.emit('workflow:completed', {
-        executionId,
-        projectId: execution.project_id,
-        timestamp: completedAt.toISOString()
+      this.eventBus.emit(`project:${execution.project_id}`, {
+        type: 'workflow:completed',
+        data: {
+          executionId,
+          projectId: execution.project_id,
+          timestamp: completedAt.toISOString()
+        }
       });
 
       this.logger?.info({ executionId }, 'Workflow execution completed successfully');
@@ -239,11 +251,14 @@ export class MockWorkflowOrchestrator {
       });
 
       if (projectId) {
-        this.eventBus.emit('workflow:failed', {
-          executionId,
-          projectId,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          timestamp: failedAt.toISOString()
+        this.eventBus.emit(`project:${projectId}`, {
+          type: 'workflow:failed',
+          data: {
+            executionId,
+            projectId,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            timestamp: failedAt.toISOString()
+          }
         });
       }
     }
@@ -281,13 +296,16 @@ export class MockWorkflowOrchestrator {
       logger: this.logger
     });
 
-    this.eventBus.emit('workflow:step:started', {
-      executionId: execution.id,
-      projectId: execution.project_id,
-      stepId: step.id,
-      stepName: step.name,
-      phase: step.phase,
-      timestamp: startedAt.toISOString()
+    this.eventBus.emit(`project:${execution.project_id}`, {
+      type: 'workflow:step:started',
+      data: {
+        executionId: execution.id,
+        projectId: execution.project_id,
+        stepId: step.id,
+        stepName: step.name,
+        phase: step.phase,
+        timestamp: startedAt.toISOString()
+      }
     });
 
     // Simulate work with random delay (3-5 seconds)
@@ -311,14 +329,17 @@ export class MockWorkflowOrchestrator {
         }
       });
 
-      this.eventBus.emit('workflow:step:completed', {
-        executionId: execution.id,
-        projectId: execution.project_id,
-        stepId: step.id,
-        stepName: step.name,
-        phase: step.phase,
-        logs,
-        timestamp: new Date().toISOString()
+      this.eventBus.emit(`project:${execution.project_id}`, {
+        type: 'workflow:step:completed',
+        data: {
+          executionId: execution.id,
+          projectId: execution.project_id,
+          stepId: step.id,
+          stepName: step.name,
+          phase: step.phase,
+          logs,
+          timestamp: new Date().toISOString()
+        }
       });
 
       this.logger?.info({ executionId: execution.id, stepId: step.id }, 'Step completed successfully');
@@ -335,14 +356,17 @@ export class MockWorkflowOrchestrator {
         }
       });
 
-      this.eventBus.emit('workflow:step:failed', {
-        executionId: execution.id,
-        projectId: execution.project_id,
-        stepId: step.id,
-        stepName: step.name,
-        phase: step.phase,
-        error,
-        timestamp: new Date().toISOString()
+      this.eventBus.emit(`project:${execution.project_id}`, {
+        type: 'workflow:step:failed',
+        data: {
+          executionId: execution.id,
+          projectId: execution.project_id,
+          stepId: step.id,
+          stepName: step.name,
+          phase: step.phase,
+          error,
+          timestamp: new Date().toISOString()
+        }
       });
 
       throw new Error(error);

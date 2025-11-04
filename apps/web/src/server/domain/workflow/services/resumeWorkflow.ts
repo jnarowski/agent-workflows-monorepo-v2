@@ -2,6 +2,8 @@ import { prisma } from '@/shared/prisma';
 import type { WorkflowExecution } from '@prisma/client';
 import type { FastifyBaseLogger } from 'fastify';
 import { createWorkflowEvent } from './createWorkflowEvent';
+import { eventBus } from '@/server/websocket/infrastructure/EventBus';
+import { WorkflowEventTypes } from '@/shared/websocket/types';
 
 /**
  * STUB: Resume a paused workflow execution (future implementation)
@@ -15,6 +17,7 @@ export async function resumeWorkflow(
 ): Promise<WorkflowExecution> {
   logger?.warn({ executionId }, 'Resume workflow not implemented - stubbed');
 
+  const resumedAt = new Date();
   const execution = await prisma.workflowExecution.update({
     where: { id: executionId },
     data: {
@@ -31,7 +34,18 @@ export async function resumeWorkflow(
       title: 'Resumed',
     },
     created_by_user_id: userId,
+    created_at: resumedAt,
     logger
+  });
+
+  // Emit WebSocket event immediately for real-time updates
+  eventBus.emit(`project:${execution.project_id}`, {
+    type: WorkflowEventTypes.RESUMED,
+    data: {
+      executionId: execution.id,
+      projectId: execution.project_id,
+      timestamp: resumedAt.toISOString(),
+    },
   });
 
   // Future: Resume execution from checkpoint

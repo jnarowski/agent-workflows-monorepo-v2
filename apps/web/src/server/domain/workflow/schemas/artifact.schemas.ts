@@ -1,7 +1,13 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // Artifact file type enum
-export const artifactTypeSchema = z.enum(['image', 'video', 'document', 'code', 'other']);
+export const artifactTypeSchema = z.enum([
+  "image",
+  "video",
+  "document",
+  "code",
+  "other",
+]);
 
 // Upload artifact request schema (for multipart form data)
 export const uploadArtifactSchema = z.object({
@@ -19,7 +25,7 @@ export const attachArtifactSchema = z.object({
 export const artifactResponseSchema = z.object({
   id: z.string(),
   workflow_execution_step_id: z.string(),
-  workflow_comment_id: z.string().nullable(),
+  workflow_event_id: z.string().nullable(),
   name: z.string(),
   file_path: z.string(),
   file_type: z.string(),

@@ -10,20 +10,6 @@ import { z } from 'zod';
  */
 
 // ============================================================================
-// Base Schema
-// ============================================================================
-
-/**
- * Common fields present in all workflow event messages
- */
-const BaseWorkflowMessageSchema = z.object({
-  type: z.string(),
-  executionId: z.string(),
-  projectId: z.string(),
-  timestamp: z.string(),
-});
-
-// ============================================================================
 // Workflow Lifecycle Event Schemas
 // ============================================================================
 
@@ -31,33 +17,52 @@ const BaseWorkflowMessageSchema = z.object({
  * Workflow created event
  * Emitted when workflow execution is created
  */
-const WorkflowCreatedSchema = BaseWorkflowMessageSchema.extend({
+const WorkflowCreatedSchema = z.object({
   type: z.literal('workflow:created'),
+  data: z.object({
+    executionId: z.string(),
+    projectId: z.string(),
+    timestamp: z.string(),
+    definitionId: z.string(),
+  }),
 });
 
 /**
  * Workflow started event
  * Emitted when workflow execution begins
  */
-const WorkflowStartedSchema = BaseWorkflowMessageSchema.extend({
+const WorkflowStartedSchema = z.object({
   type: z.literal('workflow:started'),
+  data: z.object({
+    executionId: z.string(),
+    projectId: z.string(),
+    timestamp: z.string(),
+  }),
 });
 
 /**
  * Workflow completed event
  * Emitted when workflow execution finishes successfully
  */
-const WorkflowCompletedSchema = BaseWorkflowMessageSchema.extend({
+const WorkflowCompletedSchema = z.object({
   type: z.literal('workflow:completed'),
+  data: z.object({
+    executionId: z.string(),
+    projectId: z.string(),
+    timestamp: z.string(),
+  }),
 });
 
 /**
  * Workflow failed event
  * Emitted when workflow execution fails with error
  */
-const WorkflowFailedSchema = BaseWorkflowMessageSchema.extend({
+const WorkflowFailedSchema = z.object({
   type: z.literal('workflow:failed'),
   data: z.object({
+    executionId: z.string(),
+    projectId: z.string(),
+    timestamp: z.string(),
     error: z.string(),
   }),
 });
@@ -66,24 +71,39 @@ const WorkflowFailedSchema = BaseWorkflowMessageSchema.extend({
  * Workflow paused event
  * Emitted when workflow execution is paused
  */
-const WorkflowPausedSchema = BaseWorkflowMessageSchema.extend({
+const WorkflowPausedSchema = z.object({
   type: z.literal('workflow:paused'),
+  data: z.object({
+    executionId: z.string(),
+    projectId: z.string(),
+    timestamp: z.string(),
+  }),
 });
 
 /**
  * Workflow resumed event
  * Emitted when paused workflow execution resumes
  */
-const WorkflowResumedSchema = BaseWorkflowMessageSchema.extend({
+const WorkflowResumedSchema = z.object({
   type: z.literal('workflow:resumed'),
+  data: z.object({
+    executionId: z.string(),
+    projectId: z.string(),
+    timestamp: z.string(),
+  }),
 });
 
 /**
  * Workflow cancelled event
  * Emitted when workflow execution is cancelled by user
  */
-const WorkflowCancelledSchema = BaseWorkflowMessageSchema.extend({
+const WorkflowCancelledSchema = z.object({
   type: z.literal('workflow:cancelled'),
+  data: z.object({
+    executionId: z.string(),
+    projectId: z.string(),
+    timestamp: z.string(),
+  }),
 });
 
 // ============================================================================
@@ -94,12 +114,15 @@ const WorkflowCancelledSchema = BaseWorkflowMessageSchema.extend({
  * Step started event
  * Emitted when a workflow step begins execution
  */
-const WorkflowStepStartedSchema = BaseWorkflowMessageSchema.extend({
+const WorkflowStepStartedSchema = z.object({
   type: z.literal('workflow:step:started'),
   data: z.object({
+    executionId: z.string(),
+    projectId: z.string(),
+    timestamp: z.string(),
     stepId: z.string(),
     stepName: z.string(),
-    phase: z.string().optional(),
+    phase: z.string(),
   }),
 });
 
@@ -107,14 +130,16 @@ const WorkflowStepStartedSchema = BaseWorkflowMessageSchema.extend({
  * Step completed event
  * Emitted when a workflow step finishes successfully
  */
-const WorkflowStepCompletedSchema = BaseWorkflowMessageSchema.extend({
+const WorkflowStepCompletedSchema = z.object({
   type: z.literal('workflow:step:completed'),
   data: z.object({
+    executionId: z.string(),
+    projectId: z.string(),
+    timestamp: z.string(),
     stepId: z.string(),
     stepName: z.string(),
-    phase: z.string().optional(),
-    logs: z.string().optional(),
-    duration: z.number().optional(),
+    phase: z.string(),
+    logs: z.string(),
   }),
 });
 
@@ -122,14 +147,16 @@ const WorkflowStepCompletedSchema = BaseWorkflowMessageSchema.extend({
  * Step failed event
  * Emitted when a workflow step fails with error
  */
-const WorkflowStepFailedSchema = BaseWorkflowMessageSchema.extend({
+const WorkflowStepFailedSchema = z.object({
   type: z.literal('workflow:step:failed'),
   data: z.object({
+    executionId: z.string(),
+    projectId: z.string(),
+    timestamp: z.string(),
     stepId: z.string(),
     stepName: z.string(),
-    phase: z.string().optional(),
+    phase: z.string(),
     error: z.string(),
-    retryCount: z.number().optional(),
   }),
 });
 
@@ -141,11 +168,13 @@ const WorkflowStepFailedSchema = BaseWorkflowMessageSchema.extend({
  * Phase started event
  * Emitted when a workflow phase begins
  */
-const WorkflowPhaseStartedSchema = BaseWorkflowMessageSchema.extend({
+const WorkflowPhaseStartedSchema = z.object({
   type: z.literal('workflow:phase:started'),
   data: z.object({
-    phaseName: z.string(),
-    phaseIndex: z.number(),
+    executionId: z.string(),
+    projectId: z.string(),
+    timestamp: z.string(),
+    phase: z.string(),
   }),
 });
 
@@ -153,11 +182,13 @@ const WorkflowPhaseStartedSchema = BaseWorkflowMessageSchema.extend({
  * Phase completed event
  * Emitted when a workflow phase completes
  */
-const WorkflowPhaseCompletedSchema = BaseWorkflowMessageSchema.extend({
+const WorkflowPhaseCompletedSchema = z.object({
   type: z.literal('workflow:phase:completed'),
   data: z.object({
-    phaseName: z.string(),
-    phaseIndex: z.number(),
+    executionId: z.string(),
+    projectId: z.string(),
+    timestamp: z.string(),
+    phase: z.string(),
   }),
 });
 
@@ -169,13 +200,16 @@ const WorkflowPhaseCompletedSchema = BaseWorkflowMessageSchema.extend({
  * Annotation created event
  * Emitted when a comment/annotation is added to workflow execution
  */
-const WorkflowAnnotationCreatedSchema = BaseWorkflowMessageSchema.extend({
+const WorkflowAnnotationCreatedSchema = z.object({
   type: z.literal('workflow:annotation:created'),
   data: z.object({
+    executionId: z.string(),
+    projectId: z.string(),
+    timestamp: z.string(),
     commentId: z.string(),
     text: z.string(),
-    body: z.string().optional(), // Alternative field name
-    stepId: z.string().optional(), // Optional step association
+    body: z.string().optional(),
+    stepId: z.string().optional(),
     userId: z.string().nullable(),
   }),
 });
