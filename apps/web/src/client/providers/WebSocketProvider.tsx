@@ -72,13 +72,13 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
 
   // Reconnection state
   const reconnectAttemptsRef = useRef(0);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const intentionalCloseRef = useRef(false);
-  const connectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const connectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Heartbeat state
-  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const heartbeatTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const heartbeatTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastPingTimestampRef = useRef<number>(0);
 
   const isConnected = readyState === ReadyState.OPEN && isReady;
@@ -498,7 +498,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
         } else {
           toast.error(error || "WebSocket Error", {
             description:
-              event.data.message ||
+              event.data.error ||
               "An error occurred with the WebSocket connection",
           });
         }

@@ -1,6 +1,6 @@
 import type { RuntimeContext } from "../../../types/engine.types";
 import type { AgentStepResult } from "@repo/workflow-sdk";
-import { createAgentStep } from "./agent";
+import { createAgentStep } from "./createAgentStep";
 
 /**
  * Create slash command step factory function

@@ -12,9 +12,9 @@ import {
 import {
   createWorkflowExecutionSchema,
   workflowExecutionFiltersSchema,
-} from "@/shared/schemas";
+} from "@/shared/schemas/workflow.schemas";
 import { NotFoundError } from "@/server/errors";
-import { scanProjectWorkflows } from "@/server/domain/workflow/services/engine/scanner";
+import { scanProjectWorkflows } from "@/server/domain/workflow/services/engine";
 import { prisma } from "@/shared/prisma";
 
 // Params schema

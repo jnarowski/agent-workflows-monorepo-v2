@@ -2,34 +2,7 @@ import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import { createWorkflowEvent } from "@/server/domain/workflow/services";
 import type { RuntimeContext } from "../../../types/engine.types";
-import type { WorkflowExecutionStep } from "@prisma/client";
-import { findOrCreateWorkflowStep } from "../../steps/findOrCreateWorkflowStep";
 import { updateWorkflowStep } from "../../steps/updateWorkflowStep";
-
-/**
- * Find existing or create new workflow execution step
- * Steps are created dynamically as workflow executes
- *
- * @param context - Runtime context
- * @param stepName - Step name
- * @returns WorkflowExecutionStep record
- */
-export async function findOrCreateStep(
-  context: RuntimeContext,
-  stepName: string
-): Promise<WorkflowExecutionStep> {
-  const { executionId, currentPhase, logger } = context;
-
-  // Use domain service for find-or-create logic
-  const step = await findOrCreateWorkflowStep(
-    executionId,
-    stepName,
-    currentPhase,
-    logger
-  );
-
-  return step;
-}
 
 /**
  * Update workflow execution step status and create event
@@ -111,65 +84,4 @@ export async function updateStepStatus(
     { executionId, stepId, stepName: step.name, status, phase: step.phase },
     `Step ${status}`
   );
-}
-
-/**
- * Handle step failure with cleanup
- *
- * @param context - Runtime context
- * @param stepId - Step ID
- * @param error - Error that occurred
- */
-export async function handleStepFailure(
-  context: RuntimeContext,
-  stepId: string,
-  error: Error
-): Promise<void> {
-  const { logger } = context;
-
-  logger.error(
-    { executionId: context.executionId, stepId, error: error.message },
-    "Step failed"
-  );
-
-  await updateStepStatus(context, stepId, "failed", undefined, error.message);
-}
-
-/**
- * Execute a step function with automatic status tracking
- *
- * @param context - Runtime context
- * @param stepName - Step name
- * @param fn - Step function to execute
- * @returns Step result
- */
-export async function executeStep<T>(
-  context: RuntimeContext,
-  stepName: string,
-  fn: () => Promise<T>
-): Promise<T> {
-  // Find or create step
-  const step = await findOrCreateStep(context, stepName);
-
-  // Update to running
-  await updateStepStatus(context, step.id, "running");
-
-  try {
-    // Execute step function
-    const result = await fn();
-
-    // Update to completed
-    await updateStepStatus(
-      context,
-      step.id,
-      "completed",
-      result as Record<string, unknown>
-    );
-
-    return result;
-  } catch (error) {
-    // Handle failure
-    await handleStepFailure(context, step.id, error as Error);
-    throw error;
-  }
 }

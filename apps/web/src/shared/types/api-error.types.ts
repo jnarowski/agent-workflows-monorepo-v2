@@ -45,6 +45,11 @@ export class ApiError extends Error {
   ) {
     super(message);
     this.name = 'ApiError';
-    Error.captureStackTrace(this, ApiError);
+    // captureStackTrace is only available in Node.js, not in browsers
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ('captureStackTrace' in Error && typeof (Error as any).captureStackTrace === 'function') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (Error as any).captureStackTrace(this, ApiError);
+    }
   }
 }

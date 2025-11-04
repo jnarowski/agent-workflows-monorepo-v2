@@ -1,9 +1,9 @@
 import { fastifyPlugin } from "inngest/fastify";
 import type { FastifyInstance } from "fastify";
-import { createWorkflowClient } from "./client";
-import { createWorkflowRuntime } from "./runtime";
-import { loadProjectWorkflows } from "./loader";
-import { scanAllProjectWorkflows } from "./scanner";
+import { createWorkflowClient } from "./createWorkflowClient";
+import { createWorkflowRuntime } from "./createWorkflowRuntime";
+import { loadProjectWorkflows } from "./loadProjectWorkflows";
+import { scanAllProjectWorkflows } from "./scanAllProjectWorkflows";
 import { prisma } from "@/shared/prisma";
 import config from "@/server/config";
 

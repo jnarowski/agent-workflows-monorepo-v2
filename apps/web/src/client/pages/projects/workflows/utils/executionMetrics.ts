@@ -34,7 +34,9 @@ export function getExecutionMetrics(
   // Calculate current phase number (1-indexed)
   let currentPhaseNumber = 0;
   if (execution.current_phase) {
-    const currentPhaseIndex = phases.indexOf(execution.current_phase);
+    const currentPhaseIndex = phases.findIndex(
+      (phase) => phase.name === execution.current_phase
+    );
     if (currentPhaseIndex !== -1) {
       currentPhaseNumber = currentPhaseIndex + 1;
     }

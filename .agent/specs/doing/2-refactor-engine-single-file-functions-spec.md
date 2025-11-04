@@ -191,103 +191,116 @@ export interface ScanResult {
 ### Task Group 1: Move Types
 
 <!-- prettier-ignore -->
-- [ ] move-types-1 Update `domain/workflow/types/index.ts` to export `WorkflowEngineConfig` and `ScanResult`
+- [x] move-types-1 Update `domain/workflow/types/index.ts` to export `WorkflowEngineConfig` and `ScanResult`
   - Extract interfaces from `client.ts` and `scanner.ts`
   - File: `apps/web/src/server/domain/workflow/types/index.ts`
 
 #### Completion Notes
 
-(To be filled during implementation)
+- Added `WorkflowEngineConfig` and `ScanResult` interfaces to `domain/workflow/types/index.ts`
+- Kept all JSDoc comments intact for documentation
 
 ### Task Group 2: Split loader.ts
 
 <!-- prettier-ignore -->
-- [ ] split-loader-1 Create `findWorkflowFiles.ts` with `findWorkflowFiles` function
+- [x] split-loader-1 Create `findWorkflowFiles.ts` with `findWorkflowFiles` function
   - Extract lines 9-37 from `loader.ts`
   - File: `apps/web/src/server/domain/workflow/services/engine/findWorkflowFiles.ts`
-- [ ] split-loader-2 Create `extractWorkflowDefinition.ts` with `extractWorkflowDefinition` and `isWorkflowDefinition` functions
+- [x] split-loader-2 Create `extractWorkflowDefinition.ts` with `extractWorkflowDefinition` and `isWorkflowDefinition` functions
   - Extract lines 39-79 from `loader.ts`
   - Keep internal `isWorkflowDefinition` helper as non-exported function
   - File: `apps/web/src/server/domain/workflow/services/engine/extractWorkflowDefinition.ts`
-- [ ] split-loader-3 Create `loadProjectWorkflows.ts` with `loadProjectWorkflows` function
+- [x] split-loader-3 Create `loadProjectWorkflows.ts` with `loadProjectWorkflows` function
   - Extract lines 81-172 from `loader.ts`
   - Import `findWorkflowFiles` and `extractWorkflowDefinition`
   - File: `apps/web/src/server/domain/workflow/services/engine/loadProjectWorkflows.ts`
-- [ ] split-loader-4 Delete `loader.ts`
+- [x] split-loader-4 Delete `loader.ts`
   - File: `apps/web/src/server/domain/workflow/services/engine/loader.ts`
 
 #### Completion Notes
 
-(To be filled during implementation)
+- Split loader.ts into 3 separate files: findWorkflowFiles, extractWorkflowDefinition, loadProjectWorkflows
+- Kept isWorkflowDefinition as internal helper in extractWorkflowDefinition.ts (not exported)
+- All imports and dependencies properly updated
+- Deleted original loader.ts file
 
 ### Task Group 3: Split scanner.ts
 
 <!-- prettier-ignore -->
-- [ ] split-scanner-1 Create `scanProjectWorkflows.ts` with `scanProjectWorkflows` function
+- [x] split-scanner-1 Create `scanProjectWorkflows.ts` with `scanProjectWorkflows` function
   - Extract lines 19-75 from `scanner.ts`
   - Import `loadProjectWorkflows` from `./loadProjectWorkflows`
   - Import `ScanResult` type from `@/server/domain/workflow/types`
   - File: `apps/web/src/server/domain/workflow/services/engine/scanProjectWorkflows.ts`
-- [ ] split-scanner-2 Create `scanAllProjectWorkflows.ts` with `scanAllProjectWorkflows` function
+- [x] split-scanner-2 Create `scanAllProjectWorkflows.ts` with `scanAllProjectWorkflows` function
   - Extract lines 77-140 from `scanner.ts`
   - Import `scanProjectWorkflows` from `./scanProjectWorkflows`
   - Import `ScanResult` type from `@/server/domain/workflow/types`
   - File: `apps/web/src/server/domain/workflow/services/engine/scanAllProjectWorkflows.ts`
-- [ ] split-scanner-3 Delete `scanner.ts`
+- [x] split-scanner-3 Delete `scanner.ts`
   - File: `apps/web/src/server/domain/workflow/services/engine/scanner.ts`
 
 #### Completion Notes
 
-(To be filled during implementation)
+- Split scanner.ts into 2 files: scanProjectWorkflows, scanAllProjectWorkflows
+- Both files now import ScanResult type from @/server/domain/workflow/types
+- All imports updated correctly
+- Deleted original scanner.ts file
 
 ### Task Group 4: Rename Single-Export Files
 
 <!-- prettier-ignore -->
-- [ ] rename-1 Rename `client.ts` to `createWorkflowClient.ts`
+- [x] rename-1 Rename `client.ts` to `createWorkflowClient.ts`
   - Update internal import of `WorkflowEngineConfig` to import from `@/server/domain/workflow/types`
   - File: `apps/web/src/server/domain/workflow/services/engine/createWorkflowClient.ts`
-- [ ] rename-2 Rename `registry.ts` to `initializeWorkflowEngine.ts`
+- [x] rename-2 Rename `registry.ts` to `initializeWorkflowEngine.ts`
   - Update imports: `createWorkflowClient`, `createWorkflowRuntime`, `loadProjectWorkflows`, `scanAllProjectWorkflows`
   - File: `apps/web/src/server/domain/workflow/services/engine/initializeWorkflowEngine.ts`
-- [ ] rename-3 Rename `runtime.ts` to `createWorkflowRuntime.ts`
+- [x] rename-3 Rename `runtime.ts` to `createWorkflowRuntime.ts`
   - No internal changes needed (already single export)
   - File: `apps/web/src/server/domain/workflow/services/engine/createWorkflowRuntime.ts`
 
 #### Completion Notes
 
-(To be filled during implementation)
+- Renamed client.ts → createWorkflowClient.ts, updated to import WorkflowEngineConfig from types
+- Renamed registry.ts → initializeWorkflowEngine.ts, updated all imports to new file names
+- Renamed runtime.ts → createWorkflowRuntime.ts
+- All files now follow the one-function-per-file naming pattern
 
 ### Task Group 5: Split steps/helpers.ts
 
 <!-- prettier-ignore -->
-- [ ] split-helpers-1 Create `steps/findOrCreateStep.ts` with `findOrCreateStep` function
+- [x] split-helpers-1 Create `steps/findOrCreateStep.ts` with `findOrCreateStep` function
   - Extract lines 9-32 from `steps/helpers.ts`
   - Import domain services: `findOrCreateWorkflowStep` from `../../steps/findOrCreateWorkflowStep`
   - File: `apps/web/src/server/domain/workflow/services/engine/steps/findOrCreateStep.ts`
-- [ ] split-helpers-2 Create `steps/updateStepStatus.ts` with `updateStepStatus` function
+- [x] split-helpers-2 Create `steps/updateStepStatus.ts` with `updateStepStatus` function
   - Extract lines 34-114 from `steps/helpers.ts`
   - Import domain services: `updateWorkflowStep` from `../../steps/updateWorkflowStep`
   - Import `createWorkflowEvent` from `@/server/domain/workflow/services`
   - File: `apps/web/src/server/domain/workflow/services/engine/steps/updateStepStatus.ts`
-- [ ] split-helpers-3 Create `steps/handleStepFailure.ts` with `handleStepFailure` function
+- [x] split-helpers-3 Create `steps/handleStepFailure.ts` with `handleStepFailure` function
   - Extract lines 116-137 from `steps/helpers.ts`
   - Import `updateStepStatus` from `./updateStepStatus`
   - File: `apps/web/src/server/domain/workflow/services/engine/steps/handleStepFailure.ts`
-- [ ] split-helpers-4 Create `steps/executeStep.ts` with `executeStep` function
+- [x] split-helpers-4 Create `steps/executeStep.ts` with `executeStep` function
   - Extract lines 139-176 from `steps/helpers.ts`
   - Import `findOrCreateStep`, `updateStepStatus`, `handleStepFailure` from respective files
   - File: `apps/web/src/server/domain/workflow/services/engine/steps/executeStep.ts`
-- [ ] split-helpers-5 Delete `steps/helpers.ts`
+- [x] split-helpers-5 Delete `steps/helpers.ts`
   - File: `apps/web/src/server/domain/workflow/services/engine/steps/helpers.ts`
 
 #### Completion Notes
 
-(To be filled during implementation)
+- Split steps/helpers.ts into 4 separate files
+- Each function properly imports its dependencies
+- All imports updated to point to new file locations
+- Deleted original steps/helpers.ts file
 
 ### Task Group 6: Update Barrel Exports
 
 <!-- prettier-ignore -->
-- [ ] barrel-1 Update `engine/index.ts` barrel export
+- [x] barrel-1 Update `engine/index.ts` barrel export
   - Export all new function files
   - File: `apps/web/src/server/domain/workflow/services/engine/index.ts`
   - Content:
@@ -301,7 +314,7 @@ export interface ScanResult {
     export { scanProjectWorkflows } from "./scanProjectWorkflows";
     export { scanAllProjectWorkflows } from "./scanAllProjectWorkflows";
     ```
-- [ ] barrel-2 Update `engine/steps/index.ts` barrel export
+- [x] barrel-2 Update `engine/steps/index.ts` barrel export
   - Update helper exports to point to new files
   - File: `apps/web/src/server/domain/workflow/services/engine/steps/index.ts`
   - Content:
@@ -322,23 +335,27 @@ export interface ScanResult {
 
 #### Completion Notes
 
-(To be filled during implementation)
+- Created engine/index.ts barrel export with all engine functions
+- Updated steps/index.ts to export from individual files instead of helpers.ts
+- All exports now point to correct file locations
 
 ### Task Group 7: Update External Imports
 
 <!-- prettier-ignore -->
-- [ ] imports-1 Update `routes/workflows.ts` import
+- [x] imports-1 Update `routes/workflows.ts` import
   - Line 17: Change from `@/server/domain/workflow/services/engine/scanner` to `@/server/domain/workflow/services/engine/scanProjectWorkflows`
   - Or use barrel: `@/server/domain/workflow/services/engine`
   - File: `apps/web/src/server/routes/workflows.ts`
-- [ ] imports-2 Update `server/index.ts` import
+- [x] imports-2 Update `server/index.ts` import
   - Line 29: Change from `@/server/domain/workflow/services/engine/registry` to `@/server/domain/workflow/services/engine/initializeWorkflowEngine`
   - Or use barrel: `@/server/domain/workflow/services/engine`
   - File: `apps/web/src/server/index.ts`
 
 #### Completion Notes
 
-(To be filled during implementation)
+- Updated routes/workflows.ts to import scanProjectWorkflows from barrel export
+- Updated server/index.ts to import initializeWorkflowEngine from barrel export
+- Both imports now use barrel exports for cleaner imports
 
 ## Testing Strategy
 

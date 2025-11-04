@@ -3,3 +3,29 @@ export * from "./workflow.types";
 export * from "./artifact.types";
 export * from "./event.types";
 export * from "./engine.types";
+
+/**
+ * Configuration for workflow engine
+ */
+export interface WorkflowEngineConfig {
+  /** Application ID for Inngest */
+  appId: string;
+  /** Event key for webhook authentication (optional in dev) */
+  eventKey?: string;
+  /** Enable development mode */
+  isDev: boolean;
+  /** Path to SQLite memoization database */
+  memoizationDbPath: string;
+}
+
+/**
+ * Scan result for workflow discovery
+ */
+export interface ScanResult {
+  /** Number of projects scanned */
+  scanned: number;
+  /** Number of workflows discovered */
+  discovered: number;
+  /** Errors encountered during scanning */
+  errors: Array<{ projectId: string; error: string }>;
+}

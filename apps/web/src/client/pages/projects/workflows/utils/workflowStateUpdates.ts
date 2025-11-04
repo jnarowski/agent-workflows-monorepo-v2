@@ -10,7 +10,7 @@ import type {
   WorkflowExecutionStep,
   WorkflowEvent,
 } from "../types";
-import { WorkflowStatus, StepStatus } from "@/shared/schemas";
+import { WorkflowStatusValues, StepStatusValues } from "@/shared/schemas/workflow.schemas";
 
 // ============================================================================
 // Helper Functions
@@ -75,7 +75,7 @@ export function applyWorkflowStarted(
 ): WorkflowExecution {
   return {
     ...execution,
-    status: WorkflowStatus.RUNNING,
+    status: WorkflowStatusValues.RUNNING,
     started_at: new Date(),
     updated_at: new Date(),
   };
@@ -89,7 +89,7 @@ export function applyWorkflowCompleted(
 ): WorkflowExecution {
   return {
     ...execution,
-    status: WorkflowStatus.COMPLETED,
+    status: WorkflowStatusValues.COMPLETED,
     completed_at: new Date(),
     updated_at: new Date(),
   };
@@ -104,7 +104,7 @@ export function applyWorkflowFailed(
 ): WorkflowExecution {
   return {
     ...execution,
-    status: WorkflowStatus.FAILED,
+    status: WorkflowStatusValues.FAILED,
     error_message: error,
     completed_at: new Date(),
     updated_at: new Date(),
@@ -119,7 +119,7 @@ export function applyWorkflowPaused(
 ): WorkflowExecution {
   return {
     ...execution,
-    status: WorkflowStatus.PAUSED,
+    status: WorkflowStatusValues.PAUSED,
     updated_at: new Date(),
   };
 }
@@ -132,7 +132,7 @@ export function applyWorkflowResumed(
 ): WorkflowExecution {
   return {
     ...execution,
-    status: WorkflowStatus.RUNNING,
+    status: WorkflowStatusValues.RUNNING,
     updated_at: new Date(),
   };
 }
@@ -145,7 +145,7 @@ export function applyWorkflowCancelled(
 ): WorkflowExecution {
   return {
     ...execution,
-    status: WorkflowStatus.CANCELLED,
+    status: WorkflowStatusValues.CANCELLED,
     completed_at: new Date(),
     updated_at: new Date(),
   };
@@ -176,7 +176,7 @@ export function applyStepStarted(
   // Update step status if steps are loaded
   if (execution.steps) {
     return updateStepInExecution(updatedExec, event.stepId, {
-      status: StepStatus.RUNNING,
+      status: StepStatusValues.RUNNING,
       started_at: new Date(),
     });
   }
@@ -197,7 +197,7 @@ export function applyStepCompleted(
   if (!execution.steps) return execution;
 
   return updateStepInExecution(execution, event.stepId, {
-    status: StepStatus.COMPLETED,
+    status: StepStatusValues.COMPLETED,
     logs: event.logs,
     completed_at: new Date(),
   });
@@ -216,7 +216,7 @@ export function applyStepFailed(
   if (!execution.steps) return execution;
 
   return updateStepInExecution(execution, event.stepId, {
-    status: StepStatus.FAILED,
+    status: StepStatusValues.FAILED,
     error_message: event.error,
     completed_at: new Date(),
   });

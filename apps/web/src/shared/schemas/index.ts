@@ -1,17 +1,18 @@
 /**
  * Shared Schemas Barrel Export
  *
- * Re-exports all workflow schemas and derived types for use across
- * frontend and backend.
+ * ⚠️ DEPRECATED: Import directly from source files instead
+ *
+ * ❌ DON'T: import { WorkflowStatus } from "@/shared/schemas"
+ * ✅ DO:    import { WorkflowStatus } from "@/shared/schemas/workflow.schemas"
+ *
+ * Direct imports are clearer and avoid re-export complexity.
  */
 
-// Re-export all schemas and types from workflow.schemas
+// Re-exports maintained for backward compatibility only
 export {
-  // Enums
-  WorkflowStatus,
-  StepStatus,
-
-  // Schemas
+  WorkflowStatusValues,
+  StepStatusValues,
   workflowStatusSchema,
   stepStatusSchema,
   artifactTypeSchema,
@@ -29,9 +30,12 @@ export {
   artifactResponseSchema,
   WorkflowWebSocketMessageSchema,
   validateWorkflowMessage,
+} from './workflow.schemas';
 
-  // Types
-  type ArtifactType,
-  type WorkflowEventType,
-  type WorkflowWebSocketMessage,
+export type {
+  WorkflowStatus,
+  StepStatus,
+  ArtifactType,
+  WorkflowEventType,
+  WorkflowWebSocketMessage,
 } from './workflow.schemas';

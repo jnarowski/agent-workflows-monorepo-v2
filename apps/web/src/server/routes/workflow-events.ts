@@ -4,7 +4,7 @@ import { getWorkflowEvents } from "@/server/domain/workflow/services/events/getW
 import {
   createWorkflowEventSchema,
   getWorkflowEventsQuerySchema,
-} from "@/shared/schemas";
+} from "@/shared/schemas/workflow.schemas";
 import { createWorkflowEvent } from "@/server/domain/workflow/services/events/createWorkflowEvent";
 
 const executionIdSchema = z.object({

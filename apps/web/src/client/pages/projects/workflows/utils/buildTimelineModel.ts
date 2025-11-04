@@ -227,7 +227,7 @@ function buildStepItems(
         // Include artifacts attached to this annotation event
         artifacts: (event.artifacts || []).map((artifact) => ({
           id: artifact.id,
-          name: artifact.file_name || artifact.name,
+          name: artifact.name,
           file_path: artifact.file_path,
           file_type: artifact.file_type,
           mime_type: artifact.mime_type,
@@ -267,7 +267,7 @@ function buildStepItems(
 
     // Compute display properties
     const hasError = !!step.error_message;
-    const isCurrent = execution.current_step === step.step_name && execution.status === 'running';
+    const isCurrent = execution.current_step === step.name && execution.status === 'running';
 
     return {
       itemType: 'step' as const,
@@ -277,7 +277,7 @@ function buildStepItems(
       annotations: stepAnnotations,
       artifacts: stepArtifacts,
       metadata: {
-        name: step.step_name,
+        name: step.name,
         startedAt,
         completedAt,
         duration,

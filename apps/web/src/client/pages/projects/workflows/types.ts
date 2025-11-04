@@ -1,8 +1,11 @@
-import {
+import type {
   WorkflowStatus,
   StepStatus,
-  type WorkflowEventType,
-} from "@/shared/schemas";
+  WorkflowEventType,
+} from "@/shared/schemas/workflow.schemas";
+
+// Re-export types only
+export type { WorkflowStatus, StepStatus, WorkflowEventType };
 
 export interface WorkflowDefinition {
   id: string;
@@ -158,4 +161,6 @@ export type {
 // Filter types
 export interface WorkflowFilter {
   status?: WorkflowStatus;
+  definitionId?: string;
+  search?: string;
 }

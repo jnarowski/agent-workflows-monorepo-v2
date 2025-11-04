@@ -7,8 +7,8 @@ import {
 } from "@/server/domain/workflow/services";
 import { attachArtifactToWorkflowEvent } from "@/server/domain/workflow/services/artifacts/attachArtifactToWorkflowEvent";
 import { detachArtifactFromWorkflowEvent } from "@/server/domain/workflow/services/artifacts/detachArtifactFromWorkflowEvent";
-import { attachArtifactSchema } from "@/shared/schemas";
-import type { ArtifactType } from "@/shared/schemas";
+import { attachArtifactSchema } from "@/shared/schemas/workflow.schemas";
+import type { ArtifactType } from "@/shared/schemas/workflow.schemas";
 import { NotFoundError } from "@/server/errors";
 
 const artifactIdSchema = z.object({

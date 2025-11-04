@@ -26,7 +26,7 @@ import { setupGracefulShutdown } from "@/server/utils/shutdown";
 import { config } from "@/server/config/Configuration";
 import { AppError, ConflictError, buildErrorResponse } from "@/server/errors";
 import { ServiceUnavailableError } from "@/server/errors/ServiceUnavailableError";
-import { initializeWorkflowEngine } from "@/server/domain/workflow/services/engine/registry";
+import { initializeWorkflowEngine } from "@/server/domain/workflow/services/engine";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

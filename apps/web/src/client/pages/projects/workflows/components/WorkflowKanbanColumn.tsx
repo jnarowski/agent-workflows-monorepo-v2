@@ -1,4 +1,4 @@
-import { WorkflowStatus } from "@/shared/schemas";
+import type { WorkflowStatus } from "@/shared/schemas/workflow.schemas";
 import type { WorkflowExecution } from "../types";
 import { WorkflowExecutionCard } from "./WorkflowExecutionCard";
 import { getWorkflowStatusConfig } from "../utils/workflowStatus";

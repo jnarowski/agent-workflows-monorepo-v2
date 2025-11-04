@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Plus, Search } from "lucide-react";
-import { WorkflowStatus } from "@/shared/schemas";
+import { WorkflowStatusValues } from "@/shared/schemas/workflow.schemas";
+import type { WorkflowStatus } from "@/shared/schemas/workflow.schemas";
 import { WorkflowKanbanColumn } from "./components/WorkflowKanbanColumn";
 import { WorkflowDefinitionsList } from "./components/WorkflowDefinitionsList";
 import { NewWorkflowModal } from "./components/NewWorkflowModal";
@@ -133,11 +134,11 @@ export function ProjectWorkflowsView({
       <div className="flex-1 overflow-x-auto p-4">
         <div className="flex gap-4 min-w-max">
           {[
-            WorkflowStatus.PENDING,
-            WorkflowStatus.RUNNING,
-            WorkflowStatus.PAUSED,
-            WorkflowStatus.COMPLETED,
-            WorkflowStatus.FAILED,
+            WorkflowStatusValues.PENDING,
+            WorkflowStatusValues.RUNNING,
+            WorkflowStatusValues.PAUSED,
+            WorkflowStatusValues.COMPLETED,
+            WorkflowStatusValues.FAILED,
           ].map((status) => (
             <div key={status} className="w-80">
               <WorkflowKanbanColumn

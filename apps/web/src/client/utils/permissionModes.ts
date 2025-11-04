@@ -1,11 +1,11 @@
-import type { ClaudePermissionMode } from "@repo/agent-cli-sdk";
+import type { PermissionMode } from "@repo/agent-cli-sdk";
 
 /**
  * Permission modes configuration for Claude Code sessions
  * Defines available permission modes with display properties
  */
 export interface PermissionModeConfig {
-  id: ClaudePermissionMode;
+  id: PermissionMode;
   name: string;
   shortName: string;
   color: string;

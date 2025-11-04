@@ -38,8 +38,7 @@ export function SyntaxHighlighter({
           js: 'javascript',
           ts: 'typescript',
           sh: 'bash',
-          yml: 'yaml',
-          text: 'txt'
+          yml: 'yaml'
         };
 
         const shikiLang = (languageMap[language] || language) as BundledLanguage;
