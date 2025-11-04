@@ -70,12 +70,6 @@ function StepItemComponent({ item, projectId }: StepItemProps) {
                 <span>{Math.floor(metadata.duration / 1000)}s</span>
               </>
             )}
-            {step.phase && (
-              <>
-                <span>•</span>
-                <span>{step.phase}</span>
-              </>
-            )}
           </>
         }
         badge={<WorkflowStatusBadge status={display.status} size="sm" />}

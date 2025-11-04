@@ -36,7 +36,7 @@ export async function createSession(
 
   // Initialize with empty metadata or use override
   const metadata: AgentSessionMetadata = metadataOverride
-    ? (metadataOverride as AgentSessionMetadata)
+    ? (metadataOverride as unknown as AgentSessionMetadata)
     : {
         totalTokens: 0,
         messageCount: 0,

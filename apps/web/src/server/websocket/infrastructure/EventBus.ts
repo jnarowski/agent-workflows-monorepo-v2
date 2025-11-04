@@ -9,7 +9,7 @@ import { EventEmitter } from 'node:events';
  *
  * Usage:
  * - Import and use directly: `eventBus.emit('project:123', { type, data })`
- * - Shared across all workflow services and MockWorkflowOrchestrator
+ * - Shared across all workflow services
  */
 export const eventBus = new EventEmitter();
 

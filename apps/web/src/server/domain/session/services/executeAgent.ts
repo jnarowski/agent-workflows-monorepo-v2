@@ -1,6 +1,7 @@
 import { execute, type PermissionMode } from "@repo/agent-cli-sdk";
 import type { FastifyBaseLogger } from "fastify";
 import { activeSessions } from "@/server/websocket/infrastructure/active-sessions";
+import type { ChildProcess } from "node:child_process";
 
 export interface AgentExecuteConfig {
   agent: "claude" | "codex";
@@ -12,6 +13,7 @@ export interface AgentExecuteConfig {
   model?: string;
   images?: { path: string }[];
   onEvent?: (data: { raw: string; event: unknown; message: unknown | null }) => void;
+  onStart?: (process: ChildProcess) => void;
   logger?: FastifyBaseLogger;
 }
 

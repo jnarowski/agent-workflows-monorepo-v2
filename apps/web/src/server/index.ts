@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+// Type augmentation loaded automatically via tsconfig
 import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
 import fastifyWebsocket from "@fastify/websocket";

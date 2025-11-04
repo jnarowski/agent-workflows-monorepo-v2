@@ -49,7 +49,7 @@ export function createArtifactStep(context: RuntimeContext) {
     config: ArtifactStepConfig
   ): Promise<ArtifactStepResult> {
     return executeStep(context, name, async () => {
-      const { executionId, projectId, projectPath, logger } = context;
+      const { executionId, projectId, projectPath, currentPhase, logger } = context;
       const artifactIds: string[] = [];
       let totalSize = 0;
 
@@ -93,6 +93,7 @@ export function createArtifactStep(context: RuntimeContext) {
               file_path: relativePath, // Relative to project root
               mime_type: getMimeType(config.name, "text/plain"),
               size_bytes: sizeBytes,
+              phase: currentPhase,
             },
             logger
           );
@@ -123,6 +124,7 @@ export function createArtifactStep(context: RuntimeContext) {
               file_path: relativePath, // Relative to project root
               mime_type: getMimeType(config.file),
               size_bytes: fileStats.size,
+              phase: currentPhase,
             },
             logger
           );
@@ -165,6 +167,7 @@ export function createArtifactStep(context: RuntimeContext) {
                 file_path: relativeToProject, // Relative to project root
                 mime_type: getMimeType(file),
                 size_bytes: fileStats.size,
+                phase: currentPhase,
               },
               logger
             );

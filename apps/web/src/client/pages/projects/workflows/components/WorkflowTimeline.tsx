@@ -1,5 +1,7 @@
+import { useMemo, useRef, useEffect } from "react";
 import type { TimelineModel } from "../utils/buildTimelineModel";
-import { StepItem } from "./timeline/StepItem";
+import { groupTimelineByPhase } from "../utils/groupTimelineByPhase";
+import { PhaseCard } from "./timeline/PhaseCard";
 import { EventItem } from "./timeline/EventItem";
 import { EventAnnotationItem } from "./timeline/EventAnnotationItem";
 
@@ -9,55 +11,68 @@ interface WorkflowTimelineProps {
 }
 
 /**
- * Vertical timeline displaying workflow steps and events chronologically
+ * Phase-grouped timeline displaying workflow execution history
  *
- * Renders a timeline with visual line connector showing the chronological flow
- * of all workflow activities (steps, annotations, system events, phase transitions).
+ * Groups timeline items by phase, with workflow-level events shown outside phase cards.
+ * Each phase is rendered as a collapsible PhaseCard component with nested items.
+ * Auto-scrolls to active phase on mount.
  *
- * The timeline model is pre-computed with all display properties, filtering,
- * and calculations performed in the domain layer. This component is a "dumb renderer"
- * that just maps over the model items.
+ * Pipeline: buildTimelineModel() → groupTimelineByPhase() → render
  */
 export function WorkflowTimeline({ model, projectId }: WorkflowTimelineProps) {
-  if (model.items.length === 0) {
+  const activePhaseRef = useRef<HTMLDivElement>(null);
+
+  // Group timeline items by phase (memoized to avoid re-computation)
+  const grouped = useMemo(() => groupTimelineByPhase(model), [model]);
+
+  // Auto-scroll to active phase on mount
+  useEffect(() => {
+    if (activePhaseRef.current) {
+      activePhaseRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, []);
+
+  // Empty state
+  if (grouped.phases.length === 0 && grouped.workflowEvents.length === 0) {
     return (
       <div className="flex items-center justify-center py-12 text-muted-foreground">
-        <p>No timeline events to display</p>
+        <p>No workflow execution history to display</p>
       </div>
     );
   }
 
   return (
-    <div className="px-6">
-      <div className="relative ml-4 space-y-6">
-        {/* Vertical timeline connector line */}
-        <div className="absolute left-0 inset-y-0 border-l-2" />
-
-        {/* Timeline items - domain model based routing */}
-        {model.items.map((item) => {
-          const key = `${item.itemType}-${item.id}`;
-
-          // Route to appropriate component based on item type (discriminated union)
-          switch (item.itemType) {
-            case "step":
-              return <StepItem key={key} item={item} projectId={projectId} />;
-
-            case "event":
+    <div className="px-6 space-y-4">
+      {/* Workflow-level events (top) */}
+      {grouped.workflowEvents.length > 0 && (
+        <div className="space-y-2">
+          {grouped.workflowEvents.map((item) => {
+            const key = `${item.itemType}-${item.id}`;
+            if (item.itemType === "event") {
               return <EventItem key={key} item={item} />;
-
-            case "annotation":
-              // Standalone annotation (not attached to a step)
+            } else if (item.itemType === "annotation") {
               return <EventAnnotationItem key={key} annotation={item} />;
-
-            default: {
-              // TypeScript exhaustiveness check
-              const _exhaustive: never = item;
-              console.warn("Unknown timeline item type:", _exhaustive);
-              return null;
             }
-          }
-        })}
-      </div>
+            return null;
+          })}
+        </div>
+      )}
+
+      {/* Phase cards */}
+      {grouped.phases.map((phase) => {
+        const isActive = phase.metadata.status === "running";
+        return (
+          <div
+            key={phase.name}
+            ref={isActive ? activePhaseRef : null}
+          >
+            <PhaseCard phase={phase} projectId={projectId} />
+          </div>
+        );
+      })}
     </div>
   );
 }

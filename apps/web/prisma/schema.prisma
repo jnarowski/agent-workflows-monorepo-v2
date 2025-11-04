@@ -119,6 +119,7 @@ model WorkflowArtifact {
   file_type                  String    // 'image', 'video', 'document', 'code', 'other'
   mime_type                  String
   size_bytes                 Int
+  phase                      String?   // Phase this artifact belongs to (nullable for existing artifacts)
   created_at                 DateTime  @default(now())
   updated_at                 DateTime  @updatedAt
 

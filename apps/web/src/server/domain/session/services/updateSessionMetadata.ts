@@ -22,7 +22,7 @@ export async function updateSessionMetadata(
       return null;
     }
 
-    const currentMetadata = session.metadata as AgentSessionMetadata;
+    const currentMetadata = session.metadata as unknown as AgentSessionMetadata;
     const updatedMetadata = { ...currentMetadata, ...metadata };
 
     const updatedSession = await prisma.agentSession.update({

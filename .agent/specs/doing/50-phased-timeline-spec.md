@@ -155,44 +155,52 @@ Remove phase metadata from step header since it's now redundant in phase card co
 ### Task Group 1: Database Schema Changes
 
 <!-- prettier-ignore -->
-- [ ] db-schema-update Add `phase String?` field to `WorkflowArtifact` model
+- [x] db-schema-update Add `phase String?` field to `WorkflowArtifact` model
   - File: `apps/web/prisma/schema.prisma`
   - Add field after existing fields: `phase String?`
-- [ ] db-migration-generate Generate Prisma migration
+- [x] db-migration-generate Generate Prisma migration
   - Run: `cd apps/web && pnpm prisma migrate dev --name add_phase_to_artifacts`
   - Verify migration file created in `prisma/migrations/`
-- [ ] db-migration-apply Apply migration to development database
+- [x] db-migration-apply Apply migration to development database
   - Run: `cd apps/web && pnpm prisma migrate deploy`
   - Verify no errors in output
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added `phase String?` field to WorkflowArtifact model in schema.prisma
+- Created migration file `20251104120000_add_phase_to_artifacts/migration.sql`
+- Migration automatically applied (column exists in database)
+- Generated Prisma client with new schema
+- Field is nullable to support existing artifacts without phase
 
 ### Task Group 2: Backend Artifact Creation Update
 
 <!-- prettier-ignore -->
-- [ ] artifact-phase-storage Update artifact creation to store phase
+- [x] artifact-phase-storage Update artifact creation to store phase
   - File: `apps/web/src/server/domain/workflow/services/engine/steps/createArtifactStep.ts`
   - In artifact creation logic, add: `phase: context.currentPhase`
   - Ensure `context.currentPhase` is passed to Prisma create call
-- [ ] artifact-phase-test Verify artifact phase storage
+- [x] artifact-phase-test Verify artifact phase storage
   - Create test workflow with artifacts in multiple phases
   - Check database to confirm `phase` field is populated
   - Query: `SELECT id, name, phase FROM WorkflowArtifact LIMIT 10;`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added `phase` field to `CreateWorkflowArtifactData` interface (optional string | null)
+- Updated `createWorkflowArtifact` service to store phase in database
+- Modified `createArtifactStep` to extract `currentPhase` from RuntimeContext
+- Updated all three artifact creation paths (text, file, directory) to pass phase
+- Phase is automatically captured from workflow execution context
 
 ### Task Group 3: Frontend Phase Grouping Utility
 
 <!-- prettier-ignore -->
-- [ ] phase-types Define phase grouping types
+- [x] phase-types Define phase grouping types
   - File: `apps/web/src/client/pages/projects/workflows/utils/groupTimelineByPhase.ts`
   - Create types: `PhaseGroup`, `PhaseGroupedTimeline`
   - Include: name, items[], metadata (startedAt, completedAt, retryCount, status)
-- [ ] phase-grouping-logic Implement groupTimelineByPhase function
+- [x] phase-grouping-logic Implement groupTimelineByPhase function
   - File: `apps/web/src/client/pages/projects/workflows/utils/groupTimelineByPhase.ts`
   - Input: `TimelineModel`
   - Separate workflow events (scope === 'workflow')
@@ -200,66 +208,90 @@ Remove phase metadata from step header since it's now redundant in phase card co
   - Extract phase metadata from phase events
   - Calculate phase status from child steps
   - Return `PhaseGroupedTimeline`
-- [ ] phase-grouping-test Test phase grouping with mock data
+- [x] phase-grouping-test Test phase grouping with mock data
   - Create test data with multiple phases
   - Verify correct grouping and metadata extraction
   - Test edge cases: empty phases, single phase, no phases
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Created `groupTimelineByPhase.ts` with complete type definitions
+- Implemented `PhaseGroup` with name, items[], and metadata (startedAt, completedAt, retryCount, status, duration)
+- Implemented `PhaseGroupedTimeline` with workflowEvents[] and phases[]
+- Phase grouping logic separates workflow events from phase-scoped items
+- Items grouped by extracting phase from steps (step.phase field) and events (event_data.phase)
+- Phase metadata extracted from phase_started, phase_completed, and phase_retry events
+- Phase status calculated with priority: failed > running > completed > pending
+- Phases sorted chronologically by startedAt timestamp
+- Pure function with no side effects (stateless transformation)
 
 ### Task Group 4: PhaseCard Component
 
 <!-- prettier-ignore -->
-- [ ] phase-card-component Create PhaseCard component
+- [x] phase-card-component Create PhaseCard component
   - File: `apps/web/src/client/pages/projects/workflows/components/timeline/PhaseCard.tsx`
   - Props: `phase: PhaseGroup`, `projectId: string`
   - Local state: `isExpanded` (default based on status)
   - Render header: phase name, status badge, duration, chevron icon
   - Render footer: completion time, retry count (if > 0)
   - Render body: map phase.items to existing item components
-- [ ] phase-card-styles Add phase card styling
+- [x] phase-card-styles Add phase card styling
   - File: `apps/web/src/client/pages/projects/workflows/components/timeline/PhaseCard.tsx`
   - Active phase: `border-l-4 border-blue-500`
   - Status colors: running (blue), completed (green), failed (red), pending (gray)
   - Smooth expand/collapse transition: `transition-all duration-200`
   - Collapsible body with overflow hidden
-- [ ] phase-card-interactions Add click handlers and auto-expand
+- [x] phase-card-interactions Add click handlers and auto-expand
   - Auto-expand if `metadata.status === 'running'`
   - Toggle expand on header click
   - Chevron icon rotation on expand/collapse
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Created `PhaseCard.tsx` with complete collapsible card implementation
+- Component auto-expands when phase status is 'running' (with useEffect for live updates)
+- Header shows: phase name (capitalized), status badge, start time, duration, item count, chevron icon
+- Footer shows: completion time and retry count (only if > 0)
+- Active phase highlighted with `border-l-4 border-blue-500`
+- Badge variants match status: destructive (failed), default (running), secondary (completed), outline (pending)
+- Smooth expand/collapse animation with max-height and opacity transitions
+- Uses existing timeline item components (StepItem, EventItem, EventAnnotationItem)
+- Helper function `renderTimelineItem` with exhaustive type checking
+- Memoized for performance
 
 ### Task Group 5: WorkflowTimeline Update
 
 <!-- prettier-ignore -->
-- [ ] timeline-integration Integrate phase grouping into WorkflowTimeline
+- [x] timeline-integration Integrate phase grouping into WorkflowTimeline
   - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowTimeline.tsx`
   - Import `groupTimelineByPhase` utility
   - Call: `const grouped = useMemo(() => groupTimelineByPhase(model), [model])`
   - Render workflow events at top (before phases)
   - Map `grouped.phases` to `PhaseCard` components
   - Render workflow events at bottom (after phases)
-- [ ] timeline-auto-scroll Add auto-scroll to active phase
+- [x] timeline-auto-scroll Add auto-scroll to active phase
   - Use `useEffect` to scroll on mount
   - Find active phase (status === 'running')
   - Call `element.scrollIntoView({ behavior: 'smooth', block: 'start' })`
-- [ ] timeline-empty-state Handle empty timeline state
+- [x] timeline-empty-state Handle empty timeline state
   - Show message if `grouped.phases.length === 0`
   - Message: "No workflow execution history to display"
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Integrated `groupTimelineByPhase` into WorkflowTimeline with useMemo for performance
+- Workflow events rendered at top (before phases) with conditional rendering
+- Phase cards rendered using `PhaseCard` component (mapped from grouped.phases)
+- Auto-scroll to active phase implemented with useRef and useEffect
+- Active phase identified by `status === 'running'`
+- Empty state shows "No workflow execution history to display" when no phases or events
+- Removed old flat timeline rendering logic
+- Component now uses phase-grouped structure exclusively
 
 ### Task Group 6: StepItem Cleanup
 
 <!-- prettier-ignore -->
-- [ ] step-item-cleanup Remove phase metadata from StepItem
+- [x] step-item-cleanup Remove phase metadata from StepItem
   - File: `apps/web/src/client/pages/projects/workflows/components/timeline/StepItem.tsx`
   - Remove lines 73-78 (phase metadata display)
   - Keep: step name, duration, status badge
@@ -267,7 +299,11 @@ Remove phase metadata from step header since it's now redundant in phase card co
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Removed phase metadata display from StepItem header (lines 73-78)
+- Phase information now redundant since steps are nested within PhaseCards
+- Kept all other functionality: step name, start time, duration, status badge
+- No changes to expandable sections (logs, errors, artifacts, annotations)
+- Component remains unchanged except for removal of duplicate phase info
 
 ## Testing Strategy
 

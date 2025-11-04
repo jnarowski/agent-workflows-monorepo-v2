@@ -10,6 +10,7 @@ export interface CreateWorkflowArtifactData {
   file_path: string;
   mime_type: string;
   size_bytes: number;
+  phase?: string | null;
 }
 
 /**
@@ -35,6 +36,7 @@ export async function createWorkflowArtifact(
       file_path: data.file_path,
       mime_type: data.mime_type,
       size_bytes: data.size_bytes,
+      phase: data.phase,
     },
   });
 

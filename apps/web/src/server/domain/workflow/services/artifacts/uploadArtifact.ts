@@ -1,7 +1,7 @@
 import { prisma } from '@/shared/prisma';
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
-import type { UploadArtifactInput } from '../types';
+import type { UploadArtifactInput } from '../../types';
 import type { WorkflowArtifact } from '@prisma/client';
 
 /**

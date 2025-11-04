@@ -38,7 +38,11 @@ export function createWorkflowRuntime(
     createInngestFunction(
       config: WorkflowConfig,
       fn: WorkflowFunction
-    ): InngestFunction<Record<string, unknown>, Record<string, unknown>> {
+    ): InngestFunction<
+      { id: string; name?: string; retries?: number },
+      {  event: string; data: Record<string, unknown> },
+      Record<string, unknown>
+    > {
       // Create Inngest function with custom step implementations
       // Using workflow/${id} convention to match event sender (Inngest convention)
       return inngest.createFunction(
