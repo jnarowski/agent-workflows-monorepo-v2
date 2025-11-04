@@ -57,11 +57,6 @@ export interface EventStepStartedItemProps {
   event: EventOfType<'step_started'>;
 }
 
-export interface EventCommentItemProps {
-  event: EventOfType<'annotation_added'>;
-  nested?: boolean; // For when rendered inside a step
-}
-
 export interface EventDefaultItemProps {
   event: WorkflowEvent; // Can handle any event type
 }

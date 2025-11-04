@@ -1,7 +1,7 @@
 import type { TimelineModel } from "../lib/buildTimelineModel";
 import { StepItem } from "./timeline/StepItem";
 import { EventItem } from "./timeline/EventItem";
-import { EventCommentItem } from "./timeline/EventCommentItem";
+import { EventAnnotationItem } from "./timeline/EventAnnotationItem";
 
 interface WorkflowTimelineProps {
   model: TimelineModel;
@@ -40,25 +40,19 @@ export function WorkflowTimeline({ model, projectId }: WorkflowTimelineProps) {
           // Route to appropriate component based on item type (discriminated union)
           switch (item.itemType) {
             case "step":
-              return (
-                <StepItem
-                  key={key}
-                  item={item}
-                  projectId={projectId}
-                />
-              );
+              return <StepItem key={key} item={item} projectId={projectId} />;
 
             case "event":
               return <EventItem key={key} item={item} />;
 
             case "annotation":
               // Standalone annotation (not attached to a step)
-              return <EventCommentItem key={key} annotation={item} />;
+              return <EventAnnotationItem key={key} annotation={item} />;
 
             default: {
               // TypeScript exhaustiveness check
               const _exhaustive: never = item;
-              console.warn('Unknown timeline item type:', _exhaustive);
+              console.warn("Unknown timeline item type:", _exhaustive);
               return null;
             }
           }

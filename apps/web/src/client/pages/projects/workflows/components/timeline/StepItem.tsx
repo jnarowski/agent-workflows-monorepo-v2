@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { StepTimelineItem } from "../../lib/timelineModel";
+import type { StepTimelineItem } from "../../lib/buildTimelineModel";
 import { TimelineRow } from "./TimelineRow";
 import { TimelineHeader } from "./TimelineHeader";
 import { TimelineBody } from "./TimelineBody";
@@ -44,7 +44,11 @@ export function StepItem({ item, projectId }: StepItemProps) {
   );
 
   const hasContent =
-    display.hasLogs || debug.hasError || display.hasArtifacts || display.hasAnnotations || metadata.agentSessionId;
+    display.hasLogs ||
+    debug.hasError ||
+    display.hasArtifacts ||
+    display.hasAnnotations ||
+    metadata.agentSessionId;
 
   const handleSessionClick = (sessionId: string, stepName: string) => {
     setSelectedSessionId(sessionId);
@@ -113,7 +117,9 @@ export function StepItem({ item, projectId }: StepItemProps) {
             )}
 
             {/* Error message - always expanded for failed steps */}
-            {debug.hasError && <ErrorDisplay error={debug.errorMessage!} expanded />}
+            {debug.hasError && (
+              <ErrorDisplay error={debug.errorMessage!} expanded />
+            )}
 
             {/* Logs */}
             {display.hasLogs && (
@@ -131,7 +137,9 @@ export function StepItem({ item, projectId }: StepItemProps) {
             {display.hasArtifacts && <ArtifactList artifacts={artifacts} />}
 
             {/* Step annotations (pre-filtered for this step) */}
-            {display.hasAnnotations && <StepAnnotations stepEvents={annotations} />}
+            {display.hasAnnotations && (
+              <StepAnnotations stepEvents={annotations} />
+            )}
 
             {/* Empty state */}
             {!display.hasLogs &&

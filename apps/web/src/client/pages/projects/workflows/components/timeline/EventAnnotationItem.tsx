@@ -4,7 +4,7 @@ import { TimelineHeader } from "./TimelineHeader";
 import { formatRelativeTime } from "../../utils/workflowFormatting";
 import type { AnnotationTimelineItem } from "../../lib/timelineModel";
 
-export interface EventCommentItemProps {
+export interface EventAnnotationItemProps {
   annotation: AnnotationTimelineItem;
 }
 
@@ -13,7 +13,7 @@ export interface EventCommentItemProps {
  * Standardized using shared TimelineRow + TimelineHeader components
  * Uses pre-computed display properties from domain model
  */
-export function EventCommentItem({ annotation }: EventCommentItemProps) {
+export function EventAnnotationItem({ annotation }: EventAnnotationItemProps) {
   // Type-safe access to annotation data
   const body = annotation.metadata.text || "";
   const username = annotation.metadata.created_by_username || "System";
