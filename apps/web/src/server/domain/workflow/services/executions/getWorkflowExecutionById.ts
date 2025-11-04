@@ -14,23 +14,40 @@ export async function getWorkflowExecutionById(id: string): Promise<WorkflowExec
         include: {
           session: true, // Agent session relation
           artifacts: true,
+          events: true, // Include step-level events
         },
         orderBy: { created_at: 'asc' },
       },
-      events: {
-        include: {
-          created_by_user: {
-            select: {
-              id: true,
-              email: true,
-            },
-          },
-          artifacts: true,
-          step: true, // Include step relation for step-level events
-        },
-        orderBy: { created_at: 'asc' },
+      events: true, // Include all events at execution level
+    },
+  });
+
+  // Fetch all artifacts for this execution (including those not attached to steps)
+  const allArtifacts = await prisma.workflowArtifact.findMany({
+    where: {
+      step: {
+        workflow_execution_id: id,
       },
     },
+    orderBy: { created_at: 'asc' },
+  });
+
+  // Fetch all events for this execution (not filtered)
+  const allEvents = await prisma.workflowEvent.findMany({
+    where: {
+      workflow_execution_id: id,
+    },
+    include: {
+      created_by_user: {
+        select: {
+          id: true,
+          email: true,
+        },
+      },
+      artifacts: true,
+      step: true,
+    },
+    orderBy: { created_at: 'asc' },
   });
 
   if (!execution) {
@@ -60,8 +77,8 @@ export async function getWorkflowExecutionById(id: string): Promise<WorkflowExec
       phase_name: step.phase,
       logs: step.log_directory_path,
     })),
-    // Transform events to match frontend types (parse event_data JSON, artifact name -> file_name)
-    events: execution.events.map(event => ({
+    // Use all events fetched separately (not filtered)
+    events: allEvents.map(event => ({
       ...event,
       event_data: event.event_data && typeof event.event_data === 'string'
         ? JSON.parse(event.event_data)
@@ -71,8 +88,8 @@ export async function getWorkflowExecutionById(id: string): Promise<WorkflowExec
         file_name: artifact.name,
       })),
     })),
-    // Collect all artifacts from all steps for timeline model
-    artifacts: execution.steps.flatMap(step => step.artifacts || []),
+    // Use all artifacts fetched separately (includes phase-level artifacts)
+    artifacts: allArtifacts,
   };
 
   return parsedExecution as WorkflowExecution;

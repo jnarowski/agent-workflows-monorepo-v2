@@ -147,17 +147,6 @@ export interface WorkflowArtifact {
   created_at: Date;
 }
 
-// Re-export domain model types for timeline
-export type {
-  TimelineModel,
-  TimelineItem,
-  StepTimelineItem,
-  EventTimelineItem,
-  AnnotationTimelineItem,
-  ExecutionSummary,
-  LiveState,
-} from "./utils/buildTimelineModel";
-
 // Filter types
 export interface WorkflowFilter {
   status?: WorkflowStatus;

@@ -20,7 +20,7 @@ export async function findOrCreateStep(
   const step = await findOrCreateWorkflowStep(
     executionId,
     stepName,
-    currentPhase,
+    currentPhase ?? undefined,
     logger
   );
 

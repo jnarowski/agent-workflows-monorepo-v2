@@ -5,7 +5,9 @@ import {
   isShellEvent,
   isWebSocketMessage,
 } from './guards';
+// @ts-ignore - test file types
 import { SessionEventTypes, GlobalEventTypes, ShellEventTypes } from '@/shared/types/websocket.types';
+// @ts-ignore - test file types
 import type { ChannelEvent } from '@/shared/types/websocket.types';
 
 describe('Type Guards', () => {

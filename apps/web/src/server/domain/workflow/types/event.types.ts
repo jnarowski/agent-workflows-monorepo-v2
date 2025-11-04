@@ -10,11 +10,18 @@ export interface BaseEventData {
 // Event data map for type-safe event_data
 // All events use the same base structure (title + body) with optional additional fields
 export interface EventDataMap {
-  annotation_added: BaseEventData;
-  workflow_started: BaseEventData;
-  workflow_completed: BaseEventData;
+  annotation_added: BaseEventData & {
+    message?: string;
+  };
+  workflow_started: BaseEventData & {
+    timestamp?: string;
+  };
+  workflow_completed: BaseEventData & {
+    timestamp?: string;
+  };
   workflow_failed: BaseEventData & {
     error?: string;
+    timestamp?: string;
   };
   workflow_paused: BaseEventData & {
     reason?: string;
@@ -25,13 +32,35 @@ export interface EventDataMap {
   };
   phase_started: BaseEventData & {
     phase: string;
+    retries?: number;
   };
   phase_completed: BaseEventData & {
     phase: string;
   };
+  phase_retry: BaseEventData & {
+    phase: string;
+    attempt: number;
+    error?: string;
+  };
+  phase_failed: BaseEventData & {
+    phase: string;
+    attempts: number;
+    error?: string;
+  };
   step_started: BaseEventData & {
     step_id: string;
     step_name: string;
+    stepId?: string;
+  };
+  step_running: BaseEventData & {
+    stepId: string;
+  };
+  step_completed: BaseEventData & {
+    stepId: string;
+  };
+  step_failed: BaseEventData & {
+    stepId: string;
+    error?: string;
   };
 }
 

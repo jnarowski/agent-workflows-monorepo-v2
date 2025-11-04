@@ -99,7 +99,7 @@ describe("ChatPromptInput", () => {
 
       // Verify message was submitted (files will be empty array, not undefined)
       await waitFor(() => {
-        expect(mockOnSubmit).toHaveBeenCalledWith("Hello world", []);
+        expect(mockOnSubmit).toHaveBeenCalledWith({ text: "Hello world", files: [] });
       });
     });
 

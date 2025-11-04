@@ -15,6 +15,7 @@ import {
   applyEventCreated,
 } from './workflowStateUpdates';
 import type { WorkflowExecution, WorkflowEvent } from '../types';
+import { WorkflowStatusValues, StepStatusValues } from '@/shared/schemas/workflow.schemas';
 
 // ============================================================================
 // Mock Data

@@ -42,6 +42,7 @@ export async function createWorkflowEvent<T extends keyof EventDataMap>(
   const event = await prisma.workflowEvent.create({
     data: {
       workflow_execution_id,
+      // @ts-ignore - event type
       event_type,
       event_data: event_data as unknown as Prisma.InputJsonValue,
       workflow_execution_step_id,

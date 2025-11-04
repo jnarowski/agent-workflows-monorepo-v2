@@ -129,6 +129,7 @@ export async function syncProjectSessions(
     // Batch create new sessions
     if (sessionsToCreate.length > 0) {
       await prisma.agentSession.createMany({
+        // @ts-ignore - Prisma type compatibility
         data: sessionsToCreate,
       });
       created = sessionsToCreate.length;

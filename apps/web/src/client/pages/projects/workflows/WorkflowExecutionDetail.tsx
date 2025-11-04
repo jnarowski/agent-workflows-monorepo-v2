@@ -1,11 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Plus } from "lucide-react";
 import { WorkflowExecutionHeader } from "./components/WorkflowExecutionHeader";
-import { WorkflowTimeline } from "./components/WorkflowTimeline";
-import { TimelineErrorBoundary } from "./components/timeline/WorkflowTimeline.ErrorBoundary";
 import { NewExecutionDialog } from "./components/NewExecutionDialog";
-import { buildTimelineModel } from "./utils/buildTimelineModel";
 import { useWorkflowExecution } from "./hooks/useWorkflowExecution";
 import { useWorkflowDefinition } from "./hooks/useWorkflowDefinition";
 import { useWorkflowWebSocket } from "./hooks/useWorkflowWebSocket";
@@ -74,17 +71,6 @@ export function WorkflowExecutionDetail() {
 
   const isLoading = executionLoading || definitionLoading;
 
-  // Build timeline model from execution data
-  const timelineModel = useMemo(() => {
-    if (!execution) return null;
-    return buildTimelineModel(
-      execution,
-      execution.steps || [],
-      execution.events || [],
-      execution.artifacts || []
-    );
-  }, [execution]);
-
   if (isLoading || !execution || !definition) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -143,15 +129,7 @@ export function WorkflowExecutionDetail() {
         <div className="max-w-5xl mx-auto">
           {/* Timeline section */}
           <section>
-            <h2 className="text-xl font-bold mb-4">Execution Timeline</h2>
-            {timelineModel && (
-              <TimelineErrorBoundary>
-                <WorkflowTimeline
-                  model={timelineModel}
-                  projectId={projectId!}
-                />
-              </TimelineErrorBoundary>
-            )}
+            <h2 className="text-xl font-bold mb-4">Execution Timeline</h2>{" "}
           </section>
         </div>
       </div>

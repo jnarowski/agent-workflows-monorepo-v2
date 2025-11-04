@@ -16,8 +16,9 @@ export function createAnnotationStep(context: RuntimeContext) {
       workflow_execution_id: executionId,
       event_type: "annotation_added",
       event_data: {
+        title: "Annotation Added",
+        body: message,
         message,
-        phase: currentPhase,
       },
       logger,
     });

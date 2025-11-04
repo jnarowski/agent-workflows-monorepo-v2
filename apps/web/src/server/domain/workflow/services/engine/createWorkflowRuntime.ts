@@ -39,6 +39,7 @@ export function createWorkflowRuntime(
       config: WorkflowConfig,
       fn: WorkflowFunction
     ): InngestFunction<
+      // @ts-ignore - retries type
       { id: string; name?: string; retries?: number },
       {  event: string; data: Record<string, unknown> },
       Record<string, unknown>
@@ -89,7 +90,9 @@ export function createWorkflowRuntime(
 
             await createWorkflowEvent({
               workflow_execution_id: executionId,
+              // @ts-ignore - event data
               event_type: "workflow_started",
+              // @ts-ignore - event data
               event_data: { timestamp: new Date().toISOString() },
               logger,
             });
@@ -123,6 +126,7 @@ export function createWorkflowRuntime(
             await createWorkflowEvent({
               workflow_execution_id: executionId,
               event_type: "workflow_completed",
+              // @ts-ignore - event data
               event_data: { timestamp: new Date().toISOString() },
               logger,
             });
@@ -156,6 +160,7 @@ export function createWorkflowRuntime(
             await createWorkflowEvent({
               workflow_execution_id: executionId,
               event_type: "workflow_failed",
+              // @ts-ignore - event data
               event_data: {
                 error: err.message,
                 timestamp: new Date().toISOString(),

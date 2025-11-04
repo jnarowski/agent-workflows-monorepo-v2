@@ -20,6 +20,11 @@ export async function getWorkflowExecutions(
       workflow_definition: true,
       steps: {
         orderBy: { created_at: 'asc' },
+        include: {
+          artifacts: {
+            orderBy: { created_at: 'asc' },
+          },
+        },
       },
       events: {
         where: {

@@ -47,7 +47,12 @@ export function createPhaseStep(context: RuntimeContext) {
     await createWorkflowEvent({
       workflow_execution_id: executionId,
       event_type: "phase_started",
-      event_data: { phase: name, retries, retryDelay },
+      event_data: {
+        title: `Phase Started: ${name}`,
+        body: `Starting phase "${name}" with ${retries} max retries`,
+        phase: name,
+        retries,
+      },
       logger,
     });
 
@@ -75,9 +80,9 @@ export function createPhaseStep(context: RuntimeContext) {
           workflow_execution_id: executionId,
           event_type: "phase_completed",
           event_data: {
+            title: `Phase Completed: ${name}`,
+            body: `Phase "${name}" completed successfully on attempt ${attempt + 1}/${retries + 1}`,
             phase: name,
-            attempt: attempt + 1,
-            totalAttempts: retries + 1,
           },
           logger,
         });
@@ -121,11 +126,11 @@ export function createPhaseStep(context: RuntimeContext) {
             workflow_execution_id: executionId,
             event_type: "phase_retry",
             event_data: {
+              title: `Phase Retry: ${name}`,
+              body: `Retrying phase "${name}" (attempt ${attempt}/${retries}) after error: ${lastError.message}`,
               phase: name,
               attempt,
-              maxRetries: retries,
               error: lastError.message,
-              retryDelay,
             },
             logger,
           });
@@ -164,6 +169,8 @@ export function createPhaseStep(context: RuntimeContext) {
       workflow_execution_id: executionId,
       event_type: "phase_failed",
       event_data: {
+        title: `Phase Failed: ${name}`,
+        body: `Phase "${name}" failed after ${attempt} attempts. Error: ${lastError?.message || "Unknown error"}`,
         phase: name,
         attempts: attempt,
         error: lastError?.message,

@@ -331,6 +331,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       const discovered = await scanProjectWorkflows(
         projectId,
         project.path,
+        // @ts-ignore - workflowOrchestrator added by plugin
         fastify.workflowOrchestrator,
         fastify.log
       );

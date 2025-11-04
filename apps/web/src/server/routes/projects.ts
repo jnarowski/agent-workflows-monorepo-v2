@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="../types/fastify.d.ts" />
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import {

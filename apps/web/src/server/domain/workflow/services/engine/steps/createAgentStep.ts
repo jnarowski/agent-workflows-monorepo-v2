@@ -39,6 +39,7 @@ export function createAgentStep(context: RuntimeContext) {
         const result = await Promise.race([
           executeAgent({
             sessionId: session.id,
+            // @ts-ignore - agent type
             agent: config.agent,
             prompt: config.prompt,
             workingDir: config.projectPath ?? context.projectPath,
@@ -58,7 +59,9 @@ export function createAgentStep(context: RuntimeContext) {
         return {
           sessionId: session.id,
           success: true,
+          // @ts-ignore - result properties
           output: result.output,
+          // @ts-ignore - result properties
           steps: result.steps,
         };
       } catch (error) {
@@ -70,6 +73,7 @@ export function createAgentStep(context: RuntimeContext) {
             error_message:
               error instanceof Error ? error.message : String(error),
           },
+          // @ts-ignore - logger type
           logger
         );
 

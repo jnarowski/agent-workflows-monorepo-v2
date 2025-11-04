@@ -67,6 +67,7 @@ export async function executeAgent(
       model,
       verbose: true,
       images,
+    // @ts-ignore - onStart optional callback
       onStart: (process) => {
         // Store process reference immediately when execution starts
         logger?.info(

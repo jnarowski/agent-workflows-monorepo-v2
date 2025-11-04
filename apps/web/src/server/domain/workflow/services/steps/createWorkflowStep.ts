@@ -23,7 +23,7 @@ export async function createWorkflowStep(
       step_id: stepName,
       name: stepName,
       status: 'pending',
-      ...(phase && { phase }),
+      phase: phase || '',
     },
   });
 

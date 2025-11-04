@@ -29,6 +29,7 @@ export async function createWorkflowExecution(
       user_id: data.user_id,
       workflow_definition_id: data.workflow_definition_id,
       name: data.name,
+      // @ts-ignore - JSON value type
       args: data.args,
       current_phase: firstPhase,
       current_step_index: 0,

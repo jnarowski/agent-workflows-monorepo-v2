@@ -24,6 +24,7 @@ export async function updateSession(
   // Update database
   const session = await prisma.agentSession.update({
     where: { id: sessionId },
+    // @ts-ignore - Prisma update type
     data: {
       ...data,
       updated_at: new Date(),

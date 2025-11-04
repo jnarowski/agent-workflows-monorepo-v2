@@ -135,7 +135,7 @@ export async function createServer() {
 
   // Store originals for potential restoration
   (
-    fastify as typeof fastify & { _originalConsole?: typeof console }
+    fastify as typeof fastify & { _originalConsole?: Pick<Console, 'log' | 'error' | 'warn'> }
   )._originalConsole = {
     log: originalConsoleLog,
     error: originalConsoleError,
@@ -315,7 +315,7 @@ export async function createServer() {
   fastify.addContentTypeParser(
     "application/json",
     { parseAs: "string" },
-    (req, body, done) => {
+    (_req, body, done) => {
       try {
         // Allow empty bodies (e.g., DELETE requests with Content-Type: application/json)
         const json = body === "" ? {} : JSON.parse(body as string);

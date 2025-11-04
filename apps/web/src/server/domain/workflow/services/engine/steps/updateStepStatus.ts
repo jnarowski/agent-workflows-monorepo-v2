@@ -33,28 +33,22 @@ export async function updateStepStatus(
     logger,
   });
 
-  // Create event
-  let eventType:
-    | "step_started"
-    | "step_completed"
-    | "step_failed"
-    | "step_running" = "step_running";
-  if (status === "running") eventType = "step_started";
-  else if (status === "completed") eventType = "step_completed";
-  else if (status === "failed") eventType = "step_failed";
-
-  await createWorkflowEvent({
-    workflow_execution_id: executionId,
-    event_type: eventType,
-    event_data: {
+  // Create event only for failed steps (skip step_started and step_completed)
+  if (status === "failed") {
+    const eventData = {
+      title: `Step Failed: ${step.name}`,
+      body: `Step "${step.name}" failed${error ? `: ${error}` : ""}`,
       stepId,
-      stepName: step.name,
-      phase: step.phase,
-      status,
       error,
-    },
-    logger,
-  });
+    };
+
+    await createWorkflowEvent({
+      workflow_execution_id: executionId,
+      event_type: "step_failed",
+      event_data: eventData,
+      logger,
+    });
+  }
 
   // Broadcast WebSocket event
   const wsEventType =

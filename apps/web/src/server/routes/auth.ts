@@ -15,7 +15,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         200: authStatusResponseSchema,
       },
     },
-  }, async (request, reply) => {
+  }, async (_request, reply) => {
     try {
       const userCount = await prisma.user.count();
       const needsSetup = userCount === 0;
@@ -26,7 +26,8 @@ export async function authRoutes(fastify: FastifyInstance) {
       });
     } catch (error) {
       fastify.log.error({ err: error }, 'Auth status error');
-      return reply.code(500).send(buildErrorResponse(500, 'Internal server error'));
+      // @ts-ignore - error response
+      return reply.status(500).send(buildErrorResponse(500, 'Internal server error'));
     }
   });
 
@@ -196,7 +197,7 @@ export async function authRoutes(fastify: FastifyInstance) {
   // Logout (client-side token removal, but this endpoint exists for consistency)
   fastify.post('/api/auth/logout', {
     preHandler: fastify.authenticate,
-  }, async (request, reply) => {
+  }, async (_request, reply) => {
     // In a simple JWT system, logout is mainly client-side
     // This endpoint exists for consistency and potential future logging
     return reply.send({

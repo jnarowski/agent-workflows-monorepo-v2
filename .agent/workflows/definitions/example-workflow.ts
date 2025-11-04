@@ -27,9 +27,8 @@ export default defineWorkflow(
     // Phase 2: Process
     await step.phase("process", async () => {
       await step.annotation("Processing data - this is the main work phase");
-
       await step.sleep("sleep-for-5-seconds", 10000);
-
+      await step.annotation("Let's do this thing!");
       // Output some text data
       await step.run("process-data", async () => {
         const data = {
@@ -63,6 +62,9 @@ All phases are executing correctly.
     // Phase 3: Complete
     await step.phase("complete", async () => {
       await step.annotation("Finalizing workflow - cleanup phase");
+      await step.annotation(
+        "Stand by me when you're in trouble...and you need a friend"
+      );
 
       await step.run("finalize", async () => {
         const summary = {

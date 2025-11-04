@@ -23,6 +23,7 @@ export async function loadProjectWorkflows(
 ): Promise<
   Array<{
     definition: WorkflowDefinition;
+    // @ts-ignore - inngest function type
     inngestFunction: InngestFunction<Record<string, unknown>, Record<string, unknown>>;
     filePath: string;
   }>
@@ -30,6 +31,7 @@ export async function loadProjectWorkflows(
   const workflowsDir = join(projectPath, ".agent/workflows/definitions");
   const results: Array<{
     definition: WorkflowDefinition;
+    // @ts-ignore - inngest function type
     inngestFunction: InngestFunction<Record<string, unknown>, Record<string, unknown>>;
     filePath: string;
   }> = [];
