@@ -317,6 +317,7 @@ Only validation-related imports change.
 - Added comprehensive documentation section to `apps/web/CLAUDE.md` explaining hybrid approach
 - Documented what to share vs keep separate with rationale and examples
 - Included type derivation pattern, import patterns, and value vs confusion matrix
+- Fixed Zod z.record() calls to use two parameters (key type, value type) for compatibility with newer Zod versions
 
 ## Testing Strategy
 
