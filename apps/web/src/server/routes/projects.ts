@@ -9,8 +9,8 @@ import {
   toggleProjectHidden,
   toggleProjectStarred,
   projectExistsByPath,
+  syncFromClaudeProjects,
 } from "@/server/domain/project/services";
-import { syncFromClaudeProjects } from "@/server/services/projectSync";
 import { getFileTree, readFile, writeFile } from "@/server/domain/file/services/index";
 import {
   createProjectSchema,
@@ -20,20 +20,20 @@ import {
   fileContentBodySchema,
   hideProjectSchema,
   starProjectSchema,
+  projectResponseSchema,
+  projectSyncResponseSchema,
 } from "@/server/domain/project/schemas";
 import {
-  projectResponseSchema,
-  errorResponse,
   fileTreeResponseSchema,
   fileContentResponseSchema,
   fileContentSaveResponseSchema,
-  projectSyncResponseSchema,
-} from "@/server/schemas/response";
+} from "@/server/domain/file/schemas";
+import { errorResponse } from "@/server/domain/common/schemas";
 import type {
   CreateProjectRequest,
   UpdateProjectRequest,
 } from "@/shared/types/project.types";
-import { buildErrorResponse } from "@/server/utils/error";
+import { buildErrorResponse } from "@/server/errors";
 
 // Query schema for projects endpoint
 const ProjectsQuerySchema = z.object({

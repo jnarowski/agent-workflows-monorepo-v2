@@ -9,7 +9,7 @@ import {
   type InitMessage,
   type InputMessage,
   type ResizeMessage,
-} from '@/server/schemas/shell';
+} from '@/server/domain/shell/schemas';
 import type { JWTPayload } from '@/server/utils/auth';
 
 export async function registerShellRoute(fastify: FastifyInstance) {

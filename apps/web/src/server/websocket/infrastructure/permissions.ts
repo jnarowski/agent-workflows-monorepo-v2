@@ -48,8 +48,7 @@ export async function validateSessionAccess(
  */
 export async function validateProjectAccess(
   projectId: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  userId: string
+  _userId: string // eslint-disable-line @typescript-eslint/no-unused-vars
 ): Promise<boolean> {
   try {
     const project = await prisma.project.findUnique({

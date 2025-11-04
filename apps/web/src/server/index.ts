@@ -2,6 +2,7 @@
 import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import fastifyWebsocket from '@fastify/websocket';
+import fastifyMultipart from '@fastify/multipart';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import {
@@ -19,11 +20,12 @@ import { registerShellRoute } from '@/server/routes/shell';
 import { authPlugin } from '@/server/plugins/auth';
 import { setupGracefulShutdown } from '@/server/utils/shutdown';
 import { config } from '@/server/config/Configuration';
+import { MockWorkflowOrchestrator } from '@/server/domain/workflow/services/MockWorkflowOrchestrator';
 import {
   AppError,
   ConflictError,
   buildErrorResponse
-} from '@/server/utils/error';
+} from '@/server/errors';
 import { ServiceUnavailableError } from '@/server/errors/ServiceUnavailableError';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -295,6 +297,13 @@ export async function createServer() {
   // Register auth plugin (JWT)
   await fastify.register(authPlugin);
 
+  // Register multipart/form-data support for file uploads
+  await fastify.register(fastifyMultipart, {
+    limits: {
+      fileSize: 100 * 1024 * 1024, // 100MB
+    },
+  });
+
   // Register WebSocket support
   await fastify.register(fastifyWebsocket);
 
@@ -306,6 +315,22 @@ export async function createServer() {
 
   // Register Shell WebSocket handler
   await registerShellRoute(fastify);
+
+  // Initialize MockWorkflowOrchestrator
+  const workflowOrchestrator = new MockWorkflowOrchestrator(fastify.log);
+  fastify.log.info('MockWorkflowOrchestrator initialized');
+
+  // Start the workflow runner
+  workflowOrchestrator.start();
+
+  // Store orchestrator on fastify instance for access in routes
+  fastify.decorate('workflowOrchestrator', workflowOrchestrator);
+
+  // Graceful shutdown: Stop the workflow runner on server close
+  fastify.addHook('onClose', async () => {
+    fastify.log.info('Stopping workflow orchestrator...');
+    workflowOrchestrator.stop();
+  });
 
   // Serve static files from dist/client/ (production build only)
   // In production, the built client files are in dist/client/

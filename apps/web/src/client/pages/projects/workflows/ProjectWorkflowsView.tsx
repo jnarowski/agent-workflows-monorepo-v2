@@ -1,0 +1,208 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from "react";
+import {
+  DndContext,
+  type DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { useNavigate, useParams } from "react-router-dom";
+import { Plus, Search } from "lucide-react";
+import { WorkflowStatus } from "@/shared/schemas";
+import { WorkflowKanbanColumn } from "./components/WorkflowKanbanColumn";
+import { WorkflowDefinitionsList } from "./components/WorkflowDefinitionsList";
+import { NewWorkflowModal } from "./components/NewWorkflowModal";
+import { useWorkflowExecutions } from "./hooks/useWorkflowExecutions";
+import { useWorkflowDefinitions } from "./hooks/useWorkflowDefinitions";
+import { useWorkflowWebSocket } from "./hooks/useWorkflowWebSocket";
+import {
+  useCreateWorkflow,
+  usePauseWorkflow,
+  useResumeWorkflow,
+  useCancelWorkflow,
+} from "./hooks/useWorkflowMutations";
+
+export interface ProjectWorkflowsViewProps {
+  projectId?: string;
+}
+
+export function ProjectWorkflowsView({
+  projectId: propProjectId,
+}: ProjectWorkflowsViewProps) {
+  const { projectId: paramProjectId } = useParams<{ projectId: string }>();
+  const projectId = propProjectId || paramProjectId!;
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [definitionFilter, setDefinitionFilter] = useState<
+    string | undefined
+  >();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Hooks
+  const { data: executions, isLoading } = useWorkflowExecutions(projectId, {
+    search,
+    definitionId: definitionFilter,
+  });
+  const { data: definitions } = useWorkflowDefinitions();
+  useWorkflowWebSocket(projectId);
+
+  // Mutations
+  const createWorkflow = useCreateWorkflow();
+  const pauseWorkflow = usePauseWorkflow();
+  const resumeWorkflow = useResumeWorkflow();
+  const cancelWorkflow = useCancelWorkflow();
+
+  // Drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const executionId = String(active.id);
+    const newStatus = over.id as WorkflowStatus;
+
+    // Call appropriate mutation based on status
+    switch (newStatus) {
+      case WorkflowStatus.RUNNING:
+        await resumeWorkflow.mutateAsync(executionId);
+        break;
+      case WorkflowStatus.PAUSED:
+        await pauseWorkflow.mutateAsync(executionId);
+        break;
+      case WorkflowStatus.CANCELLED:
+        await cancelWorkflow.mutateAsync(executionId);
+        break;
+    }
+  };
+
+  const handleExecutionClick = (execution: any) => {
+    // Navigate to execution detail page
+    const definitionId = execution.workflow_definition_id;
+    const executionId = execution.id;
+    navigate(
+      `/projects/${projectId}/workflows/${definitionId}/executions/${executionId}`
+    );
+  };
+
+  const handleCreateWorkflow = async (data: any) => {
+    await createWorkflow.mutateAsync({
+      projectId,
+      definitionId: data.definitionId,
+      name: data.name,
+      args: data.args,
+    });
+  };
+
+  // Group executions by status
+  const executionsByStatus = (executions || []).reduce(
+    (acc, execution) => {
+      if (!acc[execution.status]) {
+        acc[execution.status] = [];
+      }
+      acc[execution.status].push(execution);
+      return acc;
+    },
+    {} as Record<WorkflowStatus, any[]>
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full flex-col">
+      {/* Header */}
+      <div className="border-b bg-background p-4">
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-2xl font-bold">Workflows</h1>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            <Plus className="h-4 w-4" />
+            New Workflow
+          </button>
+        </div>
+
+        {/* Filters */}
+        <div className="mt-4 flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search workflows..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-md border bg-background py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <select
+            value={definitionFilter || ""}
+            onChange={(e) => setDefinitionFilter(e.target.value || undefined)}
+            className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="">All Templates</option>
+            {definitions?.map((def) => (
+              <option key={def.id} value={def.id}>
+                {def.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Workflow Definitions List */}
+      <WorkflowDefinitionsList
+        projectId={projectId}
+        definitions={definitions || []}
+        executions={executions || []}
+      />
+
+      {/* Kanban Board */}
+      <div className="flex-1 overflow-x-auto p-4">
+        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <div className="flex gap-4 min-w-max">
+            {[
+              WorkflowStatus.PENDING,
+              WorkflowStatus.RUNNING,
+              WorkflowStatus.PAUSED,
+              WorkflowStatus.COMPLETED,
+              WorkflowStatus.FAILED,
+            ].map((status) => (
+              <div key={status} className="w-80">
+                <WorkflowKanbanColumn
+                  status={status}
+                  executions={executionsByStatus[status] || []}
+                  onExecutionClick={handleExecutionClick}
+                  onPause={pauseWorkflow.mutate}
+                  onResume={resumeWorkflow.mutate}
+                  onCancel={cancelWorkflow.mutate}
+                />
+              </div>
+            ))}
+          </div>
+        </DndContext>
+      </div>
+
+      {/* New Workflow Modal */}
+      <NewWorkflowModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        definitions={definitions || []}
+        onSubmit={handleCreateWorkflow}
+      />
+    </div>
+  );
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateUUID } from "@/client/lib/utils";
+import { generateUUID } from "@/client/utils/cn";
 
 /**
  * This is a minimal reproduction test for the message replacement bug

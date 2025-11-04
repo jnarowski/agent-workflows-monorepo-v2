@@ -1,6 +1,6 @@
 import { AgentIcon } from "@/client/components/AgentIcon";
 import type { AgentType } from "@/shared/types/agent.types";
-import { cn } from "@/client/lib/utils";
+import { cn } from "@/client/utils/cn";
 import { useSettings } from "@/client/hooks/useSettings";
 
 interface AgentSelectorProps {

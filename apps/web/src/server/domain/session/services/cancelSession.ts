@@ -2,7 +2,8 @@ import type { FastifyBaseLogger } from "fastify";
 import { prisma } from "@/shared/prisma";
 import { activeSessions } from "@/server/websocket/infrastructure/active-sessions";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
-import { SessionEventTypes, Channels } from "@/shared/websocket";
+import { SessionEventTypes } from "@/shared/types/websocket.types";
+import { Channels } from "@/shared/websocket";
 import { killProcess } from "@repo/agent-cli-sdk";
 import { updateSessionState } from "./updateSessionState";
 

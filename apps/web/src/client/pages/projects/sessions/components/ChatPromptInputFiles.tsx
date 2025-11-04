@@ -23,7 +23,7 @@ import {
   flattenFileTree,
   extractFileReferences,
   type FileItem,
-} from "@/client/pages/projects/files/lib/fileUtils";
+} from "@/client/pages/projects/files/utils/fileUtils";
 import { FileBadge } from "@/client/components/ui/file-badge";
 
 interface ChatPromptInputFilesProps {

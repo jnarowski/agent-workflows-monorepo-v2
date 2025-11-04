@@ -1,5 +1,5 @@
 import type { AgentType } from "@/shared/types/agent.types";
-import { cn } from "@/client/lib/utils";
+import { cn } from "@/client/utils/cn";
 import { useTheme } from "next-themes";
 import claudeSvg from "@/client/assets/icons/agents/claude.svg";
 import codexSvg from "@/client/assets/icons/agents/codex.svg";

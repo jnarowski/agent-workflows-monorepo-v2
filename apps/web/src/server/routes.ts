@@ -7,6 +7,11 @@ import { slashCommandsRoutes } from "@/server/routes/slash-commands";
 import { gitRoutes } from "@/server/routes/git";
 import { settingsRoutes } from "@/server/routes/settings";
 import { registerWebSocketRoutes } from "@/server/routes/websocket";
+import { workflowRoutes } from "@/server/routes/workflows";
+import { workflowStepRoutes } from "@/server/routes/workflow-steps";
+import { workflowArtifactRoutes } from "@/server/routes/workflow-artifacts";
+import { workflowEventRoutes } from "@/server/routes/workflow-events";
+import { registerWorkflowDefinitionRoutes } from "@/server/routes/workflow-definitions";
 
 export async function registerRoutes(fastify: FastifyInstance) {
   // Register auth routes
@@ -26,6 +31,13 @@ export async function registerRoutes(fastify: FastifyInstance) {
 
   // Register settings routes
   await fastify.register(settingsRoutes);
+
+  // Register workflow routes
+  await fastify.register(workflowRoutes);
+  await fastify.register(workflowStepRoutes);
+  await fastify.register(workflowArtifactRoutes);
+  await fastify.register(workflowEventRoutes);
+  await fastify.register(registerWorkflowDefinitionRoutes);
 
   // Register websocket metrics routes
   await fastify.register(registerWebSocketRoutes);

@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
-import { ChatInterface } from "./components/ChatInterface";
+import { AgentSessionViewer } from "@/client/components/AgentSessionViewer";
 import { ChatPromptInput } from "./components/ChatPromptInput";
 import { useSessionWebSocket } from "./hooks/useSessionWebSocket";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
@@ -11,7 +10,7 @@ import {
 } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation";
 import { useNavigationStore } from "@/client/stores/index";
-import { generateUUID } from "@/client/lib/utils";
+import { generateUUID } from "@/client/utils/cn";
 import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
 import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 
@@ -35,8 +34,6 @@ export default function ProjectSession() {
   );
   const setActiveSession = useNavigationStore((s) => s.setActiveSession);
   const initialMessageSentRef = useRef(false);
-  const loadSessionInitiatedRef = useRef(false);
-  const queryClient = useQueryClient();
 
   // Get sessionId from URL params (required for this route)
   const sessionId = params.sessionId;
@@ -51,7 +48,6 @@ export default function ProjectSession() {
   // Get session from store
   const session = useSessionStore((s) => s.session);
   const currentSessionId = useSessionStore((s) => s.sessionId);
-  const loadSession = useSessionStore((s) => s.loadSession);
   const clearSession = useSessionStore((s) => s.clearSession);
   const addMessage = useSessionStore((s) => s.addMessage);
   const setStreaming = useSessionStore((s) => s.setStreaming);
@@ -73,14 +69,13 @@ export default function ProjectSession() {
     }
   }, [sessionId, setActiveSession]);
 
-  // Load session when sessionId changes
+  // Handle query parameter for initial message
   useEffect(() => {
-    // Skip loading if no sessionId or projectId
     if (!sessionId || !projectId) {
       return;
     }
 
-    // Check if we have a query parameter (indicates message already sent, skip loadSession)
+    // Check if we have a query parameter (indicates message already sent)
     const searchParams = new URLSearchParams(location.search);
     const queryParam = searchParams.get("query");
 
@@ -102,33 +97,6 @@ export default function ProjectSession() {
             loadingState: "loaded",
             error: null,
           },
-        });
-      }
-      return;
-    }
-
-    // If this is a different session, handle the transition
-    if (currentSessionId !== sessionId) {
-      // Clear previous session only if we're coming from a different session
-      if (currentSessionId && currentSessionId !== sessionId) {
-        clearSession();
-        loadSessionInitiatedRef.current = false; // Reset on session change
-      }
-
-      // Load session from server
-      if (!session || session.id !== sessionId) {
-        // Skip if already initiated (handles React Strict Mode double-invocation)
-        if (loadSessionInitiatedRef.current) {
-          return;
-        }
-
-        // Mark as initiated immediately to prevent duplicate calls
-        loadSessionInitiatedRef.current = true;
-
-        loadSession(sessionId, projectId, queryClient).catch((err) => {
-          console.error("[ProjectSession] Error loading session:", err);
-          // Reset ref on error so user can retry
-          loadSessionInitiatedRef.current = false;
         });
       }
     }
@@ -249,18 +217,18 @@ export default function ProjectSession() {
     !globalIsConnected || // Disable if global WebSocket not connected
     waitingForFirstResponse; // Block until first assistant response
 
+  // Only auto-load if no query parameter (AgentSessionViewer handles loading)
+  const searchParams = new URLSearchParams(location.search);
+  const hasQueryParam = searchParams.has("query");
+
   return (
     <div className="absolute inset-0 flex flex-col overflow-hidden">
       {/* Chat Messages Container - takes up remaining space */}
       <div className="flex-1 overflow-hidden">
-        <ChatInterface
+        <AgentSessionViewer
           projectId={projectId!}
-          sessionId={sessionId || undefined}
-          agent={session?.agent || "claude"}
-          messages={session?.messages || []}
-          isLoading={session?.loadingState === "loading"}
-          error={session?.error || null}
-          isStreaming={session?.isStreaming || false}
+          sessionId={sessionId!}
+          autoLoad={!hasQueryParam} // Don't auto-load if query param present
         />
       </div>
 

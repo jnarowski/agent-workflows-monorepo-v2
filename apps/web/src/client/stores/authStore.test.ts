@@ -56,7 +56,14 @@ describe("authStore", () => {
   it("should handle login failure", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: false,
-      json: async () => ({ error: "Invalid credentials" }),
+      status: 401,
+      statusText: "Unauthorized",
+      json: async () => ({
+        error: {
+          message: "Invalid credentials",
+          statusCode: 401
+        }
+      }),
     });
 
     await expect(

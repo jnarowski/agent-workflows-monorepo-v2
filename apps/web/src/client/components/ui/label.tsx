@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import * as LabelPrimitive from "@radix-ui/react-label";
 
-import { cn } from "@/client/lib/utils";
+import { cn } from "@/client/utils/cn";
 
 function Label({
   className,

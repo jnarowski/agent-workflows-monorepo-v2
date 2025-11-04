@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
-import { getProjectSlashCommands } from './slashCommand';
+import { getProjectSlashCommands } from '@/server/domain/slashCommand/services';
 import * as projectService from '@/server/domain/project/services';
 import { vi } from 'vitest';
 

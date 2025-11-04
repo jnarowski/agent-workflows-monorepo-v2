@@ -9,3 +9,5 @@ export { toggleProjectHidden } from "./toggleProjectHidden";
 export { toggleProjectStarred } from "./toggleProjectStarred";
 export { projectExistsByPath } from "./projectExistsByPath";
 export { createOrUpdateProject } from "./createOrUpdateProject";
+export { syncFromClaudeProjects } from "./syncProjectFromClaude";
+export { hasEnoughSessions } from "./hasEnoughSessions";

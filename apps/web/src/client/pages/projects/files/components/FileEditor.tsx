@@ -11,7 +11,7 @@ import { EditorView } from "@codemirror/view";
 import { X, Save, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/client/components/ui/button";
 import { useCodeBlockTheme } from "@/client/utils/codeBlockTheme";
-import { api } from "@/client/lib/api-client";
+import { api } from "@/client/utils/api-client";
 
 interface FileEditorProps {
   projectId: string;

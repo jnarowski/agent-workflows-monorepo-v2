@@ -1,7 +1,7 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import type { SlashCommand } from '@/shared/types/slash-command.types';
-import { DEFAULT_SLASH_COMMANDS } from '@/client/pages/projects/sessions/lib/slashCommandUtils';
-import { api } from '@/client/lib/api-client';
+import { DEFAULT_SLASH_COMMANDS } from '@/client/pages/projects/sessions/utils/lib/slashCommandUtils';
+import { api } from '@/client/utils/api-client';
 
 // Query keys factory
 export const slashCommandKeys = {

@@ -1,7 +1,8 @@
 import type { AgentSession } from "@prisma/client";
 import { prisma } from "@/shared/prisma";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
-import { SessionEventTypes, Channels } from "@/shared/websocket";
+import { SessionEventTypes } from "@/shared/types/websocket.types";
+import { Channels } from "@/shared/websocket";
 
 /**
  * Generic session update service

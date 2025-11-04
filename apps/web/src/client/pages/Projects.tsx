@@ -27,7 +27,7 @@ import { FolderOpen, Plus, Calendar, FolderGit2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
 import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
-import { truncatePath } from "@/client/lib/utils";
+import { truncatePath } from "@/client/utils/cn";
 
 export default function Projects() {
   useDocumentTitle("Projects | Agent Workflows");

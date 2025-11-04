@@ -137,6 +137,234 @@ This is a **Turborepo monorepo** for agent workflow tools. The `web` app is a fu
      const messages = store.currentSession?.messages;
      ```
 
+### Null vs Undefined Conventions
+
+**Critical**: Consistent handling of null/undefined prevents type errors and improves code clarity.
+
+**Golden Rules:**
+
+1. **Database Fields (Prisma) - Use `| null`**
+   - Prisma uses `null` for nullable database columns
+   - Always type as `| null`, never `| undefined` or `| null | undefined`
+   - Example:
+     ```typescript
+     interface WorkflowExecution {
+       id: string;
+       started_at: Date | null;       // ✅ Database field
+       completed_at: Date | null;     // ✅ Database field
+       error_message: string | null;  // ✅ Database field
+     }
+     ```
+
+2. **React Props - Use `?` (Optional/Undefined)**
+   - React props default to `undefined` when not provided
+   - Use optional syntax `?` instead of `| undefined`
+   - Example:
+     ```typescript
+     interface ComponentProps {
+       id: string;              // ✅ Required
+       name?: string;           // ✅ Optional (undefined when not provided)
+       onComplete?: () => void; // ✅ Optional callback
+     }
+     ```
+
+3. **Never Mix Both**
+   - ❌ **BAD**: `value: string | null | undefined`
+   - ✅ **GOOD**: `value: string | null` (database field)
+   - ✅ **GOOD**: `value?: string` (React prop or optional field)
+
+4. **Type Guards**
+   - Check for both `null` and `undefined` when consuming values that could be either
+   - Example:
+     ```typescript
+     // ✅ GOOD - Handles both null and undefined
+     if (value == null) {  // == null checks both null and undefined
+       return defaultValue;
+     }
+
+     // ✅ ALSO GOOD - Explicit null check
+     if (value !== null && value !== undefined) {
+       return value.toString();
+     }
+
+     // ✅ ALSO GOOD - Nullish coalescing
+     const displayValue = value ?? 'N/A';
+     ```
+
+5. **API Responses**
+   - Match Prisma types: use `| null` for nullable fields
+   - Example:
+     ```typescript
+     interface APIResponse {
+       data: {
+         id: string;
+         completed_at: Date | null;  // ✅ Matches Prisma type
+       };
+     }
+     ```
+
+6. **Function Parameters**
+   - Use `?` for optional parameters
+   - Use `| null` only when `null` has specific meaning
+   - Example:
+     ```typescript
+     // ✅ GOOD - Optional parameter
+     function createSession(name: string, metadata?: Record<string, unknown>) {
+       // ...
+     }
+
+     // ✅ ALSO GOOD - Null has specific meaning (clear value)
+     function updateStatus(status: 'active' | 'inactive' | null) {
+       // null = clear status, undefined not allowed
+     }
+     ```
+
+**Summary Table:**
+
+| Context | Convention | Example |
+|---------|-----------|---------|
+| Prisma database field | `\| null` | `completed_at: Date \| null` |
+| React prop | `?` | `name?: string` |
+| Optional parameter | `?` | `fn(param?: string)` |
+| Nullable API field | `\| null` | `error_message: string \| null` |
+| Local variable | Prefer `?` or `\| null` | Depends on context |
+| Never use | `\| null \| undefined` | ❌ Always avoid |
+
+### Shared Schemas vs Domain Types (Hybrid Approach)
+
+**Critical**: This project uses a hybrid approach for shared types - validation schemas and enums are shared, but model interfaces remain domain-specific.
+
+**What to Share (Low Coupling Risk):**
+
+- ✅ **Validation schemas** - Zod schemas for request/response validation
+- ✅ **Enum types** - Status enums, type enums (WorkflowStatus, StepStatus, etc.)
+- ✅ **Request/response schemas** - API contract validation
+- Location: `apps/web/src/shared/schemas/`
+
+**What NOT to Share (High Coupling Risk):**
+
+- ❌ **Model interfaces** - WorkflowExecution, WorkflowExecutionStep, etc.
+- ❌ **Prisma-generated types** - Backend only
+- ❌ **Frontend UI types** - Filters, computed fields, display state
+- ❌ **Backend service types** - Service-specific input/output types
+
+**Rationale:**
+
+This hybrid approach provides the benefits of shared validation without the coupling risks of shared model interfaces:
+
+1. **Backend uses Prisma-generated types directly** (111 usages in codebase)
+2. **Frontend defines custom interfaces** (12 definitions with UI extensions)
+3. **Each layer free to evolve** without affecting the other
+4. **Single source of truth** for validation rules and enums
+
+**Type Derivation Pattern (Enums Only):**
+
+Derive enum types from Zod schemas using `z.infer<>`:
+
+```typescript
+// ✅ GOOD - Shared enum type derived from schema (apps/web/src/shared/schemas/workflow.schemas.ts)
+export const workflowStatusSchema = z.enum(['pending', 'running', 'paused', 'completed', 'failed', 'cancelled']);
+export type WorkflowStatus = z.infer<typeof workflowStatusSchema>;
+
+// ✅ GOOD - Frontend uses shared enum in custom interface (apps/web/src/client/pages/projects/workflows/types.ts)
+import type { WorkflowStatus } from '@/shared/schemas';
+
+export interface WorkflowExecution {
+  id: string;
+  status: WorkflowStatus; // ← Uses shared enum
+  // ... other fields frontend needs (custom)
+}
+
+// ✅ GOOD - Backend uses Prisma types + shared enums for validation
+import { workflowExecutionResponseSchema } from '@/shared/schemas';
+import { prisma } from '@/shared/prisma';
+
+const execution = await prisma.workflowExecution.findUnique({ where: { id } });
+// Prisma types are used for database operations, schemas validate API responses
+
+// ❌ BAD - Don't derive full model interfaces from schemas
+export interface WorkflowExecution extends z.infer<typeof workflowExecutionResponseSchema> {
+  // This couples frontend to backend response shape
+}
+```
+
+**Import Patterns:**
+
+```typescript
+// ✅ Backend routes - Import schemas for validation
+import { createWorkflowExecutionSchema, workflowExecutionFiltersSchema } from '@/shared/schemas';
+
+// ✅ Frontend types - Import only enum types
+import type { WorkflowStatus, StepStatus } from '@/shared/schemas';
+
+// ✅ Backend services - Use Prisma types directly
+import { prisma } from '@/shared/prisma';
+// No manual interfaces needed - Prisma generates types
+
+// ❌ Don't import full response schemas in frontend (unless validating)
+import { workflowExecutionResponseSchema } from '@/shared/schemas'; // Only if validating API response
+```
+
+**Value vs Confusion Matrix:**
+
+| Shared Item | Value | Confusion Risk | Verdict |
+|------------|-------|----------------|---------|
+| Validation schemas | ✅ High | ⚠️ Low | **Share** |
+| Enum types | ✅ High | ⚠️ Low | **Share** |
+| Model interfaces | ⚠️ Medium | ❌ High | **Keep separate** |
+| Prisma types | ⚠️ Low | ❌ Very High | **Backend only** |
+| UI types | ⚠️ Low | ❌ Very High | **Frontend only** |
+
+**Key Benefits:**
+
+1. ✅ Single source of truth for validation rules
+2. ✅ Client-side validation matches server-side
+3. ✅ Enum types prevent drift between layers
+4. ✅ No coupling between layers
+5. ✅ Each layer free to add fields without breaking the other
+6. ✅ Backend continues using Prisma-generated types (no manual interfaces)
+7. ✅ Frontend defines interfaces with UI needs (optional relations, computed fields)
+
+**Domain Schema Organization:**
+
+Following the domain-driven architecture, validation schemas are organized by domain:
+
+```
+apps/web/src/
+├── shared/schemas/           # Cross-cutting validation schemas
+│   └── workflow.schemas.ts   # Used by both frontend and backend
+│
+└── server/domain/
+    ├── session/schemas/      # Session-specific validation
+    ├── git/schemas/          # Git operation validation
+    ├── project/schemas/      # Project CRUD validation
+    ├── shell/schemas/        # Shell WebSocket message validation
+    └── file/schemas/         # File operations (currently no schemas needed)
+```
+
+**Import Guidelines:**
+
+```typescript
+// ✅ Import cross-cutting schemas from shared/
+import { WorkflowStatus, workflowEventTypeSchema } from '@/shared/schemas';
+
+// ✅ Import domain schemas from domain folder
+import { createSessionSchema } from '@/server/domain/session/schemas';
+import * as gitSchemas from '@/server/domain/git/schemas';
+
+// ❌ Don't import from legacy server/schemas/ (deprecated)
+import { createSessionSchema } from '@/server/schemas/session'; // Legacy location
+```
+
+**Migration Status:**
+
+- ✅ Workflow schemas → `shared/schemas/` (cross-cutting)
+- ✅ Session schemas → `server/domain/session/schemas/`
+- ✅ Git schemas → `server/domain/git/schemas/`
+- ✅ Shell schemas → `server/domain/shell/schemas/`
+- ✅ Project schemas → `server/domain/project/schemas/`
+- ⚠️ Legacy `server/schemas/` marked as deprecated (will be removed)
+
 ## Development Commands
 
 ### Starting the Application

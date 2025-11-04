@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ReadyState } from "@/shared/websocket";
+import { ReadyState } from "@/shared/types/websocket.types";
 
 interface ConnectionStatusBannerProps {
   readyState: ReadyState;

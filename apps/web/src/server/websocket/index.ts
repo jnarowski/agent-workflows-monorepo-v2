@@ -8,7 +8,8 @@ import { handleSessionEvent } from "./handlers/session.handler";
 import { handleShellEvent } from "./handlers/shell.handler";
 import { handleGlobalEvent } from "./handlers/global.handler";
 import { unsubscribeAll } from "./infrastructure/subscriptions";
-import { Channels, GlobalEventTypes } from "@/shared/websocket/index";
+import { GlobalEventTypes } from "@/shared/types/websocket.types";
+import { Channels } from "@/shared/websocket";
 
 /**
  * Register unified WebSocket endpoint
@@ -106,6 +107,10 @@ export async function registerWebSocket(
                 await handleSessionEvent(socket, channel, type, data, userId!, fastify);
               } else if (channel?.startsWith("shell:")) {
                 await handleShellEvent(socket, channel, type, data, userId!, fastify);
+              } else if (channel?.startsWith("project:")) {
+                // Project channels are used for workflow events (broadcast-only)
+                // Route subscribe/unsubscribe to global handler
+                await handleGlobalEvent(socket, channel, type, data, userId!, fastify);
               } else if (channel === "global") {
                 await handleGlobalEvent(socket, channel, type, data, userId!, fastify);
               } else {

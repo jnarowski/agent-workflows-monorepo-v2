@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 
-import { cn } from "@/client/lib/utils";
+import { cn } from "@/client/utils/cn";
 
 function Avatar({
   className,

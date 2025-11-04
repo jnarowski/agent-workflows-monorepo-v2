@@ -107,7 +107,7 @@ export default function ProjectDetailLayout() {
         currentSession={currentSession}
       />
 
-      {/* Nested route content */}
+      {/* Content area */}
       <div className="flex-1 relative">
         <Outlet />
       </div>

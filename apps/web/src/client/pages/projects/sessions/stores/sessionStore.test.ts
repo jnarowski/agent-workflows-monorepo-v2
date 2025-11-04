@@ -3,7 +3,7 @@ import { useSessionStore, selectTotalTokens } from "./sessionStore";
 import type { UIMessage } from "@/shared/types/message.types";
 
 // Mock the agents module
-vi.mock("@/client/lib/agents");
+vi.mock("@/client/utils/agents");
 
 // Mock fetch globally
 global.fetch = vi.fn();
@@ -125,7 +125,13 @@ describe("SessionStore", () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         status: 404,
-        json: async () => ({}),
+        statusText: "Not Found",
+        json: async () => ({
+          error: {
+            message: "Session not found",
+            statusCode: 404
+          }
+        }),
       });
 
       await loadSession(sessionId, projectId, mockQueryClient);

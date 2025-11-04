@@ -6,7 +6,7 @@ import type {
   SessionResponse,
 } from "@/shared/types/agent-session.types";
 import type { AgentType } from "@/shared/types/agent.types";
-import { api } from "@/client/lib/api-client";
+import { api } from "@/client/utils/api-client";
 import type { ProjectWithSessions } from "@/shared/types/project.types";
 import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import { isSystemMessage } from '@/shared/utils/message.utils';
@@ -317,7 +317,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     try {
       let session: SessionResponse | undefined;
 
-      // Get session from React Query cache (useProjectsWithSessions)
+      // Try to get session from React Query cache first
       if (queryClient) {
         const cachedProjects = queryClient.getQueryData(projectKeys.withSessions()) as ProjectWithSessions[] | undefined;
 
@@ -327,9 +327,16 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         }
       }
 
-      // Session must be in cache (loaded via useProjectsWithSessions)
+      // If not in cache, fetch session metadata directly from API
       if (!session) {
-        throw new Error(`Session not found in cache: ${sessionId}. Ensure useProjectsWithSessions is loaded.`);
+        try {
+          const data = await api.get<{ data: SessionResponse }>(
+            `/api/projects/${projectId}/sessions/${sessionId}`
+          );
+          session = data.data;
+        } catch (error) {
+          throw new Error(`Session not found: ${sessionId}. ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
       }
 
       // Set loading state with agent type and metadata
@@ -355,7 +362,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         rawMessages = data.data || [];
       } catch (error) {
         // JSONL file doesn't exist yet - this is expected for new sessions
-        if (error instanceof Error && error.message.includes("404")) {
+        if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 404) {
           set((state) => ({
             session: state.session
               ? { ...state.session, loadingState: "loaded" }
@@ -473,13 +480,12 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         ];
       }
 
-      // Apply enrichment to maintain consistent data structure with loaded sessions
-      const enrichedMessages = enrichMessagesWithToolResults(updatedMessages);
-
+      // Don't apply enrichment during streaming - it filters/modifies messages
+      // Enrichment only happens when loading existing messages from server
       return {
         session: {
           ...state.session,
-          messages: enrichedMessages,
+          messages: updatedMessages,
           isStreaming: true,
         },
       };
