@@ -9,7 +9,8 @@ import { executeStep } from "./helpers";
  */
 export function createRunStep(
   context: RuntimeContext,
-  inngestStep: GetStepTools<Record<string, unknown>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  inngestStep: GetStepTools<any>
 ) {
   return async function run<T>(
     stepId: string,
@@ -18,7 +19,7 @@ export function createRunStep(
     // Use executeStep to create step record and track status
     return executeStep(context, stepId, async () => {
       // Call Inngest's native step.run() for actual execution
-      return await inngestStep.run(stepId, fn);
+      return (await inngestStep.run(stepId, fn)) as T;
     });
   };
 }

@@ -33,6 +33,7 @@ export async function resumeWorkflow(
     event_type: "workflow_resumed",
     event_data: {
       title: "Resumed",
+      body: "Workflow execution resumed",
     },
     created_by_user_id: userId,
     created_at: resumedAt,

@@ -1,7 +1,7 @@
-import { prisma } from "@/shared/prisma";
 import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import type { RuntimeContext } from "../../../types/engine.types";
+import { createWorkflowEvent } from "../../events/createWorkflowEvent";
 
 /**
  * Create annotation step factory function
@@ -11,16 +11,15 @@ export function createAnnotationStep(context: RuntimeContext) {
   return async function annotation(message: string): Promise<void> {
     const { executionId, projectId, currentPhase, logger } = context;
 
-    // Create annotation event
-    const event = await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executionId,
-        event_type: "annotation_added",
-        event_data: {
-          message,
-          phase: currentPhase,
-        },
+    // Create annotation event using domain service
+    const event = await createWorkflowEvent({
+      workflow_execution_id: executionId,
+      event_type: "annotation_added",
+      event_data: {
+        message,
+        phase: currentPhase,
       },
+      logger,
     });
 
     // Broadcast annotation

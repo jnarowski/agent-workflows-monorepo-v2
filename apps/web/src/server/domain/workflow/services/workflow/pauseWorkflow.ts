@@ -30,6 +30,7 @@ export async function pauseWorkflow(
     event_type: "workflow_paused",
     event_data: {
       title: "Paused",
+      body: "Workflow execution paused",
     },
     created_by_user_id: userId,
     created_at: pausedAt,

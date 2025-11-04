@@ -10,13 +10,17 @@ import { getSessionFilePath } from '@/server/utils/path';
  * @param userId - User ID
  * @param sessionId - Pre-generated session UUID
  * @param agent - Agent type (defaults to 'claude')
+ * @param name - Optional session name
+ * @param metadataOverride - Optional metadata override (defaults to initialized metadata)
  * @returns Created session
  */
 export async function createSession(
   projectId: string,
   userId: string,
   sessionId: string,
-  agent: AgentType = 'claude'
+  agent: AgentType = 'claude',
+  name?: string,
+  metadataOverride?: Record<string, unknown>
 ): Promise<SessionResponse> {
   // Get project to determine session file path
   const project = await prisma.project.findUnique({
@@ -30,13 +34,15 @@ export async function createSession(
   // Calculate the full absolute path to the session JSONL file
   const sessionPath = getSessionFilePath(project.path, sessionId);
 
-  // Initialize with empty metadata
-  const metadata: AgentSessionMetadata = {
-    totalTokens: 0,
-    messageCount: 0,
-    lastMessageAt: new Date().toISOString(),
-    firstMessagePreview: '',
-  };
+  // Initialize with empty metadata or use override
+  const metadata: AgentSessionMetadata = metadataOverride
+    ? (metadataOverride as AgentSessionMetadata)
+    : {
+        totalTokens: 0,
+        messageCount: 0,
+        lastMessageAt: new Date().toISOString(),
+        firstMessagePreview: '',
+      };
 
   const session = await prisma.agentSession.create({
     data: {
@@ -48,6 +54,7 @@ export async function createSession(
       metadata: JSON.parse(JSON.stringify(metadata)),
       state: 'working',
       error_message: null,
+      ...(name && { name }),
     },
   });
 

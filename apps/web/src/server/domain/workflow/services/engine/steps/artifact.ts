@@ -1,6 +1,5 @@
 import { readdir, stat, writeFile, mkdir, copyFile } from "node:fs/promises";
 import { join, relative, extname, dirname } from "node:path";
-import { prisma } from "@/shared/prisma";
 import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import type { RuntimeContext } from "../../../types/engine.types";
@@ -9,6 +8,8 @@ import type {
   ArtifactStepResult,
 } from "@repo/workflow-sdk";
 import { executeStep } from "./helpers";
+import { findWorkflowStepByName } from "../../steps/findWorkflowStepByName";
+import { createWorkflowArtifact } from "../../artifacts/createWorkflowArtifact";
 
 /**
  * Get MIME type from file extension
@@ -52,13 +53,8 @@ export function createArtifactStep(context: RuntimeContext) {
       const artifactIds: string[] = [];
       let totalSize = 0;
 
-      // Get step ID for linking
-      const step = await prisma.workflowExecutionStep.findFirst({
-        where: {
-          workflow_execution_id: executionId,
-          name,
-        },
-      });
+      // Get step ID for linking using domain service
+      const step = await findWorkflowStepByName(executionId, name, undefined, logger);
 
       if (!step) {
         throw new Error(`Step not found: ${name}`);
@@ -88,16 +84,18 @@ export function createArtifactStep(context: RuntimeContext) {
           const sizeBytes = Buffer.byteLength(config.content, "utf8");
           const relativePath = relative(projectPath, artifactPath);
 
-          const artifact = await prisma.workflowArtifact.create({
-            data: {
-              workflow_execution_step_id: step.id,
+          // Create artifact using domain service
+          const artifact = await createWorkflowArtifact(
+            step.id,
+            {
               name: config.name,
               file_type: "text",
               file_path: relativePath, // Relative to project root
               mime_type: getMimeType(config.name, "text/plain"),
               size_bytes: sizeBytes,
             },
-          });
+            logger
+          );
           artifactIds.push(artifact.id);
           totalSize += sizeBytes;
           break;
@@ -116,16 +114,18 @@ export function createArtifactStep(context: RuntimeContext) {
           const fileStats = await stat(artifactPath);
           const relativePath = relative(projectPath, artifactPath);
 
-          const artifact = await prisma.workflowArtifact.create({
-            data: {
-              workflow_execution_step_id: step.id,
+          // Create artifact using domain service
+          const artifact = await createWorkflowArtifact(
+            step.id,
+            {
               name: config.name,
               file_type: config.type,
               file_path: relativePath, // Relative to project root
               mime_type: getMimeType(config.file),
               size_bytes: fileStats.size,
             },
-          });
+            logger
+          );
           artifactIds.push(artifact.id);
           totalSize += fileStats.size;
           break;
@@ -156,16 +156,18 @@ export function createArtifactStep(context: RuntimeContext) {
             const fileStats = await stat(artifactPath);
             const relativeToProject = relative(projectPath, artifactPath);
 
-            const artifact = await prisma.workflowArtifact.create({
-              data: {
-                workflow_execution_step_id: step.id,
+            // Create artifact using domain service
+            const artifact = await createWorkflowArtifact(
+              step.id,
+              {
                 name: `${config.name}/${relativeToSource}`,
                 file_type: "file",
                 file_path: relativeToProject, // Relative to project root
                 mime_type: getMimeType(file),
                 size_bytes: fileStats.size,
               },
-            });
+              logger
+            );
             artifactIds.push(artifact.id);
             totalSize += fileStats.size;
           }

@@ -1,9 +1,10 @@
-import { prisma } from "@/shared/prisma";
 import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import { createWorkflowEvent } from "@/server/domain/workflow/services";
 import type { RuntimeContext } from "../../../types/engine.types";
 import type { WorkflowExecutionStep } from "@prisma/client";
+import { findOrCreateWorkflowStep } from "../../steps/findOrCreateWorkflowStep";
+import { updateWorkflowStep } from "../../steps/updateWorkflowStep";
 
 /**
  * Find existing or create new workflow execution step
@@ -19,32 +20,13 @@ export async function findOrCreateStep(
 ): Promise<WorkflowExecutionStep> {
   const { executionId, currentPhase, logger } = context;
 
-  // Try to find existing step
-  let step = await prisma.workflowExecutionStep.findFirst({
-    where: {
-      workflow_execution_id: executionId,
-      name: stepName,
-      phase: currentPhase,
-    },
-  });
-
-  // Create if doesn't exist
-  if (!step) {
-    logger.debug(
-      { executionId, stepName, phase: currentPhase },
-      "Creating new workflow step"
-    );
-
-    step = await prisma.workflowExecutionStep.create({
-      data: {
-        workflow_execution_id: executionId,
-        step_id: stepName, // Use step name as step_id
-        name: stepName,
-        status: "pending",
-        phase: currentPhase,
-      },
-    });
-  }
+  // Use domain service for find-or-create logic
+  const step = await findOrCreateWorkflowStep(
+    executionId,
+    stepName,
+    currentPhase,
+    logger
+  );
 
   return step;
 }

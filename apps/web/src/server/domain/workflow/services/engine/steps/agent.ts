@@ -2,7 +2,9 @@ import type { RuntimeContext } from "../../../types/engine.types";
 import type { AgentStepConfig, AgentStepResult } from "@repo/workflow-sdk";
 import { executeStep } from "./helpers";
 import { executeAgent } from "@/server/domain/session/services/executeAgent";
-import { prisma } from "@/shared/prisma";
+import { createSession } from "@/server/domain/session/services/createSession";
+import { updateSession } from "@/server/domain/session/services/updateSession";
+import { randomUUID } from "node:crypto";
 
 const DEFAULT_AGENT_TIMEOUT = 1800000; // 30 minutes
 
@@ -21,17 +23,16 @@ export function createAgentStep(context: RuntimeContext) {
     return executeStep(context, name, async () => {
       const { projectId, userId, logger } = context;
 
-      // Create agent session
-      const session = await prisma.agentSession.create({
-        data: {
-          projectId,
-          userId,
-          agent: config.agent,
-          state: "working",
-          name,
-          metadata: {},
-        },
-      });
+      // Create agent session using domain service
+      const sessionId = randomUUID();
+      const session = await createSession(
+        projectId,
+        userId,
+        sessionId,
+        config.agent,
+        name,
+        {} // Empty metadata for workflow sessions
+      );
 
       try {
         // Execute agent with timeout
@@ -61,15 +62,16 @@ export function createAgentStep(context: RuntimeContext) {
           steps: result.steps,
         };
       } catch (error) {
-        // Mark session as failed
-        await prisma.agentSession.update({
-          where: { id: session.id },
-          data: {
+        // Mark session as failed using domain service
+        await updateSession(
+          session.id,
+          {
             state: "error",
             error_message:
               error instanceof Error ? error.message : String(error),
           },
-        });
+          logger
+        );
 
         throw error;
       }

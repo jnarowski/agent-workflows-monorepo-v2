@@ -31,6 +31,7 @@ export async function cancelWorkflow(
     event_type: "workflow_cancelled",
     event_data: {
       title: "Cancelled",
+      body: reason || "Workflow execution cancelled",
       reason,
     },
     created_by_user_id: userId,
