@@ -33,8 +33,13 @@ import { cn } from "@/client/utils/cn";
 import { TokenUsageCircle } from "./TokenUsageCircle";
 import { usePromptInputState } from "../hooks/usePromptInputState";
 
+export interface PromptInputMessage {
+  text?: string;
+  files?: File[];
+}
+
 interface ChatPromptInputProps {
-  onSubmit?: (message: string, images?: File[]) => void | Promise<void>;
+  onSubmit?: (message: PromptInputMessage) => void | Promise<void>;
   disabled?: boolean;
   isStreaming?: boolean;
   totalTokens?: number; // Total session tokens
@@ -165,7 +170,7 @@ const ChatPromptInputInner = forwardRef<
             <PromptInputTextarea
               onChange={handleTextChange}
               onKeyDown={handleKeyDown}
-              ref={textareaRef}
+              ref={textareaRef as React.RefObject<HTMLTextAreaElement>}
             />
           </PromptInputBody>
           <PromptInputFooter>
@@ -218,7 +223,7 @@ const ChatPromptInputInner = forwardRef<
                     "bg-green-500 hover:bg-green-600 text-white",
                   permissionMode === "acceptEdits" &&
                     "bg-purple-500 hover:bg-purple-600 text-white",
-                  permissionMode === "reject" &&
+                  permissionMode === "bypassPermissions" &&
                     "bg-red-500 hover:bg-red-600 text-white",
                   permissionMode === "default" &&
                     "bg-gray-500 hover:bg-gray-600 text-white"

@@ -1,4 +1,4 @@
-import type { StepAnnotation } from "../../lib/buildTimelineModel";
+import type { StepAnnotation } from "../../utils/buildTimelineModel";
 import { ArtifactList } from "../ArtifactList";
 
 export interface StepAnnotationItemProps {

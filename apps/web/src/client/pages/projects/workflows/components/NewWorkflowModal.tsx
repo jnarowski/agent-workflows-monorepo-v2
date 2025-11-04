@@ -189,7 +189,7 @@ export function NewWorkflowModal({
                           <div key={key}>
                             <label htmlFor={`arg-${key}`} className="block text-sm font-medium mb-2">
                               {schema.title || key}
-                              {selectedDefinition.args_schema.required?.includes(key) && (
+                              {selectedDefinition.args_schema?.required?.includes(key) && (
                                 <span className="text-destructive ml-1">*</span>
                               )}
                             </label>
@@ -211,7 +211,7 @@ export function NewWorkflowModal({
                                       : e.target.value,
                                 })
                               }
-                              required={selectedDefinition.args_schema.required?.includes(key)}
+                              required={selectedDefinition.args_schema?.required?.includes(key)}
                               className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                               placeholder={schema.placeholder || ''}
                             />

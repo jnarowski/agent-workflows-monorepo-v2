@@ -42,34 +42,34 @@ interface ToolBlockRendererProps {
 export function ToolBlockRenderer({ toolName, input, result }: ToolBlockRendererProps) {
   switch (toolName) {
     case 'Read':
-      return <ReadToolBlock input={input as ReadToolInput} result={result} />;
+      return <ReadToolBlock input={input as unknown as ReadToolInput} result={result} />;
 
     case 'Write':
-      return <WriteToolBlock input={input as WriteToolInput} result={result} />;
+      return <WriteToolBlock input={input as unknown as WriteToolInput} result={result} />;
 
     case 'Edit':
-      return <EditToolBlock input={input as EditToolInput} result={result} />;
+      return <EditToolBlock input={input as unknown as EditToolInput} result={result} />;
 
     case 'Bash':
-      return <BashToolBlock input={input as BashToolInput} result={result} />;
+      return <BashToolBlock input={input as unknown as BashToolInput} result={result} />;
 
     case 'TodoWrite':
-      return <TodoWriteToolBlock input={input as TodoWriteToolInput} result={result} />;
+      return <TodoWriteToolBlock input={input as unknown as TodoWriteToolInput} result={result} />;
 
     case 'WebSearch':
-      return <WebSearchToolBlock input={input as WebSearchToolInput} result={result} />;
+      return <WebSearchToolBlock input={input as unknown as WebSearchToolInput} result={result} />;
 
     case 'Glob':
-      return <GlobToolBlock input={input as GlobToolInput} result={result} />;
+      return <GlobToolBlock input={input as unknown as GlobToolInput} result={result} />;
 
     case 'Grep':
-      return <GrepToolBlock input={input as GrepToolInput} result={result} />;
+      return <GrepToolBlock input={input as unknown as GrepToolInput} result={result} />;
 
     case 'Task':
-      return <TaskToolBlock input={input as TaskToolInput} result={result} />;
+      return <TaskToolBlock input={input as unknown as TaskToolInput} result={result} />;
 
     case 'AskUserQuestion':
-      return <AskUserQuestionToolBlock input={input as AskUserQuestionToolInput} result={result} />;
+      return <AskUserQuestionToolBlock input={input as unknown as AskUserQuestionToolInput} result={result} />;
 
     default:
       // Fallback to default block for unknown tools

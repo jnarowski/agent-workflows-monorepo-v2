@@ -1,4 +1,4 @@
-import type { EventTimelineItem } from "../../lib/buildTimelineModel";
+import type { EventTimelineItem } from "../../utils/buildTimelineModel";
 import { EventLifecycleItem } from "./EventLifecycleItem";
 import { EventDefaultItem } from "./EventDefaultItem";
 

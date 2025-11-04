@@ -223,8 +223,8 @@ export function DebugMessagePanel({ messages }: DebugMessagePanelProps) {
                                       </div>
                                       <div>
                                         <span className="text-gray-400">Has Result:</span>{' '}
-                                        <span className={block.result ? 'text-green-400' : 'text-red-400'}>
-                                          {block.result ? 'Yes' : 'No'}
+                                        <span className={'result' in block && block.result ? 'text-green-400' : 'text-red-400'}>
+                                          {'result' in block && block.result ? 'Yes' : 'No'}
                                         </span>
                                       </div>
                                     </div>

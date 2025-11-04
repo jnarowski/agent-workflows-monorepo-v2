@@ -41,22 +41,22 @@ interface ToolInputRendererProps {
 export function ToolInputRenderer({ toolName, input }: ToolInputRendererProps) {
   switch (toolName) {
     case "Edit":
-      return <EditToolRenderer input={input as EditToolInput} />;
+      return <EditToolRenderer input={input as unknown as EditToolInput} />;
 
     case "Write":
-      return <WriteToolRenderer input={input as WriteToolInput} />;
+      return <WriteToolRenderer input={input as unknown as WriteToolInput} />;
 
     case "Read":
-      return <ReadToolRenderer input={input as ReadToolInput} />;
+      return <ReadToolRenderer input={input as unknown as ReadToolInput} />;
 
     case "Bash":
-      return <BashToolRenderer input={input as BashToolInput} />;
+      return <BashToolRenderer input={input as unknown as BashToolInput} />;
 
     case "TodoWrite":
-      return <TodoWriteToolRenderer input={input as TodoWriteToolInput} />;
+      return <TodoWriteToolRenderer input={input as unknown as TodoWriteToolInput} />;
 
     case "WebSearch":
-      return <WebSearchToolRenderer input={input as WebSearchToolInput} />;
+      return <WebSearchToolRenderer input={input as unknown as WebSearchToolInput} />;
 
     case "Glob":
     case "Grep": {

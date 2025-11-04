@@ -1,5 +1,5 @@
 import { useState, memo } from "react";
-import type { StepTimelineItem } from "../../lib/buildTimelineModel";
+import type { StepTimelineItem } from "../../utils/buildTimelineModel";
 import { TimelineRow } from "./TimelineRow";
 import { TimelineHeader } from "./TimelineHeader";
 import { TimelineBody } from "./TimelineBody";
@@ -49,7 +49,7 @@ function StepItemComponent({ item, projectId }: StepItemProps) {
     debug.hasError ||
     display.hasArtifacts ||
     display.hasAnnotations ||
-    metadata.agentSessionId;
+    !!metadata.agentSessionId;
 
   const handleSessionClick = (sessionId: string, stepName: string) => {
     setSelectedSessionId(sessionId);
@@ -70,10 +70,10 @@ function StepItemComponent({ item, projectId }: StepItemProps) {
                 <span>{Math.floor(metadata.duration / 1000)}s</span>
               </>
             )}
-            {step.phase_name && (
+            {step.phase && (
               <>
                 <span>•</span>
-                <span>{step.phase_name}</span>
+                <span>{step.phase}</span>
               </>
             )}
           </>
@@ -120,7 +120,7 @@ function StepItemComponent({ item, projectId }: StepItemProps) {
 
             {/* Error message - always expanded for failed steps */}
             {debug.hasError && (
-              <ErrorDisplay error={debug.errorMessage!} expanded />
+              <ErrorDisplay error={debug.errorMessage!} />
             )}
 
             {/* Logs */}

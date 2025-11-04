@@ -8,7 +8,7 @@
  * This eliminates the need for type casting and provides full autocomplete.
  */
 
-import type { WorkflowEvent, WorkflowEventType, EventDataMap } from '../../types';
+import type { WorkflowEvent, WorkflowEventType, EventDataMap, BaseEventData } from '../../types';
 
 /**
  * Helper type to extract a specific event type from WorkflowEvent
@@ -16,7 +16,7 @@ import type { WorkflowEvent, WorkflowEventType, EventDataMap } from '../../types
  */
 export type EventOfType<T extends WorkflowEventType> = WorkflowEvent & {
   event_type: T;
-  event_data: EventDataMap[T];
+  event_data: T extends keyof EventDataMap ? EventDataMap[T] : BaseEventData;
 };
 
 // Type-safe props for each event component

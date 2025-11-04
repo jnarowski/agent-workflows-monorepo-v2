@@ -6,7 +6,7 @@ import { ErrorDisplay } from "../ErrorDisplay";
 import { ArtifactList } from "../ArtifactList";
 import { Badge } from "@/client/components/ui/badge";
 import { formatRelativeTime } from "../../utils/workflowFormatting";
-import type { EventTimelineItem } from "../../lib/buildTimelineModel";
+import type { EventTimelineItem } from "../../utils/buildTimelineModel";
 
 export interface EventLifecycleItemProps {
   item: EventTimelineItem;

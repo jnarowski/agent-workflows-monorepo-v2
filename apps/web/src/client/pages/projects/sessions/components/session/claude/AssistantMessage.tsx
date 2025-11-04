@@ -20,6 +20,41 @@ export function AssistantMessage({ message }: AssistantMessageProps) {
     return text.replace(/\x1b\[[0-9;]*m/g, "");
   };
 
+  // Handle string content (legacy or error messages)
+  if (typeof content === "string") {
+    // Check if this is an error message
+    if (message.isError) {
+      return (
+        <div className="flex justify-center w-full">
+          <div className="w-full max-w-4xl">
+            <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/20 p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-red-900 dark:text-red-100 mb-2">
+                    Error from Server
+                  </div>
+                  <div className="text-sm text-red-800 dark:text-red-200">
+                    <div className="whitespace-pre-wrap break-words">
+                      {stripAnsiCodes(content)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Render plain text content
+    return (
+      <div className="w-full overflow-hidden">
+        <div className="whitespace-pre-wrap break-words">{content}</div>
+      </div>
+    );
+  }
+
   // Check if this is an error message - render with special styling
   if (message.isError) {
     // Extract text from content blocks

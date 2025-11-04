@@ -61,10 +61,9 @@ export function TaskToolBlock({ input, result }: TaskToolBlockProps) {
           }}
         >
           <div
-            className="text-xs p-3"
+            className="text-xs p-3 text-foreground"
             style={{
               fontFamily: "ui-monospace, monospace",
-              color: colors.text,
             }}
           >
             <pre className="whitespace-pre-wrap break-words m-0">

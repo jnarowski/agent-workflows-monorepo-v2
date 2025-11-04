@@ -130,6 +130,7 @@ export default function ProjectSession() {
           role: "user",
           content: [{ type: "text", text: decodedMessage }],
           timestamp: Date.now(),
+          _original: undefined,
         });
 
         // Set streaming state to show loading indicator
@@ -150,14 +151,16 @@ export default function ProjectSession() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, location.search]);
 
-  const handleSubmit = async (message: string, images?: File[]) => {
+  const handleSubmit = async ({ text, files }: { text?: string; files?: File[] }) => {
     if (!projectId || !sessionId) {
       console.error("[ProjectSession] No projectId or sessionId available");
       return;
     }
 
+    const message = text || "";
+
     // Convert images to base64 before sending via WebSocket
-    const imagePaths = images ? await handleImageUpload(images) : undefined;
+    const imagePaths = files ? await handleImageUpload(files) : undefined;
 
     // Add user message to store immediately
     addMessage({
@@ -166,6 +169,7 @@ export default function ProjectSession() {
       content: [{ type: "text", text: message }],
       images: imagePaths,
       timestamp: Date.now(),
+      _original: undefined,
     });
 
     // Set streaming state immediately to show loading indicator
@@ -215,7 +219,7 @@ export default function ProjectSession() {
 
   const inputDisabled =
     !globalIsConnected || // Disable if global WebSocket not connected
-    waitingForFirstResponse; // Block until first assistant response
+    Boolean(waitingForFirstResponse); // Block until first assistant response
 
   // Only auto-load if no query parameter (AgentSessionViewer handles loading)
   const searchParams = new URLSearchParams(location.search);

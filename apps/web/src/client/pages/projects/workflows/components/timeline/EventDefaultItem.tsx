@@ -5,7 +5,7 @@ import { TimelineBody } from "./TimelineBody";
 import { ArtifactList } from "../ArtifactList";
 import { Badge } from "@/client/components/ui/badge";
 import { formatRelativeTime } from "../../utils/workflowFormatting";
-import type { EventTimelineItem } from "../../lib/buildTimelineModel";
+import type { EventTimelineItem } from "../../utils/buildTimelineModel";
 
 export interface EventDefaultItemProps {
   item: EventTimelineItem;

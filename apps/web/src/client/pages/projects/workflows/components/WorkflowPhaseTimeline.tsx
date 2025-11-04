@@ -21,7 +21,7 @@ export function WorkflowPhaseTimeline({
     phaseName: string
   ): 'pending' | 'running' | 'completed' | 'failed' => {
     const phaseSteps =
-      execution.steps?.filter((step) => step.phase_name === phaseName) || [];
+      execution.steps?.filter((step) => step.phase === phaseName) || [];
 
     if (phaseSteps.length === 0) return 'pending';
 

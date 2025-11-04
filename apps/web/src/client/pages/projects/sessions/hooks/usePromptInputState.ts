@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import type { PromptInputController } from "@/client/components/ai-elements/PromptInput";
-import type { ClaudePermissionMode } from "@repo/agent-cli-sdk";
+import type { PermissionMode } from "@repo/agent-cli-sdk";
 import { PERMISSION_MODES } from "@/client/utils/permissionModes";
 import {
   insertAtCursor,
@@ -10,13 +9,31 @@ import {
 const SUBMITTING_TIMEOUT = 200;
 const STREAMING_TIMEOUT = 2000;
 
+export interface PromptInputMessage {
+  text?: string;
+  files?: File[];
+}
+
 export interface UsePromptInputStateParams {
-  controller: PromptInputController;
-  permissionMode: ClaudePermissionMode;
-  onPermissionModeChange: (mode: ClaudePermissionMode) => void;
-  textareaRef: React.RefObject<HTMLTextAreaElement>;
+  controller: {
+    textInput: {
+      value: string;
+      setInput: (v: string) => void;
+      clear: () => void;
+    };
+    attachments: {
+      files: Array<{ id: string }>;
+      add: (files: File[] | FileList) => void;
+      remove: (id: string) => void;
+      clear: () => void;
+      openFileDialog: () => void;
+    };
+  };
+  permissionMode: PermissionMode;
+  onPermissionModeChange: (mode: PermissionMode) => void;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   disabled?: boolean;
-  onSubmit?: (message: string, images?: File[]) => void | Promise<void>;
+  onSubmit?: (message: PromptInputMessage) => void | Promise<void>;
   onKill?: () => void;
 }
 
@@ -40,7 +57,7 @@ export interface UsePromptInputStateReturn {
   handleFileSelect: (filePath: string) => void;
   handleFileRemove: (filePath: string) => void;
   handleCommandSelect: (params: { command: string; immediateSubmit: boolean }) => void;
-  handleSubmit: (message: { text?: string; files?: File[] }) => Promise<void>;
+  handleSubmit: (message: PromptInputMessage) => Promise<void>;
   cyclePermissionMode: () => void;
   stop: () => void;
 
@@ -107,7 +124,7 @@ export function usePromptInputState({
   const [isAtMenuOpen, setIsAtMenuOpen] = useState(false);
   const [isSlashMenuOpen, setIsSlashMenuOpen] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Get text from controller
   const text = controller.textInput.value;
@@ -272,7 +289,7 @@ export function usePromptInputState({
 
   // Handle submit
   const handleSubmit = useCallback(
-    async (message: { text?: string; files?: File[] }) => {
+    async (message: PromptInputMessage) => {
       // If currently streaming or submitted, stop instead of submitting
       if (status === "streaming" || status === "submitted") {
         stop();
@@ -295,7 +312,7 @@ export function usePromptInputState({
       // If external onSubmit provided, use it
       if (onSubmit) {
         try {
-          await onSubmit(message.text || "", message.files);
+          await onSubmit(message);
         } catch (error) {
           console.error("[ChatPromptInput] Error submitting message:", error);
           setStatus("error");

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { UnifiedMessage, UnifiedContent, UnifiedImageBlock, ClaudePermissionMode } from '@repo/agent-cli-sdk';
+import type { UnifiedMessage, UnifiedContent, UnifiedImageBlock, PermissionMode } from '@repo/agent-cli-sdk';
 import type { UIMessage } from '@/shared/types/message.types';
 import type {
   AgentSessionMetadata,
@@ -132,7 +132,7 @@ function tryParseImageContent(content: unknown): string | UnifiedImageBlock {
  *   // Note: Message '2' with standalone tool_result is now filtered out
  * ]
  */
-function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] {
+function enrichMessagesWithToolResults(messages: (UnifiedMessage | UIMessage)[]): UIMessage[] {
   // Step 1: Filter out messages with only system content
   const filteredMessages = messages.filter((msg) => {
     const content = msg.content;
@@ -184,8 +184,11 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
       ? JSON.parse(JSON.stringify(msg))
       : undefined;
 
+    // Check if msg has isStreaming property (UIMessage) or default to false
+    const isStreaming = ('isStreaming' in msg && typeof msg.isStreaming === 'boolean') ? msg.isStreaming : false;
+
     if (!Array.isArray(msg.content)) {
-      return { ...msg, isStreaming: msg.isStreaming ?? false, _original };
+      return { ...msg, isStreaming, _original };
     }
 
     const enrichedContent = msg.content
@@ -208,7 +211,7 @@ function enrichMessagesWithToolResults(messages: UnifiedMessage[]): UIMessage[] 
     return {
       ...msg,
       content: enrichedContent,
-      isStreaming: msg.isStreaming ?? false,
+      isStreaming,
       _original
     } as UIMessage;
   });
@@ -239,7 +242,7 @@ export type LoadingState = "idle" | "loading" | "loaded" | "error";
  * Tracks the current state of the prompt input form
  */
 export interface FormState {
-  permissionMode: ClaudePermissionMode;
+  permissionMode: PermissionMode;
   agent: AgentType;
   model: string;
 }
@@ -250,6 +253,7 @@ export interface FormState {
  */
 export interface SessionData {
   id: string;
+  name?: string; // AI-generated session name
   agent: AgentType;
   messages: UIMessage[];
   isStreaming: boolean;
@@ -284,8 +288,8 @@ export interface SessionStore {
   setLoadingState: (state: LoadingState) => void;
 
   // Permission mode actions
-  setPermissionMode: (mode: ClaudePermissionMode) => void;
-  getPermissionMode: () => ClaudePermissionMode;
+  setPermissionMode: (mode: PermissionMode) => void;
+  getPermissionMode: () => PermissionMode;
 
   // Agent selection actions
   setAgent: (agent: AgentType) => void;
@@ -296,7 +300,7 @@ export interface SessionStore {
   getModel: () => string;
 
   // Initialize defaults from user settings
-  initializeFromSettings: (settings: { permissionMode?: ClaudePermissionMode; agent?: AgentType }) => void;
+  initializeFromSettings: (settings: { permissionMode?: PermissionMode; agent?: AgentType }) => void;
 }
 
 /**
@@ -466,7 +470,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
           role: "assistant" as const,
           content: contentBlocks,
           timestamp: Date.now(),
+          tool: 'claude' as const, // Default tool for new streaming messages
           isStreaming: true,
+          _original: undefined, // Set undefined initially
         };
 
         // Capture _original for new streaming messages (dev only)
@@ -563,7 +569,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   },
 
   // Set permission mode in form
-  setPermissionMode: (mode: ClaudePermissionMode) => {
+  setPermissionMode: (mode: PermissionMode) => {
     set((state) => ({
       form: {
         ...state.form,

@@ -3,7 +3,7 @@ import { MessageSquare } from "lucide-react";
 import { TimelineRow } from "./TimelineRow";
 import { TimelineHeader } from "./TimelineHeader";
 import { formatRelativeTime } from "../../utils/workflowFormatting";
-import type { AnnotationTimelineItem } from "../../lib/buildTimelineModel";
+import type { AnnotationTimelineItem } from "../../utils/buildTimelineModel";
 
 export interface EventAnnotationItemProps {
   annotation: AnnotationTimelineItem;

@@ -19,9 +19,12 @@ export type {
 // Single UI extension for streaming state
 import type { UnifiedMessage, UnifiedToolUseBlock } from '@repo/agent-cli-sdk';
 
-export type UIMessage = UnifiedMessage & {
+export type UIMessage = Omit<UnifiedMessage, 'tool'> & {
+  tool?: UnifiedMessage['tool']; // Make tool optional for UI messages
   isStreaming?: boolean;
   _original?: UnifiedMessage; // Original message before enrichment (for debugging)
+  isError?: boolean; // Flag for error messages
+  images?: string[]; // Legacy support for images array (deprecated, use content blocks)
 };
 
 // Extended tool block with nested result
