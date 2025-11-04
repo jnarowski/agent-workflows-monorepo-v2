@@ -1,4 +1,5 @@
 import type { WorkflowEvent } from "@prisma/client";
+import type { WorkflowEventType } from "@/shared/schemas/workflow.schemas";
 
 // Base event data structure - all events have at minimum title and body
 export interface BaseEventData {
@@ -36,3 +37,6 @@ export interface EventDataMap {
 
 // Export WorkflowEvent type from Prisma
 export type { WorkflowEvent };
+
+// Re-export WorkflowEventType from shared schemas for convenience
+export type { WorkflowEventType };

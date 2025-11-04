@@ -1,8 +1,9 @@
 import type { FastifyBaseLogger } from 'fastify';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/shared/prisma';
-import type { WorkflowEvent, WorkflowEventType, EventDataMap } from '@/server/domain/workflow/types';
+import type { WorkflowEvent, EventDataMap } from '@/server/domain/workflow/types';
 
-export interface CreateWorkflowEventParams<T extends WorkflowEventType = WorkflowEventType> {
+export interface CreateWorkflowEventParams<T extends keyof EventDataMap = keyof EventDataMap> {
   workflow_execution_id: string;
   event_type: T;
   event_data: EventDataMap[T];
@@ -16,7 +17,7 @@ export interface CreateWorkflowEventParams<T extends WorkflowEventType = Workflo
  * Create a new workflow event
  * Centralized function for consistent event creation across all workflow operations
  */
-export async function createWorkflowEvent<T extends WorkflowEventType>(
+export async function createWorkflowEvent<T extends keyof EventDataMap>(
   params: CreateWorkflowEventParams<T>
 ): Promise<WorkflowEvent> {
   const {
@@ -42,7 +43,7 @@ export async function createWorkflowEvent<T extends WorkflowEventType>(
     data: {
       workflow_execution_id,
       event_type,
-      event_data: event_data as Record<string, unknown>, // Prisma expects generic JSON type
+      event_data: event_data as unknown as Prisma.InputJsonValue,
       workflow_execution_step_id,
       created_by_user_id,
       ...(created_at && { created_at }),
