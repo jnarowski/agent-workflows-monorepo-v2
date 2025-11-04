@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { createWorkflowClient } from "./client";
 import { createWorkflowRuntime } from "./runtime";
 import { loadProjectWorkflows } from "./loader";
+import { scanAllProjectWorkflows } from "./scanner";
 import { prisma } from "@/shared/prisma";
 import config from "@/server/config";
 
@@ -46,10 +47,39 @@ export async function initializeWorkflowEngine(
   fastify.decorate("workflowClient", inngestClient);
   fastify.decorate("workflowRuntime", runtime);
 
-  // Load all workflow definitions from database
+  // Scan all projects for workflows BEFORE loading from database
+  // This ensures database is populated with workflow definitions
+  logger.info("Scanning projects for workflows...");
+  const scanResults = await scanAllProjectWorkflows(fastify);
+
+  if (scanResults.discovered > 0) {
+    logger.info(
+      {
+        projectsScanned: scanResults.scanned,
+        workflowsDiscovered: scanResults.discovered,
+        errors: scanResults.errors.length,
+      },
+      `Discovered ${scanResults.discovered} workflow(s) in ${scanResults.scanned} project(s)`
+    );
+  } else {
+    logger.info(
+      { projectsScanned: scanResults.scanned },
+      `No workflows found in ${scanResults.scanned} project(s)`
+    );
+  }
+
+  if (scanResults.errors.length > 0) {
+    logger.warn(
+      { errors: scanResults.errors },
+      `Encountered ${scanResults.errors.length} error(s) during workflow scanning`
+    );
+  }
+
+  // Load all workflow definitions from database (now populated by scan)
   const definitions = await prisma.workflowDefinition.findMany({
     select: {
       id: true,
+      identifier: true,
       name: true,
       path: true,
       project_id: true,
@@ -80,18 +110,18 @@ export async function initializeWorkflowEngine(
 
       // Find matching workflow
       const workflow = workflows.find(
-        (w) => w.definition.config.id === definition.name
+        (w) => w.definition.config.id === definition.identifier
       );
 
       if (workflow) {
         inngestFunctions.push(workflow.inngestFunction);
         logger.info(
-          { workflowId: definition.name, path: definition.path },
+          { workflowId: definition.identifier, name: definition.name, path: definition.path },
           "Registered workflow"
         );
       } else {
         logger.warn(
-          { definitionId: definition.id, path: definition.path },
+          { definitionId: definition.id, identifier: definition.identifier, path: definition.path },
           "Workflow file no longer exports matching definition"
         );
       }

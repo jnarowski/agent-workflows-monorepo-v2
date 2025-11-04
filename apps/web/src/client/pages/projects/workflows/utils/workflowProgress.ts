@@ -1,23 +1,18 @@
 import type { WorkflowExecution } from "../types";
 import { StepStatus } from "@/shared/schemas";
 import { isStepTerminal } from "./workflowStatus";
+import { getExecutionMetrics } from "./executionMetrics";
 
 /**
  * Calculate workflow progress as a percentage (0-100)
- * Based on the ratio of completed/failed/skipped steps to total steps
+ * Based on current phase / total phases
+ *
+ * Example: 3 phases, on phase 2 → 2/3 = 67%
+ *
+ * @deprecated Use getExecutionMetrics(execution).phaseProgressPercentage instead
  */
 export function calculateProgress(execution: WorkflowExecution): number {
-  const steps = execution.steps || [];
-
-  if (steps.length === 0) {
-    return 0;
-  }
-
-  const completedSteps = steps.filter((step) =>
-    isStepTerminal(step.status)
-  ).length;
-
-  return Math.round((completedSteps / steps.length) * 100);
+  return getExecutionMetrics(execution).phaseProgressPercentage;
 }
 
 /**

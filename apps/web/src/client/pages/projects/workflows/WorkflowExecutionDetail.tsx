@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useMemo } from "react";
-import { ArrowLeft } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, Plus } from "lucide-react";
 import { WorkflowExecutionHeader } from "./components/WorkflowExecutionHeader";
 import { WorkflowTimeline } from "./components/WorkflowTimeline";
 import { TimelineErrorBoundary } from "./components/timeline/WorkflowTimeline.ErrorBoundary";
+import { NewExecutionDialog } from "./components/NewExecutionDialog";
 import { buildTimelineModel } from "./utils/buildTimelineModel";
 import { useWorkflowExecution } from "./hooks/useWorkflowExecution";
 import { useWorkflowDefinition } from "./hooks/useWorkflowDefinition";
@@ -68,6 +69,9 @@ export function WorkflowExecutionDetail() {
   const resumeWorkflow = useResumeWorkflow();
   const cancelWorkflow = useCancelWorkflow();
 
+  // Dialog state
+  const [showNewExecutionDialog, setShowNewExecutionDialog] = useState(false);
+
   const isLoading = executionLoading || definitionLoading;
 
   // Build timeline model from execution data
@@ -105,15 +109,25 @@ export function WorkflowExecutionDetail() {
     <div className="flex h-full flex-col">
       {/* Breadcrumb navigation */}
       <div className="border-b bg-background px-6 py-3">
-        <button
-          onClick={() =>
-            navigate(`/projects/${projectId}/workflows/${definitionId}`)
-          }
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to {definition?.name || "Workflow"}
-        </button>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() =>
+              navigate(`/projects/${projectId}/workflows/${definitionId}`)
+            }
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to {definition?.name || "Workflow"}
+          </button>
+
+          <button
+            onClick={() => setShowNewExecutionDialog(true)}
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            <Plus className="h-4 w-4" />
+            New Execution
+          </button>
+        </div>
       </div>
 
       {/* Header */}
@@ -141,6 +155,15 @@ export function WorkflowExecutionDetail() {
           </section>
         </div>
       </div>
+
+      {/* New Execution Dialog */}
+      <NewExecutionDialog
+        open={showNewExecutionDialog}
+        onOpenChange={setShowNewExecutionDialog}
+        projectId={projectId!}
+        definitionId={definitionId!}
+        definition={definition}
+      />
     </div>
   );
 }

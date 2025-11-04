@@ -4,7 +4,7 @@ import { calculateProgress } from '../utils/workflowProgress';
 import { formatRelativeTime } from '../utils/workflowFormatting';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { User, MoreVertical, Pause, Play, X } from 'lucide-react';
+import { MoreVertical, Pause, Play, X } from 'lucide-react';
 
 export interface WorkflowExecutionCardProps {
   execution: WorkflowExecution;
@@ -112,12 +112,12 @@ export function WorkflowExecutionCard({
       )}
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <div className="flex items-center gap-1">
-          <User className="h-3 w-3" />
-          <span className="truncate max-w-[100px]">{execution.created_by}</span>
+      <div className="flex items-center justify-between text-xs">
+        <div className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-primary">
+          <span className="font-medium">{execution._count?.events ?? 0}</span>
+          <span className="text-muted-foreground">actions</span>
         </div>
-        <span>{timeDisplay}</span>
+        <span className="text-muted-foreground">{timeDisplay}</span>
       </div>
 
       {/* Quick actions (visible on hover) */}

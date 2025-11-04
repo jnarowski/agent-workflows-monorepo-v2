@@ -121,7 +121,7 @@ export async function updateStepStatus(
       status,
       result,
       error,
-      timestamp: event.created_at.toISOString(),
+      timestamp: new Date().toISOString(),
     },
   });
 

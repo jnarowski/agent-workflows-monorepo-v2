@@ -59,7 +59,23 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       }
 
       // Start execution via Inngest
-      await executeWorkflow(execution.id, fastify);
+      try {
+        await executeWorkflow(execution.id, fastify, fastify.log);
+
+        fastify.log.info(
+          { executionId: execution.id, userId },
+          "Workflow execution triggered successfully"
+        );
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        fastify.log.error(
+          { err, executionId: execution.id, userId },
+          "Failed to trigger workflow execution"
+        );
+
+        // Re-throw to let global error handler return 500
+        throw err;
+      }
 
       return reply.code(201).send({ data: execution });
     }

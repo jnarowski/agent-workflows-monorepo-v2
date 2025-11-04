@@ -1,7 +1,7 @@
 import type { WorkflowExecution } from '../types';
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
-import { calculateProgress } from '../utils/workflowProgress';
 import { formatRelativeTime } from '../utils/workflowFormatting';
+import { getExecutionMetrics } from '../utils/executionMetrics';
 import { User } from 'lucide-react';
 
 export interface WorkflowExecutionPhaseCardProps {
@@ -13,19 +13,12 @@ export function WorkflowExecutionPhaseCard({
   execution,
   onClick,
 }: WorkflowExecutionPhaseCardProps) {
-  const progress = calculateProgress(execution);
   const timeDisplay = execution.started_at
     ? formatRelativeTime(execution.started_at)
     : formatRelativeTime(execution.created_at);
 
-  // Count steps in current phase
-  const currentPhaseSteps = execution.steps?.filter(
-    (step) => step.phase_name === execution.current_phase
-  ) || [];
-
-  const completedSteps = currentPhaseSteps.filter(
-    (step) => step.status === 'completed'
-  ).length;
+  // Get all execution metrics
+  const { currentPhaseNumber, totalPhases, totalActions } = getExecutionMetrics(execution);
 
   return (
     <div
@@ -33,7 +26,7 @@ export function WorkflowExecutionPhaseCard({
       onClick={onClick}
       role="button"
       tabIndex={0}
-      aria-label={`Workflow execution ${execution.name}, status ${execution.status}, progress ${progress}%`}
+      aria-label={`Workflow execution ${execution.name}, status ${execution.status}, phase ${currentPhaseNumber} of ${totalPhases}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -56,39 +49,31 @@ export function WorkflowExecutionPhaseCard({
         <WorkflowStatusBadge status={execution.status} size="sm" />
       </div>
 
-      {/* Progress bar */}
-      <div className="mb-3">
-        <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
-          <span>Overall Progress</span>
-          <span>{progress}%</span>
-        </div>
-        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full bg-primary transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-
       {/* Phase progress */}
-      {execution.current_phase && currentPhaseSteps.length > 0 && (
-        <div className="mb-3 text-xs text-muted-foreground">
-          <div className="flex items-center justify-between mb-1">
-            <span className="font-medium">Phase Progress</span>
+      {totalPhases > 0 && (
+        <div className="mb-3">
+          <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+            <span className="font-medium">Progress</span>
             <span>
-              {completedSteps} / {currentPhaseSteps.length} steps
+              {currentPhaseNumber} / {totalPhases} phases
             </span>
           </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full bg-blue-500 transition-all duration-300"
+              className="h-full bg-primary transition-all duration-300"
               style={{
-                width: `${(completedSteps / currentPhaseSteps.length) * 100}%`,
+                width: `${currentPhaseNumber > 0 ? (currentPhaseNumber / totalPhases) * 100 : 0}%`,
               }}
             />
           </div>
         </div>
       )}
+
+      {/* Total actions */}
+      <div className="mb-3 rounded-md bg-muted/50 p-2 text-xs">
+        <span className="font-medium text-muted-foreground">Actions: </span>
+        <span className="text-foreground">{totalActions}</span>
+      </div>
 
       {/* Current step */}
       {execution.current_step && (

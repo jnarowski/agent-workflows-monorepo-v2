@@ -1,5 +1,5 @@
-import { readFile, readdir, stat } from "node:fs/promises";
-import { join, relative } from "node:path";
+import { readFile, readdir, stat, writeFile, mkdir, copyFile } from "node:fs/promises";
+import { join, relative, extname, dirname } from "node:path";
 import { prisma } from "@/shared/prisma";
 import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
@@ -8,8 +8,33 @@ import type { ArtifactStepConfig, ArtifactStepResult } from "@sourceborn/workflo
 import { executeStep } from "./helpers";
 
 /**
+ * Get MIME type from file extension
+ */
+function getMimeType(filename: string, defaultType = "application/octet-stream"): string {
+  const ext = extname(filename).toLowerCase();
+  const mimeTypes: Record<string, string> = {
+    ".txt": "text/plain",
+    ".md": "text/markdown",
+    ".json": "application/json",
+    ".js": "text/javascript",
+    ".ts": "text/typescript",
+    ".html": "text/html",
+    ".css": "text/css",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".svg": "image/svg+xml",
+    ".pdf": "application/pdf",
+    ".zip": "application/zip",
+  };
+  return mimeTypes[ext] || defaultType;
+}
+
+/**
  * Create artifact step factory function
  * Uploads files, directories, or text content as workflow artifacts
+ * Artifacts are stored in: {projectPath}/.agent/workflows/executions/{executionId}/artifacts
  */
 export function createArtifactStep(context: RuntimeContext) {
   return async function artifact(
@@ -17,7 +42,7 @@ export function createArtifactStep(context: RuntimeContext) {
     config: ArtifactStepConfig
   ): Promise<ArtifactStepResult> {
     return executeStep(context, name, async () => {
-      const { executionId, projectId, logger } = context;
+      const { executionId, projectId, projectPath, logger } = context;
       const artifactIds: string[] = [];
       let totalSize = 0;
 
@@ -33,23 +58,35 @@ export function createArtifactStep(context: RuntimeContext) {
         throw new Error(`Step not found: ${name}`);
       }
 
+      // Create artifacts directory: {projectPath}/.agent/workflows/executions/{executionId}/artifacts
+      const artifactsDir = join(projectPath, ".agent", "workflows", "executions", executionId, "artifacts");
+      await mkdir(artifactsDir, { recursive: true });
+
       switch (config.type) {
         case "text": {
           if (!config.content) {
             throw new Error("Content is required for text artifact");
           }
+          // Write text content to artifacts directory
+          const artifactPath = join(artifactsDir, config.name);
+          await mkdir(dirname(artifactPath), { recursive: true });
+          await writeFile(artifactPath, config.content, "utf8");
+
+          const sizeBytes = Buffer.byteLength(config.content, "utf8");
+          const relativePath = relative(projectPath, artifactPath);
+
           const artifact = await prisma.workflowArtifact.create({
             data: {
               workflow_execution_step_id: step.id,
               name: config.name,
               file_type: "text",
-              file_path: null,
-              content: config.content,
-              size: Buffer.byteLength(config.content, "utf8"),
+              file_path: relativePath, // Relative to project root
+              mime_type: getMimeType(config.name, "text/plain"),
+              size_bytes: sizeBytes,
             },
           });
           artifactIds.push(artifact.id);
-          totalSize += artifact.size;
+          totalSize += sizeBytes;
           break;
         }
 
@@ -58,20 +95,26 @@ export function createArtifactStep(context: RuntimeContext) {
           if (!config.file) {
             throw new Error("File path is required for file/image artifact");
           }
-          const content = await readFile(config.file);
-          const fileStats = await stat(config.file);
+          // Copy file to artifacts directory
+          const artifactPath = join(artifactsDir, config.name);
+          await mkdir(dirname(artifactPath), { recursive: true });
+          await copyFile(config.file, artifactPath);
+
+          const fileStats = await stat(artifactPath);
+          const relativePath = relative(projectPath, artifactPath);
+
           const artifact = await prisma.workflowArtifact.create({
             data: {
               workflow_execution_step_id: step.id,
               name: config.name,
               file_type: config.type,
-              file_path: config.file,
-              content: content.toString("base64"),
-              size: fileStats.size,
+              file_path: relativePath, // Relative to project root
+              mime_type: getMimeType(config.file),
+              size_bytes: fileStats.size,
             },
           });
           artifactIds.push(artifact.id);
-          totalSize += artifact.size;
+          totalSize += fileStats.size;
           break;
         }
 
@@ -83,22 +126,29 @@ export function createArtifactStep(context: RuntimeContext) {
             config.directory,
             config.pattern ?? "**/*"
           );
+
+          // Copy all files to artifacts directory preserving structure
           for (const file of files) {
-            const content = await readFile(file);
-            const fileStats = await stat(file);
-            const relativePath = relative(config.directory, file);
+            const relativeToSource = relative(config.directory, file);
+            const artifactPath = join(artifactsDir, config.name, relativeToSource);
+            await mkdir(dirname(artifactPath), { recursive: true });
+            await copyFile(file, artifactPath);
+
+            const fileStats = await stat(artifactPath);
+            const relativeToProject = relative(projectPath, artifactPath);
+
             const artifact = await prisma.workflowArtifact.create({
               data: {
                 workflow_execution_step_id: step.id,
-                name: `${config.name}/${relativePath}`,
+                name: `${config.name}/${relativeToSource}`,
                 file_type: "file",
-                file_path: file,
-                content: content.toString("base64"),
-                size: fileStats.size,
+                file_path: relativeToProject, // Relative to project root
+                mime_type: getMimeType(file),
+                size_bytes: fileStats.size,
               },
             });
             artifactIds.push(artifact.id);
-            totalSize += artifact.size;
+            totalSize += fileStats.size;
           }
           break;
         }

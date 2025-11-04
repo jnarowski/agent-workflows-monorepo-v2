@@ -27,7 +27,6 @@ import {
 } from '@/server/errors';
 import { ServiceUnavailableError } from '@/server/errors/ServiceUnavailableError';
 import { initializeWorkflowEngine } from '@/server/workflows/engine/registry';
-import { scanAllProjectWorkflows } from '@/server/workflows/engine/scanner';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -317,40 +316,8 @@ export async function createServer() {
   // Register Shell WebSocket handler
   await registerShellRoute(fastify);
 
-  // Initialize workflow engine (Inngest)
-  fastify.log.info('Initializing workflow engine...');
+  // Initialize workflow engine (includes project scanning)
   await initializeWorkflowEngine(fastify);
-  fastify.log.info('✓ Workflow engine initialized');
-
-  // Scan all projects for workflows on startup
-  fastify.log.info('Scanning projects for workflows...');
-  const scanResults = await scanAllProjectWorkflows(fastify);
-
-  if (scanResults.discovered > 0) {
-    fastify.log.info(
-      {
-        projectsScanned: scanResults.scanned,
-        workflowsDiscovered: scanResults.discovered,
-        errors: scanResults.errors.length,
-      },
-      `✓ Found ${scanResults.discovered} workflow(s) in ${scanResults.scanned} project(s)`
-    );
-  } else {
-    fastify.log.info(
-      {
-        projectsScanned: scanResults.scanned,
-        errors: scanResults.errors.length,
-      },
-      `✓ No workflows found in ${scanResults.scanned} project(s) (looking in .agent/workflows/definitions/ directories)`
-    );
-  }
-
-  if (scanResults.errors.length > 0) {
-    fastify.log.warn(
-      { errors: scanResults.errors },
-      `Encountered ${scanResults.errors.length} error(s) while scanning`
-    );
-  }
 
   // Serve static files from dist/client/ (production build only)
   // In production, the built client files are in dist/client/

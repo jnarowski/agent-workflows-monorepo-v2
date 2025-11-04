@@ -55,6 +55,10 @@ export interface WorkflowExecution {
   steps?: WorkflowExecutionStep[];
   events?: WorkflowEvent[];
   artifacts?: WorkflowArtifact[];
+  _count?: {
+    steps: number;
+    events: number;
+  };
 }
 
 export interface WorkflowExecutionStep {

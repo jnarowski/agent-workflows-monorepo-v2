@@ -60,10 +60,7 @@ export function useWorkflowWebSocket(projectId: string) {
 
     // Workflow created
     const handleCreated = () => {
-      // Invalidate list to show new workflow - backend creates execution
-      queryClient.invalidateQueries({
-        queryKey: ["workflow-executions", projectId],
-      });
+      // Query invalidation handled by main event handler
     };
 
     // Workflow started
@@ -153,10 +150,6 @@ export function useWorkflowWebSocket(projectId: string) {
         status: "completed",
         completedAt: new Date(event.data.timestamp),
       });
-      // Invalidate list to update workflow status
-      queryClient.invalidateQueries({
-        queryKey: ["workflow-executions", projectId],
-      });
       toast.success("Workflow completed successfully");
     };
 
@@ -173,10 +166,6 @@ export function useWorkflowWebSocket(projectId: string) {
         status: "failed",
         completedAt: new Date(event.data.timestamp),
         errorMessage: event.data.error,
-      });
-      // Invalidate list to update workflow status
-      queryClient.invalidateQueries({
-        queryKey: ["workflow-executions", projectId],
       });
       toast.error(`Workflow failed: ${event.data.error}`);
     };
@@ -212,10 +201,6 @@ export function useWorkflowWebSocket(projectId: string) {
         type: "workflow_status_updated",
         status: "cancelled",
         completedAt: new Date(event.data.timestamp),
-      });
-      // Invalidate list to update workflow status
-      queryClient.invalidateQueries({
-        queryKey: ["workflow-executions", projectId],
       });
       toast.info("Workflow cancelled");
     };
@@ -321,6 +306,14 @@ export function useWorkflowWebSocket(projectId: string) {
           );
           break;
       }
+
+      // Invalidate queries with delay to allow database to catch up
+      // This prevents race condition where refetch returns stale data before DB is updated
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: ["workflow-executions", projectId],
+        });
+      }, 500); // 500ms delay gives DB time to commit
     };
 
     eventBus.on(channel, handleWorkflowEvent);

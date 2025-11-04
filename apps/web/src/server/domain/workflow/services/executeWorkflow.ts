@@ -7,7 +7,8 @@ import type { FastifyInstance } from 'fastify';
  */
 export async function executeWorkflow(
   executionId: string,
-  fastifyOrWorkflowClient: FastifyInstance | { workflowClient?: { send: (event: { name: string; data: unknown }) => Promise<void> } }
+  fastifyOrWorkflowClient: FastifyInstance | { workflowClient?: { send: (event: { name: string; data: unknown }) => Promise<void> } },
+  logger?: { info: (obj: unknown, msg: string) => void; error: (obj: unknown, msg: string) => void }
 ): Promise<void> {
   // Get execution details
   const execution = await prisma.workflowExecution.findUnique({
@@ -44,17 +45,44 @@ export async function executeWorkflow(
     throw new Error('Workflow client not initialized. Please initialize workflow engine first.');
   }
 
-  // Trigger workflow via Inngest
-  await workflowClient.send({
-    name: execution.workflow_definition.name,
-    data: {
+  // Trigger workflow via Inngest using identifier with workflow/ prefix (Inngest convention)
+  const eventName = `workflow/${execution.workflow_definition.identifier}`;
+  const eventData = {
+    executionId,
+    projectId: execution.project_id,
+    userId: execution.user_id,
+    projectPath: execution.project.path,
+    args: execution.args,
+  };
+
+  logger?.info(
+    {
       executionId,
+      eventName,
+      workflowIdentifier: execution.workflow_definition.identifier,
       projectId: execution.project_id,
-      userId: execution.user_id,
-      projectPath: execution.project.path,
-      args: execution.args,
     },
-  });
+    'Sending workflow execution event to Inngest'
+  );
+
+  try {
+    await workflowClient.send({
+      name: eventName,
+      data: eventData,
+    });
+
+    logger?.info(
+      { executionId, eventName },
+      'Successfully sent workflow execution event to Inngest'
+    );
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger?.error(
+      { err, executionId, eventName },
+      'Failed to send workflow execution event to Inngest'
+    );
+    throw err;
+  }
 
   // Returns immediately - workflow will be processed by Inngest in the background
 }

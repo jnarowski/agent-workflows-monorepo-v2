@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { WorkflowPhaseKanbanColumn } from './components/WorkflowPhaseKanbanColumn';
+import { NewExecutionDialog } from './components/NewExecutionDialog';
 import { useWorkflowDefinition } from './hooks/useWorkflowDefinition';
 import { useWorkflowExecutions } from './hooks/useWorkflowExecutions';
 import { useWorkflowWebSocket } from './hooks/useWorkflowWebSocket';
@@ -31,6 +32,9 @@ export function WorkflowDefinitionView() {
   );
 
   useWorkflowWebSocket(projectId!);
+
+  // Dialog state
+  const [showNewExecutionDialog, setShowNewExecutionDialog] = useState(false);
 
   const isLoading = definitionLoading || executionsLoading || !definition;
 
@@ -88,6 +92,14 @@ export function WorkflowDefinitionView() {
               Workflow Definition • {phases.length} phase{phases.length !== 1 ? 's' : ''}
             </p>
           </div>
+
+          <button
+            onClick={() => setShowNewExecutionDialog(true)}
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            <Plus className="h-4 w-4" />
+            New Execution
+          </button>
         </div>
       </div>
 
@@ -120,6 +132,15 @@ export function WorkflowDefinitionView() {
           })}
         </div>
       </div>
+
+      {/* New Execution Dialog */}
+      <NewExecutionDialog
+        open={showNewExecutionDialog}
+        onOpenChange={setShowNewExecutionDialog}
+        projectId={projectId!}
+        definitionId={definitionId!}
+        definition={definition}
+      />
     </div>
   );
 }

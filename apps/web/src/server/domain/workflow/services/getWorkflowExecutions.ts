@@ -21,6 +21,12 @@ export async function getWorkflowExecutions(
       steps: {
         orderBy: { created_at: 'asc' },
       },
+      events: {
+        where: {
+          event_type: 'phase_completed', // Only include phase completion events for progress
+        },
+        orderBy: { created_at: 'asc' },
+      },
       _count: {
         select: {
           events: true,
@@ -53,6 +59,13 @@ export async function getWorkflowExecutions(
       step_name: step.name,
       phase_name: step.phase,
       logs: step.log_directory_path,
+    })),
+    // Transform events (parse event_data JSON)
+    events: execution.events.map(event => ({
+      ...event,
+      event_data: event.event_data && typeof event.event_data === 'string'
+        ? JSON.parse(event.event_data)
+        : event.event_data,
     })),
   }));
 

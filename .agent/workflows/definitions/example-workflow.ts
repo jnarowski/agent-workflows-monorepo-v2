@@ -17,8 +17,7 @@ export default defineWorkflow(
 
     await step.phase("initialize", async () => {
       await step.annotation("Starting example workflow - initialization phase");
-
-      // Simulate some work
+      await step.sleep("sleep-for-5-seconds", 10000);
       await step.run("log-start", async () => {
         console.log("Workflow started at:", new Date().toISOString());
         return { message: "Initialization complete" };
@@ -28,6 +27,8 @@ export default defineWorkflow(
     // Phase 2: Process
     await step.phase("process", async () => {
       await step.annotation("Processing data - this is the main work phase");
+
+      await step.sleep("sleep-for-5-seconds", 10000);
 
       // Output some text data
       await step.run("process-data", async () => {
