@@ -3,6 +3,7 @@ import * as matchers from '@testing-library/jest-dom/matchers';
 
 // Set required environment variables for tests
 process.env.JWT_SECRET = 'test-jwt-secret-for-vitest';
+// DATABASE_URL is set in vitest.global-setup.ts (runs before this file)
 
 expect.extend(matchers);
 

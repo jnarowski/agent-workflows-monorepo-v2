@@ -60,8 +60,8 @@ export const projectSchema = z.object({
   path: z.string(),
   is_hidden: z.boolean(),
   is_starred: z.boolean(),
-  created_at: z.date(),
-  updated_at: z.date(),
+  created_at: z.coerce.date(), // Coerce ISO strings to Date objects
+  updated_at: z.coerce.date(), // Coerce ISO strings to Date objects
   current_branch: z.string().optional(),
 });
 

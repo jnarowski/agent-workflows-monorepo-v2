@@ -135,46 +135,51 @@ Create `apps/web/src/server/routes/projects.test.ts` with comprehensive test cov
 ### Task Group 1: Database Test Utilities
 
 <!-- prettier-ignore -->
-- [ ] db-setup - Create in-memory SQLite database setup function
+- [x] db-setup - Create in-memory SQLite database setup function
   - Export `setupTestDB()` that sets `DATABASE_URL=file::memory:?cache=shared`
   - Run `pnpm prisma migrate deploy` via `execSync` to apply migrations
   - Create and connect PrismaClient instance
   - File: `apps/web/src/server/test-utils/db.ts`
-- [ ] db-teardown - Create database teardown function
+- [x] db-teardown - Create database teardown function
   - Export `teardownTestDB()` that disconnects Prisma client
   - Cleans up in-memory database
   - File: `apps/web/src/server/test-utils/db.ts`
-- [ ] db-clean - Create table cleanup function
+- [x] db-clean - Create table cleanup function
   - Export `cleanTestDB()` that truncates all tables in correct order (foreign keys)
   - Order: WorkflowArtifact → WorkflowEvent → WorkflowExecutionStep → WorkflowExecution → WorkflowDefinition → AgentSession → Project → User
   - File: `apps/web/src/server/test-utils/db.ts`
-- [ ] db-reset - Create schema reset function (optional, for schema change tests)
+- [x] db-reset - Create schema reset function (optional, for schema change tests)
   - Export `resetTestDB()` that drops and recreates schema
   - File: `apps/web/src/server/test-utils/db.ts`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Created `db.ts` with all database utility functions
+- Uses `file::memory:?cache=shared` for in-memory SQLite
+- Runs migrations via `execSync` with error handling
+- `cleanTestDB()` deletes tables in correct FK order
+- Added `getTestPrisma()` helper for convenience
+- Singleton pattern for test Prisma client
 
 ### Task Group 2: Fixture Factory Functions
 
 <!-- prettier-ignore -->
-- [ ] fixture-user - Create user fixture factory
+- [x] fixture-user - Create user fixture factory
   - Export `createTestUser(prisma, overrides?)` with defaults: `username: 'testuser'`, `email: 'test@example.com'`, `password: 'password123'`
   - Use bcrypt to hash password before creating user
   - Return created user object (without password_hash)
   - File: `apps/web/src/server/test-utils/fixtures.ts`
-- [ ] fixture-project - Create project fixture factory
+- [x] fixture-project - Create project fixture factory
   - Export `createTestProject(prisma, overrides?)` with defaults: `name: 'Test Project'`, `path: '/tmp/test-project'`
   - Validate path exists or use temp directory
   - Return created project object
   - File: `apps/web/src/server/test-utils/fixtures.ts`
-- [ ] fixture-session - Create session fixture factory
+- [x] fixture-session - Create session fixture factory
   - Export `createTestSession(prisma, overrides?)` with defaults: `agent: 'claude'`, `state: 'idle'`
   - Requires `projectId` and `userId` in overrides
   - Return created session object
   - File: `apps/web/src/server/test-utils/fixtures.ts`
-- [ ] fixture-token - Create JWT token helper
+- [x] fixture-token - Create JWT token helper
   - Export `createAuthToken(userId, username?)` that generates valid JWT
   - Use same secret as production (`JWT_SECRET` env var)
   - Return signed token string
@@ -182,40 +187,50 @@ Create `apps/web/src/server/routes/projects.test.ts` with comprehensive test cov
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Created all fixture factory functions in `fixtures.ts`
+- Uses bcrypt with saltRounds=12 (matches production)
+- User factory returns user without password_hash for security
+- Session factory uses AgentType and SessionState enums from Prisma
+- Auth token function supports both Fastify instance or manual JWT generation
+- All factories have sensible defaults matching spec requirements
 
 ### Task Group 3: Fastify Test Utilities
 
 <!-- prettier-ignore -->
-- [ ] fastify-create - Create Fastify test app factory
+- [x] fastify-create - Create Fastify test app factory
   - Export `createTestApp(prisma?)` that creates Fastify instance
   - Register auth plugin with JWT_SECRET
   - Register all route modules (projects, sessions, auth)
   - Skip WebSocket routes
   - Set logger to silent mode
   - File: `apps/web/src/server/test-utils/fastify.ts`
-- [ ] fastify-close - Create app cleanup function
+- [x] fastify-close - Create app cleanup function
   - Export `closeTestApp(app)` that calls `app.close()` gracefully
   - File: `apps/web/src/server/test-utils/fastify.ts`
-- [ ] fastify-auth - Create auth header helper
+- [x] fastify-auth - Create auth header helper
   - Export `injectAuth(userId, username, fastify)` that returns `{ authorization: 'Bearer <token>' }`
   - Uses `createAuthToken` internally
   - File: `apps/web/src/server/test-utils/fastify.ts`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Created Fastify test app factory with silent logger
+- Registers all main route modules (auth, projects, sessions, git, etc.)
+- WebSocket routes skipped as specified
+- Auth helper uses `createAuthToken` from fixtures
+- TypeScript types properly infer JWT plugin methods
+- App properly configured with Zod validation compilers
 
 ### Task Group 4: Gold Standard Route Test
 
 <!-- prettier-ignore -->
-- [ ] test-setup - Create test file with setup/teardown
+- [x] test-setup - Create test file with setup/teardown
   - Create `apps/web/src/server/routes/projects.test.ts`
   - Add `beforeAll` that calls `setupTestDB()` and `createTestApp()`
   - Add `afterEach` that calls `cleanTestDB()`
   - Add `afterAll` that calls `teardownTestDB()` and `closeTestApp()`
   - File: `apps/web/src/server/routes/projects.test.ts`
-- [ ] test-200 - Test successful project retrieval
+- [x] test-200 - Test successful project retrieval
   - Create test user and project with fixtures
   - Generate auth token
   - Inject `GET /api/projects/:id` with Bearer token
@@ -223,25 +238,25 @@ Create `apps/web/src/server/routes/projects.test.ts` with comprehensive test cov
   - Assert response matches `{ data: { id, name, path, ... } }`
   - Validate response against Zod schema
   - File: `apps/web/src/server/routes/projects.test.ts`
-- [ ] test-404 - Test non-existent project
+- [x] test-404 - Test non-existent project
   - Generate auth token
   - Inject `GET /api/projects/non-existent-id` with valid UUID
   - Assert status 404
   - Assert error response format `{ error: { message, statusCode } }`
   - File: `apps/web/src/server/routes/projects.test.ts`
-- [ ] test-401 - Test missing authentication
+- [x] test-401 - Test missing authentication
   - Create project
   - Inject `GET /api/projects/:id` WITHOUT auth header
   - Assert status 401
   - Assert error message contains "Unauthorized" or "No Authorization"
   - File: `apps/web/src/server/routes/projects.test.ts`
-- [ ] test-400 - Test invalid ID format
+- [x] test-400 - Test invalid ID format
   - Generate auth token
   - Inject `GET /api/projects/invalid-uuid-format`
   - Assert status 400
   - Assert Zod validation error in response
   - File: `apps/web/src/server/routes/projects.test.ts`
-- [ ] test-schema - Test response schema validation
+- [x] test-schema - Test response schema validation
   - Create project with all fields populated
   - Inject `GET /api/projects/:id` with auth
   - Parse response with `projectResponseSchema.parse()`
@@ -250,12 +265,18 @@ Create `apps/web/src/server/routes/projects.test.ts` with comprehensive test cov
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Created comprehensive test suite with 6 test cases (plus 1 bonus concurrent test)
+- All test lifecycle hooks properly configured (beforeAll, afterEach, afterAll)
+- Tests cover: 200 success, 404 not found, 401 unauthorized, 400 validation error
+- Schema validation tests use Zod parse() and safeParse()
+- Added bonus test for concurrent request handling
+- All tests use fixture factories and auth helpers from test-utils
+- JWT_SECRET set in beforeAll for test environment
 
 ### Task Group 5: Documentation
 
 <!-- prettier-ignore -->
-- [ ] doc-readme - Create testing guide
+- [x] doc-readme - Create testing guide
   - Create `apps/web/src/server/test-utils/README.md`
   - Document when to use in-memory DB vs mocks
   - Provide copy-paste template for route tests
@@ -266,7 +287,13 @@ Create `apps/web/src/server/routes/projects.test.ts` with comprehensive test cov
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Created comprehensive testing guide (~300 lines)
+- Includes Quick Start, When to Use guide, Test Utilities reference
+- Provides copy-paste template for new route tests
+- Documents common patterns: 200, 404, 401, 400, schema validation, concurrent tests
+- Performance benchmarks and optimization tips included
+- Troubleshooting section covers common issues
+- Examples reference gold standard test (projects.test.ts)
 
 ## Testing Strategy
 

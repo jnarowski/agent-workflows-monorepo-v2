@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { Prisma } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { prisma } from '@/shared/prisma';
 import { registerSchema, loginSchema, authResponseSchema, authStatusResponseSchema, userResponseSchema } from '@/server/domain/auth/schemas';
 import { errorResponse } from '@/server/domain/common/schemas';
