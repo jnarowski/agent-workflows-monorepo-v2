@@ -1,37 +1,36 @@
 import { useState } from "react";
-import type { BaseEventData } from "../../types";
 import { TimelineRow } from "./TimelineRow";
 import { TimelineHeader } from "./TimelineHeader";
 import { TimelineBody } from "./TimelineBody";
 import { ArtifactList } from "../ArtifactList";
 import { Badge } from "@/client/components/ui/badge";
 import { formatRelativeTime } from "../../utils/workflowFormatting";
-import { getEventConfig } from "../../lib/eventConfig";
-import type { EventDefaultItemProps } from "./types";
+import type { EventTimelineItem } from "../../lib/timelineModel";
+
+export interface EventDefaultItemProps {
+  item: EventTimelineItem;
+}
 
 /**
  * Default event timeline item
- * Uses standard title and body fields from event_data
+ * Uses pre-computed display properties from domain model
  * Handles any event type using the base event data structure
  */
-export function EventDefaultItem({ event }: EventDefaultItemProps) {
+export function EventDefaultItem({ item }: EventDefaultItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // All events have title and body in their event_data
-  const { title, body } = event.event_data as BaseEventData;
-  const config = getEventConfig(event.event_type);
-
   // Check if there's expandable content
+  const body = item.metadata.body;
   const hasExpandableContent =
     (body && body.length > 0) ||
-    (event.artifacts && event.artifacts.length > 0);
+    (item.event.artifacts && item.event.artifacts.length > 0);
 
   return (
-    <TimelineRow icon={config.icon} iconColor={config.iconColor}>
+    <TimelineRow icon={item.display.icon} iconColor={item.display.iconColor}>
       <TimelineHeader
-        title={title}
-        metadata={formatRelativeTime(event.created_at)}
-        badge={<Badge variant={config.badgeVariant}>{config.label}</Badge>}
+        title={item.metadata.title}
+        metadata={formatRelativeTime(item.event.created_at)}
+        badge={<Badge variant={item.display.badgeVariant}>{item.display.label}</Badge>}
         onClick={hasExpandableContent ? () => setIsExpanded(!isExpanded) : undefined}
         isExpandable={hasExpandableContent}
       />
@@ -47,8 +46,8 @@ export function EventDefaultItem({ event }: EventDefaultItemProps) {
             )}
 
             {/* Artifacts */}
-            {event.artifacts && event.artifacts.length > 0 && (
-              <ArtifactList artifacts={event.artifacts} size="sm" />
+            {item.event.artifacts && item.event.artifacts.length > 0 && (
+              <ArtifactList artifacts={item.event.artifacts} size="sm" />
             )}
           </div>
         </TimelineBody>

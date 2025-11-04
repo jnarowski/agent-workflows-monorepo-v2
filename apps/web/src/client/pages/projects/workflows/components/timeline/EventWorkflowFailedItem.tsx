@@ -5,24 +5,28 @@ import { TimelineBody } from "./TimelineBody";
 import { ErrorDisplay } from "../ErrorDisplay";
 import { Badge } from "@/client/components/ui/badge";
 import { formatRelativeTime } from "../../utils/workflowFormatting";
-import { getEventConfig } from "../../lib/eventConfig";
-import type { EventWorkflowFailedItemProps } from "./types";
+import type { EventTimelineItem } from "../../lib/timelineModel";
+
+export interface EventWorkflowFailedItemProps {
+  item: EventTimelineItem;
+}
 
 /**
  * Workflow Failed event timeline item
  * Shows error message in expandable body
+ * Uses pre-computed display properties from domain model
  */
-export function EventWorkflowFailedItem({ event }: EventWorkflowFailedItemProps) {
+export function EventWorkflowFailedItem({ item }: EventWorkflowFailedItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { title, error } = event.event_data;
-  const config = getEventConfig("workflow_failed");
+  const eventData = item.event.event_data as { error?: string };
+  const error = eventData.error;
 
   return (
-    <TimelineRow icon={config.icon} iconColor={config.iconColor}>
+    <TimelineRow icon={item.display.icon} iconColor={item.display.iconColor}>
       <TimelineHeader
-        title={title}
-        metadata={formatRelativeTime(event.created_at)}
-        badge={<Badge variant={config.badgeVariant}>{config.label}</Badge>}
+        title={item.metadata.title}
+        metadata={formatRelativeTime(item.event.created_at)}
+        badge={<Badge variant={item.display.badgeVariant}>{item.display.label}</Badge>}
       />
 
       {error && (

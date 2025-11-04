@@ -112,19 +112,19 @@ export function useCancelWorkflow() {
   });
 }
 
-// Create comment
-interface CreateCommentInput {
+// Create annotation
+interface CreateAnnotationInput {
   executionId: string;
   content: string;
   stepId?: string;
 }
 
-interface CreateCommentResponse {
+interface CreateAnnotationResponse {
   data: WorkflowComment;
 }
 
-async function createComment(input: CreateCommentInput): Promise<WorkflowComment> {
-  const response = await api.post<CreateCommentResponse>(
+async function createAnnotation(input: CreateAnnotationInput): Promise<WorkflowComment> {
+  const response = await api.post<CreateAnnotationResponse>(
     `/api/workflow-executions/${input.executionId}/comments`,
     {
       content: input.content,
@@ -134,19 +134,19 @@ async function createComment(input: CreateCommentInput): Promise<WorkflowComment
   return response.data;
 }
 
-export function useCreateComment() {
+export function useCreateAnnotation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createComment,
+    mutationFn: createAnnotation,
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['workflow-execution', variables.executionId],
       });
-      toast.success('Comment added');
+      toast.success('Annotation added');
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to add comment');
+      toast.error(error.message || 'Failed to add annotation');
     },
   });
 }

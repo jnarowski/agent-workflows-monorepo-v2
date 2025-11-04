@@ -90,7 +90,7 @@ model WorkflowExecutionStep {
 model WorkflowEvent {
   id                         String    @id @default(cuid())
   workflow_execution_id      String
-  event_type                 String    // 'comment_added', 'workflow_started', 'workflow_completed', 'workflow_failed', 'workflow_paused', 'workflow_resumed', 'workflow_cancelled', 'phase_started', 'phase_completed', 'step_started'
+  event_type                 String    // 'annotation_added', 'workflow_started', 'workflow_completed', 'workflow_failed', 'workflow_paused', 'workflow_resumed', 'workflow_cancelled', 'phase_started', 'phase_completed', 'step_started'
   event_data                 Json      // Event-specific data (comment text, phase name, step info, etc.)
   workflow_execution_step_id String?   // Nullable - only for step-related events
   created_by_user_id         String?   // Nullable - only for user-generated events

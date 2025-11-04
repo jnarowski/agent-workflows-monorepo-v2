@@ -24,7 +24,7 @@ export type StepStatus = typeof StepStatus[keyof typeof StepStatus];
 
 // Workflow event types (matching backend)
 export type WorkflowEventType =
-  | 'comment_added'
+  | 'annotation_added'
   | 'workflow_started'
   | 'workflow_completed'
   | 'workflow_failed'
@@ -104,7 +104,7 @@ export interface BaseEventData {
 // Event data type map (matching backend EventDataMap)
 // All events use the same base structure (title + body) with optional additional fields
 export interface EventDataMap {
-  comment_added: BaseEventData;
+  annotation_added: BaseEventData;
   workflow_started: BaseEventData;
   workflow_completed: BaseEventData;
   workflow_failed: BaseEventData & {
@@ -156,10 +156,16 @@ export interface WorkflowArtifact {
   created_at: Date;
 }
 
-// Timeline discriminated union type
-export type TimelineItem =
-  | { type: 'step'; data: WorkflowExecutionStep; timestamp: Date }
-  | { type: 'event'; data: WorkflowEvent; timestamp: Date };
+// Re-export domain model types for timeline
+export type {
+  TimelineModel,
+  TimelineItem,
+  StepTimelineItem,
+  EventTimelineItem,
+  AnnotationTimelineItem,
+  ExecutionSummary,
+  LiveState,
+} from './lib/timelineModel';
 
 // Filter types
 export interface WorkflowFilter {

@@ -83,11 +83,11 @@ export const EVENT_CONFIG: Record<string, EventConfig> = {
     badgeVariant: "outline",
   },
 
-  // Comment events
-  comment_added: {
+  // Annotation events
+  annotation_added: {
     icon: MessageSquare,
     iconColor: "bg-accent text-accent-foreground",
-    label: "Comment",
+    label: "Annotation",
     badgeVariant: "outline",
   },
 };

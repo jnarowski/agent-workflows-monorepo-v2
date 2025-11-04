@@ -71,6 +71,8 @@ export async function getWorkflowExecutionById(id: string): Promise<WorkflowExec
         file_name: artifact.name,
       })),
     })),
+    // Collect all artifacts from all steps for timeline model
+    artifacts: execution.steps.flatMap(step => step.artifacts || []),
   };
 
   return parsedExecution as WorkflowExecution;

@@ -1,4 +1,4 @@
-import type { WorkflowEvent } from "../../types";
+import type { EventTimelineItem } from "../../lib/timelineModel";
 import { EventWorkflowStartedItem } from "./EventWorkflowStartedItem";
 import { EventWorkflowCompletedItem } from "./EventWorkflowCompletedItem";
 import { EventWorkflowFailedItem } from "./EventWorkflowFailedItem";
@@ -9,44 +9,43 @@ import { EventPhaseStartedItem } from "./EventPhaseStartedItem";
 import { EventPhaseCompletedItem } from "./EventPhaseCompletedItem";
 import { EventStepStartedItem } from "./EventStepStartedItem";
 import { EventDefaultItem } from "./EventDefaultItem";
-import type { EventOfType } from "./types";
 
 export interface EventItemProps {
-  event: WorkflowEvent;
+  item: EventTimelineItem;
 }
 
 /**
  * Workflow event timeline item dispatcher
  * Routes to specific event type components, or uses EventDefaultItem for unknown types
  *
- * This is the single point where we assert event types based on event_type discriminant.
- * All child components receive properly typed events with no casting required.
+ * This is the single point where we route events based on event_type discriminant.
+ * Child components receive the full EventTimelineItem with pre-computed display properties.
  */
-export function EventItem({ event }: EventItemProps) {
-  switch (event.event_type) {
+export function EventItem({ item }: EventItemProps) {
+  switch (item.event.event_type) {
     case "workflow_started":
-      return <EventWorkflowStartedItem event={event as EventOfType<'workflow_started'>} />;
+      return <EventWorkflowStartedItem item={item} />;
     case "workflow_completed":
-      return <EventWorkflowCompletedItem event={event as EventOfType<'workflow_completed'>} />;
+      return <EventWorkflowCompletedItem item={item} />;
     case "workflow_failed":
-      return <EventWorkflowFailedItem event={event as EventOfType<'workflow_failed'>} />;
+      return <EventWorkflowFailedItem item={item} />;
     case "workflow_paused":
-      return <EventWorkflowPausedItem event={event as EventOfType<'workflow_paused'>} />;
+      return <EventWorkflowPausedItem item={item} />;
     case "workflow_resumed":
-      return <EventWorkflowResumedItem event={event as EventOfType<'workflow_resumed'>} />;
+      return <EventWorkflowResumedItem item={item} />;
     case "workflow_cancelled":
-      return <EventWorkflowCancelledItem event={event as EventOfType<'workflow_cancelled'>} />;
+      return <EventWorkflowCancelledItem item={item} />;
     case "phase_started":
-      return <EventPhaseStartedItem event={event as EventOfType<'phase_started'>} />;
+      return <EventPhaseStartedItem item={item} />;
     case "phase_completed":
-      return <EventPhaseCompletedItem event={event as EventOfType<'phase_completed'>} />;
+      return <EventPhaseCompletedItem item={item} />;
     case "step_started":
-      return <EventStepStartedItem event={event as EventOfType<'step_started'>} />;
-    case "comment_added":
-      // Comments are handled by EventCommentItem, not this dispatcher
+      return <EventStepStartedItem item={item} />;
+    case "annotation_added":
+      // Annotations are handled separately (attached to steps or shown standalone)
       return null;
     default:
       // Unknown event type - use default renderer with title/body
-      return <EventDefaultItem event={event} />;
+      return <EventDefaultItem item={item} />;
   }
 }

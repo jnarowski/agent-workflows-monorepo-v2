@@ -2,22 +2,23 @@ import { TimelineRow } from "./TimelineRow";
 import { TimelineHeader } from "./TimelineHeader";
 import { Badge } from "@/client/components/ui/badge";
 import { formatRelativeTime } from "../../utils/workflowFormatting";
-import { getEventConfig } from "../../lib/eventConfig";
-import type { EventPhaseStartedItemProps } from "./types";
+import type { EventTimelineItem } from "../../lib/timelineModel";
+
+export interface EventPhaseStartedItemProps {
+  item: EventTimelineItem;
+}
 
 /**
  * Phase Started event timeline item
+ * Uses pre-computed display properties from domain model
  */
-export function EventPhaseStartedItem({ event }: EventPhaseStartedItemProps) {
-  const { title } = event.event_data;
-  const config = getEventConfig("phase_started");
-
+export function EventPhaseStartedItem({ item }: EventPhaseStartedItemProps) {
   return (
-    <TimelineRow icon={config.icon} iconColor={config.iconColor}>
+    <TimelineRow icon={item.display.icon} iconColor={item.display.iconColor}>
       <TimelineHeader
-        title={title}
-        metadata={formatRelativeTime(event.created_at)}
-        badge={<Badge variant={config.badgeVariant}>Phase</Badge>}
+        title={item.metadata.title}
+        metadata={formatRelativeTime(item.event.created_at)}
+        badge={<Badge variant={item.display.badgeVariant}>Phase</Badge>}
       />
     </TimelineRow>
   );

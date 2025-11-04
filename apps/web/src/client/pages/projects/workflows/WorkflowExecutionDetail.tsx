@@ -1,9 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { WorkflowExecutionHeader } from './components/WorkflowExecutionHeader';
 import { WorkflowTimeline } from './components/WorkflowTimeline';
-import { buildTimeline } from './utils/buildTimeline';
+import { buildTimelineModel } from './lib/timelineModel';
 import { useWorkflowExecution } from './hooks/useWorkflowExecution';
 import { useWorkflowDefinition } from './hooks/useWorkflowDefinition';
 import { useWorkflowWebSocket } from './hooks/useWorkflowWebSocket';
@@ -49,6 +49,17 @@ export function WorkflowExecutionDetail() {
   const cancelWorkflow = useCancelWorkflow();
 
   const isLoading = executionLoading || definitionLoading;
+
+  // Build timeline model from execution data
+  const timelineModel = useMemo(() => {
+    if (!execution) return null;
+    return buildTimelineModel(
+      execution,
+      execution.steps || [],
+      execution.events || [],
+      execution.artifacts || []
+    );
+  }, [execution]);
 
   if (isLoading || !execution || !definition) {
     return (
@@ -97,10 +108,12 @@ export function WorkflowExecutionDetail() {
           {/* Timeline section */}
           <section>
             <h2 className="text-xl font-bold mb-4">Execution Timeline</h2>
-            <WorkflowTimeline
-              items={buildTimeline(execution.steps || [], execution.events || [])}
-              projectId={projectId!}
-            />
+            {timelineModel && (
+              <WorkflowTimeline
+                model={timelineModel}
+                projectId={projectId!}
+              />
+            )}
           </section>
         </div>
       </div>

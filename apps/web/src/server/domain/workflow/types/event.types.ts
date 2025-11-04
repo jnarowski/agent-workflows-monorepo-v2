@@ -2,7 +2,7 @@ import type { WorkflowEvent } from '@prisma/client';
 
 // Event types
 export type WorkflowEventType =
-  | 'comment_added'
+  | 'annotation_added'
   | 'workflow_started'
   | 'workflow_completed'
   | 'workflow_failed'
@@ -22,7 +22,7 @@ export interface BaseEventData {
 // Event data map for type-safe event_data
 // All events use the same base structure (title + body) with optional additional fields
 export interface EventDataMap {
-  comment_added: BaseEventData;
+  annotation_added: BaseEventData;
   workflow_started: BaseEventData;
   workflow_completed: BaseEventData;
   workflow_failed: BaseEventData & {

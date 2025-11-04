@@ -2,22 +2,23 @@ import { TimelineRow } from "./TimelineRow";
 import { TimelineHeader } from "./TimelineHeader";
 import { Badge } from "@/client/components/ui/badge";
 import { formatRelativeTime } from "../../utils/workflowFormatting";
-import { getEventConfig } from "../../lib/eventConfig";
-import type { EventWorkflowResumedItemProps } from "./types";
+import type { EventTimelineItem } from "../../lib/timelineModel";
+
+export interface EventWorkflowResumedItemProps {
+  item: EventTimelineItem;
+}
 
 /**
  * Workflow Resumed event timeline item
+ * Uses pre-computed display properties from domain model
  */
-export function EventWorkflowResumedItem({ event }: EventWorkflowResumedItemProps) {
-  const { title } = event.event_data;
-  const config = getEventConfig("workflow_resumed");
-
+export function EventWorkflowResumedItem({ item }: EventWorkflowResumedItemProps) {
   return (
-    <TimelineRow icon={config.icon} iconColor={config.iconColor}>
+    <TimelineRow icon={item.display.icon} iconColor={item.display.iconColor}>
       <TimelineHeader
-        title={title}
-        metadata={formatRelativeTime(event.created_at)}
-        badge={<Badge variant={config.badgeVariant}>{config.label}</Badge>}
+        title={item.metadata.title}
+        metadata={formatRelativeTime(item.event.created_at)}
+        badge={<Badge variant={item.display.badgeVariant}>{item.display.label}</Badge>}
       />
     </TimelineRow>
   );

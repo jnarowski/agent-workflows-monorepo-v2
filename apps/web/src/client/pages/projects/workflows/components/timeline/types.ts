@@ -58,7 +58,7 @@ export interface EventStepStartedItemProps {
 }
 
 export interface EventCommentItemProps {
-  event: EventOfType<'comment_added'>;
+  event: EventOfType<'annotation_added'>;
   nested?: boolean; // For when rendered inside a step
 }
 

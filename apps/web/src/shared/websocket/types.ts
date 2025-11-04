@@ -299,7 +299,7 @@ export const WorkflowEventTypes = {
   PAUSED: "workflow:paused",
   RESUMED: "workflow:resumed",
   CANCELLED: "workflow:cancelled",
-  COMMENT_CREATED: "workflow:comment:created",
+  ANNOTATION_CREATED: "workflow:annotation:created",
 } as const;
 
 /**
@@ -385,10 +385,10 @@ export interface WorkflowCancelledData {
   timestamp: string;
 }
 
-export interface WorkflowCommentCreatedData {
+export interface WorkflowAnnotationCreatedData {
   executionId: string;
   projectId: string;
-  commentId: string;
+  annotationId: string;
   timestamp: string;
 }
 
@@ -441,8 +441,8 @@ export type WorkflowEvent =
       data: WorkflowCancelledData;
     }
   | {
-      type: typeof WorkflowEventTypes.COMMENT_CREATED;
-      data: WorkflowCommentCreatedData;
+      type: typeof WorkflowEventTypes.ANNOTATION_CREATED;
+      data: WorkflowAnnotationCreatedData;
     };
 
 // ============================================================================

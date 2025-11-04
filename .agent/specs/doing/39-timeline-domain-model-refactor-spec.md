@@ -260,7 +260,7 @@ function applyStepCompleted(
 ### Phase 1: Domain Model Foundation
 
 <!-- prettier-ignore -->
-- [ ] TL-01 Create `timelineModel.ts` with core type definitions
+- [x] TL-01 Create `timelineModel.ts` with core type definitions
   - Define `TimelineModel`, `TimelineItem` (discriminated union)
   - Define `StepTimelineItem` with metadata/display/debug interfaces
   - Define `EventTimelineItem` with metadata/display interfaces
@@ -270,7 +270,7 @@ function applyStepCompleted(
   - File: `apps/web/src/client/pages/projects/workflows/lib/timelineModel.ts`
   - Lines: ~150 (types only)
 
-- [ ] TL-02 Implement `buildStepItems()` helper function
+- [x] TL-02 Implement `buildStepItems()` helper function
   - Filter steps with `started_at` (only started steps appear)
   - For each step: filter annotations by `workflow_execution_step_id`
   - For each step: filter artifacts by `workflow_execution_step_id`
@@ -281,7 +281,7 @@ function applyStepCompleted(
   - File: `apps/web/src/client/pages/projects/workflows/lib/timelineModel.ts`
   - Lines: ~80
 
-- [ ] TL-03 Implement `buildEventItems()` helper function
+- [x] TL-03 Implement `buildEventItems()` helper function
   - Map lifecycle events to `EventTimelineItem`
   - Extract title/body from `event_data`
   - Get display config from `getEventConfig(event.event_type)`
@@ -290,7 +290,7 @@ function applyStepCompleted(
   - File: `apps/web/src/client/pages/projects/workflows/lib/timelineModel.ts`
   - Lines: ~30
 
-- [ ] TL-04 Implement `buildAnnotationItems()` helper function
+- [x] TL-04 Implement `buildAnnotationItems()` helper function
   - Filter standalone annotations (no `workflow_execution_step_id`)
   - Map to `AnnotationTimelineItem`
   - Extract text from event_data.body
@@ -298,7 +298,7 @@ function applyStepCompleted(
   - File: `apps/web/src/client/pages/projects/workflows/lib/timelineModel.ts`
   - Lines: ~20
 
-- [ ] TL-05 Implement `buildExecutionSummary()` helper function
+- [x] TL-05 Implement `buildExecutionSummary()` helper function
   - Count totalSteps, completedSteps, failedSteps, runningSteps, pendingSteps
   - Calculate duration (completedAt - startedAt)
   - Find current phase from latest `phase_started` event
@@ -308,7 +308,7 @@ function applyStepCompleted(
   - File: `apps/web/src/client/pages/projects/workflows/lib/timelineModel.ts`
   - Lines: ~50
 
-- [ ] TL-06 Implement `buildLiveState()` helper function
+- [x] TL-06 Implement `buildLiveState()` helper function
   - Determine `isLive` (execution status === 'running')
   - Find running step IDs
   - Calculate average step duration from completed steps
@@ -316,7 +316,7 @@ function applyStepCompleted(
   - File: `apps/web/src/client/pages/projects/workflows/lib/timelineModel.ts`
   - Lines: ~30
 
-- [ ] TL-07 Implement main `buildTimelineModel()` function
+- [x] TL-07 Implement main `buildTimelineModel()` function
   - Separate annotation events from lifecycle events
   - Call `buildStepItems(steps, annotations, artifacts, execution)`
   - Call `buildEventItems(lifecycleEvents)`
@@ -328,7 +328,7 @@ function applyStepCompleted(
   - File: `apps/web/src/client/pages/projects/workflows/lib/timelineModel.ts`
   - Lines: ~40
 
-- [ ] TL-08 Implement status helper functions
+- [x] TL-08 Implement status helper functions
   - `determineStepStatus(step)` - Returns StepStatus based on error/completed/started
   - `getStatusLabel(status)` - Maps status to display label
   - `getExecutionStatusLabel(status)` - Maps execution status to label
@@ -340,12 +340,21 @@ function applyStepCompleted(
 
 #### Completion Notes
 
-(To be filled in after Phase 1 implementation)
+- Created comprehensive timeline domain model with 540 lines of type-safe TypeScript
+- Implemented all 8 builder functions with full type discrimination
+- Pre-computes all display properties (status, colors, badges, icons) to eliminate component-level calculations
+- Pre-filters and attaches annotations and artifacts to parent steps (O(1) lookups in components)
+- Separates step-attached annotations from standalone annotations for proper rendering
+- Calculates execution summary with progress percentage, step counts, and health status
+- Determines live state with running step IDs and average step duration for progress estimation
+- All helper functions are pure (no side effects) for testability
+- Uses discriminated unions (itemType) for type-safe item rendering
+- Follows immutability patterns (returns new objects, no mutations)
 
 ### Phase 2: WebSocket Update Applier
 
 <!-- prettier-ignore -->
-- [ ] TL-09 Create `applyWorkflowUpdate.ts` with update type definitions
+- [x] TL-09 Create `applyWorkflowUpdate.ts` with update type definitions
   - Define `WebSocketUpdate` discriminated union
   - Define `WorkflowStatusUpdate` interface
   - Define `StepStartedUpdate` interface
@@ -358,57 +367,57 @@ function applyStepCompleted(
   - File: `apps/web/src/client/pages/projects/workflows/lib/applyWorkflowUpdate.ts`
   - Lines: ~60
 
-- [ ] TL-10 Implement `applyWorkflowStatusUpdate()` handler
+- [x] TL-10 Implement `applyWorkflowStatusUpdate()` handler
   - Update execution.status, execution.completed_at, execution.error_message
   - Return new execution object (immutable)
   - File: `apps/web/src/client/pages/projects/workflows/lib/applyWorkflowUpdate.ts`
   - Lines: ~10
 
-- [ ] TL-11 Implement `applyStepStarted()` handler
+- [x] TL-11 Implement `applyStepStarted()` handler
   - Find step by ID, update status to 'running', set started_at
   - Create new `step_started` event and append to execution.events
   - Return new execution object
   - File: `apps/web/src/client/pages/projects/workflows/lib/applyWorkflowUpdate.ts`
   - Lines: ~25
 
-- [ ] TL-12 Implement `applyStepUpdated()` handler
+- [x] TL-12 Implement `applyStepUpdated()` handler
   - Find step by ID, merge partial updates using spread
   - Return new execution object
   - File: `apps/web/src/client/pages/projects/workflows/lib/applyWorkflowUpdate.ts`
   - Lines: ~15
 
-- [ ] TL-13 Implement `applyStepCompleted()` handler
+- [x] TL-13 Implement `applyStepCompleted()` handler
   - Find step by ID, set status to 'completed', set completed_at, update logs
   - Return new execution object
   - File: `apps/web/src/client/pages/projects/workflows/lib/applyWorkflowUpdate.ts`
   - Lines: ~15
 
-- [ ] TL-14 Implement `applyStepFailed()` handler
+- [x] TL-14 Implement `applyStepFailed()` handler
   - Find step by ID, set status to 'failed', set completed_at, set error_message, update logs
   - Return new execution object
   - File: `apps/web/src/client/pages/projects/workflows/lib/applyWorkflowUpdate.ts`
   - Lines: ~15
 
-- [ ] TL-15 Implement `applyEventAdded()` handler
+- [x] TL-15 Implement `applyEventAdded()` handler
   - Append new event to execution.events array
   - Return new execution object
   - File: `apps/web/src/client/pages/projects/workflows/lib/applyWorkflowUpdate.ts`
   - Lines: ~10
 
-- [ ] TL-16 Implement `applyAnnotationAdded()` handler
+- [x] TL-16 Implement `applyAnnotationAdded()` handler
   - Create annotation event object from update data
   - Append to execution.events array
   - Return new execution object
   - File: `apps/web/src/client/pages/projects/workflows/lib/applyWorkflowUpdate.ts`
   - Lines: ~20
 
-- [ ] TL-17 Implement `applyArtifactUploaded()` handler
+- [x] TL-17 Implement `applyArtifactUploaded()` handler
   - Append new artifact to execution.artifacts array
   - Return new execution object
   - File: `apps/web/src/client/pages/projects/workflows/lib/applyWorkflowUpdate.ts`
   - Lines: ~10
 
-- [ ] TL-18 Implement main `applyWorkflowUpdate()` dispatcher
+- [x] TL-18 Implement main `applyWorkflowUpdate()` dispatcher
   - Switch on update.type
   - Call appropriate handler function
   - Return updated execution or original if unknown type
@@ -418,12 +427,20 @@ function applyStepCompleted(
 
 #### Completion Notes
 
-(To be filled in after Phase 2 implementation)
+- Created comprehensive WebSocket update applier with 360 lines of type-safe code
+- Implemented all 8 update handler functions with proper immutability patterns
+- Used discriminated unions for type-safe update routing
+- All handlers return new execution objects (no mutations)
+- applyStepStarted() automatically creates step_started event when step begins execution
+- applyAnnotationAdded() creates comment_added event with proper structure
+- Exhaustiveness checking ensures all update types are handled
+- O(1) performance for most updates (only changed arrays rebuilt)
+- Follows React immutability requirements for proper re-renders
 
 ### Phase 3: Component Integration
 
 <!-- prettier-ignore -->
-- [ ] TL-19 Update `WorkflowExecutionDetail.tsx` to build timeline model
+- [x] TL-19 Update `WorkflowExecutionDetail.tsx` to build timeline model
   - Import `buildTimelineModel` from `./lib/timelineModel`
   - Import `applyWorkflowUpdate` from `./lib/applyWorkflowUpdate`
   - Add `useMemo` to build model: `const model = useMemo(() => buildTimelineModel(execution, execution.steps, execution.events, execution.artifacts), [execution])`
@@ -431,14 +448,14 @@ function applyStepCompleted(
   - File: `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx`
   - Changes: Add imports, add useMemo, change props
 
-- [ ] TL-20 Update WebSocket handler for incremental updates
+- [x] TL-20 Update WebSocket handler for incremental updates
   - In `useEffect` for WebSocket subscription
   - Change from `queryClient.invalidateQueries()` to `queryClient.setQueryData()`
   - Apply update: `queryClient.setQueryData(['workflows', executionId], (old) => applyWorkflowUpdate(old, update))`
   - File: `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx`
   - Changes: Replace invalidate with setQueryData + applyWorkflowUpdate
 
-- [ ] TL-21 Update `WorkflowTimeline.tsx` props and remove filtering
+- [x] TL-21 Update `WorkflowTimeline.tsx` props and remove filtering
   - Change props from `items` to `model: TimelineModel`
   - Remove `stepEventsMap` useMemo (now in domain model)
   - Remove `buildTimeline()` call (now in parent)
@@ -447,7 +464,7 @@ function applyStepCompleted(
   - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowTimeline.tsx`
   - Changes: Props interface, remove useMemo, update render loop
 
-- [ ] TL-22 Update `StepItem.tsx` to use pre-computed data
+- [x] TL-22 Update `StepItem.tsx` to use pre-computed data
   - Change props to `item: StepTimelineItem`
   - Destructure `{ metadata, display, debug, annotations, artifacts }` from item
   - Remove inline `getDuration()` - use `metadata.duration`
@@ -461,7 +478,7 @@ function applyStepCompleted(
   - File: `apps/web/src/client/pages/projects/workflows/components/timeline/StepItem.tsx`
   - Changes: Props, remove calculations, use pre-computed data
 
-- [ ] TL-23 Rename and update `StepComments.tsx` to `StepAnnotations.tsx`
+- [x] TL-23 Rename and update `StepComments.tsx` to `StepAnnotations.tsx`
   - Rename file
   - Update component name to `StepAnnotations`
   - Update props to use `annotations: StepAnnotation[]`
@@ -469,7 +486,7 @@ function applyStepCompleted(
   - File: `apps/web/src/client/pages/projects/workflows/components/timeline/StepAnnotations.tsx` (renamed)
   - Changes: Rename, update text, update types
 
-- [ ] TL-24 Rename and update `StepCommentItem.tsx` to `StepAnnotationItem.tsx`
+- [x] TL-24 Rename and update `StepCommentItem.tsx` to `StepAnnotationItem.tsx`
   - Rename file
   - Update component name to `StepAnnotationItem`
   - Update props to use `annotation: StepAnnotation`
@@ -477,7 +494,7 @@ function applyStepCompleted(
   - File: `apps/web/src/client/pages/projects/workflows/components/timeline/StepAnnotationItem.tsx` (renamed)
   - Changes: Rename, update props, update data access
 
-- [ ] TL-25 Update `EventItem.tsx` to use domain types
+- [x] TL-25 Update `EventItem.tsx` to use domain types
   - Update import to use `EventTimelineItem` from `../lib/timelineModel`
   - Change props to `item: EventTimelineItem`
   - Pass item to child components instead of raw event
@@ -485,7 +502,7 @@ function applyStepCompleted(
   - File: `apps/web/src/client/pages/projects/workflows/components/timeline/EventItem.tsx`
   - Changes: Imports, props, type assertions
 
-- [ ] TL-26 Update all Event*Item.tsx components to use pre-computed display
+- [x] TL-26 Update all Event*Item.tsx components to use pre-computed display
   - For each: `EventWorkflowStartedItem`, `EventWorkflowCompletedItem`, `EventWorkflowFailedItem`, `EventWorkflowPausedItem`, `EventWorkflowResumedItem`, `EventWorkflowCancelledItem`, `EventPhaseStartedItem`, `EventPhaseCompletedItem`, `EventStepStartedItem`
   - Change props to `item: EventTimelineItem`
   - Use `item.metadata.title` instead of extracting from event_data
@@ -494,7 +511,7 @@ function applyStepCompleted(
   - Files: All `Event*Item.tsx` files in `components/timeline/`
   - Changes: Props, use pre-computed display data
 
-- [ ] TL-27 Update `EventCommentItem.tsx` for annotation terminology
+- [x] TL-27 Update `EventCommentItem.tsx` for annotation terminology
   - Update text "Comment Added" to "Annotation Added"
   - Update props if needed to match domain types
   - File: `apps/web/src/client/pages/projects/workflows/components/timeline/EventCommentItem.tsx`
@@ -502,30 +519,41 @@ function applyStepCompleted(
 
 #### Completion Notes
 
-(To be filled in after Phase 3 implementation)
+- WorkflowExecutionDetail successfully builds timeline model using useMemo with execution data
+- WebSocket handler now uses incremental updates via queryClient.setQueryData() + applyWorkflowUpdate()
+- Created helper function applyIncrementalUpdate() that maps WebSocket events to WebSocketUpdate types
+- WebSocket updates no longer invalidate queries (except for workflow list updates)
+- Incremental updates provide O(1) performance for most workflow events (step started, completed, failed)
+- WorkflowTimeline component simplified to pure renderer - no filtering or computation logic
+- StepItem refactored to use pre-computed data from StepTimelineItem domain object
+- All display calculations (duration, status, icons, colors) moved to domain layer
+- Error messages now always display expanded for failed steps
+- Created new StepAnnotations and StepAnnotationItem components replacing StepComments
+- Annotations are pre-filtered for each step in domain model (O(1) component lookups)
+- Type checking passes with no errors after refactor
 
 ### Phase 4: Type System Updates
 
 <!-- prettier-ignore -->
-- [ ] TL-28 Update `types.ts` to re-export domain model types
+- [x] TL-28 Update `types.ts` to re-export domain model types
   - Remove old `TimelineItem` type definition
   - Add re-exports: `export type { TimelineModel, TimelineItem, StepTimelineItem, EventTimelineItem, AnnotationTimelineItem } from './lib/timelineModel'`
   - File: `apps/web/src/client/pages/projects/workflows/types.ts`
   - Changes: Remove old type, add re-exports
 
-- [ ] TL-29 Update server event types to rename comment_added
+- [x] TL-29 Update server event types to rename comment_added
   - Change `'comment_added'` to `'annotation_added'` in WorkflowEventType union
   - Update EventDataMap to use `annotation_added` key
   - File: `apps/web/src/server/domain/workflow/types/event.types.ts`
   - Changes: Rename event type
 
-- [ ] TL-30 Update `eventConfig.ts` to use annotation_added
+- [x] TL-30 Update `eventConfig.ts` to use annotation_added
   - Rename `comment_added` key to `annotation_added` in EVENT_CONFIG
   - Update label to "Annotation" instead of "Comment"
   - File: `apps/web/src/client/pages/projects/workflows/lib/eventConfig.ts`
   - Changes: Rename key, update label
 
-- [ ] TL-31 Search and replace comment references
+- [x] TL-31 Search and replace comment references
   - Search codebase for "comment_added" string literals
   - Replace with "annotation_added"
   - Search for "Comment" in timeline-related components
@@ -537,7 +565,17 @@ function applyStepCompleted(
 
 #### Completion Notes
 
-(To be filled in after Phase 4 implementation)
+- Removed old `TimelineItem` type definition from types.ts and added re-exports of all domain model types
+- Renamed `comment_added` to `annotation_added` in both server and client event type definitions
+- Updated EventDataMap to use `annotation_added` key in both backend and frontend
+- Updated eventConfig.ts to use `annotation_added` with "Annotation" label
+- Replaced all references to "comment_added" string literals with "annotation_added" throughout the codebase
+- Updated user-facing strings in useWorkflowMutations.ts ("Comment added" → "Annotation added")
+- Updated function names (useCreateComment → useCreateAnnotation)
+- Deleted old StepComments.tsx and StepCommentItem.tsx files (replaced by StepAnnotations components)
+- Updated EventItem.tsx switch case to handle annotation_added event type
+- Updated comments in code to reflect annotation terminology
+- Maintained backward compatibility in API endpoints (still using /comments endpoint for now)
 
 ### Phase 5: Performance Optimization (Optional)
 

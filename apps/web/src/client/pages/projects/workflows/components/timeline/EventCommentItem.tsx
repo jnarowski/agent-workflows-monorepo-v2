@@ -1,26 +1,29 @@
+import { MessageSquare } from "lucide-react";
 import { TimelineRow } from "./TimelineRow";
 import { TimelineHeader } from "./TimelineHeader";
 import { formatRelativeTime } from "../../utils/workflowFormatting";
-import { getEventConfig } from "../../lib/eventConfig";
-import type { EventCommentItemProps } from "./types";
+import type { AnnotationTimelineItem } from "../../lib/timelineModel";
+
+export interface EventCommentItemProps {
+  annotation: AnnotationTimelineItem;
+}
 
 /**
- * Comment event timeline item
- * Standardized using shared TimelineRow + TimelineHeader + TimelineBody components
+ * Annotation event timeline item (formerly "comment")
+ * Standardized using shared TimelineRow + TimelineHeader components
+ * Uses pre-computed display properties from domain model
  */
-export function EventCommentItem({ event }: EventCommentItemProps) {
-  // Type-safe access to comment data (already parsed by backend)
-  const { body } = event.event_data;
-
-  // Standalone mode: Use standardized shared components
-  const config = getEventConfig("comment_added");
+export function EventCommentItem({ annotation }: EventCommentItemProps) {
+  // Type-safe access to annotation data
+  const body = annotation.metadata.text || "";
+  const username = annotation.metadata.created_by_username || "System";
 
   return (
-    <TimelineRow icon={config.icon} iconColor={config.iconColor}>
+    <TimelineRow icon={MessageSquare} iconColor="bg-accent text-accent-foreground">
       <TimelineHeader
-        title="Comment Added"
+        title={`Annotation by ${username}`}
         subtitle={body}
-        metadata={formatRelativeTime(event.created_at)}
+        metadata={formatRelativeTime(annotation.event.created_at)}
       />
     </TimelineRow>
   );

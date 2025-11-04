@@ -130,11 +130,11 @@ export function registerWorkflowEventListeners(
     });
   });
 
-  // Comment created
-  eventBus.on('workflow:comment:created', (data: WorkflowCommentCreatedData) => {
-    logger?.debug({ data }, 'Workflow comment created event');
+  // Annotation created
+  eventBus.on('workflow:annotation:created', (data: WorkflowAnnotationCreatedData) => {
+    logger?.debug({ data }, 'Workflow annotation created event');
     broadcast(Channels.project(data.projectId), {
-      type: WorkflowEventTypes.COMMENT_CREATED,
+      type: WorkflowEventTypes.ANNOTATION_CREATED,
       data,
     });
   });

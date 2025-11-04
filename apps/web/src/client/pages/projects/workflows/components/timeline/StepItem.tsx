@@ -1,10 +1,10 @@
 import { useState } from "react";
-import type { WorkflowExecutionStep, WorkflowEvent } from "../../types";
+import type { StepTimelineItem } from "../../lib/timelineModel";
 import { TimelineRow } from "./TimelineRow";
 import { TimelineHeader } from "./TimelineHeader";
 import { TimelineBody } from "./TimelineBody";
 import { WorkflowStatusBadge } from "../WorkflowStatusBadge";
-import { StepComments } from "./StepComments";
+import { StepAnnotations } from "./StepAnnotations";
 import { ArtifactList } from "../ArtifactList";
 import { ErrorDisplay } from "../ErrorDisplay";
 import { AgentSessionModal } from "../AgentSessionModal";
@@ -15,18 +15,25 @@ import {
 import { ExternalLink, Workflow, MessageSquare } from "lucide-react";
 
 export interface StepItemProps {
-  step: WorkflowExecutionStep;
+  item: StepTimelineItem;
   projectId: string;
-  stepEvents: WorkflowEvent[];
 }
 
 /**
  * Workflow execution step timeline item
- * Shows step details, logs, errors, artifacts, and comments
+ * Shows step details, logs, errors, artifacts, and annotations
+ *
+ * All display properties (status, colors, badges, durations) are pre-computed
+ * in the domain model. This component is a "dumb renderer" that consumes
+ * the enriched StepTimelineItem data.
  */
-export function StepItem({ step, projectId, stepEvents }: StepItemProps) {
+export function StepItem({ item, projectId }: StepItemProps) {
+  // Destructure pre-computed data from domain model
+  const { step, metadata, display, debug, annotations, artifacts } = item;
+
+  // Auto-expand for errors or running steps, expand for highlighted steps
   const [isExpanded, setIsExpanded] = useState(
-    step.status === "running" || step.status === "failed"
+    debug.hasError || display.isPulsing || display.isHighlighted
   );
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
@@ -36,12 +43,8 @@ export function StepItem({ step, projectId, stepEvents }: StepItemProps) {
     null
   );
 
-  const hasLogs = step.logs && step.logs.trim().length > 0;
-  const hasError = step.error_message && step.error_message.trim().length > 0;
-  const hasArtifacts = step.artifacts && step.artifacts.length > 0;
-  const hasComments = stepEvents.length > 0;
   const hasContent =
-    hasLogs || hasError || hasArtifacts || hasComments || step.agent_session_id;
+    display.hasLogs || debug.hasError || display.hasArtifacts || display.hasAnnotations || metadata.agentSessionId;
 
   const handleSessionClick = (sessionId: string, stepName: string) => {
     setSelectedSessionId(sessionId);
@@ -49,35 +52,17 @@ export function StepItem({ step, projectId, stepEvents }: StepItemProps) {
     setModalOpen(true);
   };
 
-  const getDuration = () => {
-    if (step.completed_at && step.started_at) {
-      const duration =
-        new Date(step.completed_at).getTime() -
-        new Date(step.started_at).getTime();
-      const seconds = Math.floor(duration / 1000);
-      return `${seconds}s`;
-    }
-    return null;
-  };
-
-  const getTimeDisplay = () => {
-    if (step.started_at) {
-      return formatRelativeTime(step.started_at);
-    }
-    return "Not started";
-  };
-
   return (
-    <TimelineRow icon={Workflow} iconColor="bg-primary text-primary-foreground">
+    <TimelineRow icon={Workflow} iconColor={display.iconColor}>
       <TimelineHeader
-        title={formatStepName(step.step_name)}
+        title={formatStepName(metadata.name)}
         metadata={
           <>
-            <span>{getTimeDisplay()}</span>
-            {getDuration() && (
+            <span>{formatRelativeTime(metadata.startedAt)}</span>
+            {metadata.duration && (
               <>
                 <span>•</span>
-                <span>{getDuration()}</span>
+                <span>{Math.floor(metadata.duration / 1000)}s</span>
               </>
             )}
             {step.phase_name && (
@@ -88,7 +73,7 @@ export function StepItem({ step, projectId, stepEvents }: StepItemProps) {
             )}
           </>
         }
-        badge={<WorkflowStatusBadge status={step.status} size="sm" />}
+        badge={<WorkflowStatusBadge status={display.status} size="sm" />}
         onClick={hasContent ? () => setIsExpanded(!isExpanded) : undefined}
         isExpandable={hasContent}
       />
@@ -100,13 +85,13 @@ export function StepItem({ step, projectId, stepEvents }: StepItemProps) {
         >
           <div className="space-y-3">
             {/* Agent session link */}
-            {step.agent_session_id && (
+            {metadata.agentSessionId && (
               <div className="flex items-center gap-2 text-sm">
                 <button
                   onClick={() =>
                     handleSessionClick(
-                      step.agent_session_id!,
-                      formatStepName(step.step_name)
+                      metadata.agentSessionId!,
+                      formatStepName(metadata.name)
                     )
                   }
                   className="inline-flex items-center gap-1 text-primary hover:underline"
@@ -117,7 +102,7 @@ export function StepItem({ step, projectId, stepEvents }: StepItemProps) {
 
                 {/* Fallback link for new tab */}
                 <a
-                  href={`/projects/${projectId}/session/${step.agent_session_id}`}
+                  href={`/projects/${projectId}/session/${metadata.agentSessionId}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-muted-foreground hover:underline"
@@ -127,11 +112,11 @@ export function StepItem({ step, projectId, stepEvents }: StepItemProps) {
               </div>
             )}
 
-            {/* Error message */}
-            {hasError && <ErrorDisplay error={step.error_message!} />}
+            {/* Error message - always expanded for failed steps */}
+            {debug.hasError && <ErrorDisplay error={debug.errorMessage!} expanded />}
 
             {/* Logs */}
-            {hasLogs && (
+            {display.hasLogs && (
               <div>
                 <p className="text-sm font-medium mb-2">Logs</p>
                 <div className="rounded-md bg-muted p-3 max-h-64 overflow-y-auto">
@@ -143,17 +128,17 @@ export function StepItem({ step, projectId, stepEvents }: StepItemProps) {
             )}
 
             {/* Artifacts */}
-            {hasArtifacts && <ArtifactList artifacts={step.artifacts!} />}
+            {display.hasArtifacts && <ArtifactList artifacts={artifacts} />}
 
-            {/* Step comments */}
-            <StepComments stepEvents={stepEvents} />
+            {/* Step annotations (pre-filtered for this step) */}
+            {display.hasAnnotations && <StepAnnotations stepEvents={annotations} />}
 
             {/* Empty state */}
-            {!hasLogs &&
-              !hasError &&
-              !hasArtifacts &&
-              !hasComments &&
-              !step.agent_session_id && (
+            {!display.hasLogs &&
+              !debug.hasError &&
+              !display.hasArtifacts &&
+              !display.hasAnnotations &&
+              !metadata.agentSessionId && (
                 <div className="py-4 text-center text-sm text-muted-foreground">
                   No additional details available
                 </div>

@@ -1,11 +1,10 @@
-import { useMemo } from "react";
-import type { TimelineItem, WorkflowEvent } from "../types";
+import type { TimelineModel } from "../lib/timelineModel";
 import { StepItem } from "./timeline/StepItem";
 import { EventItem } from "./timeline/EventItem";
 import { EventCommentItem } from "./timeline/EventCommentItem";
 
 interface WorkflowTimelineProps {
-  items: TimelineItem[];
+  model: TimelineModel;
   projectId: string;
 }
 
@@ -13,31 +12,14 @@ interface WorkflowTimelineProps {
  * Vertical timeline displaying workflow steps and events chronologically
  *
  * Renders a timeline with visual line connector showing the chronological flow
- * of all workflow activities (steps, comments, system events, phase transitions).
+ * of all workflow activities (steps, annotations, system events, phase transitions).
+ *
+ * The timeline model is pre-computed with all display properties, filtering,
+ * and calculations performed in the domain layer. This component is a "dumb renderer"
+ * that just maps over the model items.
  */
-export function WorkflowTimeline({ items, projectId }: WorkflowTimelineProps) {
-  // Memoize step events filtering for performance
-  const stepEventsMap = useMemo(() => {
-    const map = new Map<string, WorkflowEvent[]>();
-
-    items.forEach((item) => {
-      if (
-        item.type === "event" &&
-        item.data.workflow_execution_step_id &&
-        item.data.event_type === "comment_added"
-      ) {
-        const stepId = item.data.workflow_execution_step_id;
-        if (!map.has(stepId)) {
-          map.set(stepId, []);
-        }
-        map.get(stepId)!.push(item.data);
-      }
-    });
-
-    return map;
-  }, [items]);
-
-  if (items.length === 0) {
+export function WorkflowTimeline({ model, projectId }: WorkflowTimelineProps) {
+  if (model.items.length === 0) {
     return (
       <div className="flex items-center justify-center py-12 text-muted-foreground">
         <p>No timeline events to display</p>
@@ -51,38 +33,34 @@ export function WorkflowTimeline({ items, projectId }: WorkflowTimelineProps) {
         {/* Vertical timeline connector line */}
         <div className="absolute left-0 inset-y-0 border-l-2" />
 
-        {/* Timeline items - registry-based routing */}
-        {items.map((item) => {
-          const key = `${item.type}-${item.data.id}`;
+        {/* Timeline items - domain model based routing */}
+        {model.items.map((item) => {
+          const key = `${item.itemType}-${item.id}`;
 
-          // Route to appropriate component based on item type
-          switch (item.type) {
+          // Route to appropriate component based on item type (discriminated union)
+          switch (item.itemType) {
             case "step":
               return (
                 <StepItem
                   key={key}
-                  step={item.data}
+                  item={item}
                   projectId={projectId}
-                  stepEvents={stepEventsMap.get(item.data.id) || []}
                 />
               );
 
             case "event":
-              // Check if this is a comment event (not nested in a step)
-              if (
-                item.data.event_type === "comment_added" &&
-                !item.data.workflow_execution_step_id
-              ) {
-                return <EventCommentItem key={key} event={item.data} />;
-              }
-              return <EventItem key={key} event={item.data} />;
+              return <EventItem key={key} item={item} />;
 
-            case "comment":
-              return <EventCommentItem key={key} event={item.data} />;
+            case "annotation":
+              // Standalone annotation (not attached to a step)
+              return <EventCommentItem key={key} annotation={item} />;
 
-            default:
-              console.warn(`Unknown timeline item type: ${(item as any).type}`);
+            default: {
+              // TypeScript exhaustiveness check
+              const _exhaustive: never = item;
+              console.warn('Unknown timeline item type:', _exhaustive);
               return null;
+            }
           }
         })}
       </div>
