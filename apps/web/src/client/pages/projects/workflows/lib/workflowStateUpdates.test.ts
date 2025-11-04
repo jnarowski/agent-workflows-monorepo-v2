@@ -15,7 +15,7 @@ import {
   applyEventCreated,
 } from './workflowStateUpdates';
 import type { WorkflowExecution, WorkflowEvent } from '../types';
-import { WorkflowStatus, StepStatus } from '../types';
+import { WorkflowStatus, StepStatus } from '@/shared/schemas';
 
 // ============================================================================
 // Mock Data
@@ -44,8 +44,8 @@ const mockExecutionWithSteps: WorkflowExecution = {
     {
       id: 'step-1',
       workflow_execution_id: 'exec-1',
-      step_name: 'Step 1',
-      phase_name: 'Phase 1',
+      name: 'Step 1',
+      phase: 'Phase 1',
       status: StepStatus.PENDING,
       logs: null,
       error_message: null,
@@ -58,8 +58,8 @@ const mockExecutionWithSteps: WorkflowExecution = {
     {
       id: 'step-2',
       workflow_execution_id: 'exec-1',
-      step_name: 'Step 2',
-      phase_name: 'Phase 1',
+      name: 'Step 2',
+      phase: 'Phase 1',
       status: StepStatus.PENDING,
       logs: null,
       error_message: null,

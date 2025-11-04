@@ -1,3 +1,9 @@
+import {
+  WorkflowStatus,
+  StepStatus,
+  type WorkflowEventType,
+} from "@/shared/schemas";
+
 export interface WorkflowDefinition {
   id: string;
   name: string;
