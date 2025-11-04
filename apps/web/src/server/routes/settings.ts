@@ -11,6 +11,7 @@ import { buildSuccessResponse } from "@/server/utils/response";
 import { getCapabilities } from "@repo/agent-cli-sdk";
 import { config } from "@/server/config/Configuration";
 import { prisma } from "@/shared/prisma";
+import '@/server/plugins/auth';
 
 const execAsync = promisify(exec);
 
@@ -58,7 +59,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const userId = request.user!.id;
+      const userId = (request.user! as { id: string }).id;
       const ghInstalled = await checkGhInstalled();
 
       fastify.log.info({ userId }, "Fetching settings");
@@ -110,7 +111,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = request.user!.id;
+      const userId = (request.user! as { id: string }).id;
       const updates = request.body;
 
       fastify.log.info({ userId, updates }, "Updating user settings");

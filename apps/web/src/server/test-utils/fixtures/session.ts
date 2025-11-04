@@ -1,4 +1,4 @@
-import { PrismaClient, AgentType, SessionState } from "@prisma/client";
+import { PrismaClient, AgentType, SessionState, Prisma } from "@prisma/client";
 
 /**
  * Creates a test agent session
@@ -41,7 +41,7 @@ export async function createTestSession(
       state,
       cli_session_id,
       session_path,
-      metadata,
+      metadata: metadata as Prisma.InputJsonValue,
       error_message,
     },
   });

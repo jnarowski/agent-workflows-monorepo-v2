@@ -6,6 +6,7 @@ import {
   getWorkflowEventsQuerySchema,
 } from "@/shared/schemas/workflow.schemas";
 import { createWorkflowEvent } from "@/server/domain/workflow/services/events/createWorkflowEvent";
+import '@/server/plugins/auth';
 
 const executionIdSchema = z.object({
   id: z.string().cuid(),
@@ -30,14 +31,14 @@ export async function workflowEventRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = request.user!.id;
+      const userId = (request.user! as { id: string }).id;
       const body = request.body;
 
       const event = await createWorkflowEvent({
         workflow_execution_id: id,
         workflow_execution_step_id: body.step_id,
-        event_type: body.event_type || "annotation_added",
-        event_data: { text: body.text },
+        event_type: "annotation_added" as const,
+        event_data: { title: "Annotation", body: body.text },
         created_by_user_id: userId,
         logger: fastify.log,
       });

@@ -16,6 +16,7 @@ import {
 import { NotFoundError } from "@/server/errors";
 import { scanProjectWorkflows } from "@/server/domain/workflow/services/engine";
 import { prisma } from "@/shared/prisma";
+import '@/server/plugins/auth';
 
 // Params schema
 const executionIdSchema = z.object({
@@ -38,7 +39,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = request.user!.id as string;
+      const userId = (request.user! as { id: string }).id;
       const body = request.body;
 
       fastify.log.info(
@@ -96,7 +97,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = request.user!.id as string;
+      const userId = (request.user! as { id: string }).id;
       const { project_id, status } = request.query;
 
       if (!project_id) {
@@ -136,7 +137,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = request.user!.id as string;
+      const userId = (request.user! as { id: string }).id;
 
       fastify.log.info(
         { userId, executionId: id },
@@ -176,7 +177,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = request.user!.id as string;
+      const userId = (request.user! as { id: string }).id;
 
       fastify.log.info(
         { userId, executionId: id },
@@ -223,7 +224,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = request.user!.id as string;
+      const userId = (request.user! as { id: string }).id;
 
       fastify.log.info(
         { userId, executionId: id },
@@ -270,7 +271,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = request.user!.id as string;
+      const userId = (request.user! as { id: string }).id;
 
       fastify.log.info(
         { userId, executionId: id },
@@ -313,7 +314,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { projectId } = request.params;
-      const userId = request.user!.id as string;
+      const userId = (request.user! as { id: string }).id;
 
       fastify.log.info({ userId, projectId }, "Refreshing project workflows");
 
@@ -326,25 +327,18 @@ export async function workflowRoutes(fastify: FastifyInstance) {
         throw new NotFoundError("Project not found");
       }
 
-      // Verify user owns project
-      if (project.user_id !== userId) {
-        return reply
-          .code(403)
-          .send({ error: { message: "Access denied", statusCode: 403 } });
-      }
-
       // Scan project for workflows
-      const workflows = await scanProjectWorkflows(
+      const discovered = await scanProjectWorkflows(
         projectId,
         project.path,
-        fastify
+        fastify.workflowOrchestrator,
+        fastify.log
       );
 
       return reply.send({
         data: {
           projectId,
-          discovered: workflows.length,
-          workflows,
+          discovered,
         },
       });
     }
@@ -368,7 +362,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { projectId } = request.params;
-      const userId = request.user!.id as string;
+      const userId = (request.user! as { id: string }).id;
 
       fastify.log.info({ userId, projectId }, "Fetching project workflows");
 
@@ -379,13 +373,6 @@ export async function workflowRoutes(fastify: FastifyInstance) {
 
       if (!project) {
         throw new NotFoundError("Project not found");
-      }
-
-      // Verify user owns project
-      if (project.user_id !== userId) {
-        return reply
-          .code(403)
-          .send({ error: { message: "Access denied", statusCode: 403 } });
       }
 
       // Get workflow definitions for project
