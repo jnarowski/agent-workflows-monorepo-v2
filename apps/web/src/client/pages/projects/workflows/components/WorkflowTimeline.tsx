@@ -1,4 +1,4 @@
-import type { TimelineModel } from "../lib/buildTimelineModel";
+import type { TimelineModel } from "../utils/lib/buildTimelineModel";
 import { StepItem } from "./timeline/StepItem";
 import { EventItem } from "./timeline/EventItem";
 import { EventAnnotationItem } from "./timeline/EventAnnotationItem";

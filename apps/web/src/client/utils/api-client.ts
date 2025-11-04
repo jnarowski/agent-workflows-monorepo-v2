@@ -2,7 +2,7 @@
  * Centralized API client with automatic auth header injection and global 401 handling
  */
 
-import { getAuthToken } from '@/client/lib/auth';
+import { getAuthToken } from '@/client/utils/auth';
 import { useAuthStore } from '@/client/stores/authStore';
 import { ApiError, type ApiErrorResponse } from '@/shared/types/api-error.types';
 import type { UnifiedMessage } from "@/shared/types/message.types";

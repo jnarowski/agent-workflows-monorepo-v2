@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/client/lib/api-client';
+import { api } from '@/client/utils/api-client';
 
 type AgentType = 'claude' | 'codex' | 'gemini' | 'cursor';
 

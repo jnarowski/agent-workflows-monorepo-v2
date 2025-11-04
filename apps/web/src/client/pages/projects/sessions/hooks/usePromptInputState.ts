@@ -1,11 +1,11 @@
 import { useState, useRef, useCallback } from "react";
 import type { PromptInputController } from "@/client/components/ai-elements/PromptInput";
 import type { ClaudePermissionMode } from "@repo/agent-cli-sdk";
-import { PERMISSION_MODES } from "@/client/lib/permissionModes";
+import { PERMISSION_MODES } from "@/client/utils/permissionModes";
 import {
   insertAtCursor,
   removeAllOccurrences,
-} from "@/client/pages/projects/files/lib/fileUtils";
+} from "@/client/pages/projects/files/utils/fileUtils";
 
 const SUBMITTING_TIMEOUT = 200;
 const STREAMING_TIMEOUT = 2000;

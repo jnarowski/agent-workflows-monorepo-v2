@@ -32,7 +32,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
-import { truncatePath } from "@/client/lib/utils";
+import { truncatePath } from "@/client/utils/cn";
 
 export default function ProjectHome() {
   const { id } = useParams<{ id: string }>();

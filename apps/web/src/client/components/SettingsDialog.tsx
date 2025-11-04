@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/client/components/ui/radio-group';
 import { Loader2, Sun, Moon, Monitor } from 'lucide-react';
 import { useSettings, useUpdateSettings } from '@/client/hooks/useSettings';
-import { PERMISSION_MODES } from '@/client/lib/permissionModes';
+import { PERMISSION_MODES } from '@/client/utils/permissionModes';
 import { useTheme } from 'next-themes';
 
 export interface SettingsDialogProps {

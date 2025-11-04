@@ -1,12 +1,12 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useShell } from "@/client/pages/projects/shell/contexts/ShellContext";
-import { getAuthToken } from '@/client/lib/auth';
+import { getAuthToken } from '@/client/utils/auth';
 import {
   ShellEventTypes,
   type ShellEvent,
 } from '@/shared/types/websocket.types';
 import { isShellEvent } from '@/shared/websocket';
-import { calculateReconnectDelay } from '@/client/lib/reconnectionStrategy';
+import { calculateReconnectDelay } from '@/client/utils/reconnectionStrategy';
 
 interface UseShellWebSocketOptions {
   sessionId: string;

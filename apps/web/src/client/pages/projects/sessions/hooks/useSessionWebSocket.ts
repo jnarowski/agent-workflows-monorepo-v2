@@ -9,7 +9,7 @@ import {
 } from "@/shared/types/websocket.types";
 import { Channels } from "@/shared/websocket";
 import { sessionKeys } from "./useAgentSessions";
-import { generateUUID } from "@/client/lib/utils";
+import { generateUUID } from "@/client/utils/cn";
 import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import type { ProjectWithSessions } from "@/shared/types/project.types";
 import type { ClaudePermissionMode, AgentType } from "@repo/agent-cli-sdk";

@@ -5,7 +5,7 @@ import {
   PromptInputPermissionModeSelectTrigger,
   PromptInputPermissionModeSelectValue,
 } from "@/client/components/ai-elements/PromptInput";
-import { PERMISSION_MODES } from "@/client/lib/permissionModes";
+import { PERMISSION_MODES } from "@/client/utils/permissionModes";
 import type { ClaudePermissionMode } from "@repo/agent-cli-sdk";
 
 export interface PermissionModeSelectorProps {

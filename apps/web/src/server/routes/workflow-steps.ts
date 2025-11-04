@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { getWorkflowStepById } from '@/server/domain/workflow/services';
-import { NotFoundError } from '@/server/utils/error';
+import { NotFoundError } from '@/server/errors';
 
 const stepIdSchema = z.object({
   id: z.string().cuid(),

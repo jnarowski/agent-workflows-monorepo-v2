@@ -25,7 +25,7 @@ import {
   AppError,
   ConflictError,
   buildErrorResponse
-} from '@/server/utils/error';
+} from '@/server/errors';
 import { ServiceUnavailableError } from '@/server/errors/ServiceUnavailableError';
 
 const __filename = fileURLToPath(import.meta.url);

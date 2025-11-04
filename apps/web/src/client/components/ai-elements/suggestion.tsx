@@ -2,7 +2,7 @@
 
 import { type ReactNode } from 'react';
 import { Button } from "@/client/components/ui/button";
-import { cn } from "@/client/lib/utils";
+import { cn } from "@/client/utils/cn";
 
 interface SuggestionsProps {
   children: ReactNode;

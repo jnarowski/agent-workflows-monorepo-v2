@@ -3,7 +3,7 @@ import { useSessionStore, selectTotalTokens } from "./sessionStore";
 import type { UIMessage } from "@/shared/types/message.types";
 
 // Mock the agents module
-vi.mock("@/client/lib/agents");
+vi.mock("@/client/utils/agents");
 
 // Mock fetch globally
 global.fetch = vi.fn();

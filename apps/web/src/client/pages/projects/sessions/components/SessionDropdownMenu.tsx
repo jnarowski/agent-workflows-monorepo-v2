@@ -9,7 +9,7 @@ import {
 import { SessionDialog } from "./SessionDialog";
 import { SessionFileViewer } from "./SessionFileViewer";
 import { useUpdateSession } from "../hooks/useAgentSessions";
-import { cn } from "@/client/lib/utils";
+import { cn } from "@/client/utils/cn";
 import type { SessionResponse } from "@/shared/types";
 
 interface SessionDropdownMenuProps {

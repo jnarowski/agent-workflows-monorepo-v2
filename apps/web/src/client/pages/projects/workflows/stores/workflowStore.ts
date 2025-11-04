@@ -17,7 +17,7 @@ import {
   applyStepFailed,
   applyPhaseCompleted,
   applyEventCreated,
-} from '../lib/workflowStateUpdates';
+} from '../utils/lib/workflowStateUpdates';
 
 interface WorkflowStore {
   // State

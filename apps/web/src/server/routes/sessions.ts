@@ -15,7 +15,7 @@ import {
 } from "@/server/domain/session/schemas";
 import { errorResponse } from "@/server/schemas/response";
 import type { CreateSessionRequest } from "@/shared/types/agent-session.types";
-import { buildErrorResponse } from "@/server/utils/error";
+import { buildErrorResponse } from "@/server/errors";
 import { prisma } from "@/shared/prisma";
 import fs from "fs/promises";
 

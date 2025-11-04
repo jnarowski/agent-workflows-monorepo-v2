@@ -3,7 +3,7 @@
 import type { ComponentProps } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/client/lib/utils";
+import { cn } from "@/client/utils/cn";
 import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
 import { Textarea } from "@/client/components/ui/textarea";

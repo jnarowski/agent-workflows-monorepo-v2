@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '@/shared/prisma';
 import { buildSuccessResponse } from '@/server/utils/response';
-import { NotFoundError } from '@/server/utils/error';
+import { NotFoundError } from '@/server/errors';
 
 /**
  * Zod schemas for workflow definitions

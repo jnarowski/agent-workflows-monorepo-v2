@@ -10,7 +10,7 @@ import {
 } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation";
 import { useNavigationStore } from "@/client/stores/index";
-import { generateUUID } from "@/client/lib/utils";
+import { generateUUID } from "@/client/utils/cn";
 import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
 import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 

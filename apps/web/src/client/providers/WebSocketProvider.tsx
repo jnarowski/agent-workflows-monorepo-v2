@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import { WebSocketEventBus } from "@/client/lib/WebSocketEventBus";
-import { wsMetrics } from "@/client/lib/WebSocketMetrics";
+import { WebSocketEventBus } from "@/client/utils/WebSocketEventBus";
+import { wsMetrics } from "@/client/utils/WebSocketMetrics";
 import {
   calculateReconnectDelay,
   DEFAULT_MAX_RECONNECT_DELAY,
-} from "@/client/lib/reconnectionStrategy";
+} from "@/client/utils/reconnectionStrategy";
 import { ReadyState, GlobalEventTypes, type ChannelEvent, type GlobalEvent } from "@/shared/types/websocket.types";
 import { useAuthStore } from "@/client/stores/authStore";
 import {

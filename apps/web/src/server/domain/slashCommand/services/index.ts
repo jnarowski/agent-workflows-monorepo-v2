@@ -1,0 +1,1 @@
+export { getProjectSlashCommands } from './getProjectSlashCommands';

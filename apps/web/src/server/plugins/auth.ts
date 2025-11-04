@@ -3,7 +3,7 @@ import fastifyJwt from "@fastify/jwt";
 import fastifyPlugin from "fastify-plugin";
 import { prisma } from "@/shared/prisma";
 import { JWTPayload } from "@/server/utils/auth";
-import { buildErrorResponse } from "@/server/utils/error";
+import { buildErrorResponse } from "@/server/errors";
 import { config } from "@/server/config/Configuration";
 
 async function authPluginFunction(fastify: FastifyInstance) {

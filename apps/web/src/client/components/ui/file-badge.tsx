@@ -1,4 +1,4 @@
-import { getFileTypeInfo } from '@/client/pages/projects/files/lib/fileUtils';
+import { getFileTypeInfo } from '@/client/pages/projects/files/utils/fileUtils';
 
 interface FileBadgeProps {
   extension: string;

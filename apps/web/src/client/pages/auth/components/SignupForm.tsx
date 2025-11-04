@@ -1,4 +1,4 @@
-import { cn } from "@/client/lib/utils";
+import { cn } from "@/client/utils/cn";
 import { AuthFormCard } from "@/client/pages/auth/components/AuthFormCard";
 import { LoadingButton } from "@/client/components/ui/loading-button";
 import {

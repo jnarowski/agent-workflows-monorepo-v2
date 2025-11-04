@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/client/lib/api-client';
+import { api } from '@/client/utils/api-client';
 import { toast } from 'sonner';
 import type { WorkflowExecution, WorkflowEvent, WorkflowArtifact } from '../types';
 

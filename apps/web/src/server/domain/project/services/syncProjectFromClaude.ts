@@ -135,30 +135,6 @@ async function extractProjectDirectory(projectName: string): Promise<string> {
 }
 
 /**
- * Check if a project directory has more than minSessions sessions
- * @param projectName - Encoded project name from filesystem
- * @param minSessions - Minimum session count (default 3)
- * @returns True if project has more than minSessions
- */
-export async function hasEnoughSessions(
-  projectName: string,
-  minSessions: number = 3
-): Promise<boolean> {
-  const projectDir = path.join(getClaudeProjectsDir(), projectName);
-
-  try {
-    await fs.access(projectDir);
-    const files = await fs.readdir(projectDir);
-    const jsonlFiles = files.filter(isValidSessionFile);
-
-    // Check if project has more than minSessions sessions
-    return jsonlFiles.length > minSessions;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Sync projects from Claude CLI ~/.claude/projects/ directory
  * Only imports projects with more than 3 sessions
  * @param userId - User ID for session sync
@@ -192,6 +168,9 @@ export async function syncFromClaudeProjects(
 
   // Filter for directories only
   const projectDirs = entries.filter((entry) => entry.isDirectory());
+
+  // Import hasEnoughSessions to avoid code duplication
+  const { hasEnoughSessions } = await import('./hasEnoughSessions');
 
   // Process each project directory
   for (const projectDir of projectDirs) {

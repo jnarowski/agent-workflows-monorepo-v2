@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import {
   applyWorkflowUpdate,
   type WebSocketUpdate,
-} from "../lib/applyWorkflowUpdate";
+} from "../utils/lib/applyWorkflowUpdate";
 import type { WorkflowExecution } from "../types";
 
 export function useWorkflowWebSocket(projectId: string) {

@@ -13,7 +13,7 @@ import {
   createWorkflowExecutionSchema,
   workflowExecutionFiltersSchema,
 } from "@/shared/schemas";
-import { NotFoundError } from "@/server/utils/error";
+import { NotFoundError } from "@/server/errors";
 
 // Params schema
 const executionIdSchema = z.object({

@@ -5,7 +5,7 @@ import { prisma } from '@/shared/prisma';
 import { registerSchema, loginSchema, authResponseSchema, authStatusResponseSchema, userResponseSchema } from '@/server/domain/auth/schemas';
 import { errorResponse } from '@/server/domain/common/schemas';
 import type { JWTPayload } from '@/server/utils/auth';
-import { buildErrorResponse } from '@/server/utils/error';
+import { buildErrorResponse } from '@/server/errors';
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Check auth status and setup requirements

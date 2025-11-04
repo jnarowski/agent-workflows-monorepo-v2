@@ -149,7 +149,7 @@ export type {
   AnnotationTimelineItem,
   ExecutionSummary,
   LiveState,
-} from "./lib/buildTimelineModel";
+} from "./utils/buildTimelineModel";
 
 // Filter types
 export interface WorkflowFilter {

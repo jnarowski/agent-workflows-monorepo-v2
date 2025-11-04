@@ -3,7 +3,7 @@ import type {
   FileTreeItem,
   FilesResponse,
 } from "@/shared/types/file.types";
-import { api } from "@/client/lib/api-client";
+import { api } from "@/client/utils/api-client";
 
 // Query keys factory - centralized key management
 export const fileKeys = {

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useWebSocket } from '@/client/hooks/useWebSocket';
-import { wsMetrics } from '@/client/lib/WebSocketMetrics';
+import { wsMetrics } from '@/client/utils/WebSocketMetrics';
 import { type ChannelEvent } from '@/shared/types/websocket.types';
 import { useDebugMode } from '@/client/hooks/useDebugMode';
 

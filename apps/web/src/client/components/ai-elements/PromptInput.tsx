@@ -39,7 +39,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/client/components/ui/tooltip";
-import { cn } from "@/client/lib/utils";
+import { cn } from "@/client/utils/cn";
 import type { ChatStatus, FileUIPart } from "ai";
 import {
   ImageIcon,

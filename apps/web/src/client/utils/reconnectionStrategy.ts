@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import { calculateReconnectDelay } from '@/client/lib/reconnectionStrategy';
+ * import { calculateReconnectDelay } from '@/client/utils/reconnectionStrategy';
  *
  * // Use default delays and max
  * const delay1 = calculateReconnectDelay(0); // 1000ms

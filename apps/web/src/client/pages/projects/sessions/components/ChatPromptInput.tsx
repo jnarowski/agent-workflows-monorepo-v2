@@ -29,7 +29,7 @@ import { useNavigationStore } from "@/client/stores/navigationStore";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import type { AgentType } from "@/shared/types/agent.types";
 import { useActiveProject } from "@/client/hooks/navigation/useActiveProject";
-import { cn } from "@/client/lib/utils";
+import { cn } from "@/client/utils/cn";
 import { TokenUsageCircle } from "./TokenUsageCircle";
 import { usePromptInputState } from "../hooks/usePromptInputState";
 

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import type { SessionResponse } from "@/shared/types";
-import { cn } from "@/client/lib/utils";
+import { cn } from "@/client/utils/cn";
 import { AgentIcon } from "@/client/components/AgentIcon";
 import { useSidebar } from "@/client/components/ui/sidebar";
 import { useState } from "react";

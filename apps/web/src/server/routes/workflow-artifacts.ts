@@ -9,7 +9,7 @@ import { attachArtifactToWorkflowEvent } from '@/server/domain/workflow/services
 import { detachArtifactFromWorkflowEvent } from '@/server/domain/workflow/services/detachArtifactFromWorkflowEvent';
 import { attachArtifactSchema } from '@/shared/schemas';
 import type { ArtifactType } from '@/shared/schemas';
-import { NotFoundError } from '@/server/utils/error';
+import { NotFoundError } from '@/server/errors';
 
 const artifactIdSchema = z.object({
   id: z.string().cuid(),

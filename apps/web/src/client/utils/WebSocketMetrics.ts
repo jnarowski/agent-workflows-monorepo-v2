@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import { wsMetrics } from '@/client/lib/WebSocketMetrics';
+ * import { wsMetrics } from '@/client/utils/WebSocketMetrics';
  *
  * // Track sent message
  * wsMetrics.trackSent();

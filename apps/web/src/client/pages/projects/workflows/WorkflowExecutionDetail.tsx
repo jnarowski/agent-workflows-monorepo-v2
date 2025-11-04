@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { WorkflowExecutionHeader } from './components/WorkflowExecutionHeader';
 import { WorkflowTimeline } from './components/WorkflowTimeline';
 import { TimelineErrorBoundary } from './components/timeline/WorkflowTimeline.ErrorBoundary';
-import { buildTimelineModel } from './lib/buildTimelineModel';
+import { buildTimelineModel } from './utils/lib/buildTimelineModel';
 import { useWorkflowExecution } from './hooks/useWorkflowExecution';
 import { useWorkflowDefinition } from './hooks/useWorkflowDefinition';
 import { useWorkflowWebSocket } from './hooks/useWorkflowWebSocket';
