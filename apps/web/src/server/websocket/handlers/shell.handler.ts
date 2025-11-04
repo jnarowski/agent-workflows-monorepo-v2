@@ -1,7 +1,8 @@
 import type { WebSocket } from "@fastify/websocket";
 import type { FastifyInstance } from "fastify";
 import { sendMessage } from "../infrastructure/send-message";
-import { Channels, GlobalEventTypes, ShellEventTypes, parseChannel } from "@/shared/websocket";
+import { GlobalEventTypes, ShellEventTypes } from "@/shared/types/websocket.types";
+import { Channels, parseChannel } from "@/shared/websocket";
 
 /**
  * Handle shell events on shell channels (shell:id)

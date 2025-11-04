@@ -1,22 +1,22 @@
 import { prisma } from '@/shared/prisma';
-import type { WorkflowComment } from '@prisma/client';
+import type { WorkflowEvent } from '@prisma/client';
 
 /**
- * Get comments for a workflow execution or specific step
- * Includes: creator, artifacts (attached to comment)
+ * Get events for a workflow execution or specific step
+ * Includes: created_by_user, artifacts (attached to event)
  * Orders by created_at asc
  */
-export async function getComments(
+export async function getWorkflowEvents(
   executionId: string,
   stepId?: string
-): Promise<WorkflowComment[]> {
-  const comments = await prisma.workflowComment.findMany({
+): Promise<WorkflowEvent[]> {
+  const events = await prisma.workflowEvent.findMany({
     where: {
       workflow_execution_id: executionId,
       ...(stepId && { workflow_execution_step_id: stepId }),
     },
     include: {
-      creator: {
+      created_by_user: {
         select: {
           id: true,
           email: true,
@@ -27,5 +27,5 @@ export async function getComments(
     orderBy: { created_at: 'asc' },
   });
 
-  return comments;
+  return events;
 }

@@ -1,9 +1,12 @@
-import { WorkflowStatus, StepStatus } from '../types';
-import { getWorkflowStatusConfig, getStepStatusConfig } from '../utils/workflowStatus';
+import { WorkflowStatus, StepStatus } from "@/shared/schemas";
+import {
+  getWorkflowStatusConfig,
+  getStepStatusConfig,
+} from "../utils/workflowStatus";
 
 export interface WorkflowStatusBadgeProps {
   status: WorkflowStatus | StepStatus;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   showIcon?: boolean;
   showLabel?: boolean;
   className?: string;
@@ -11,10 +14,10 @@ export interface WorkflowStatusBadgeProps {
 
 export function WorkflowStatusBadge({
   status,
-  size = 'md',
+  size = "md",
   showIcon = true,
   showLabel = true,
-  className = '',
+  className = "",
 }: WorkflowStatusBadgeProps) {
   // Determine if it's a workflow or step status
   const isWorkflowStatus = Object.values(WorkflowStatus).includes(
@@ -28,15 +31,15 @@ export function WorkflowStatusBadge({
 
   // Size classes
   const sizeClasses = {
-    sm: 'px-2 py-0.5 text-xs gap-1',
-    md: 'px-2.5 py-1 text-sm gap-1.5',
-    lg: 'px-3 py-1.5 text-base gap-2',
+    sm: "px-2 py-0.5 text-xs gap-1",
+    md: "px-2.5 py-1 text-sm gap-1.5",
+    lg: "px-3 py-1.5 text-base gap-2",
   };
 
   const iconSizeClasses = {
-    sm: 'h-3 w-3',
-    md: 'h-3.5 w-3.5',
-    lg: 'h-4 w-4',
+    sm: "h-3 w-3",
+    md: "h-3.5 w-3.5",
+    lg: "h-4 w-4",
   };
 
   // Add pulse animation for running status
@@ -51,7 +54,7 @@ export function WorkflowStatusBadge({
     >
       {showIcon && (
         <Icon
-          className={`${iconSizeClasses[size]} ${isRunning ? 'animate-spin' : ''}`}
+          className={`${iconSizeClasses[size]} ${isRunning ? "animate-spin" : ""}`}
         />
       )}
       {showLabel && <span>{config.label}</span>}

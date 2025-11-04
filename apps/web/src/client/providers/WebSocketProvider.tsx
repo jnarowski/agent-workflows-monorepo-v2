@@ -6,7 +6,7 @@ import {
   calculateReconnectDelay,
   DEFAULT_MAX_RECONNECT_DELAY,
 } from "@/client/lib/reconnectionStrategy";
-import { ReadyState } from "@/shared/websocket";
+import { ReadyState, GlobalEventTypes, type ChannelEvent, type GlobalEvent } from "@/shared/types/websocket.types";
 import { useAuthStore } from "@/client/stores/authStore";
 import {
   WebSocketContext,
@@ -14,10 +14,7 @@ import {
 } from "@/client/contexts/WebSocketContext";
 import {
   Channels,
-  GlobalEventTypes,
   isWebSocketMessage,
-  type ChannelEvent,
-  type GlobalEvent,
 } from "@/shared/websocket";
 
 /**

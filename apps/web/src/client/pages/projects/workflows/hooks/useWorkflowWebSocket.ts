@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import { Channels } from "@/shared/websocket";
-import { WorkflowEventTypes } from "@/shared/websocket/types";
+import { WorkflowEventTypes, type WorkflowEvent } from "@/shared/types/websocket.types";
 import { useWorkflowStore } from "../stores/workflowStore";
 import { toast } from "sonner";
 import {
@@ -10,7 +10,6 @@ import {
   type WebSocketUpdate,
 } from "../lib/applyWorkflowUpdate";
 import type { WorkflowExecution } from "../types";
-import type { WorkflowEvent } from "@/shared/websocket/types";
 
 export function useWorkflowWebSocket(projectId: string) {
   const { eventBus, sendMessage, isConnected } = useWebSocket();

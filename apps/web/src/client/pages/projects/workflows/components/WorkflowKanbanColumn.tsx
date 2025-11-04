@@ -1,12 +1,12 @@
-import { useDroppable } from '@dnd-kit/core';
+import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { WorkflowStatus } from '../types';
-import type { WorkflowExecution } from '../types';
-import { WorkflowExecutionCard } from './WorkflowExecutionCard';
-import { getWorkflowStatusConfig } from '../utils/workflowStatus';
+} from "@dnd-kit/sortable";
+import { WorkflowStatus } from "@/shared/schemas";
+import type { WorkflowExecution } from "../types";
+import { WorkflowExecutionCard } from "./WorkflowExecutionCard";
+import { getWorkflowStatusConfig } from "../utils/workflowStatus";
 
 export interface WorkflowKanbanColumnProps {
   status: WorkflowStatus;
@@ -36,7 +36,7 @@ export function WorkflowKanbanColumn({
     <div
       ref={setNodeRef}
       className={`flex min-h-[600px] flex-col rounded-lg border bg-muted/50 p-4 transition-colors ${
-        isOver ? 'border-primary bg-primary/5' : ''
+        isOver ? "border-primary bg-primary/5" : ""
       }`}
     >
       {/* Column header */}
@@ -69,15 +69,9 @@ export function WorkflowKanbanColumn({
                 key={execution.id}
                 execution={execution}
                 onClick={() => onExecutionClick(execution)}
-                onPause={
-                  onPause ? () => onPause(execution.id) : undefined
-                }
-                onResume={
-                  onResume ? () => onResume(execution.id) : undefined
-                }
-                onCancel={
-                  onCancel ? () => onCancel(execution.id) : undefined
-                }
+                onPause={onPause ? () => onPause(execution.id) : undefined}
+                onResume={onResume ? () => onResume(execution.id) : undefined}
+                onCancel={onCancel ? () => onCancel(execution.id) : undefined}
               />
             ))
           )}

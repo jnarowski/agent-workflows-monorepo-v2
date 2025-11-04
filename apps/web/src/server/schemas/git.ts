@@ -1,3 +1,10 @@
+/**
+ * @deprecated This file has been moved to @/server/domain/git/schemas
+ * Import from the new location instead:
+ * import * as gitSchemas from '@/server/domain/git/schemas';
+ *
+ * This file will be removed in a future refactoring.
+ */
 import { z } from 'zod';
 
 // File path query schema (deprecated - use body path instead)

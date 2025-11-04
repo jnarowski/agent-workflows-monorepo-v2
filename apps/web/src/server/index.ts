@@ -21,8 +21,6 @@ import { authPlugin } from '@/server/plugins/auth';
 import { setupGracefulShutdown } from '@/server/utils/shutdown';
 import { config } from '@/server/config/Configuration';
 import { MockWorkflowOrchestrator } from '@/server/domain/workflow/services/MockWorkflowOrchestrator';
-import { registerWorkflowEventListeners } from '@/server/websocket/handlers/workflow.handler';
-import { eventBus } from '@/server/websocket/infrastructure/EventBus';
 import {
   AppError,
   ConflictError,
@@ -318,15 +316,12 @@ export async function createServer() {
   // Register Shell WebSocket handler
   await registerShellRoute(fastify);
 
-  // Initialize MockWorkflowOrchestrator with singleton eventBus
-  const workflowOrchestrator = new MockWorkflowOrchestrator(eventBus, fastify.log);
+  // Initialize MockWorkflowOrchestrator
+  const workflowOrchestrator = new MockWorkflowOrchestrator(fastify.log);
   fastify.log.info('MockWorkflowOrchestrator initialized');
 
   // Start the workflow runner
   workflowOrchestrator.start();
-
-  // Register workflow WebSocket event listeners
-  registerWorkflowEventListeners(eventBus, fastify.log);
 
   // Store orchestrator on fastify instance for access in routes
   fastify.decorate('workflowOrchestrator', workflowOrchestrator);

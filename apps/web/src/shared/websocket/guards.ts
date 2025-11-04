@@ -5,8 +5,8 @@
  * Use them to safely handle incoming WebSocket events.
  */
 
-import type { SessionEvent, GlobalEvent, ShellEvent, ChannelEvent } from './types'
-import { SessionEventTypes, GlobalEventTypes, ShellEventTypes } from './types'
+import type { SessionEvent, GlobalEvent, ShellEvent, ChannelEvent } from '../types/websocket.types'
+import { SessionEventTypes, GlobalEventTypes, ShellEventTypes } from '../types/websocket.types'
 
 /**
  * Type guard to check if an event is a SessionEvent

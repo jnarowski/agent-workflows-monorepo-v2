@@ -25,7 +25,7 @@
  * ```
  */
 
-import type { ChannelEvent } from '@/shared/websocket';
+import type { ChannelEvent } from '@/shared/types/websocket.types';
 
 type ChannelEventHandler<T extends ChannelEvent = ChannelEvent> = (event: T) => void;
 

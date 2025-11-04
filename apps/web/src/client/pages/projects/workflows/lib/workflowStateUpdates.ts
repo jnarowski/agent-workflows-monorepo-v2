@@ -9,8 +9,8 @@ import type {
   WorkflowExecution,
   WorkflowExecutionStep,
   WorkflowEvent,
-} from '../types';
-import { WorkflowStatus, StepStatus } from '../types';
+} from "../types";
+import { WorkflowStatus, StepStatus } from "@/shared/schemas";
 
 // ============================================================================
 // Helper Functions
@@ -249,9 +249,7 @@ export function applyEventCreated(
 ): WorkflowExecution {
   return {
     ...execution,
-    events: execution.events
-      ? [...execution.events, event]
-      : [event],
+    events: execution.events ? [...execution.events, event] : [event],
     updated_at: new Date(),
   };
 }

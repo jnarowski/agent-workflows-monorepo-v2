@@ -8,7 +8,8 @@ import { handleSessionEvent } from "./handlers/session.handler";
 import { handleShellEvent } from "./handlers/shell.handler";
 import { handleGlobalEvent } from "./handlers/global.handler";
 import { unsubscribeAll } from "./infrastructure/subscriptions";
-import { Channels, GlobalEventTypes } from "@/shared/websocket/index";
+import { GlobalEventTypes } from "@/shared/types/websocket.types";
+import { Channels } from "@/shared/websocket";
 
 /**
  * Register unified WebSocket endpoint

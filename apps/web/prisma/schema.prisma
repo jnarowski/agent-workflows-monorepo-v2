@@ -181,6 +181,7 @@ enum WorkflowStatus {
 }
 
 enum WorkflowEventType {
+  annotation_added
   workflow_created
   workflow_started
   workflow_completed

@@ -4,8 +4,8 @@ import { getAuthToken } from '@/client/lib/auth';
 import {
   ShellEventTypes,
   type ShellEvent,
-  isShellEvent
-} from '@/shared/websocket';
+} from '@/shared/types/websocket.types';
+import { isShellEvent } from '@/shared/websocket';
 import { calculateReconnectDelay } from '@/client/lib/reconnectionStrategy';
 
 interface UseShellWebSocketOptions {

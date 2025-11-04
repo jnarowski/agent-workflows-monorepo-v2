@@ -1,7 +1,8 @@
-import { EventEmitter } from 'node:events';
 import { prisma } from '@/shared/prisma';
 import type { FastifyBaseLogger } from 'fastify';
 import { createWorkflowEvent } from './createWorkflowEvent';
+import { broadcast } from '@/server/websocket/infrastructure/subscriptions';
+import { Channels } from '@/shared/websocket';
 
 /**
  * Mock workflow orchestrator that auto-progresses workflows through steps.
@@ -12,12 +13,10 @@ import { createWorkflowEvent } from './createWorkflowEvent';
  * Simplified version without queue dependency - workflows are executed directly.
  */
 export class MockWorkflowOrchestrator {
-  private eventBus: EventEmitter;
   private logger?: FastifyBaseLogger;
   private isRunning = false;
 
-  constructor(eventBus: EventEmitter, logger?: FastifyBaseLogger) {
-    this.eventBus = eventBus;
+  constructor(logger?: FastifyBaseLogger) {
     this.logger = logger;
 
     this.logger?.info('MockWorkflowOrchestrator initialized');
@@ -107,7 +106,7 @@ export class MockWorkflowOrchestrator {
         logger: this.logger
       });
 
-      this.eventBus.emit(`project:${execution.project_id}`, {
+      broadcast(Channels.project(execution.project_id), {
         type: 'workflow:started',
         data: {
           executionId,
@@ -149,7 +148,7 @@ export class MockWorkflowOrchestrator {
               logger: this.logger
             });
 
-            this.eventBus.emit(`project:${execution.project_id}`, {
+            broadcast(Channels.project(execution.project_id), {
               type: 'workflow:phase:completed',
               data: {
                 executionId,
@@ -183,7 +182,7 @@ export class MockWorkflowOrchestrator {
             logger: this.logger
           });
 
-          this.eventBus.emit(`project:${execution.project_id}`, {
+          broadcast(Channels.project(execution.project_id), {
             type: 'workflow:failed',
             data: {
               executionId,
@@ -216,7 +215,7 @@ export class MockWorkflowOrchestrator {
         logger: this.logger
       });
 
-      this.eventBus.emit(`project:${execution.project_id}`, {
+      broadcast(Channels.project(execution.project_id), {
         type: 'workflow:completed',
         data: {
           executionId,
@@ -251,7 +250,7 @@ export class MockWorkflowOrchestrator {
       });
 
       if (projectId) {
-        this.eventBus.emit(`project:${projectId}`, {
+        broadcast(Channels.project(projectId), {
           type: 'workflow:failed',
           data: {
             executionId,
@@ -296,7 +295,7 @@ export class MockWorkflowOrchestrator {
       logger: this.logger
     });
 
-    this.eventBus.emit(`project:${execution.project_id}`, {
+    broadcast(Channels.project(execution.project_id), {
       type: 'workflow:step:started',
       data: {
         executionId: execution.id,
@@ -329,7 +328,7 @@ export class MockWorkflowOrchestrator {
         }
       });
 
-      this.eventBus.emit(`project:${execution.project_id}`, {
+      broadcast(Channels.project(execution.project_id), {
         type: 'workflow:step:completed',
         data: {
           executionId: execution.id,
@@ -356,7 +355,7 @@ export class MockWorkflowOrchestrator {
         }
       });
 
-      this.eventBus.emit(`project:${execution.project_id}`, {
+      broadcast(Channels.project(execution.project_id), {
         type: 'workflow:step:failed',
         data: {
           executionId: execution.id,

@@ -1,40 +1,3 @@
-// Frontend types for workflow feature
-// Matches backend Prisma schema
-
-export const WorkflowStatus = {
-  PENDING: 'pending',
-  RUNNING: 'running',
-  PAUSED: 'paused',
-  COMPLETED: 'completed',
-  FAILED: 'failed',
-  CANCELLED: 'cancelled',
-} as const;
-
-export type WorkflowStatus = typeof WorkflowStatus[keyof typeof WorkflowStatus];
-
-export const StepStatus = {
-  PENDING: 'pending',
-  RUNNING: 'running',
-  COMPLETED: 'completed',
-  FAILED: 'failed',
-  SKIPPED: 'skipped',
-} as const;
-
-export type StepStatus = typeof StepStatus[keyof typeof StepStatus];
-
-// Workflow event types (matching backend)
-export type WorkflowEventType =
-  | 'annotation_added'
-  | 'workflow_started'
-  | 'workflow_completed'
-  | 'workflow_failed'
-  | 'workflow_paused'
-  | 'workflow_resumed'
-  | 'workflow_cancelled'
-  | 'phase_started'
-  | 'phase_completed'
-  | 'step_started';
-
 export interface WorkflowDefinition {
   id: string;
   name: string;
@@ -51,6 +14,21 @@ export interface Phase {
   steps: string[];
 }
 
+/**
+ * Frontend-specific WorkflowExecution interface
+ *
+ * **Note**: This interface intentionally diverges from the backend response schema
+ * (`workflowExecutionResponseSchema`) to meet frontend UI requirements:
+ *
+ * - Uses `created_by: string` instead of `user_id` (more descriptive for UI)
+ * - Uses `current_step: string | null` instead of `current_step_index: number` (UI displays step name, not index)
+ * - Omits `paused_at` and `cancelled_at` (not currently displayed in UI)
+ * - Uses `Date` objects instead of ISO strings (easier to work with in React)
+ * - Optional relations (`steps`, `events`, `artifacts`, `workflow_definition`) for flexibility
+ *
+ * This follows the hybrid approach: shared schemas validate API responses,
+ * frontend defines interfaces optimized for UI needs.
+ */
 export interface WorkflowExecution {
   id: string;
   workflow_definition_id: string;
@@ -76,8 +54,8 @@ export interface WorkflowExecution {
 export interface WorkflowExecutionStep {
   id: string;
   workflow_execution_id: string;
-  step_name: string;
-  phase_name: string;
+  name: string; // Fixed: was step_name, now matches Prisma
+  phase: string; // Fixed: was phase_name, now matches Prisma
   status: StepStatus;
   logs: string | null;
   error_message: string | null;
@@ -165,11 +143,9 @@ export type {
   AnnotationTimelineItem,
   ExecutionSummary,
   LiveState,
-} from './lib/buildTimelineModel';
+} from "./lib/buildTimelineModel";
 
 // Filter types
 export interface WorkflowFilter {
   status?: WorkflowStatus;
-  search?: string;
-  definitionId?: string;
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { WebSocketEventBus } from './WebSocketEventBus';
-import type { SessionEvent, GlobalEvent } from '@/shared/websocket';
-import { SessionEventTypes, GlobalEventTypes } from '@/shared/websocket';
+import type { SessionEvent, GlobalEvent } from '@/shared/types/websocket.types';
+import { SessionEventTypes, GlobalEventTypes } from '@/shared/types/websocket.types';
 
 describe('WebSocketEventBus - Phoenix Channels Pattern', () => {
   it('should subscribe to channel and receive events', () => {

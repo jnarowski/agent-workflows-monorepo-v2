@@ -4,11 +4,11 @@ import * as fs from 'node:fs/promises';
 import {
   uploadArtifact,
   downloadArtifact,
-  attachArtifactToComment,
-  detachArtifactFromComment,
 } from '@/server/domain/workflow/services';
-import { attachArtifactSchema } from '@/server/domain/workflow/schemas';
-import type { ArtifactType } from '@/server/domain/workflow/types';
+import { attachArtifactToWorkflowEvent } from '@/server/domain/workflow/services/attachArtifactToWorkflowEvent';
+import { detachArtifactFromWorkflowEvent } from '@/server/domain/workflow/services/detachArtifactFromWorkflowEvent';
+import { attachArtifactSchema } from '@/shared/schemas';
+import type { ArtifactType } from '@/shared/schemas';
 import { NotFoundError } from '@/server/utils/error';
 
 const artifactIdSchema = z.object({
@@ -129,12 +129,12 @@ export async function workflowArtifactRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const { comment_id } = request.body;
+      const { event_id } = request.body;
 
-      const artifact = await attachArtifactToComment(id, comment_id);
+      const artifact = await attachArtifactToWorkflowEvent(id, event_id);
 
       if (!artifact) {
-        throw new NotFoundError('Artifact or comment not found, or they do not belong to the same workflow execution');
+        throw new NotFoundError('Artifact or event not found, or they do not belong to the same workflow execution');
       }
 
       return reply.send({ data: artifact });
@@ -143,7 +143,7 @@ export async function workflowArtifactRoutes(fastify: FastifyInstance) {
 
   /**
    * DELETE /api/artifacts/:id/detach
-   * Detach an artifact from a comment
+   * Detach an artifact from an event
    */
   fastify.delete<{
     Params: z.infer<typeof artifactIdSchema>;
@@ -158,7 +158,7 @@ export async function workflowArtifactRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { id } = request.params;
 
-      const artifact = await detachArtifactFromComment(id);
+      const artifact = await detachArtifactFromWorkflowEvent(id);
 
       if (!artifact) {
         throw new NotFoundError('Artifact not found');

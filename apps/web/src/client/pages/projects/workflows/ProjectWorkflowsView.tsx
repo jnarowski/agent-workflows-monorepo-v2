@@ -1,32 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from 'react';
-import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Plus, Search } from 'lucide-react';
-import { WorkflowStatus } from './types';
-import { WorkflowKanbanColumn } from './components/WorkflowKanbanColumn';
-import { WorkflowDefinitionsList } from './components/WorkflowDefinitionsList';
-import { NewWorkflowModal } from './components/NewWorkflowModal';
-import { useWorkflowExecutions } from './hooks/useWorkflowExecutions';
-import { useWorkflowDefinitions } from './hooks/useWorkflowDefinitions';
-import { useWorkflowWebSocket } from './hooks/useWorkflowWebSocket';
+import { useState } from "react";
+import {
+  DndContext,
+  type DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { useNavigate, useParams } from "react-router-dom";
+import { Plus, Search } from "lucide-react";
+import { WorkflowStatus } from "@/shared/schemas";
+import { WorkflowKanbanColumn } from "./components/WorkflowKanbanColumn";
+import { WorkflowDefinitionsList } from "./components/WorkflowDefinitionsList";
+import { NewWorkflowModal } from "./components/NewWorkflowModal";
+import { useWorkflowExecutions } from "./hooks/useWorkflowExecutions";
+import { useWorkflowDefinitions } from "./hooks/useWorkflowDefinitions";
+import { useWorkflowWebSocket } from "./hooks/useWorkflowWebSocket";
 import {
   useCreateWorkflow,
   usePauseWorkflow,
   useResumeWorkflow,
   useCancelWorkflow,
-} from './hooks/useWorkflowMutations';
+} from "./hooks/useWorkflowMutations";
 
 export interface ProjectWorkflowsViewProps {
   projectId?: string;
 }
 
-export function ProjectWorkflowsView({ projectId: propProjectId }: ProjectWorkflowsViewProps) {
+export function ProjectWorkflowsView({
+  projectId: propProjectId,
+}: ProjectWorkflowsViewProps) {
   const { projectId: paramProjectId } = useParams<{ projectId: string }>();
   const projectId = propProjectId || paramProjectId!;
   const navigate = useNavigate();
-  const [search, setSearch] = useState('');
-  const [definitionFilter, setDefinitionFilter] = useState<string | undefined>();
+  const [search, setSearch] = useState("");
+  const [definitionFilter, setDefinitionFilter] = useState<
+    string | undefined
+  >();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Hooks
@@ -77,7 +87,9 @@ export function ProjectWorkflowsView({ projectId: propProjectId }: ProjectWorkfl
     // Navigate to execution detail page
     const definitionId = execution.workflow_definition_id;
     const executionId = execution.id;
-    navigate(`/projects/${projectId}/workflows/${definitionId}/executions/${executionId}`);
+    navigate(
+      `/projects/${projectId}/workflows/${definitionId}/executions/${executionId}`
+    );
   };
 
   const handleCreateWorkflow = async (data: any) => {
@@ -137,7 +149,7 @@ export function ProjectWorkflowsView({ projectId: propProjectId }: ProjectWorkfl
             />
           </div>
           <select
-            value={definitionFilter || ''}
+            value={definitionFilter || ""}
             onChange={(e) => setDefinitionFilter(e.target.value || undefined)}
             className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           >

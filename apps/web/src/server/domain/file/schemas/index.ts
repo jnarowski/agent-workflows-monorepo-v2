@@ -1,3 +1,11 @@
-// File domain schemas
-// Note: Route-level schemas remain in routes/schemas/
-// Domain schemas would go here for service-level validation if needed
+/**
+ * File domain Zod validation schemas
+ *
+ * Currently, the file domain does not require validation schemas.
+ * File operations are validated at the route level using query/body parameters.
+ *
+ * Future schemas could include:
+ * - File upload validation (size limits, allowed types)
+ * - File path validation (security, format)
+ * - Batch file operation validation
+ */

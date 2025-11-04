@@ -2,8 +2,9 @@ import { prisma } from '@/shared/prisma';
 import type { WorkflowExecution } from '@prisma/client';
 import type { FastifyBaseLogger } from 'fastify';
 import { createWorkflowEvent } from './createWorkflowEvent';
-import { eventBus } from '@/server/websocket/infrastructure/EventBus';
-import { WorkflowEventTypes } from '@/shared/websocket/types';
+import { broadcast } from '@/server/websocket/infrastructure/subscriptions';
+import { WorkflowEventTypes } from '@/shared/types/websocket.types';
+import { Channels } from '@/shared/websocket';
 
 /**
  * STUB: Resume a paused workflow execution (future implementation)
@@ -39,7 +40,7 @@ export async function resumeWorkflow(
   });
 
   // Emit WebSocket event immediately for real-time updates
-  eventBus.emit(`project:${execution.project_id}`, {
+  broadcast(Channels.project(execution.project_id), {
     type: WorkflowEventTypes.RESUMED,
     data: {
       executionId: execution.id,

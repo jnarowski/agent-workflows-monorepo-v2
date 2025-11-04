@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { buildSuccessResponse } from '@/server/utils/response';
 import * as gitService from '@/server/domain/git/services';
-import * as gitSchemas from '@/server/schemas/git';
+import * as gitSchemas from '@/server/domain/git/schemas';
 
 export async function gitRoutes(fastify: FastifyInstance) {
   // POST /api/git/status - Get git status

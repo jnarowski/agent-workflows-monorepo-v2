@@ -4,7 +4,8 @@ import type {
   SubscribeMessageData,
   UnsubscribeMessageData,
 } from "../types";
-import { GlobalEventTypes, Channels } from "@/shared/websocket/index";
+import { GlobalEventTypes } from "@/shared/types";
+import { Channels } from "@/shared/websocket";
 import { subscribe, unsubscribe } from "../infrastructure/subscriptions";
 import { validateChannelAccess } from "../infrastructure/permissions";
 import { sendMessage } from "../infrastructure/send-message";

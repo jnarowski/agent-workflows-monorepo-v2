@@ -186,108 +186,120 @@ Only validation-related imports change.
 ### Phase 1: Create Shared Schema Infrastructure
 
 <!-- prettier-ignore -->
-- [ ] schema-1 Create shared schemas directory
+- [x] schema-1 Create shared schemas directory
   - Create `apps/web/src/shared/schemas/` directory
   - Command: `mkdir -p apps/web/src/shared/schemas`
-- [ ] schema-2 Create workflow.schemas.ts with all schemas
+- [x] schema-2 Create workflow.schemas.ts with all schemas
   - Consolidate all schemas from backend domain
   - File: `apps/web/src/shared/schemas/workflow.schemas.ts`
   - Include: workflowStatusSchema, stepStatusSchema, artifactTypeSchema, commentTypeSchema
   - Include: createWorkflowExecutionSchema, workflowExecutionFiltersSchema
   - Include: workflowExecutionResponseSchema, artifactResponseSchema, commentResponseSchema
   - Export derived types for all schemas using `z.infer<>`
-- [ ] schema-3 Fix artifact schema field name
+- [x] schema-3 Fix artifact schema field name
   - Change `workflow_comment_id` to `workflow_event_id` in artifactResponseSchema
   - File: `apps/web/src/shared/schemas/workflow.schemas.ts`
   - Matches Prisma schema WorkflowArtifact model
-- [ ] schema-4 Add optional relation fields to response schemas
+- [x] schema-4 Add optional relation fields to response schemas
   - Add `steps: z.array(...)optional()` to workflowExecutionResponseSchema
   - Add `events: z.array(...).optional()` to workflowExecutionResponseSchema
   - Add `workflow_definition: z.object(...).optional()` to workflowExecutionResponseSchema
   - File: `apps/web/src/shared/schemas/workflow.schemas.ts`
-- [ ] schema-5 Create schemas index file
+- [x] schema-5 Create schemas index file
   - Re-export all schemas and types
   - File: `apps/web/src/shared/schemas/index.ts`
   - Pattern: `export * from './workflow.schemas'`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Created `apps/web/src/shared/schemas/` directory
+- Consolidated all workflow validation schemas into `workflow.schemas.ts`
+- Exported enum types: WorkflowStatus, StepStatus, ArtifactType, WorkflowEventType
+- Fixed artifact schema field: `workflow_event_id` (was `workflow_comment_id`)
+- Added optional relation fields to workflowExecutionResponseSchema: `steps`, `events`, `workflow_definition`
+- Created barrel export in `index.ts` for easy imports
 
 ### Phase 2: Update Backend Route Imports
 
 <!-- prettier-ignore -->
-- [ ] backend-1 Update workflows.ts route imports
+- [x] backend-1 Update workflows.ts route imports
   - Change import from `@/server/domain/workflow/schemas` to `@/shared/schemas`
   - File: `apps/web/src/server/routes/workflows.ts`
   - Update: createWorkflowExecutionSchema, workflowExecutionFiltersSchema, workflowExecutionResponseSchema
-- [ ] backend-2 Update workflow-artifacts.ts route imports
+- [x] backend-2 Update workflow-artifacts.ts route imports
   - Change import from `@/server/domain/workflow/schemas` to `@/shared/schemas`
   - File: `apps/web/src/server/routes/workflow-artifacts.ts`
   - Update: uploadArtifactSchema, attachArtifactSchema, artifactResponseSchema
-- [ ] backend-3 Update workflow-comments.ts route imports
+- [x] backend-3 Update workflow-comments.ts route imports
   - Change import from `@/server/domain/workflow/schemas` to `@/shared/schemas`
   - File: `apps/web/src/server/routes/workflow-comments.ts`
   - Update: createCommentSchema, getCommentsQuerySchema, commentResponseSchema
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Updated all 3 route files to import from `@/shared/schemas` instead of `@/server/domain/workflow/schemas`
+- Renamed comment schemas to workflow event schemas (createWorkflowEventSchema, getWorkflowEventsQuerySchema)
+- Added artifactTypeSchema import to workflow-artifacts.ts
+- Backend routes now use shared validation schemas
 
 ### Phase 3: Update Frontend Types (Enum Imports Only)
 
 <!-- prettier-ignore -->
-- [ ] frontend-1 Import only enum types from shared schemas
+- [x] frontend-1 Import only enum types from shared schemas
   - Add imports: `WorkflowStatus`, `StepStatus` from `@/shared/schemas`
   - File: `apps/web/src/client/pages/projects/workflows/types.ts`
   - Do NOT import WorkflowExecution or other model interfaces
-- [ ] frontend-2 Remove duplicate WorkflowStatus definition
+- [x] frontend-2 Remove duplicate WorkflowStatus definition
   - Delete `export const WorkflowStatus = { PENDING: 'pending', ... } as const`
   - Delete `export type WorkflowStatus = typeof WorkflowStatus[keyof typeof WorkflowStatus]`
   - File: `apps/web/src/client/pages/projects/workflows/types.ts`
-- [ ] frontend-3 Remove duplicate StepStatus definition
+- [x] frontend-3 Remove duplicate StepStatus definition
   - Delete `export const StepStatus = { PENDING: 'pending', ... } as const`
   - Delete `export type StepStatus = typeof StepStatus[keyof typeof StepStatus]`
   - File: `apps/web/src/client/pages/projects/workflows/types.ts`
-- [ ] frontend-4 Fix WorkflowExecutionStep field names
+- [x] frontend-4 Fix WorkflowExecutionStep field names
   - Change `step_name: string` to `name: string`
   - Change `phase_name: string` to `phase: string`
   - File: `apps/web/src/client/pages/projects/workflows/types.ts`
   - Matches Prisma schema WorkflowExecutionStep model
-- [ ] frontend-5 Keep WorkflowExecution interface in frontend types
+- [x] frontend-5 Keep WorkflowExecution interface in frontend types
   - Do NOT move to shared
   - Frontend interface has UI-specific needs (optional relations, computed fields)
   - Use imported WorkflowStatus and StepStatus enums
   - File: `apps/web/src/client/pages/projects/workflows/types.ts`
-- [ ] frontend-6 Update shared types index
+- [x] frontend-6 Update shared types index
   - Re-export workflow schemas
   - File: `apps/web/src/shared/types/index.ts`
   - Add: `export * from '../schemas'`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Replaced duplicate enum definitions with imports from `@/shared/schemas`
+- Fixed WorkflowExecutionStep field names: `name` and `phase` (were `step_name` and `phase_name`)
+- Kept WorkflowExecution interface in frontend (not shared, as intended)
+- Updated shared types index to re-export schemas
+- Frontend now uses shared enum types while maintaining custom interfaces
 
 ### Phase 4: Cleanup & Documentation
 
 <!-- prettier-ignore -->
-- [ ] cleanup-1 Delete old schema files
+- [x] cleanup-1 Delete old schema files
   - Delete `apps/web/src/server/domain/workflow/schemas/workflow.schemas.ts`
   - Delete `apps/web/src/server/domain/workflow/schemas/artifact.schemas.ts`
   - Delete `apps/web/src/server/domain/workflow/schemas/comment.schemas.ts`
   - Command: `rm apps/web/src/server/domain/workflow/schemas/*.ts`
-- [ ] cleanup-2 Delete schemas directory if empty
+- [x] cleanup-2 Delete schemas directory if empty
   - Command: `rmdir apps/web/src/server/domain/workflow/schemas`
   - Only if no other files remain
-- [ ] cleanup-3 Run type checking
+- [x] cleanup-3 Run type checking
   - Command: `cd apps/web && pnpm check-types`
   - Expected: No TypeScript errors
   - Fix any import path issues
-- [ ] cleanup-4 Run linter
+- [x] cleanup-4 Run linter
   - Command: `cd apps/web && pnpm lint`
   - Expected: No lint errors
   - Fix any unused import warnings
-- [ ] cleanup-5 Document shared schema pattern in CLAUDE.md
+- [x] cleanup-5 Document shared schema pattern in CLAUDE.md
   - Add section: "Shared Schemas vs Domain Types (Hybrid Approach)"
   - File: `apps/web/CLAUDE.md`
   - Document: What to share (validation schemas, enums) vs keep separate (model interfaces)
@@ -298,7 +310,13 @@ Only validation-related imports change.
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Deleted all old schema files from `server/domain/workflow/schemas/`
+- Deleted schemas directory (now empty)
+- Type checking passed with no errors
+- Linting passed with no errors (fixed unused artifactTypeSchema import)
+- Added comprehensive documentation section to `apps/web/CLAUDE.md` explaining hybrid approach
+- Documented what to share vs keep separate with rationale and examples
+- Included type derivation pattern, import patterns, and value vs confusion matrix
 
 ## Testing Strategy
 

@@ -1,6 +1,6 @@
-import type { WorkflowExecution } from '../types';
-import { StepStatus } from '../types';
-import { isStepTerminal } from './workflowStatus';
+import type { WorkflowExecution } from "../types";
+import { StepStatus } from "@/shared/schemas";
+import { isStepTerminal } from "./workflowStatus";
 
 /**
  * Calculate workflow progress as a percentage (0-100)
@@ -28,7 +28,7 @@ export function estimateTimeRemaining(execution: WorkflowExecution): string {
   const steps = execution.steps || [];
 
   if (steps.length === 0 || !execution.started_at) {
-    return 'Unknown';
+    return "Unknown";
   }
 
   // Filter completed steps with timing information
@@ -40,7 +40,7 @@ export function estimateTimeRemaining(execution: WorkflowExecution): string {
   );
 
   if (completedSteps.length === 0) {
-    return 'Calculating...';
+    return "Calculating...";
   }
 
   // Calculate average step duration
@@ -67,7 +67,7 @@ export function estimateTimeRemaining(execution: WorkflowExecution): string {
  * Examples: "2m 34s", "1h 5m", "45s"
  */
 export function formatDuration(ms: number): string {
-  if (ms < 0) return '0s';
+  if (ms < 0) return "0s";
 
   const seconds = Math.floor((ms / 1000) % 60);
   const minutes = Math.floor((ms / (1000 * 60)) % 60);
@@ -85,7 +85,7 @@ export function formatDuration(ms: number): string {
     parts.push(`${seconds}s`);
   }
 
-  return parts.join(' ');
+  return parts.join(" ");
 }
 
 /**
@@ -93,7 +93,7 @@ export function formatDuration(ms: number): string {
  */
 export function calculateDuration(execution: WorkflowExecution): string {
   if (!execution.started_at) {
-    return 'Not started';
+    return "Not started";
   }
 
   const startTime = new Date(execution.started_at).getTime();
@@ -119,7 +119,9 @@ export function getPhaseProgress(
   ).length;
 
   const percentage =
-    phaseSteps.length > 0 ? Math.round((completed / phaseSteps.length) * 100) : 0;
+    phaseSteps.length > 0
+      ? Math.round((completed / phaseSteps.length) * 100)
+      : 0;
 
   return {
     completed,

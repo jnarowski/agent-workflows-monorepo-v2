@@ -1,5 +1,5 @@
-import { WorkflowStatus, StepStatus } from '../types';
-import type { LucideIcon } from 'lucide-react';
+import { WorkflowStatus, StepStatus } from "@/shared/schemas";
+import type { LucideIcon } from "lucide-react";
 import {
   Clock,
   Play,
@@ -9,7 +9,7 @@ import {
   Ban,
   Circle,
   Loader2,
-} from 'lucide-react';
+} from "lucide-react";
 
 export interface StatusConfig {
   color: string;
@@ -21,84 +21,84 @@ export interface StatusConfig {
 
 const WORKFLOW_STATUS_CONFIG: Record<WorkflowStatus, StatusConfig> = {
   [WorkflowStatus.PENDING]: {
-    color: 'gray',
-    bgColor: 'bg-gray-100',
-    textColor: 'text-gray-700',
+    color: "gray",
+    bgColor: "bg-gray-100",
+    textColor: "text-gray-700",
     icon: Clock,
-    label: 'Pending',
+    label: "Pending",
   },
   [WorkflowStatus.RUNNING]: {
-    color: 'blue',
-    bgColor: 'bg-blue-100',
-    textColor: 'text-blue-700',
+    color: "blue",
+    bgColor: "bg-blue-100",
+    textColor: "text-blue-700",
     icon: Play,
-    label: 'Running',
+    label: "Running",
   },
   [WorkflowStatus.PAUSED]: {
-    color: 'yellow',
-    bgColor: 'bg-yellow-100',
-    textColor: 'text-yellow-700',
+    color: "yellow",
+    bgColor: "bg-yellow-100",
+    textColor: "text-yellow-700",
     icon: Pause,
-    label: 'Paused',
+    label: "Paused",
   },
   [WorkflowStatus.COMPLETED]: {
-    color: 'green',
-    bgColor: 'bg-green-100',
-    textColor: 'text-green-700',
+    color: "green",
+    bgColor: "bg-green-100",
+    textColor: "text-green-700",
     icon: CheckCircle2,
-    label: 'Completed',
+    label: "Completed",
   },
   [WorkflowStatus.FAILED]: {
-    color: 'red',
-    bgColor: 'bg-red-100',
-    textColor: 'text-red-700',
+    color: "red",
+    bgColor: "bg-red-100",
+    textColor: "text-red-700",
     icon: XCircle,
-    label: 'Failed',
+    label: "Failed",
   },
   [WorkflowStatus.CANCELLED]: {
-    color: 'gray',
-    bgColor: 'bg-gray-100',
-    textColor: 'text-gray-700',
+    color: "gray",
+    bgColor: "bg-gray-100",
+    textColor: "text-gray-700",
     icon: Ban,
-    label: 'Cancelled',
+    label: "Cancelled",
   },
 };
 
 const STEP_STATUS_CONFIG: Record<StepStatus, StatusConfig> = {
   [StepStatus.PENDING]: {
-    color: 'gray',
-    bgColor: 'bg-gray-100',
-    textColor: 'text-gray-700',
+    color: "gray",
+    bgColor: "bg-gray-100",
+    textColor: "text-gray-700",
     icon: Circle,
-    label: 'Pending',
+    label: "Pending",
   },
   [StepStatus.RUNNING]: {
-    color: 'blue',
-    bgColor: 'bg-blue-100',
-    textColor: 'text-blue-700',
+    color: "blue",
+    bgColor: "bg-blue-100",
+    textColor: "text-blue-700",
     icon: Loader2,
-    label: 'Running',
+    label: "Running",
   },
   [StepStatus.COMPLETED]: {
-    color: 'green',
-    bgColor: 'bg-green-100',
-    textColor: 'text-green-700',
+    color: "green",
+    bgColor: "bg-green-100",
+    textColor: "text-green-700",
     icon: CheckCircle2,
-    label: 'Completed',
+    label: "Completed",
   },
   [StepStatus.FAILED]: {
-    color: 'red',
-    bgColor: 'bg-red-100',
-    textColor: 'text-red-700',
+    color: "red",
+    bgColor: "bg-red-100",
+    textColor: "text-red-700",
     icon: XCircle,
-    label: 'Failed',
+    label: "Failed",
   },
   [StepStatus.SKIPPED]: {
-    color: 'gray',
-    bgColor: 'bg-gray-100',
-    textColor: 'text-gray-500',
+    color: "gray",
+    bgColor: "bg-gray-100",
+    textColor: "text-gray-500",
     icon: Circle,
-    label: 'Skipped',
+    label: "Skipped",
   },
 };
 
@@ -126,9 +126,7 @@ export function isActiveStatus(status: WorkflowStatus): boolean {
 
 // Utility to check if a step is in a terminal state
 export function isStepTerminal(status: StepStatus): boolean {
-  return [
-    StepStatus.COMPLETED,
-    StepStatus.FAILED,
-    StepStatus.SKIPPED,
-  ].includes(status);
+  return [StepStatus.COMPLETED, StepStatus.FAILED, StepStatus.SKIPPED].includes(
+    status
+  );
 }

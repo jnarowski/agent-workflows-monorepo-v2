@@ -23,8 +23,8 @@ import { broadcast, subscribe } from "../infrastructure/subscriptions";
 import {
   SessionEventTypes,
   GlobalEventTypes,
-  Channels,
-} from "@/shared/websocket";
+} from "@/shared/types/websocket.types";
+import { Channels } from "@/shared/websocket";
 import { parseChannel } from "../infrastructure/channels";
 
 // ============================================================================

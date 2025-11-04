@@ -4,10 +4,10 @@ import { useSessionStore } from "@/client/pages/projects/sessions/stores/session
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import type { UnifiedContent } from "@repo/agent-cli-sdk";
 import {
-  Channels,
   SessionEventTypes,
   type SessionEvent,
-} from "@/shared/websocket";
+} from "@/shared/types/websocket.types";
+import { Channels } from "@/shared/websocket";
 import { sessionKeys } from "./useAgentSessions";
 import { generateUUID } from "@/client/lib/utils";
 import { projectKeys } from "@/client/pages/projects/hooks/useProjects";

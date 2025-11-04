@@ -1,3 +1,10 @@
+/**
+ * @deprecated This file has been moved to @/server/domain/shell/schemas
+ * Import from the new location instead:
+ * import { ... } from '@/server/domain/shell/schemas';
+ *
+ * This file will be removed in a future refactoring.
+ */
 import { z } from 'zod';
 
 /**

@@ -1,17 +1,4 @@
-import type { WorkflowEvent } from '@prisma/client';
-
-// Event types
-export type WorkflowEventType =
-  | 'annotation_added'
-  | 'workflow_started'
-  | 'workflow_completed'
-  | 'workflow_failed'
-  | 'workflow_paused'
-  | 'workflow_resumed'
-  | 'workflow_cancelled'
-  | 'phase_started'
-  | 'phase_completed'
-  | 'step_started';
+import type { WorkflowEvent } from "@prisma/client";
 
 // Base event data structure - all events have at minimum title and body
 export interface BaseEventData {

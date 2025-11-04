@@ -12,7 +12,7 @@ import {
   sessionIdSchema,
   projectIdSchema,
   updateSessionNameSchema,
-} from "@/server/schemas/session";
+} from "@/server/domain/session/schemas";
 import { errorResponse } from "@/server/schemas/response";
 import type { CreateSessionRequest } from "@/shared/types/agent-session.types";
 import { buildErrorResponse } from "@/server/utils/error";

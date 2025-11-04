@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/client/lib/api-client';
 import { toast } from 'sonner';
-import type { WorkflowExecution, WorkflowComment, WorkflowArtifact } from '../types';
+import type { WorkflowExecution, WorkflowEvent, WorkflowArtifact } from '../types';
 
 // Create workflow
 interface CreateWorkflowInput {
@@ -119,15 +119,16 @@ interface CreateAnnotationInput {
 }
 
 interface CreateAnnotationResponse {
-  data: WorkflowComment;
+  data: WorkflowEvent;
 }
 
-async function createAnnotation(input: CreateAnnotationInput): Promise<WorkflowComment> {
+async function createAnnotation(input: CreateAnnotationInput): Promise<WorkflowEvent> {
   const response = await api.post<CreateAnnotationResponse>(
-    `/api/workflow-executions/${input.executionId}/comments`,
+    `/api/workflow-executions/${input.executionId}/events`,
     {
-      content: input.content,
+      text: input.content,
       step_id: input.stepId,
+      event_type: 'annotation_added',
     }
   );
   return response.data;
