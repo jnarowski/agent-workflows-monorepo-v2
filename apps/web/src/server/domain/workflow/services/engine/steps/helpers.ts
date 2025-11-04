@@ -49,16 +49,15 @@ export async function updateStepStatus(
 ): Promise<void> {
   const { executionId, projectId, logger } = context;
 
-  // Update step
-  const step = await prisma.workflowExecutionStep.update({
-    where: { id: stepId },
-    data: {
-      status,
-      error_message: error,
-      started_at: status === "running" ? new Date() : undefined,
-      completed_at:
-        status === "completed" || status === "failed" ? new Date() : undefined,
-    },
+  // Update step using domain service
+  const step = await updateWorkflowStep({
+    stepId,
+    status,
+    errorMessage: error,
+    startedAt: status === "running" ? new Date() : undefined,
+    completedAt:
+      status === "completed" || status === "failed" ? new Date() : undefined,
+    logger,
   });
 
   // Create event

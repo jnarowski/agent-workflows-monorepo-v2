@@ -1,8 +1,9 @@
-import { prisma } from "@/shared/prisma";
 import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import type { RuntimeContext } from "../../../types/engine.types";
 import type { PhaseOptions } from "@repo/workflow-sdk";
+import { updateWorkflowExecution } from "../../executions/updateWorkflowExecution";
+import { createWorkflowEvent } from "../../events/createWorkflowEvent";
 
 /**
  * Create phase step factory function
@@ -32,22 +33,22 @@ export function createPhaseStep(context: RuntimeContext) {
       "Phase started"
     );
 
-    // Update current_phase in execution
-    await prisma.workflowExecution.update({
-      where: { id: executionId },
-      data: { current_phase: name },
-    });
+    // Update current_phase in execution using domain service
+    await updateWorkflowExecution(
+      executionId,
+      { current_phase: name },
+      logger
+    );
 
     // Set current phase in context (for nested step tagging)
     context.currentPhase = name;
 
-    // Create phase_started event
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executionId,
-        event_type: "phase_started",
-        event_data: { phase: name, retries, retryDelay },
-      },
+    // Create phase_started event using domain service
+    await createWorkflowEvent({
+      workflow_execution_id: executionId,
+      event_type: "phase_started",
+      event_data: { phase: name, retries, retryDelay },
+      logger,
     });
 
     // Broadcast phase started
@@ -69,17 +70,16 @@ export function createPhaseStep(context: RuntimeContext) {
         // Execute phase function
         const result = await fn();
 
-        // Success - create phase_completed event
-        await prisma.workflowEvent.create({
-          data: {
-            workflow_execution_id: executionId,
-            event_type: "phase_completed",
-            event_data: {
-              phase: name,
-              attempt: attempt + 1,
-              totalAttempts: retries + 1,
-            },
+        // Success - create phase_completed event using domain service
+        await createWorkflowEvent({
+          workflow_execution_id: executionId,
+          event_type: "phase_completed",
+          event_data: {
+            phase: name,
+            attempt: attempt + 1,
+            totalAttempts: retries + 1,
           },
+          logger,
         });
 
         // Broadcast phase completed
@@ -116,18 +116,18 @@ export function createPhaseStep(context: RuntimeContext) {
 
         // If not last attempt, broadcast retry event and wait
         if (attempt <= retries) {
-          await prisma.workflowEvent.create({
-            data: {
-              workflow_execution_id: executionId,
-              event_type: "phase_retry",
-              event_data: {
-                phase: name,
-                attempt,
-                maxRetries: retries,
-                error: lastError.message,
-                retryDelay,
-              },
+          // Create phase_retry event using domain service
+          await createWorkflowEvent({
+            workflow_execution_id: executionId,
+            event_type: "phase_retry",
+            event_data: {
+              phase: name,
+              attempt,
+              maxRetries: retries,
+              error: lastError.message,
+              retryDelay,
             },
+            logger,
           });
 
           broadcast(Channels.project(projectId), {
@@ -159,16 +159,16 @@ export function createPhaseStep(context: RuntimeContext) {
       "Phase failed after all retries"
     );
 
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executionId,
-        event_type: "phase_failed",
-        event_data: {
-          phase: name,
-          attempts: attempt,
-          error: lastError?.message,
-        },
+    // Create phase_failed event using domain service
+    await createWorkflowEvent({
+      workflow_execution_id: executionId,
+      event_type: "phase_failed",
+      event_data: {
+        phase: name,
+        attempts: attempt,
+        error: lastError?.message,
       },
+      logger,
     });
 
     broadcast(Channels.project(projectId), {
