@@ -1,19 +1,6 @@
 import type { WorkflowExecution } from "../types";
 import { StepStatus } from "@/shared/schemas";
 import { isStepTerminal } from "./workflowStatus";
-import { getExecutionMetrics } from "./executionMetrics";
-
-/**
- * Calculate workflow progress as a percentage (0-100)
- * Based on current phase / total phases
- *
- * Example: 3 phases, on phase 2 → 2/3 = 67%
- *
- * @deprecated Use getExecutionMetrics(execution).phaseProgressPercentage instead
- */
-export function calculateProgress(execution: WorkflowExecution): number {
-  return getExecutionMetrics(execution).phaseProgressPercentage;
-}
 
 /**
  * Estimate time remaining for a workflow execution

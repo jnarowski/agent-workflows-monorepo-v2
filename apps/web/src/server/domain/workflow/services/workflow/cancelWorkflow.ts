@@ -1,10 +1,10 @@
-import { prisma } from '@/shared/prisma';
-import type { WorkflowExecution } from '@prisma/client';
-import type { FastifyBaseLogger } from 'fastify';
-import { createWorkflowEvent } from './createWorkflowEvent';
-import { broadcast } from '@/server/websocket/infrastructure/subscriptions';
-import { WorkflowEventTypes } from '@/shared/types/websocket.types';
-import { Channels } from '@/shared/websocket';
+import { prisma } from "@/shared/prisma";
+import type { WorkflowExecution } from "@prisma/client";
+import type { FastifyBaseLogger } from "fastify";
+import { createWorkflowEvent } from "../events/createWorkflowEvent";
+import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
+import { WorkflowEventTypes } from "@/shared/types/websocket.types";
+import { Channels } from "@/shared/websocket";
 
 /**
  * Cancels a workflow execution
@@ -20,7 +20,7 @@ export async function cancelWorkflow(
   const execution = await prisma.workflowExecution.update({
     where: { id: executionId },
     data: {
-      status: 'cancelled',
+      status: "cancelled",
       cancelled_at: cancelledAt,
     },
   });
@@ -28,14 +28,14 @@ export async function cancelWorkflow(
   // Create workflow_cancelled event
   await createWorkflowEvent({
     workflow_execution_id: executionId,
-    event_type: 'workflow_cancelled',
+    event_type: "workflow_cancelled",
     event_data: {
-      title: 'Cancelled',
-      reason
+      title: "Cancelled",
+      reason,
     },
     created_by_user_id: userId,
     created_at: cancelledAt,
-    logger
+    logger,
   });
 
   // Emit WebSocket event immediately for real-time updates

@@ -1,10 +1,10 @@
-import { prisma } from '@/shared/prisma';
-import type { WorkflowExecution } from '@prisma/client';
-import type { FastifyBaseLogger } from 'fastify';
-import { createWorkflowEvent } from './createWorkflowEvent';
-import { broadcast } from '@/server/websocket/infrastructure/subscriptions';
-import { WorkflowEventTypes } from '@/shared/types/websocket.types';
-import { Channels } from '@/shared/websocket';
+import { prisma } from "@/shared/prisma";
+import type { WorkflowExecution } from "@prisma/client";
+import type { FastifyBaseLogger } from "fastify";
+import { createWorkflowEvent } from "../events/createWorkflowEvent";
+import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
+import { WorkflowEventTypes } from "@/shared/types/websocket.types";
+import { Channels } from "@/shared/websocket";
 
 /**
  * STUB: Resume a paused workflow execution (future implementation)
@@ -16,13 +16,13 @@ export async function resumeWorkflow(
   userId?: string,
   logger?: FastifyBaseLogger
 ): Promise<WorkflowExecution> {
-  logger?.warn({ executionId }, 'Resume workflow not implemented - stubbed');
+  logger?.warn({ executionId }, "Resume workflow not implemented - stubbed");
 
   const resumedAt = new Date();
   const execution = await prisma.workflowExecution.update({
     where: { id: executionId },
     data: {
-      status: 'running',
+      status: "running",
       paused_at: null, // Clear paused_at when resuming
     },
   });
@@ -30,13 +30,13 @@ export async function resumeWorkflow(
   // Create workflow_resumed event
   await createWorkflowEvent({
     workflow_execution_id: executionId,
-    event_type: 'workflow_resumed',
+    event_type: "workflow_resumed",
     event_data: {
-      title: 'Resumed',
+      title: "Resumed",
     },
     created_by_user_id: userId,
     created_at: resumedAt,
-    logger
+    logger,
   });
 
   // Emit WebSocket event immediately for real-time updates

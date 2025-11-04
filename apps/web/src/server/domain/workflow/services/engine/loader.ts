@@ -1,8 +1,8 @@
 import { readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import type { WorkflowDefinition } from "@sourceborn/workflow-sdk";
-import type { WorkflowRuntime } from "@sourceborn/workflow-sdk";
+import type { WorkflowDefinition } from "@repo/workflow-sdk";
+import type { WorkflowRuntime } from "@repo/workflow-sdk";
 import type { InngestFunction } from "inngest";
 import type { FastifyBaseLogger } from "fastify";
 
@@ -28,7 +28,7 @@ export async function findWorkflowFiles(dir: string): Promise<string[]> {
         files.push(fullPath);
       }
     }
-  } catch (error) {
+  } catch {
     // Directory doesn't exist or not readable
     return [];
   }
@@ -46,7 +46,9 @@ export async function findWorkflowFiles(dir: string): Promise<string[]> {
  * @param module - Imported module
  * @returns WorkflowDefinition or null
  */
-export function extractWorkflowDefinition(module: any): WorkflowDefinition | null {
+export function extractWorkflowDefinition(
+  module: Record<string, unknown>
+): WorkflowDefinition | null {
   // Check default export
   if (module.default && isWorkflowDefinition(module.default)) {
     return module.default;
@@ -65,8 +67,15 @@ export function extractWorkflowDefinition(module: any): WorkflowDefinition | nul
 /**
  * Check if an object is a workflow definition
  */
-function isWorkflowDefinition(obj: any): obj is WorkflowDefinition {
-  return obj && obj.__type === "workflow" && typeof obj.createInngestFunction === "function";
+function isWorkflowDefinition(obj: unknown): obj is WorkflowDefinition {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "__type" in obj &&
+    obj.__type === "workflow" &&
+    "createInngestFunction" in obj &&
+    typeof obj.createInngestFunction === "function"
+  );
 }
 
 /**
@@ -81,26 +90,45 @@ export async function loadProjectWorkflows(
   projectPath: string,
   runtime: WorkflowRuntime,
   logger: FastifyBaseLogger
-): Promise<Array<{ definition: WorkflowDefinition; inngestFunction: InngestFunction<any, any>; filePath: string }>> {
+): Promise<
+  Array<{
+    definition: WorkflowDefinition;
+    inngestFunction: InngestFunction<Record<string, unknown>, Record<string, unknown>>;
+    filePath: string;
+  }>
+> {
   const workflowsDir = join(projectPath, ".agent/workflows/definitions");
-  const results: Array<{ definition: WorkflowDefinition; inngestFunction: InngestFunction<any, any>; filePath: string }> = [];
+  const results: Array<{
+    definition: WorkflowDefinition;
+    inngestFunction: InngestFunction<Record<string, unknown>, Record<string, unknown>>;
+    filePath: string;
+  }> = [];
 
   // Check if .agent/workflows/definitions directory exists
   try {
     const dirStat = await stat(workflowsDir);
     if (!dirStat.isDirectory()) {
-      logger.debug({ projectPath }, "No .agent/workflows/definitions directory found");
+      logger.debug(
+        { projectPath },
+        "No .agent/workflows/definitions directory found"
+      );
       return results;
     }
-  } catch (error) {
+  } catch {
     // Directory doesn't exist
-    logger.debug({ projectPath }, "No .agent/workflows/definitions directory found");
+    logger.debug(
+      { projectPath },
+      "No .agent/workflows/definitions directory found"
+    );
     return results;
   }
 
   // Find all workflow files
   const files = await findWorkflowFiles(workflowsDir);
-  logger.debug({ projectPath, filesFound: files.length }, "Found workflow files");
+  logger.debug(
+    { projectPath, filesFound: files.length },
+    "Found workflow files"
+  );
 
   // Load each file
   for (const file of files) {
@@ -122,12 +150,21 @@ export async function loadProjectWorkflows(
           filePath: file,
         });
 
-        logger.info({ file, workflowId: definition.config.id }, "Loaded workflow");
+        logger.info(
+          { file, workflowId: definition.config.id },
+          "Loaded workflow"
+        );
       } else {
-        logger.warn({ file }, "File does not export a valid workflow definition");
+        logger.warn(
+          { file },
+          "File does not export a valid workflow definition"
+        );
       }
     } catch (error) {
-      logger.error({ file, error: (error as Error).message }, "Failed to load workflow file");
+      logger.error(
+        { file, error: (error as Error).message },
+        "Failed to load workflow file"
+      );
     }
   }
 

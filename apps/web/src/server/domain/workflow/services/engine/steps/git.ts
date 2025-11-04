@@ -1,5 +1,5 @@
-import type { RuntimeContext } from "../../types";
-import type { GitStepConfig, GitStepResult } from "@sourceborn/workflow-sdk";
+import type { RuntimeContext } from "../../../types/engine.types";
+import type { GitStepConfig, GitStepResult } from "@repo/workflow-sdk";
 import { executeStep } from "./helpers";
 import { commitChanges } from "@/server/domain/git/services/commitChanges";
 import { createAndSwitchBranch } from "@/server/domain/git/services/createAndSwitchBranch";
@@ -20,13 +20,14 @@ export function createGitStep(context: RuntimeContext) {
     const timeout = options?.timeout ?? DEFAULT_GIT_TIMEOUT;
 
     return executeStep(context, name, async () => {
-      const { projectPath, logger } = context;
+      const { projectPath } = context;
 
       const operation = await Promise.race([
-        executeGitOperation(projectPath, config, logger),
+        executeGitOperation(projectPath, config),
         new Promise<never>((_, reject) =>
           setTimeout(
-            () => reject(new Error(`Git operation timed out after ${timeout}ms`)),
+            () =>
+              reject(new Error(`Git operation timed out after ${timeout}ms`)),
             timeout
           )
         ),
@@ -39,8 +40,7 @@ export function createGitStep(context: RuntimeContext) {
 
 async function executeGitOperation(
   projectPath: string,
-  config: GitStepConfig,
-  logger: any
+  config: GitStepConfig
 ): Promise<GitStepResult> {
   switch (config.operation) {
     case "commit": {
@@ -49,11 +49,7 @@ async function executeGitOperation(
       }
       // commitChanges expects (projectPath, message, files[])
       // files defaults to ['.'] to stage all changes
-      const commitSha = await commitChanges(
-        projectPath,
-        config.message,
-        ['.']
-      );
+      const commitSha = await commitChanges(projectPath, config.message, ["."]);
       return {
         operation: "commit",
         commitSha,

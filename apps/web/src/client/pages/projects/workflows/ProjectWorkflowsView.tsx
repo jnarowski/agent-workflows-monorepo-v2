@@ -1,12 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import {
-  DndContext,
-  type DragEndEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
 import { useNavigate, useParams } from "react-router-dom";
 import { Plus, Search } from "lucide-react";
 import { WorkflowStatus } from "@/shared/schemas";
@@ -16,12 +9,7 @@ import { NewWorkflowModal } from "./components/NewWorkflowModal";
 import { useWorkflowExecutions } from "./hooks/useWorkflowExecutions";
 import { useWorkflowDefinitions } from "./hooks/useWorkflowDefinitions";
 import { useWorkflowWebSocket } from "./hooks/useWorkflowWebSocket";
-import {
-  useCreateWorkflow,
-  usePauseWorkflow,
-  useResumeWorkflow,
-  useCancelWorkflow,
-} from "./hooks/useWorkflowMutations";
+import { useCreateWorkflow } from "./hooks/useWorkflowMutations";
 
 export interface ProjectWorkflowsViewProps {
   projectId?: string;
@@ -49,39 +37,10 @@ export function ProjectWorkflowsView({
 
   // Mutations
   const createWorkflow = useCreateWorkflow();
-  const pauseWorkflow = usePauseWorkflow();
-  const resumeWorkflow = useResumeWorkflow();
-  const cancelWorkflow = useCancelWorkflow();
-
-  // Drag and drop
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    })
-  );
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const executionId = String(active.id);
-    const newStatus = over.id as WorkflowStatus;
-
-    // Call appropriate mutation based on status
-    switch (newStatus) {
-      case WorkflowStatus.RUNNING:
-        await resumeWorkflow.mutateAsync(executionId);
-        break;
-      case WorkflowStatus.PAUSED:
-        await pauseWorkflow.mutateAsync(executionId);
-        break;
-      case WorkflowStatus.CANCELLED:
-        await cancelWorkflow.mutateAsync(executionId);
-        break;
-    }
-  };
+  // TODO: Wire up workflow control mutations
+  // const pauseWorkflow = usePauseWorkflow();
+  // const resumeWorkflow = useResumeWorkflow();
+  // const cancelWorkflow = useCancelWorkflow();
 
   const handleExecutionClick = (execution: any) => {
     // Navigate to execution detail page
@@ -172,28 +131,23 @@ export function ProjectWorkflowsView({
 
       {/* Kanban Board */}
       <div className="flex-1 overflow-x-auto p-4">
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-          <div className="flex gap-4 min-w-max">
-            {[
-              WorkflowStatus.PENDING,
-              WorkflowStatus.RUNNING,
-              WorkflowStatus.PAUSED,
-              WorkflowStatus.COMPLETED,
-              WorkflowStatus.FAILED,
-            ].map((status) => (
-              <div key={status} className="w-80">
-                <WorkflowKanbanColumn
-                  status={status}
-                  executions={executionsByStatus[status] || []}
-                  onExecutionClick={handleExecutionClick}
-                  onPause={pauseWorkflow.mutate}
-                  onResume={resumeWorkflow.mutate}
-                  onCancel={cancelWorkflow.mutate}
-                />
-              </div>
-            ))}
-          </div>
-        </DndContext>
+        <div className="flex gap-4 min-w-max">
+          {[
+            WorkflowStatus.PENDING,
+            WorkflowStatus.RUNNING,
+            WorkflowStatus.PAUSED,
+            WorkflowStatus.COMPLETED,
+            WorkflowStatus.FAILED,
+          ].map((status) => (
+            <div key={status} className="w-80">
+              <WorkflowKanbanColumn
+                status={status}
+                executions={executionsByStatus[status] || []}
+                onExecutionClick={handleExecutionClick}
+              />
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* New Workflow Modal */}

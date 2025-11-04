@@ -1,8 +1,8 @@
 import { prisma } from "@/shared/prisma";
 import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
-import type { RuntimeContext } from "../../types";
-import type { PhaseOptions } from "@sourceborn/workflow-sdk";
+import type { RuntimeContext } from "../../../types/engine.types";
+import type { PhaseOptions } from "@repo/workflow-sdk";
 
 /**
  * Create phase step factory function
@@ -27,7 +27,10 @@ export function createPhaseStep(context: RuntimeContext) {
     const retries = options?.retries ?? 3;
     const retryDelay = options?.retryDelay ?? 5000;
 
-    logger.info({ executionId, phase: name, retries, retryDelay }, "Phase started");
+    logger.info(
+      { executionId, phase: name, retries, retryDelay },
+      "Phase started"
+    );
 
     // Update current_phase in execution
     await prisma.workflowExecution.update({
@@ -71,7 +74,11 @@ export function createPhaseStep(context: RuntimeContext) {
           data: {
             workflow_execution_id: executionId,
             event_type: "phase_completed",
-            event_data: { phase: name, attempt: attempt + 1, totalAttempts: retries + 1 },
+            event_data: {
+              phase: name,
+              attempt: attempt + 1,
+              totalAttempts: retries + 1,
+            },
           },
         });
 
@@ -86,7 +93,10 @@ export function createPhaseStep(context: RuntimeContext) {
           },
         });
 
-        logger.info({ executionId, phase: name, attempt: attempt + 1 }, "Phase completed");
+        logger.info(
+          { executionId, phase: name, attempt: attempt + 1 },
+          "Phase completed"
+        );
 
         return result;
       } catch (error) {
@@ -94,7 +104,13 @@ export function createPhaseStep(context: RuntimeContext) {
         attempt++;
 
         logger.warn(
-          { executionId, phase: name, attempt, maxRetries: retries, error: lastError.message },
+          {
+            executionId,
+            phase: name,
+            attempt,
+            maxRetries: retries,
+            error: lastError.message,
+          },
           "Phase attempt failed"
         );
 
@@ -134,7 +150,12 @@ export function createPhaseStep(context: RuntimeContext) {
 
     // All retries exhausted - phase failed
     logger.error(
-      { executionId, phase: name, attempts: attempt, error: lastError?.message },
+      {
+        executionId,
+        phase: name,
+        attempts: attempt,
+        error: lastError?.message,
+      },
       "Phase failed after all retries"
     );
 

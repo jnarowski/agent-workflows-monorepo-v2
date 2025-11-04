@@ -1,12 +1,12 @@
 /**
- * @sourceborn/workflow-sdk - Type-safe workflow SDK for Sourceborn workflow engine
+ * @repo/workflow-sdk - Type-safe workflow SDK for Sourceborn workflow engine
  *
  * This SDK provides TypeScript interfaces and builder functions for defining workflows.
  * The actual implementations are provided by the Sourceborn web app at runtime.
  *
  * @example
  * ```typescript
- * import { defineWorkflow } from '@sourceborn/workflow-sdk';
+ * import { defineWorkflow } from '@repo/workflow-sdk';
  *
  * export default defineWorkflow({
  *   id: 'my-workflow',

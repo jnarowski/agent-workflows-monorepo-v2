@@ -2,7 +2,7 @@ import { prisma } from "@/shared/prisma";
 import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import { createWorkflowEvent } from "@/server/domain/workflow/services";
-import type { RuntimeContext } from "../../types";
+import type { RuntimeContext } from "../../../types/engine.types";
 import type { WorkflowExecutionStep } from "@prisma/client";
 
 /**
@@ -74,7 +74,8 @@ export async function updateStepStatus(
       status,
       error_message: error,
       started_at: status === "running" ? new Date() : undefined,
-      completed_at: status === "completed" || status === "failed" ? new Date() : undefined,
+      completed_at:
+        status === "completed" || status === "failed" ? new Date() : undefined,
     },
   });
 

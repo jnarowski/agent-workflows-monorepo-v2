@@ -1,5 +1,5 @@
-import type { RuntimeContext } from "../../types";
-import type { AgentStepResult } from "@sourceborn/workflow-sdk";
+import type { RuntimeContext } from "../../../types/engine.types";
+import type { AgentStepResult } from "@repo/workflow-sdk";
 import { createAgentStep } from "./agent";
 
 /**
@@ -14,12 +14,17 @@ export function createSlashStep(context: RuntimeContext) {
     args?: string[],
     options?: { timeout?: number }
   ): Promise<AgentStepResult> {
-    const prompt = args && args.length > 0 ? `${command} ${args.join(" ")}` : command;
+    const prompt =
+      args && args.length > 0 ? `${command} ${args.join(" ")}` : command;
 
-    return agentStep(`slash-command-${command}`, {
-      agent: "claude",
-      prompt,
-      projectPath: context.projectPath,
-    }, options);
+    return agentStep(
+      `slash-command-${command}`,
+      {
+        agent: "claude",
+        prompt,
+        projectPath: context.projectPath,
+      },
+      options
+    );
   };
 }

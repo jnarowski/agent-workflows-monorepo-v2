@@ -1,5 +1,5 @@
-import type { RuntimeContext } from "../../types";
-import type { AgentStepConfig, AgentStepResult } from "@sourceborn/workflow-sdk";
+import type { RuntimeContext } from "../../../types/engine.types";
+import type { AgentStepConfig, AgentStepResult } from "@repo/workflow-sdk";
 import { executeStep } from "./helpers";
 import { executeAgent } from "@/server/domain/session/services/executeAgent";
 import { prisma } from "@/shared/prisma";
@@ -19,7 +19,7 @@ export function createAgentStep(context: RuntimeContext) {
     const timeout = options?.timeout ?? DEFAULT_AGENT_TIMEOUT;
 
     return executeStep(context, name, async () => {
-      const { projectId, userId, logger, executionId } = context;
+      const { projectId, userId, logger } = context;
 
       // Create agent session
       const session = await prisma.agentSession.create({
@@ -45,7 +45,10 @@ export function createAgentStep(context: RuntimeContext) {
           }),
           new Promise<never>((_, reject) =>
             setTimeout(
-              () => reject(new Error(`Agent execution timed out after ${timeout}ms`)),
+              () =>
+                reject(
+                  new Error(`Agent execution timed out after ${timeout}ms`)
+                ),
               timeout
             )
           ),
@@ -63,7 +66,8 @@ export function createAgentStep(context: RuntimeContext) {
           where: { id: session.id },
           data: {
             state: "error",
-            error_message: error instanceof Error ? error.message : String(error),
+            error_message:
+              error instanceof Error ? error.message : String(error),
           },
         });
 

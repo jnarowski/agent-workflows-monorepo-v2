@@ -1,5 +1,5 @@
 import type { GetStepTools } from "inngest";
-import type { RuntimeContext } from "../../types";
+import type { RuntimeContext } from "../../../types/engine.types";
 import { executeStep } from "./helpers";
 
 /**
@@ -9,7 +9,7 @@ import { executeStep } from "./helpers";
  */
 export function createRunStep(
   context: RuntimeContext,
-  inngestStep: GetStepTools<any>
+  inngestStep: GetStepTools<Record<string, unknown>>
 ) {
   return async function run<T>(
     stepId: string,

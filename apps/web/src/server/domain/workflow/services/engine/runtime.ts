@@ -1,6 +1,11 @@
-import type { Inngest, InngestFunction, GetStepTools } from "inngest";
-import type { WorkflowRuntime, WorkflowConfig, WorkflowFunction, WorkflowStep } from "@sourceborn/workflow-sdk";
-import type { RuntimeContext } from "../types";
+import type { Inngest, InngestFunction } from "inngest";
+import type {
+  WorkflowRuntime,
+  WorkflowConfig,
+  WorkflowFunction,
+  WorkflowStep,
+} from "@repo/workflow-sdk";
+import type { RuntimeContext } from "../../types/engine.types";
 import type { FastifyBaseLogger } from "fastify";
 import { prisma } from "@/shared/prisma";
 import { Channels } from "@/shared/websocket/channels";
@@ -33,7 +38,7 @@ export function createWorkflowRuntime(
     createInngestFunction(
       config: WorkflowConfig,
       fn: WorkflowFunction
-    ): InngestFunction<any, any> {
+    ): InngestFunction<Record<string, unknown>, Record<string, unknown>> {
       // Create Inngest function with custom step implementations
       // Using workflow/${id} convention to match event sender (Inngest convention)
       return inngest.createFunction(
@@ -131,7 +136,8 @@ export function createWorkflowRuntime(
 
             return result;
           } catch (error) {
-            const err = error instanceof Error ? error : new Error(String(error));
+            const err =
+              error instanceof Error ? error : new Error(String(error));
 
             // Emit workflow:failed event
             await prisma.workflowExecution.update({

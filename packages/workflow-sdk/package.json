@@ -1,5 +1,5 @@
 {
-  "name": "@sourceborn/workflow-sdk",
+  "name": "@repo/workflow-sdk",
   "version": "1.0.0",
   "description": "Type-safe workflow SDK for Sourceborn workflow engine",
   "type": "module",

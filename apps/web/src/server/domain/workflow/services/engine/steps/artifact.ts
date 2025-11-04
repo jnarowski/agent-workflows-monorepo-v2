@@ -1,16 +1,22 @@
-import { readFile, readdir, stat, writeFile, mkdir, copyFile } from "node:fs/promises";
+import { readdir, stat, writeFile, mkdir, copyFile } from "node:fs/promises";
 import { join, relative, extname, dirname } from "node:path";
 import { prisma } from "@/shared/prisma";
 import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
-import type { RuntimeContext } from "../../types";
-import type { ArtifactStepConfig, ArtifactStepResult } from "@sourceborn/workflow-sdk";
+import type { RuntimeContext } from "../../../types/engine.types";
+import type {
+  ArtifactStepConfig,
+  ArtifactStepResult,
+} from "@repo/workflow-sdk";
 import { executeStep } from "./helpers";
 
 /**
  * Get MIME type from file extension
  */
-function getMimeType(filename: string, defaultType = "application/octet-stream"): string {
+function getMimeType(
+  filename: string,
+  defaultType = "application/octet-stream"
+): string {
   const ext = extname(filename).toLowerCase();
   const mimeTypes: Record<string, string> = {
     ".txt": "text/plain",
@@ -59,7 +65,14 @@ export function createArtifactStep(context: RuntimeContext) {
       }
 
       // Create artifacts directory: {projectPath}/.agent/workflows/executions/{executionId}/artifacts
-      const artifactsDir = join(projectPath, ".agent", "workflows", "executions", executionId, "artifacts");
+      const artifactsDir = join(
+        projectPath,
+        ".agent",
+        "workflows",
+        "executions",
+        executionId,
+        "artifacts"
+      );
       await mkdir(artifactsDir, { recursive: true });
 
       switch (config.type) {
@@ -120,7 +133,9 @@ export function createArtifactStep(context: RuntimeContext) {
 
         case "directory": {
           if (!config.directory) {
-            throw new Error("Directory path is required for directory artifact");
+            throw new Error(
+              "Directory path is required for directory artifact"
+            );
           }
           const files = await collectFilesRecursively(
             config.directory,
@@ -130,7 +145,11 @@ export function createArtifactStep(context: RuntimeContext) {
           // Copy all files to artifacts directory preserving structure
           for (const file of files) {
             const relativeToSource = relative(config.directory, file);
-            const artifactPath = join(artifactsDir, config.name, relativeToSource);
+            const artifactPath = join(
+              artifactsDir,
+              config.name,
+              relativeToSource
+            );
             await mkdir(dirname(artifactPath), { recursive: true });
             await copyFile(file, artifactPath);
 

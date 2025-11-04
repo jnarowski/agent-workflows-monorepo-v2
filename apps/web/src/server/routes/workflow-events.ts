@@ -1,8 +1,11 @@
-import type { FastifyInstance } from 'fastify';
-import { z } from 'zod';
-import { getWorkflowEvents } from '@/server/domain/workflow/services/getWorkflowEvents';
-import { createWorkflowEventSchema, getWorkflowEventsQuerySchema } from '@/shared/schemas';
-import { createWorkflowEvent } from '@/server/domain/workflow/services/createWorkflowEvent';
+import type { FastifyInstance } from "fastify";
+import { z } from "zod";
+import { getWorkflowEvents } from "@/server/domain/workflow/services/events/getWorkflowEvents";
+import {
+  createWorkflowEventSchema,
+  getWorkflowEventsQuerySchema,
+} from "@/shared/schemas";
+import { createWorkflowEvent } from "@/server/domain/workflow/services/events/createWorkflowEvent";
 
 const executionIdSchema = z.object({
   id: z.string().cuid(),
@@ -17,7 +20,7 @@ export async function workflowEventRoutes(fastify: FastifyInstance) {
     Params: z.infer<typeof executionIdSchema>;
     Body: z.infer<typeof createWorkflowEventSchema>;
   }>(
-    '/api/workflow-executions/:id/events',
+    "/api/workflow-executions/:id/events",
     {
       preHandler: fastify.authenticate,
       schema: {
@@ -33,7 +36,7 @@ export async function workflowEventRoutes(fastify: FastifyInstance) {
       const event = await createWorkflowEvent({
         workflow_execution_id: id,
         workflow_execution_step_id: body.step_id,
-        event_type: body.event_type || 'annotation_added',
+        event_type: body.event_type || "annotation_added",
         event_data: { text: body.text },
         created_by_user_id: userId,
         logger: fastify.log,
@@ -51,7 +54,7 @@ export async function workflowEventRoutes(fastify: FastifyInstance) {
     Params: z.infer<typeof executionIdSchema>;
     Querystring: z.infer<typeof getWorkflowEventsQuerySchema>;
   }>(
-    '/api/workflow-executions/:id/events',
+    "/api/workflow-executions/:id/events",
     {
       preHandler: fastify.authenticate,
       schema: {

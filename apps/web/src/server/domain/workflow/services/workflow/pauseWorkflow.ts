@@ -1,10 +1,10 @@
-import { prisma } from '@/shared/prisma';
-import type { WorkflowExecution } from '@prisma/client';
-import type { FastifyBaseLogger } from 'fastify';
-import { createWorkflowEvent } from './createWorkflowEvent';
-import { broadcast } from '@/server/websocket/infrastructure/subscriptions';
-import { WorkflowEventTypes } from '@/shared/types/websocket.types';
-import { Channels } from '@/shared/websocket';
+import { prisma } from "@/shared/prisma";
+import type { WorkflowExecution } from "@prisma/client";
+import type { FastifyBaseLogger } from "fastify";
+import { createWorkflowEvent } from "../events/createWorkflowEvent";
+import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
+import { WorkflowEventTypes } from "@/shared/types/websocket.types";
+import { Channels } from "@/shared/websocket";
 
 /**
  * Pauses a running workflow execution
@@ -19,7 +19,7 @@ export async function pauseWorkflow(
   const execution = await prisma.workflowExecution.update({
     where: { id: executionId },
     data: {
-      status: 'paused',
+      status: "paused",
       paused_at: pausedAt,
     },
   });
@@ -27,13 +27,13 @@ export async function pauseWorkflow(
   // Create workflow_paused event
   await createWorkflowEvent({
     workflow_execution_id: executionId,
-    event_type: 'workflow_paused',
+    event_type: "workflow_paused",
     event_data: {
-      title: 'Paused',
+      title: "Paused",
     },
     created_by_user_id: userId,
     created_at: pausedAt,
-    logger
+    logger,
   });
 
   // Emit WebSocket event immediately for real-time updates

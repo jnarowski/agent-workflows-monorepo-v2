@@ -1,7 +1,7 @@
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
-import type { RuntimeContext } from "../../types";
-import type { CliStepConfig, CliStepResult } from "@sourceborn/workflow-sdk";
+import type { RuntimeContext } from "../../../types/engine.types";
+import type { CliStepConfig, CliStepResult } from "@repo/workflow-sdk";
 import { executeStep } from "./helpers";
 
 const execAsync = promisify(exec);
@@ -37,7 +37,8 @@ export function createCliStep(context: RuntimeContext) {
           }),
           new Promise<never>((_, reject) =>
             setTimeout(
-              () => reject(new Error(`CLI command timed out after ${timeout}ms`)),
+              () =>
+                reject(new Error(`CLI command timed out after ${timeout}ms`)),
               timeout
             )
           ),
@@ -50,13 +51,19 @@ export function createCliStep(context: RuntimeContext) {
           stderr: stderr.trim(),
           success: true,
         };
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Command failed but we still want to return result
+        const err = error as {
+          code?: number;
+          stdout?: string;
+          stderr?: string;
+          message?: string;
+        };
         return {
           command,
-          exitCode: error.code ?? 1,
-          stdout: error.stdout?.trim() ?? "",
-          stderr: error.stderr?.trim() ?? error.message,
+          exitCode: err.code ?? 1,
+          stdout: err.stdout?.trim() ?? "",
+          stderr: err.stderr?.trim() ?? err.message ?? "Unknown error",
           success: false,
         };
       }

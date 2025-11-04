@@ -28,7 +28,7 @@ export interface WorkflowDefinition {
  *
  * @example
  * ```typescript
- * import { defineWorkflow } from '@sourceborn/workflow-sdk';
+ * import { defineWorkflow } from '@repo/workflow-sdk';
  *
  * export default defineWorkflow({
  *   id: 'implement-feature',

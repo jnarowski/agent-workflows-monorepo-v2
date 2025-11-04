@@ -1,7 +1,7 @@
 import { prisma } from "@/shared/prisma";
 import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
-import type { RuntimeContext } from "../../types";
+import type { RuntimeContext } from "../../../types/engine.types";
 
 /**
  * Create annotation step factory function
@@ -34,6 +34,9 @@ export function createAnnotationStep(context: RuntimeContext) {
       },
     });
 
-    logger.debug({ executionId, message, phase: currentPhase }, "Annotation added");
+    logger.debug(
+      { executionId, message, phase: currentPhase },
+      "Annotation added"
+    );
   };
 }

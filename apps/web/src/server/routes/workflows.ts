@@ -14,7 +14,7 @@ import {
   workflowExecutionFiltersSchema,
 } from "@/shared/schemas";
 import { NotFoundError } from "@/server/errors";
-import { scanProjectWorkflows } from "@/server/workflows/engine/scanner";
+import { scanProjectWorkflows } from "@/server/domain/workflow/services/engine/scanner";
 import { prisma } from "@/shared/prisma";
 
 // Params schema
@@ -38,7 +38,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request.user!.id as string);
+      const userId = request.user!.id as string;
       const body = request.body;
 
       fastify.log.info(
@@ -55,7 +55,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       });
 
       if (!execution) {
-        throw new NotFoundError('Workflow definition not found');
+        throw new NotFoundError("Workflow definition not found");
       }
 
       // Start execution via Inngest
@@ -96,15 +96,13 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request.user!.id as string);
+      const userId = request.user!.id as string;
       const { project_id, status } = request.query;
 
       if (!project_id) {
-        return reply
-          .code(400)
-          .send({
-            error: { message: "project_id is required", statusCode: 400 },
-          });
+        return reply.code(400).send({
+          error: { message: "project_id is required", statusCode: 400 },
+        });
       }
 
       fastify.log.info(
@@ -138,7 +136,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = (request.user!.id as string);
+      const userId = request.user!.id as string;
 
       fastify.log.info(
         { userId, executionId: id },
@@ -178,7 +176,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = (request.user!.id as string);
+      const userId = request.user!.id as string;
 
       fastify.log.info(
         { userId, executionId: id },
@@ -198,11 +196,9 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       }
 
       if (execution.status !== "running") {
-        return reply
-          .code(400)
-          .send({
-            error: { message: "Execution is not running", statusCode: 400 },
-          });
+        return reply.code(400).send({
+          error: { message: "Execution is not running", statusCode: 400 },
+        });
       }
 
       const updated = await pauseWorkflow(id, userId, fastify.log);
@@ -227,7 +223,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = (request.user!.id as string);
+      const userId = request.user!.id as string;
 
       fastify.log.info(
         { userId, executionId: id },
@@ -247,11 +243,9 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       }
 
       if (execution.status !== "paused") {
-        return reply
-          .code(400)
-          .send({
-            error: { message: "Execution is not paused", statusCode: 400 },
-          });
+        return reply.code(400).send({
+          error: { message: "Execution is not paused", statusCode: 400 },
+        });
       }
 
       const updated = await resumeWorkflow(id, userId, fastify.log);
@@ -276,7 +270,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = (request.user!.id as string);
+      const userId = request.user!.id as string;
 
       fastify.log.info(
         { userId, executionId: id },
@@ -321,10 +315,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       const { projectId } = request.params;
       const userId = request.user!.id as string;
 
-      fastify.log.info(
-        { userId, projectId },
-        "Refreshing project workflows"
-      );
+      fastify.log.info({ userId, projectId }, "Refreshing project workflows");
 
       // Get project
       const project = await prisma.project.findUnique({

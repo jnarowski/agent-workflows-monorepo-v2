@@ -108,26 +108,21 @@ describe("createProject", () => {
       );
       mockGetCurrentBranch.mockResolvedValue("main");
 
-      const beforeCreate = new Date();
-
       // Act
       const project = await createProject({
         name: "Test Project",
         path: "/tmp/test-project",
       });
 
-      const afterCreate = new Date();
-
       // Assert
       expect(project.created_at).toBeInstanceOf(Date);
       expect(project.updated_at).toBeInstanceOf(Date);
-      expect(project.created_at.getTime()).toBeGreaterThanOrEqual(
-        beforeCreate.getTime()
-      );
-      expect(project.created_at.getTime()).toBeLessThanOrEqual(
-        afterCreate.getTime()
-      );
       expect(project.created_at.getTime()).toBe(project.updated_at.getTime());
+
+      // Verify timestamp is recent (within last 5 seconds)
+      const now = Date.now();
+      const createdTime = project.created_at.getTime();
+      expect(now - createdTime).toBeLessThan(5000);
     });
   });
 

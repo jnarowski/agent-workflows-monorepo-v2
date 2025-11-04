@@ -1,6 +1,6 @@
 import { prisma } from "@/shared/prisma";
 import { loadProjectWorkflows } from "./loader";
-import type { WorkflowRuntime } from "@sourceborn/workflow-sdk";
+import type { WorkflowRuntime } from "@repo/workflow-sdk";
 import type { FastifyBaseLogger } from "fastify";
 import type { FastifyInstance } from "fastify";
 
@@ -120,7 +120,11 @@ export async function scanAllProjectWorkflows(
       result.discovered += count;
     } catch (error) {
       logger.error(
-        { projectId: project.id, projectName: project.name, error: (error as Error).message },
+        {
+          projectId: project.id,
+          projectName: project.name,
+          error: (error as Error).message,
+        },
         "Failed to scan project"
       );
       result.errors.push({

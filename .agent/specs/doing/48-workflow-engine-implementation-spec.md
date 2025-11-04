@@ -17,9 +17,10 @@ So that I can automate complex agent-driven development tasks with full type saf
 
 ## Technical Approach
 
-**Architecture**: Self-hosted Inngest running in-process within the web app, with dynamic workflow loading from user projects' `.workflows/` directories. Published SDK (`@sourceborn/workflow-sdk`) provides TypeScript interfaces that are hydrated with real implementations at runtime by the web app.
+**Architecture**: Self-hosted Inngest running in-process within the web app, with dynamic workflow loading from user projects' `.workflows/` directories. Published SDK (`@repo/workflow-sdk`) provides TypeScript interfaces that are hydrated with real implementations at runtime by the web app.
 
 **Key Patterns**:
+
 1. **Runtime Injection**: SDK defines type-safe interfaces, web app provides implementations
 2. **Phase-based Execution**: Workflows organized into phases with automatic retry logic
 3. **Dynamic Step Creation**: Steps created on-demand during execution (not pre-created)
@@ -30,7 +31,7 @@ So that I can automate complex agent-driven development tasks with full type saf
 
 1. **In-process Inngest**: Runs inside web app process for direct access to domain services, database, and WebSocket infrastructure. Can be separated later if needed for scaling.
 
-2. **Published SDK Package**: External projects install `@sourceborn/workflow-sdk` from npm. SDK contains only TypeScript types and builder functions - no runtime logic or Inngest dependency.
+2. **Published SDK Package**: External projects install `@repo/workflow-sdk` from npm. SDK contains only TypeScript types and builder functions - no runtime logic or Inngest dependency.
 
 3. **Dynamic Loading**: Workflows discovered from user projects' `.workflows/` directories (like slash commands pattern). Loaded on startup and re-scannable via API.
 
@@ -43,30 +44,36 @@ So that I can automate complex agent-driven development tasks with full type saf
 ## Configuration Decisions
 
 **Memoization & Persistence:**
+
 - SQLite memoization store at `apps/web/prisma/workflows.db` (durable, survives restarts)
 - No TTL/cleanup for MVP (infinite cache persistence)
 - Memoization restore failure = fail entire workflow (prevent inconsistent state)
 
 **Timeout Configuration:**
+
 - Step-level timeouts via 3rd parameter: `step.agent(name, config, { timeout: ms })`
 - Default timeouts: agent 30min, cli 5min, git 2min
 - Timeout behavior: Graceful shutdown (SIGTERM → 30s wait → SIGKILL)
 - Timeout fails step only (phase retry logic handles recovery)
 
 **Execution Model:**
+
 - Parallel execution allowed (separate memoization per executionId)
 - Inngest Dev Server required for local development
 - Inngest automatically resumes from last successful step on retry (never re-runs completed steps)
 
 **Authentication:**
+
 - Inngest endpoint (`/api/workflows/inngest`) bypasses JWT auth
 - Uses Inngest signing key validation instead
 
 **Development Workflow:**
+
 - Single command via `concurrently` runs Inngest Dev Server + web app
 - Inngest Dev Server UI available at http://localhost:8288
 
 **Known Limitations (MVP):**
+
 - Don't modify workflow code during active execution (memoization may use stale code)
 - No cache cleanup (infinite persistence)
 - Project deletion during execution not handled gracefully
@@ -74,6 +81,7 @@ So that I can automate complex agent-driven development tasks with full type saf
 ## Architecture
 
 ### File Structure
+
 ```
 packages/workflow-sdk/                    # NEW: Published SDK
 ├── src/
@@ -121,22 +129,25 @@ my-project/
 │   └── fix-bug.ts
 └── package.json
     └── dependencies:
-        @sourceborn/workflow-sdk: "^1.0.0"
+        @repo/workflow-sdk: "^1.0.0"
 ```
 
 ### Integration Points
 
 **Domain Services** (existing, used by workflow steps):
+
 - `apps/web/src/server/domain/session/services/executeAgent.ts` - Agent execution
 - `apps/web/src/server/domain/git/services/createCommit.ts` - Git operations
 - `apps/web/src/server/domain/git/services/createBranch.ts` - Branch creation
 - `apps/web/src/server/domain/git/services/createPullRequest.ts` - PR creation
 
 **WebSocket Infrastructure** (existing, used for real-time updates):
+
 - `apps/web/src/server/websocket/infrastructure/subscriptions.ts` - Event broadcasting
 - `apps/web/src/shared/websocket/channels.ts` - Channel management
 
 **Database Models** (existing, already support phases):
+
 - `WorkflowDefinition` - Stores discovered workflows (type, path, phases)
 - `WorkflowExecution` - Runtime instances (current_phase tracking)
 - `WorkflowExecutionStep` - Individual steps (phase-tagged, dynamically created)
@@ -144,21 +155,24 @@ my-project/
 - `WorkflowArtifact` - File uploads
 
 **Server Startup**:
+
 - `apps/web/src/server/index.ts` - Integrate workflow engine initialization and scanning
 
 ## Implementation Details
 
-### 1. Published SDK Package (`@sourceborn/workflow-sdk`)
+### 1. Published SDK Package (`@repo/workflow-sdk`)
 
 Lightweight npm package containing only TypeScript types and builder functions. No runtime dependencies (Inngest is peer dependency).
 
 **Key Exports**:
+
 - `defineWorkflow()` - Type-safe workflow builder
 - `WorkflowStep` interface - All step method signatures
 - Type definitions for configs/results (AgentStepConfig, GitStepResult, etc.)
 - `WorkflowRuntime` interface - Implemented by web app
 
 **Design**:
+
 - SDK provides type signatures only
 - User writes type-safe code against interfaces
 - Web app provides runtime implementations when executing
@@ -169,6 +183,7 @@ Lightweight npm package containing only TypeScript types and builder functions. 
 `step.phase(name, fn, options)` executes a workflow phase with configurable retry logic.
 
 **Features**:
+
 - Automatic retry on failure (default: 3 attempts, configurable)
 - Delay between retries (default: 5000ms, configurable)
 - Updates `WorkflowExecution.current_phase`
@@ -177,6 +192,7 @@ Lightweight npm package containing only TypeScript types and builder functions. 
 - All nested steps tagged with phase name
 
 **Retry Behavior**:
+
 ```typescript
 // Phase fails → wait 5s → retry
 // Retry 1 fails → wait 5s → retry
@@ -187,6 +203,7 @@ Lightweight npm package containing only TypeScript types and builder functions. 
 ### 3. Custom Step Methods
 
 All step methods follow same pattern:
+
 1. Find or create WorkflowExecutionStep (dynamically, tagged with current phase)
 2. Update step status to 'running'
 3. Create step_started event + broadcast WebSocket
@@ -196,6 +213,7 @@ All step methods follow same pattern:
 7. Handle errors with cleanup
 
 **Available Methods**:
+
 - `step.agent(name, config)` - Execute AI agent (claude, codex, gemini)
 - `step.slash(command, args)` - Execute slash command (wrapper around agent)
 - `step.git(name, config)` - Git operations (commit, branch, pr)
@@ -208,6 +226,7 @@ All step methods follow same pattern:
 On server startup, scan all projects for `.workflows/` directories and create/update WorkflowDefinition records.
 
 **Scan Process**:
+
 1. Load all projects from database
 2. For each project, check for `.workflows/` directory
 3. Find all `.ts`/`.js` files in directory (recursive)
@@ -217,6 +236,7 @@ On server startup, scan all projects for `.workflows/` directories and create/up
 7. Store filesystem path for later loading
 
 **Database Record**:
+
 ```typescript
 WorkflowDefinition {
   name: 'implement-feature'
@@ -238,6 +258,7 @@ When workflow is triggered, load from stored filesystem path:
 5. Execute workflow
 
 **Runtime Context**:
+
 ```typescript
 {
   executionId: 'exec-123',
@@ -253,15 +274,17 @@ When workflow is triggered, load from stored filesystem path:
 Steps are NOT pre-created. Created on-demand as workflow executes.
 
 **Behavior**:
+
 ```typescript
 // User calls: step.agent('analyze', {...})
 // Implementation:
-const step = await findOrCreateStep(executionId, 'analyze', currentPhase);
+const step = await findOrCreateStep(executionId, "analyze", currentPhase);
 // If not exists → create WorkflowExecutionStep
 // If exists → use existing record
 ```
 
 **Benefits**:
+
 - Supports conditional logic (`if (x) { step.agent('fix', ...) }`)
 - No need to predict all steps upfront
 - Flexible for dynamic workflows
@@ -319,7 +342,7 @@ const step = await findOrCreateStep(executionId, 'analyze', currentPhase);
   - Command: `mkdir -p packages/workflow-sdk/src/{types,builder,runtime}`
 - [x] sdk-002 Create package.json for SDK
   - File: `packages/workflow-sdk/package.json`
-  - Set name to `@sourceborn/workflow-sdk`, version `1.0.0`
+  - Set name to `@repo/workflow-sdk`, version `1.0.0`
   - Add inngest as peerDependency `^3.x.x`
   - Add bunchee as devDependency for building
 - [x] sdk-003 Create tsconfig.json for SDK
@@ -357,7 +380,7 @@ const step = await findOrCreateStep(executionId, 'analyze', currentPhase);
 
 - Created complete SDK package structure with types, builder, and runtime adapter interface
 - All WorkflowStep methods defined with proper TypeScript interfaces including timeout support
-- defineWorkflow() builder returns factory with __type marker for runtime detection
+- defineWorkflow() builder returns factory with \_\_type marker for runtime detection
 - WorkflowRuntime interface designed for dependency injection pattern
 - SDK has zero runtime dependencies (Inngest as peer dependency only)
 - Ready for building and local testing
@@ -595,7 +618,7 @@ const step = await findOrCreateStep(executionId, 'analyze', currentPhase);
 - [x] example-001 Create example workflow in test project
   - Create test project at `apps/web/test-project/.workflows/`
   - File: `apps/web/test-project/.workflows/example-workflow.ts`
-  - Install @sourceborn/workflow-sdk
+  - Install @repo/workflow-sdk
   - Define simple phase-based workflow (implement, review, test)
   - Use step.agent(), step.git(), step.annotation()
 - [ ] test-001 Write unit tests for phase step retry logic
@@ -667,111 +690,122 @@ const step = await findOrCreateStep(executionId, 'analyze', currentPhase);
 ### Unit Tests
 
 **`apps/web/src/server/workflows/engine/steps/phase.test.ts`** - Phase retry logic:
+
 ```typescript
-describe('step.phase() retry logic', () => {
-  it('retries phase on failure up to max attempts', async () => {
+describe("step.phase() retry logic", () => {
+  it("retries phase on failure up to max attempts", async () => {
     let attempts = 0;
-    await step.phase('test-phase', async () => {
-      attempts++;
-      if (attempts < 3) throw new Error('Fail');
-      return 'success';
-    }, { retries: 3 });
+    await step.phase(
+      "test-phase",
+      async () => {
+        attempts++;
+        if (attempts < 3) throw new Error("Fail");
+        return "success";
+      },
+      { retries: 3 }
+    );
 
     expect(attempts).toBe(3);
   });
 
-  it('broadcasts retry events between attempts', async () => {
-    const broadcastSpy = jest.spyOn(subscriptions, 'broadcast');
+  it("broadcasts retry events between attempts", async () => {
+    const broadcastSpy = jest.spyOn(subscriptions, "broadcast");
 
     let attempt = 0;
     try {
-      await step.phase('test', async () => {
-        attempt++;
-        throw new Error('Always fails');
-      }, { retries: 2 });
+      await step.phase(
+        "test",
+        async () => {
+          attempt++;
+          throw new Error("Always fails");
+        },
+        { retries: 2 }
+      );
     } catch {}
 
     expect(broadcastSpy).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        type: 'workflow:phase:retry',
-        data: expect.objectContaining({ attempt: 1, maxRetries: 2 })
+        type: "workflow:phase:retry",
+        data: expect.objectContaining({ attempt: 1, maxRetries: 2 }),
       })
     );
   });
 
-  it('updates current_phase in WorkflowExecution', async () => {
-    await step.phase('implement', async () => {
+  it("updates current_phase in WorkflowExecution", async () => {
+    await step.phase("implement", async () => {
       const execution = await prisma.workflowExecution.findUnique({
-        where: { id: executionId }
+        where: { id: executionId },
       });
-      expect(execution.current_phase).toBe('implement');
+      expect(execution.current_phase).toBe("implement");
     });
   });
 });
 ```
 
 **`apps/web/src/server/workflows/engine/steps/helpers.test.ts`** - Dynamic step creation:
-```typescript
-describe('findOrCreateStep()', () => {
-  it('creates step if not exists', async () => {
-    const step = await findOrCreateStep(executionId, 'new-step', 'implement');
 
-    expect(step.name).toBe('new-step');
-    expect(step.phase).toBe('implement');
-    expect(step.status).toBe('pending');
+```typescript
+describe("findOrCreateStep()", () => {
+  it("creates step if not exists", async () => {
+    const step = await findOrCreateStep(executionId, "new-step", "implement");
+
+    expect(step.name).toBe("new-step");
+    expect(step.phase).toBe("implement");
+    expect(step.status).toBe("pending");
   });
 
-  it('returns existing step if already created', async () => {
-    const step1 = await findOrCreateStep(executionId, 'existing', 'test');
-    const step2 = await findOrCreateStep(executionId, 'existing', 'test');
+  it("returns existing step if already created", async () => {
+    const step1 = await findOrCreateStep(executionId, "existing", "test");
+    const step2 = await findOrCreateStep(executionId, "existing", "test");
 
     expect(step1.id).toBe(step2.id);
   });
 
-  it('tags step with current phase', async () => {
-    await step.phase('review', async () => {
-      await step.agent('review-code', { agent: 'claude', prompt: 'Review' });
+  it("tags step with current phase", async () => {
+    await step.phase("review", async () => {
+      await step.agent("review-code", { agent: "claude", prompt: "Review" });
     });
 
     const steps = await prisma.workflowExecutionStep.findMany({
-      where: { workflow_execution_id: executionId }
+      where: { workflow_execution_id: executionId },
     });
 
-    expect(steps[0].phase).toBe('review');
+    expect(steps[0].phase).toBe("review");
   });
 });
 ```
 
 **`apps/web/src/server/workflows/engine/steps/artifact.test.ts`** - Artifact upload:
+
 ```typescript
-describe('step.artifact()', () => {
-  it('uploads text content as artifact', async () => {
-    await step.artifact('test-results', {
-      name: 'results.txt',
-      content: 'All tests passed',
-      type: 'text'
+describe("step.artifact()", () => {
+  it("uploads text content as artifact", async () => {
+    await step.artifact("test-results", {
+      name: "results.txt",
+      content: "All tests passed",
+      type: "text",
     });
 
     const artifacts = await prisma.workflowArtifact.findMany({
-      where: { workflow_execution_step_id: stepId }
+      where: { workflow_execution_step_id: stepId },
     });
 
     expect(artifacts).toHaveLength(1);
-    expect(artifacts[0].name).toBe('results.txt');
-    expect(artifacts[0].file_type).toBe('text');
+    expect(artifacts[0].name).toBe("results.txt");
+    expect(artifacts[0].file_type).toBe("text");
   });
 
-  it('uploads all files in directory', async () => {
+  it("uploads all files in directory", async () => {
     // Create test directory with files
-    await fs.mkdir('./test-artifacts', { recursive: true });
-    await fs.writeFile('./test-artifacts/file1.txt', 'content1');
-    await fs.writeFile('./test-artifacts/file2.txt', 'content2');
+    await fs.mkdir("./test-artifacts", { recursive: true });
+    await fs.writeFile("./test-artifacts/file1.txt", "content1");
+    await fs.writeFile("./test-artifacts/file2.txt", "content2");
 
-    await step.artifact('screenshots', {
-      name: 'test-screenshots',
-      directory: './test-artifacts',
-      type: 'image'
+    await step.artifact("screenshots", {
+      name: "test-screenshots",
+      directory: "./test-artifacts",
+      type: "image",
     });
 
     const artifacts = await prisma.workflowArtifact.findMany();
@@ -783,56 +817,64 @@ describe('step.artifact()', () => {
 ### Integration Tests
 
 **`apps/web/src/server/workflows/engine/scanner.test.ts`** - Workflow scanning:
+
 ```typescript
-describe('Workflow Scanning', () => {
-  it('discovers workflows from .workflows directory', async () => {
+describe("Workflow Scanning", () => {
+  it("discovers workflows from .workflows directory", async () => {
     // Create test project with workflow
-    const testProjectPath = '/tmp/test-project';
+    const testProjectPath = "/tmp/test-project";
     await fs.mkdir(`${testProjectPath}/.workflows`, { recursive: true });
-    await fs.writeFile(`${testProjectPath}/.workflows/test-workflow.ts`, `
-      import { defineWorkflow } from '@sourceborn/workflow-sdk';
+    await fs.writeFile(
+      `${testProjectPath}/.workflows/test-workflow.ts`,
+      `
+      import { defineWorkflow } from '@repo/workflow-sdk';
       export default defineWorkflow({
         id: 'test-workflow',
         trigger: 'workflow/test'
       }, async ({ step }) => {});
-    `);
+    `
+    );
 
     const project = await prisma.project.create({
-      data: { name: 'Test', path: testProjectPath, user_id: userId }
+      data: { name: "Test", path: testProjectPath, user_id: userId },
     });
 
     // Scan project
-    const workflows = await scanProjectWorkflows(project.id, testProjectPath, fastify);
+    const workflows = await scanProjectWorkflows(
+      project.id,
+      testProjectPath,
+      fastify
+    );
 
     expect(workflows).toHaveLength(1);
-    expect(workflows[0].name).toBe('test-workflow');
+    expect(workflows[0].name).toBe("test-workflow");
   });
 
-  it('creates WorkflowDefinition records', async () => {
+  it("creates WorkflowDefinition records", async () => {
     await scanProjectWorkflows(projectId, projectPath, fastify);
 
     const definitions = await prisma.workflowDefinition.findMany({
-      where: { project_id: projectId }
+      where: { project_id: projectId },
     });
 
     expect(definitions.length).toBeGreaterThan(0);
-    expect(definitions[0].type).toBe('code');
-    expect(definitions[0].path).toContain('.workflows/');
+    expect(definitions[0].type).toBe("code");
+    expect(definitions[0].path).toContain(".workflows/");
   });
 
-  it('updates existing WorkflowDefinition on rescan', async () => {
+  it("updates existing WorkflowDefinition on rescan", async () => {
     // First scan
     await scanProjectWorkflows(projectId, projectPath, fastify);
     const before = await prisma.workflowDefinition.findFirst({
-      where: { project_id: projectId }
+      where: { project_id: projectId },
     });
 
     // Wait and rescan
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     await scanProjectWorkflows(projectId, projectPath, fastify);
 
     const after = await prisma.workflowDefinition.findUnique({
-      where: { id: before.id }
+      where: { id: before.id },
     });
 
     expect(after.updated_at).not.toEqual(before.updated_at);
@@ -841,33 +883,34 @@ describe('Workflow Scanning', () => {
 ```
 
 **`apps/web/src/server/workflows/engine/registry.test.ts`** - Workflow execution:
+
 ```typescript
-describe('Workflow Execution', () => {
-  it('triggers workflow via Inngest', async () => {
-    const sendSpy = jest.spyOn(fastify.workflowClient, 'send');
+describe("Workflow Execution", () => {
+  it("triggers workflow via Inngest", async () => {
+    const sendSpy = jest.spyOn(fastify.workflowClient, "send");
 
     await executeWorkflow(executionId, fastify);
 
     expect(sendSpy).toHaveBeenCalledWith({
-      name: expect.stringContaining('workflow/'),
+      name: expect.stringContaining("workflow/"),
       data: expect.objectContaining({
         executionId,
         projectId,
-        userId
-      })
+        userId,
+      }),
     });
   });
 
-  it('loads workflow from stored path', async () => {
+  it("loads workflow from stored path", async () => {
     // Create workflow definition
     const definition = await prisma.workflowDefinition.create({
       data: {
         project_id: projectId,
-        name: 'test-workflow',
-        type: 'code',
+        name: "test-workflow",
+        type: "code",
         path: testWorkflowPath,
-        phases: ['test']
-      }
+        phases: ["test"],
+      },
     });
 
     // Initialize engine (should load workflow)
@@ -882,13 +925,16 @@ describe('Workflow Execution', () => {
 ### E2E Tests
 
 **`apps/web/src/server/workflows/engine/workflow-execution.e2e.test.ts`** - Full workflow execution:
+
 ```typescript
-describe('Full Workflow Execution E2E', () => {
-  it('executes phase-based workflow end-to-end', async () => {
+describe("Full Workflow Execution E2E", () => {
+  it("executes phase-based workflow end-to-end", async () => {
     // Create test workflow file
     const workflowPath = `${testProjectPath}/.workflows/e2e-test.ts`;
-    await fs.writeFile(workflowPath, `
-      import { defineWorkflow } from '@sourceborn/workflow-sdk';
+    await fs.writeFile(
+      workflowPath,
+      `
+      import { defineWorkflow } from '@repo/workflow-sdk';
 
       export default defineWorkflow({
         id: 'e2e-test',
@@ -905,7 +951,8 @@ describe('Full Workflow Execution E2E', () => {
 
         return { success: true };
       });
-    `);
+    `
+    );
 
     // Scan and create definition
     await scanProjectWorkflows(projectId, testProjectPath, fastify);
@@ -916,59 +963,62 @@ describe('Full Workflow Execution E2E', () => {
         project_id: projectId,
         user_id: userId,
         workflow_definition_id: definitionId,
-        name: 'E2E Test',
+        name: "E2E Test",
         args: {},
-        status: 'pending'
-      }
+        status: "pending",
+      },
     });
 
     // Setup WebSocket spy
-    const broadcastSpy = jest.spyOn(subscriptions, 'broadcast');
+    const broadcastSpy = jest.spyOn(subscriptions, "broadcast");
 
     // Trigger execution
     await executeWorkflow(execution.id, fastify);
 
     // Wait for completion (poll WorkflowExecution status)
-    await waitFor(async () => {
-      const updated = await prisma.workflowExecution.findUnique({
-        where: { id: execution.id }
-      });
-      return updated.status === 'completed';
-    }, { timeout: 30000 });
+    await waitFor(
+      async () => {
+        const updated = await prisma.workflowExecution.findUnique({
+          where: { id: execution.id },
+        });
+        return updated.status === "completed";
+      },
+      { timeout: 30000 }
+    );
 
     // Verify phases completed in order
     const events = await prisma.workflowEvent.findMany({
       where: {
         workflow_execution_id: execution.id,
-        event_type: 'phase_completed'
+        event_type: "phase_completed",
       },
-      orderBy: { created_at: 'asc' }
+      orderBy: { created_at: "asc" },
     });
 
     expect(events).toHaveLength(2);
-    expect(events[0].event_data.phase).toBe('phase1');
-    expect(events[1].event_data.phase).toBe('phase2');
+    expect(events[0].event_data.phase).toBe("phase1");
+    expect(events[1].event_data.phase).toBe("phase2");
 
     // Verify WebSocket broadcasts
     expect(broadcastSpy).toHaveBeenCalledWith(
       Channels.project(projectId),
       expect.objectContaining({
-        type: 'workflow:started'
+        type: "workflow:started",
       })
     );
 
     expect(broadcastSpy).toHaveBeenCalledWith(
       Channels.project(projectId),
       expect.objectContaining({
-        type: 'workflow:phase:started',
-        data: expect.objectContaining({ phase: 'phase1' })
+        type: "workflow:phase:started",
+        data: expect.objectContaining({ phase: "phase1" }),
       })
     );
 
     expect(broadcastSpy).toHaveBeenCalledWith(
       Channels.project(projectId),
       expect.objectContaining({
-        type: 'workflow:completed'
+        type: "workflow:completed",
       })
     );
   }, 60000);
@@ -1061,7 +1111,7 @@ ls -la apps/web/prisma/workflows.db
 **Feature-Specific Checks:**
 
 - Create test project with `.workflows/test-workflow.ts`
-- Install SDK: `npm install @sourceborn/workflow-sdk`
+- Install SDK: `npm install @repo/workflow-sdk`
 - Define simple workflow with phases
 - Restart server, verify workflow discovered
 - Trigger workflow, verify execution completes
@@ -1090,10 +1140,15 @@ The SDK contains NO runtime logic. It's purely TypeScript interfaces and builder
 ### 3. Phase Retry Configuration
 
 Retry logic is configurable per phase:
+
 ```typescript
-await step.phase('implement', async () => {
-  // Phase logic
-}, { retries: 5, retryDelay: 10000 });
+await step.phase(
+  "implement",
+  async () => {
+    // Phase logic
+  },
+  { retries: 5, retryDelay: 10000 }
+);
 ```
 
 Default: 3 retries, 5000ms delay. Retries are automatic - phases that fail are retried until max attempts or success.
@@ -1109,6 +1164,7 @@ WorkflowDefinition stores metadata for UI listing, but workflow CODE is loaded f
 ### 6. WebSocket Event Consistency
 
 All WebSocket events follow existing patterns:
+
 - `workflow:phase:started`
 - `workflow:phase:retry`
 - `workflow:phase:completed`
@@ -1121,6 +1177,7 @@ Frontend already handles these event types. No changes needed to timeline render
 ### 7. Error Recovery and Cleanup
 
 All step methods include try/finally blocks for cleanup:
+
 - Terminate agent processes
 - Mark sessions as failed
 - Clean up temp files
@@ -1136,18 +1193,19 @@ This prevents resource leaks when steps fail.
 
 ## Timeline
 
-| Task Group                       | Estimated Time |
-| -------------------------------- | -------------- |
-| Setup SDK Package                | 6 hours        |
-| Web App Infrastructure           | 16 hours       |
-| Workflow Discovery & Loading     | 8 hours        |
-| API Endpoints & Routes           | 3 hours        |
-| Server Integration               | 4 hours        |
-| Example Workflow & Testing       | 10 hours       |
-| Documentation & Publishing       | 5 hours        |
-| **Total**                        | **52 hours**   |
+| Task Group                   | Estimated Time |
+| ---------------------------- | -------------- |
+| Setup SDK Package            | 6 hours        |
+| Web App Infrastructure       | 16 hours       |
+| Workflow Discovery & Loading | 8 hours        |
+| API Endpoints & Routes       | 3 hours        |
+| Server Integration           | 4 hours        |
+| Example Workflow & Testing   | 10 hours       |
+| Documentation & Publishing   | 5 hours        |
+| **Total**                    | **52 hours**   |
 
 **Breakdown by Phase:**
+
 - Phase 1 (SDK + Infrastructure): 22 hours
 - Phase 2 (Loading + Integration): 15 hours
 - Phase 3 (Testing + Documentation): 15 hours
