@@ -25,40 +25,40 @@ export function WorkflowExecutionHeader({
   const isActive = isRunning || isPaused;
 
   return (
-    <div className="border-b bg-background p-6">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">{execution.name}</h1>
-            <WorkflowStatusBadge status={execution.status} />
-          </div>
+    <div className="border-b bg-background px-6 py-3">
+      <div className="flex items-center justify-between gap-6">
+        {/* Title and badge */}
+        <div className="flex items-center gap-3 min-w-0">
+          <h1 className="text-xl font-bold truncate">{execution.name}</h1>
+          <WorkflowStatusBadge status={execution.status} />
+        </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="font-medium text-muted-foreground">Started:</span>
-              <span className="ml-2">{formatDate(execution.started_at)}</span>
-            </div>
-            <div>
-              <span className="font-medium text-muted-foreground">Completed:</span>
-              <span className="ml-2">{formatDate(execution.completed_at)}</span>
-            </div>
-            <div>
-              <span className="font-medium text-muted-foreground">Current Phase:</span>
-              <span className="ml-2">{execution.current_phase || 'N/A'}</span>
-            </div>
-            <div>
-              <span className="font-medium text-muted-foreground">Current Step:</span>
-              <span className="ml-2">{execution.current_step || 'N/A'}</span>
-            </div>
+        {/* Metadata - horizontal layout */}
+        <div className="flex items-center gap-6 text-sm flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">Started:</span>
+            <span>{formatDate(execution.started_at)}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">Completed:</span>
+            <span>{formatDate(execution.completed_at)}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">Current Phase:</span>
+            <span>{execution.current_phase || 'N/A'}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">Current Step:</span>
+            <span>{execution.current_step || 'N/A'}</span>
           </div>
         </div>
 
         {/* Control buttons */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 shrink-0">
           {isRunning && (
             <button
               onClick={onPause}
-              className="flex items-center gap-2 rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-600"
+              className="flex items-center gap-1.5 rounded-md bg-yellow-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-yellow-600"
             >
               <Pause className="h-4 w-4" />
               Pause
@@ -68,7 +68,7 @@ export function WorkflowExecutionHeader({
           {isPaused && (
             <button
               onClick={onResume}
-              className="flex items-center gap-2 rounded-md bg-green-500 px-4 py-2 text-sm font-medium text-white hover:bg-green-600"
+              className="flex items-center gap-1.5 rounded-md bg-green-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-600"
             >
               <Play className="h-4 w-4" />
               Resume
@@ -78,7 +78,7 @@ export function WorkflowExecutionHeader({
           {isActive && (
             <button
               onClick={onCancel}
-              className="flex items-center gap-2 rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
+              className="flex items-center gap-1.5 rounded-md bg-red-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-600"
             >
               <X className="h-4 w-4" />
               Cancel
