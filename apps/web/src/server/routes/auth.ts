@@ -2,8 +2,8 @@ import type { FastifyInstance } from 'fastify';
 import { Prisma } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { prisma } from '@/shared/prisma';
-import { registerSchema, loginSchema } from '@/server/schemas/auth';
-import { authResponseSchema, authStatusResponseSchema, userResponseSchema, errorResponse } from '@/server/schemas/response';
+import { registerSchema, loginSchema, authResponseSchema, authStatusResponseSchema, userResponseSchema } from '@/server/domain/auth/schemas';
+import { errorResponse } from '@/server/domain/common/schemas';
 import type { JWTPayload } from '@/server/utils/auth';
 import { buildErrorResponse } from '@/server/utils/error';
 

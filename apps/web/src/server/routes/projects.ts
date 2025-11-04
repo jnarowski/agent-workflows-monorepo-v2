@@ -20,15 +20,15 @@ import {
   fileContentBodySchema,
   hideProjectSchema,
   starProjectSchema,
+  projectResponseSchema,
+  projectSyncResponseSchema,
 } from "@/server/domain/project/schemas";
 import {
-  projectResponseSchema,
-  errorResponse,
   fileTreeResponseSchema,
   fileContentResponseSchema,
   fileContentSaveResponseSchema,
-  projectSyncResponseSchema,
-} from "@/server/schemas/response";
+} from "@/server/domain/file/schemas";
+import { errorResponse } from "@/server/domain/common/schemas";
 import type {
   CreateProjectRequest,
   UpdateProjectRequest,

@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { getProjectSlashCommands } from '@/server/services/slashCommand';
-import { slashCommandParamsSchema } from '@/server/schemas/slashCommand';
+import { slashCommandParamsSchema } from '@/server/domain/common/schemas';
 import { buildErrorResponse } from '@/server/utils/error';
 
 /**

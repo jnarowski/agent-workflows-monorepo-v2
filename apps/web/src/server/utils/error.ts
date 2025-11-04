@@ -8,6 +8,8 @@
  * and maintains backward compatibility with existing code.
  */
 
+import type { ApiErrorResponse } from '@/shared/types/api-error.types';
+
 // Re-export new error classes
 export { AppError } from '@/server/errors/AppError';
 export { ConflictError } from '@/server/errors/ConflictError';
@@ -69,14 +71,10 @@ export class ValidationError extends AppError {
 
 /**
  * Error Response Structure
+ *
+ * Uses shared ApiErrorResponse type for consistency between frontend and backend
  */
-export interface ErrorResponse {
-  error: {
-    message: string;
-    statusCode: number;
-    code?: string;
-  };
-}
+export type ErrorResponse = ApiErrorResponse;
 
 /**
  * Build a standardized error response

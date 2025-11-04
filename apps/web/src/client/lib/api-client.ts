@@ -4,7 +4,7 @@
 
 import { getAuthToken } from '@/client/lib/auth';
 import { useAuthStore } from '@/client/stores/authStore';
-import { ApiError, type ApiErrorResponse } from '@/client/lib/api-types';
+import { ApiError, type ApiErrorResponse } from '@/shared/types/api-error.types';
 import type { UnifiedMessage } from "@/shared/types/message.types";
 
 /**
@@ -67,13 +67,13 @@ class ApiClient {
     if (!response.ok) {
       // Try to parse error message from response
       const error = await response.json().catch(() => ({
-        error: { message: `HTTP ${response.status}: ${response.statusText}` },
+        error: {
+          message: `HTTP ${response.status}: ${response.statusText}`,
+          statusCode: response.status
+        },
       })) as ApiErrorResponse;
 
-      const errorMessage =
-        typeof error.error === 'string'
-          ? error.error
-          : error.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+      const errorMessage = error.error.message || `HTTP ${response.status}: ${response.statusText}`;
 
       throw new ApiError(errorMessage, response.status, error);
     }

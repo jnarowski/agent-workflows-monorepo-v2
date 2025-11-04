@@ -1,50 +1,10 @@
 /**
- * Client-side API error response types
+ * Client-side API error types
  *
- * **Note**: These types should align with the backend ErrorResponse type
- * defined in `@/server/utils/error.ts`. Currently there are some differences:
+ * @deprecated Import from @/shared/types/api-error.types instead
  *
- * - Backend includes `statusCode` field, frontend doesn't
- * - Frontend allows `error` to be string OR object (legacy handling)
- * - Frontend has optional `details` field
- *
- * Backend format:
- * ```typescript
- * {
- *   error: {
- *     message: string;
- *     statusCode: number;
- *     code?: string;
- *   }
- * }
- * ```
- *
- * Future improvement: Reconcile these types by moving to shared/types/api.types.ts
+ * This file re-exports the unified error types from shared/types for backward compatibility.
+ * New code should import directly from shared types.
  */
 
-/**
- * Standard API error response structure
- *
- * Supports both the standard object format and legacy string format.
- */
-export interface ApiErrorResponse {
-  error: {
-    message: string;
-    code?: string;
-    details?: unknown;
-  } | string;
-}
-
-/**
- * Custom API error class
- */
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public response?: unknown
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}
+export { ApiErrorResponse, ApiError } from '@/shared/types/api-error.types';
