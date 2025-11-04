@@ -2,13 +2,16 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import { Channels } from "@/shared/websocket";
-import { WorkflowEventTypes, type WorkflowEvent } from "@/shared/types/websocket.types";
+import {
+  WorkflowEventTypes,
+  type WorkflowEvent,
+} from "@/shared/types/websocket.types";
 import { useWorkflowStore } from "../stores/workflowStore";
 import { toast } from "sonner";
 import {
   applyWorkflowUpdate,
   type WebSocketUpdate,
-} from "../utils/lib/applyWorkflowUpdate";
+} from "../utils/applyWorkflowUpdate";
 import type { WorkflowExecution } from "../types";
 
 export function useWorkflowWebSocket(projectId: string) {
@@ -76,10 +79,7 @@ export function useWorkflowWebSocket(projectId: string) {
 
     // Step started
     const handleStepStart = (
-      event: Extract<
-        WorkflowEvent,
-        { type: "workflow:step:started" }
-      >
+      event: Extract<WorkflowEvent, { type: "workflow:step:started" }>
     ) => {
       handleStepStarted({
         executionId: event.data.executionId,
@@ -97,10 +97,7 @@ export function useWorkflowWebSocket(projectId: string) {
 
     // Step completed
     const handleStepComplete = (
-      event: Extract<
-        WorkflowEvent,
-        { type: "workflow:step:completed" }
-      >
+      event: Extract<WorkflowEvent, { type: "workflow:step:completed" }>
     ) => {
       handleStepCompleted({
         executionId: event.data.executionId,
@@ -135,10 +132,7 @@ export function useWorkflowWebSocket(projectId: string) {
 
     // Phase completed
     const handlePhaseComplete = (
-      event: Extract<
-        WorkflowEvent,
-        { type: "workflow:phase:completed" }
-      >
+      event: Extract<WorkflowEvent, { type: "workflow:phase:completed" }>
     ) => {
       handlePhaseCompleted({
         executionId: event.data.executionId,
@@ -228,10 +222,7 @@ export function useWorkflowWebSocket(projectId: string) {
 
     // Annotation created
     const handleAnnotation = (
-      event: Extract<
-        WorkflowEvent,
-        { type: "workflow:annotation:created" }
-      >
+      event: Extract<WorkflowEvent, { type: "workflow:annotation:created" }>
     ) => {
       // Create WorkflowEvent for the annotation
       const annotationEvent = {
@@ -270,34 +261,22 @@ export function useWorkflowWebSocket(projectId: string) {
           break;
         case WorkflowEventTypes.STARTED:
           handleStarted(
-            event as Extract<
-              WorkflowEvent,
-              { type: "workflow:started" }
-            >
+            event as Extract<WorkflowEvent, { type: "workflow:started" }>
           );
           break;
         case WorkflowEventTypes.STEP_STARTED:
           handleStepStart(
-            event as Extract<
-              WorkflowEvent,
-              { type: "workflow:step:started" }
-            >
+            event as Extract<WorkflowEvent, { type: "workflow:step:started" }>
           );
           break;
         case WorkflowEventTypes.STEP_COMPLETED:
           handleStepComplete(
-            event as Extract<
-              WorkflowEvent,
-              { type: "workflow:step:completed" }
-            >
+            event as Extract<WorkflowEvent, { type: "workflow:step:completed" }>
           );
           break;
         case WorkflowEventTypes.STEP_FAILED:
           handleStepFail(
-            event as Extract<
-              WorkflowEvent,
-              { type: "workflow:step:failed" }
-            >
+            event as Extract<WorkflowEvent, { type: "workflow:step:failed" }>
           );
           break;
         case WorkflowEventTypes.PHASE_COMPLETED:
@@ -310,42 +289,27 @@ export function useWorkflowWebSocket(projectId: string) {
           break;
         case WorkflowEventTypes.COMPLETED:
           handleComplete(
-            event as Extract<
-              WorkflowEvent,
-              { type: "workflow:completed" }
-            >
+            event as Extract<WorkflowEvent, { type: "workflow:completed" }>
           );
           break;
         case WorkflowEventTypes.FAILED:
           handleFail(
-            event as Extract<
-              WorkflowEvent,
-              { type: "workflow:failed" }
-            >
+            event as Extract<WorkflowEvent, { type: "workflow:failed" }>
           );
           break;
         case WorkflowEventTypes.PAUSED:
           handlePause(
-            event as Extract<
-              WorkflowEvent,
-              { type: "workflow:paused" }
-            >
+            event as Extract<WorkflowEvent, { type: "workflow:paused" }>
           );
           break;
         case WorkflowEventTypes.RESUMED:
           handleResume(
-            event as Extract<
-              WorkflowEvent,
-              { type: "workflow:resumed" }
-            >
+            event as Extract<WorkflowEvent, { type: "workflow:resumed" }>
           );
           break;
         case WorkflowEventTypes.CANCELLED:
           handleCancel(
-            event as Extract<
-              WorkflowEvent,
-              { type: "workflow:cancelled" }
-            >
+            event as Extract<WorkflowEvent, { type: "workflow:cancelled" }>
           );
           break;
         case WorkflowEventTypes.ANNOTATION_CREATED:

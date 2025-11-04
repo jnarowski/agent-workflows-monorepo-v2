@@ -1,9 +1,9 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 import type {
   WorkflowExecution,
   WorkflowFilter,
   WorkflowEvent,
-} from '../types';
+} from "../types";
 import {
   updateExecutionInMap,
   applyWorkflowStarted,
@@ -17,7 +17,7 @@ import {
   applyStepFailed,
   applyPhaseCompleted,
   applyEventCreated,
-} from '../utils/lib/workflowStateUpdates';
+} from "../utils/workflowStateUpdates";
 
 interface WorkflowStore {
   // State
@@ -29,10 +29,7 @@ interface WorkflowStore {
   // Basic actions
   setExecutions: (executions: WorkflowExecution[]) => void;
   addExecution: (execution: WorkflowExecution) => void;
-  updateExecution: (
-    id: string,
-    updates: Partial<WorkflowExecution>
-  ) => void;
+  updateExecution: (id: string, updates: Partial<WorkflowExecution>) => void;
   removeExecution: (id: string) => void;
   setActiveExecution: (id: string | null) => void;
   setFilter: (filter: Partial<WorkflowFilter>) => void;
@@ -64,10 +61,7 @@ interface WorkflowStore {
     nextPhase: string | null;
   }) => void;
   handleWorkflowCompleted: (event: { executionId: string }) => void;
-  handleWorkflowFailed: (event: {
-    executionId: string;
-    error: string;
-  }) => void;
+  handleWorkflowFailed: (event: { executionId: string; error: string }) => void;
   handleWorkflowPaused: (event: { executionId: string }) => void;
   handleWorkflowResumed: (event: { executionId: string }) => void;
   handleWorkflowCancelled: (event: { executionId: string }) => void;

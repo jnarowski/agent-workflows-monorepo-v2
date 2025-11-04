@@ -1,18 +1,18 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useMemo } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { WorkflowExecutionHeader } from './components/WorkflowExecutionHeader';
-import { WorkflowTimeline } from './components/WorkflowTimeline';
-import { TimelineErrorBoundary } from './components/timeline/WorkflowTimeline.ErrorBoundary';
-import { buildTimelineModel } from './utils/lib/buildTimelineModel';
-import { useWorkflowExecution } from './hooks/useWorkflowExecution';
-import { useWorkflowDefinition } from './hooks/useWorkflowDefinition';
-import { useWorkflowWebSocket } from './hooks/useWorkflowWebSocket';
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useMemo } from "react";
+import { ArrowLeft } from "lucide-react";
+import { WorkflowExecutionHeader } from "./components/WorkflowExecutionHeader";
+import { WorkflowTimeline } from "./components/WorkflowTimeline";
+import { TimelineErrorBoundary } from "./components/timeline/WorkflowTimeline.ErrorBoundary";
+import { buildTimelineModel } from "./utils/buildTimelineModel";
+import { useWorkflowExecution } from "./hooks/useWorkflowExecution";
+import { useWorkflowDefinition } from "./hooks/useWorkflowDefinition";
+import { useWorkflowWebSocket } from "./hooks/useWorkflowWebSocket";
 import {
   usePauseWorkflow,
   useResumeWorkflow,
   useCancelWorkflow,
-} from './hooks/useWorkflowMutations';
+} from "./hooks/useWorkflowMutations";
 
 export function WorkflowExecutionDetail() {
   const { projectId, definitionId, executionId } = useParams<{
@@ -23,14 +23,24 @@ export function WorkflowExecutionDetail() {
   const navigate = useNavigate();
 
   // Fetch data
-  const { data: execution, isLoading: executionLoading, isError: executionError } = useWorkflowExecution(executionId);
-  const { data: definition, isLoading: definitionLoading, isError: definitionError } = useWorkflowDefinition(definitionId);
+  const {
+    data: execution,
+    isLoading: executionLoading,
+    isError: executionError,
+  } = useWorkflowExecution(executionId);
+  const {
+    data: definition,
+    isLoading: definitionLoading,
+    isError: definitionError,
+  } = useWorkflowDefinition(definitionId);
 
   // Redirect if execution or definition not found
   useEffect(() => {
     // If execution not found, go back to workflow definition view
     if (executionError || (!executionLoading && !execution)) {
-      navigate(`/projects/${projectId}/workflows/${definitionId}`, { replace: true });
+      navigate(`/projects/${projectId}/workflows/${definitionId}`, {
+        replace: true,
+      });
       return;
     }
 
@@ -39,7 +49,16 @@ export function WorkflowExecutionDetail() {
       navigate(`/projects/${projectId}/workflows`, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [executionError, executionLoading, execution, definitionError, definitionLoading, definition, projectId, definitionId]);
+  }, [
+    executionError,
+    executionLoading,
+    execution,
+    definitionError,
+    definitionLoading,
+    definition,
+    projectId,
+    definitionId,
+  ]);
 
   // Subscribe to WebSocket updates
   useWorkflowWebSocket(projectId!);
@@ -87,11 +106,13 @@ export function WorkflowExecutionDetail() {
       {/* Breadcrumb navigation */}
       <div className="border-b bg-background px-6 py-3">
         <button
-          onClick={() => navigate(`/projects/${projectId}/workflows/${definitionId}`)}
+          onClick={() =>
+            navigate(`/projects/${projectId}/workflows/${definitionId}`)
+          }
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to {definition?.name || 'Workflow'}
+          Back to {definition?.name || "Workflow"}
         </button>
       </div>
 

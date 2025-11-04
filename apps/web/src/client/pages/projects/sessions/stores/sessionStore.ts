@@ -362,7 +362,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         rawMessages = data.data || [];
       } catch (error) {
         // JSONL file doesn't exist yet - this is expected for new sessions
-        if (error instanceof Error && error.message.includes("404")) {
+        if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 404) {
           set((state) => ({
             session: state.session
               ? { ...state.session, loadingState: "loaded" }
@@ -480,13 +480,12 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         ];
       }
 
-      // Apply enrichment to maintain consistent data structure with loaded sessions
-      const enrichedMessages = enrichMessagesWithToolResults(updatedMessages);
-
+      // Don't apply enrichment during streaming - it filters/modifies messages
+      // Enrichment only happens when loading existing messages from server
       return {
         session: {
           ...state.session,
-          messages: enrichedMessages,
+          messages: updatedMessages,
           isStreaming: true,
         },
       };

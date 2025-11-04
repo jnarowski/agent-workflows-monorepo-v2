@@ -125,7 +125,13 @@ describe("SessionStore", () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         status: 404,
-        json: async () => ({}),
+        statusText: "Not Found",
+        json: async () => ({
+          error: {
+            message: "Session not found",
+            statusCode: 404
+          }
+        }),
       });
 
       await loadSession(sessionId, projectId, mockQueryClient);

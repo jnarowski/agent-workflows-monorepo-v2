@@ -2,7 +2,6 @@ import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
 import readline from "readline";
-import { createOrUpdateProject } from "@/server/domain/project/services";
 import { syncProjectSessions } from "@/server/domain/session/services";
 import { getClaudeProjectsDir } from "@/server/utils/path";
 import type { SyncProjectsResponse } from "@/shared/types/project-sync.types";
@@ -187,6 +186,9 @@ export async function syncFromClaudeProjects(
 
     // Generate display name from last path segment
     const displayName = path.basename(actualPath);
+
+    // Dynamic import for testability (allows mocking in tests)
+    const { createOrUpdateProject } = await import("@/server/domain/project/services");
 
     // Create or update project
     const project = await createOrUpdateProject(
