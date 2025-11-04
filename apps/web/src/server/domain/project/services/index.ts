@@ -11,3 +11,4 @@ export { projectExistsByPath } from "./projectExistsByPath";
 export { createOrUpdateProject } from "./createOrUpdateProject";
 export { syncFromClaudeProjects } from "./syncProjectFromClaude";
 export { hasEnoughSessions } from "./hasEnoughSessions";
+export { getProjectSlashCommands } from "./getProjectSlashCommands";

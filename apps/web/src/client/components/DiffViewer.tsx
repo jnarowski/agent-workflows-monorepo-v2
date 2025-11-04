@@ -101,6 +101,7 @@ function extractDiffWithContext(
     if (contextLines_before.length > 0) {
       result.push({
         value: contextLines_before.join("\n") + "\n",
+        count: contextLines_before.length,
         added: false,
         removed: false,
       });
@@ -123,14 +124,15 @@ function extractDiffWithContext(
     const contextLines_after = lines.slice(0, contextLines);
 
     if (contextLines_after.length > 0) {
-      result.push({
-        value:
-          contextLines_after.join("\n") +
+      const value = contextLines_after.join("\n") +
           (lines.length > contextLines
             ? "\n"
             : afterBlock.value.endsWith("\n")
               ? "\n"
-              : ""),
+              : "");
+      result.push({
+        value,
+        count: contextLines_after.length,
         added: false,
         removed: false,
       });
@@ -153,6 +155,7 @@ function parseGitDiff(diffString: string): Change[] {
     if (currentChunk.length > 0 && currentType) {
       changes.push({
         value: currentChunk.join("\n") + "\n",
+        count: currentChunk.length,
         added: currentType === "added",
         removed: currentType === "removed",
       });

@@ -60,8 +60,11 @@ export const createGitChangesColumns = (
         }}
         aria-label="Select all"
         ref={(el) => {
-          if (el && selectedFiles.size > 0 && selectedFiles.size < totalFiles) {
-            el.indeterminate = true;
+          if (el) {
+            const checkboxElement = el as HTMLButtonElement & { indeterminate?: boolean };
+            if (selectedFiles.size > 0 && selectedFiles.size < totalFiles) {
+              checkboxElement.indeterminate = true;
+            }
           }
         }}
       />
@@ -111,11 +114,9 @@ export const createGitChangesColumns = (
   {
     id: 'expand',
     header: '',
-    cell: ({ isExpanded }: { isExpanded?: boolean }) => (
+    cell: () => (
       <ChevronRight
-        className={`h-4 w-4 text-muted-foreground transition-transform ${
-          isExpanded ? 'rotate-90' : ''
-        }`}
+        className="h-4 w-4 text-muted-foreground transition-transform"
       />
     ),
   },

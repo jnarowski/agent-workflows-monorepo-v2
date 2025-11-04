@@ -13,6 +13,7 @@ import {
   PromptInputTools,
   usePromptInputController,
 } from "@/client/components/ai-elements/PromptInput";
+import type { PromptInputMessage } from "@/client/components/ai-elements/PromptInput";
 import { useAgentCapabilities } from "@/client/hooks/useSettings";
 import { ChatPromptInputFiles } from "./ChatPromptInputFiles";
 import { ChatPromptInputSlashCommands } from "./ChatPromptInputSlashCommands";
@@ -32,11 +33,6 @@ import { useActiveProject } from "@/client/hooks/navigation/useActiveProject";
 import { cn } from "@/client/utils/cn";
 import { TokenUsageCircle } from "./TokenUsageCircle";
 import { usePromptInputState } from "../hooks/usePromptInputState";
-
-export interface PromptInputMessage {
-  text?: string;
-  files?: File[];
-}
 
 interface ChatPromptInputProps {
   onSubmit?: (message: PromptInputMessage) => void | Promise<void>;
@@ -102,7 +98,7 @@ const ChatPromptInputInner = forwardRef<
       const isValidModel = model && capabilities.models.some((m) => m.id === model);
 
       // Use stored model if valid, otherwise use first available model
-      return isValidModel ? model : capabilities.models[0].id;
+      return isValidModel ? (model ?? "") : capabilities.models[0].id;
     }, [model, capabilities.models]);
 
     // Use the extracted state hook
@@ -189,7 +185,7 @@ const ChatPromptInputInner = forwardRef<
                 <ChatPromptInputSlashCommands
                   open={isSlashMenuOpen}
                   onOpenChange={setIsSlashMenuOpen}
-                  projectId={activeProjectId}
+                  projectId={activeProjectId ?? undefined}
                   onCommandSelect={handleCommandSelect}
                 />
               )}

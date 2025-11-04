@@ -1,6 +1,6 @@
 import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
-import { executeStep } from "./helpers";
+import { executeStep } from "./executeStep";
 
 /**
  * Create generic run step factory function

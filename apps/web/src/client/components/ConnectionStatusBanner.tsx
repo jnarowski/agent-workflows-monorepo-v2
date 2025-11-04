@@ -23,7 +23,7 @@ export function ConnectionStatusBanner({
   const [showDisconnected, setShowDisconnected] = useState(false);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setTimeout>;
 
     if (readyState === ReadyState.CLOSED) {
       // Wait 2 seconds before showing disconnected banner

@@ -1,5 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import type { PermissionMode } from "@repo/agent-cli-sdk";
+import type { PromptInputMessage } from "@/client/components/ai-elements/PromptInput";
+import type { FileUIPart } from "ai";
 import { PERMISSION_MODES } from "@/client/utils/permissionModes";
 import {
   insertAtCursor,
@@ -9,11 +11,6 @@ import {
 const SUBMITTING_TIMEOUT = 200;
 const STREAMING_TIMEOUT = 2000;
 
-export interface PromptInputMessage {
-  text?: string;
-  files?: File[];
-}
-
 export interface UsePromptInputStateParams {
   controller: {
     textInput: {
@@ -22,7 +19,7 @@ export interface UsePromptInputStateParams {
       clear: () => void;
     };
     attachments: {
-      files: Array<{ id: string }>;
+      files: (FileUIPart & { id: string })[];
       add: (files: File[] | FileList) => void;
       remove: (id: string) => void;
       clear: () => void;

@@ -5,6 +5,7 @@ import {
   ChatPromptInput,
   type ChatPromptInputHandle,
 } from "./components/ChatPromptInput";
+import type { PromptInputMessage } from "@/client/components/ai-elements/PromptInput";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation";
@@ -47,7 +48,7 @@ export default function NewSession() {
     return () => clearTimeout(timeoutId);
   }, []);
 
-  const handleSubmit = async ({ text }: { text?: string; files?: File[] }) => {
+  const handleSubmit = async ({ text }: PromptInputMessage) => {
     if (!projectId) {
       console.error("[NewSession] No projectId available");
       return;

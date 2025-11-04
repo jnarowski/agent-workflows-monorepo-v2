@@ -2,7 +2,7 @@ import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import type { RuntimeContext } from "../../../types/engine.types";
 import type { CliStepConfig, CliStepResult } from "@repo/workflow-sdk";
-import { executeStep } from "./helpers";
+import { executeStep } from "./executeStep";
 
 const execAsync = promisify(exec);
 const DEFAULT_CLI_TIMEOUT = 300000; // 5 minutes

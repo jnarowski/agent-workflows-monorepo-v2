@@ -89,7 +89,7 @@ export function CommitDiffView({
 
       {/* Diff content */}
       <div className="max-h-96 overflow-y-auto">
-        <DiffViewer diff={commitDiff.diff} showHeaders={true} />
+        <DiffViewer diff={commitDiff.diff} />
       </div>
     </div>
   );

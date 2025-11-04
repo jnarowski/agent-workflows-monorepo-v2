@@ -7,7 +7,7 @@ import type {
   ArtifactStepConfig,
   ArtifactStepResult,
 } from "@repo/workflow-sdk";
-import { executeStep } from "./helpers";
+import { executeStep } from "./executeStep";
 import { findWorkflowStepByName } from "../../steps/findWorkflowStepByName";
 import { createWorkflowArtifact } from "../../artifacts/createWorkflowArtifact";
 
