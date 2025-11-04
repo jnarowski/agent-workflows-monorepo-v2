@@ -137,6 +137,99 @@ This is a **Turborepo monorepo** for agent workflow tools. The `web` app is a fu
      const messages = store.currentSession?.messages;
      ```
 
+### Null vs Undefined Conventions
+
+**Critical**: Consistent handling of null/undefined prevents type errors and improves code clarity.
+
+**Golden Rules:**
+
+1. **Database Fields (Prisma) - Use `| null`**
+   - Prisma uses `null` for nullable database columns
+   - Always type as `| null`, never `| undefined` or `| null | undefined`
+   - Example:
+     ```typescript
+     interface WorkflowExecution {
+       id: string;
+       started_at: Date | null;       // ✅ Database field
+       completed_at: Date | null;     // ✅ Database field
+       error_message: string | null;  // ✅ Database field
+     }
+     ```
+
+2. **React Props - Use `?` (Optional/Undefined)**
+   - React props default to `undefined` when not provided
+   - Use optional syntax `?` instead of `| undefined`
+   - Example:
+     ```typescript
+     interface ComponentProps {
+       id: string;              // ✅ Required
+       name?: string;           // ✅ Optional (undefined when not provided)
+       onComplete?: () => void; // ✅ Optional callback
+     }
+     ```
+
+3. **Never Mix Both**
+   - ❌ **BAD**: `value: string | null | undefined`
+   - ✅ **GOOD**: `value: string | null` (database field)
+   - ✅ **GOOD**: `value?: string` (React prop or optional field)
+
+4. **Type Guards**
+   - Check for both `null` and `undefined` when consuming values that could be either
+   - Example:
+     ```typescript
+     // ✅ GOOD - Handles both null and undefined
+     if (value == null) {  // == null checks both null and undefined
+       return defaultValue;
+     }
+
+     // ✅ ALSO GOOD - Explicit null check
+     if (value !== null && value !== undefined) {
+       return value.toString();
+     }
+
+     // ✅ ALSO GOOD - Nullish coalescing
+     const displayValue = value ?? 'N/A';
+     ```
+
+5. **API Responses**
+   - Match Prisma types: use `| null` for nullable fields
+   - Example:
+     ```typescript
+     interface APIResponse {
+       data: {
+         id: string;
+         completed_at: Date | null;  // ✅ Matches Prisma type
+       };
+     }
+     ```
+
+6. **Function Parameters**
+   - Use `?` for optional parameters
+   - Use `| null` only when `null` has specific meaning
+   - Example:
+     ```typescript
+     // ✅ GOOD - Optional parameter
+     function createSession(name: string, metadata?: Record<string, unknown>) {
+       // ...
+     }
+
+     // ✅ ALSO GOOD - Null has specific meaning (clear value)
+     function updateStatus(status: 'active' | 'inactive' | null) {
+       // null = clear status, undefined not allowed
+     }
+     ```
+
+**Summary Table:**
+
+| Context | Convention | Example |
+|---------|-----------|---------|
+| Prisma database field | `\| null` | `completed_at: Date \| null` |
+| React prop | `?` | `name?: string` |
+| Optional parameter | `?` | `fn(param?: string)` |
+| Nullable API field | `\| null` | `error_message: string \| null` |
+| Local variable | Prefer `?` or `\| null` | Depends on context |
+| Never use | `\| null \| undefined` | ❌ Always avoid |
+
 ## Development Commands
 
 ### Starting the Application

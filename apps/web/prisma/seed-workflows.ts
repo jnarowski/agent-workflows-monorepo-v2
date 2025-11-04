@@ -765,203 +765,20 @@ async function main() {
     )
   );
 
-  // Now add comment events
+  // Comment events disabled - 'comment_added' is not a valid WorkflowEventType in schema
+  // TODO: Add comment_added to WorkflowEventType enum if user comments are needed
 
-  // Events for running workflows
-  events.push(
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[2].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Starting implementation of dark mode theme system' },
-        created_at: new Date(Date.now() - 1000 * 60 * 40)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[2].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Research phase completed successfully. Moving to Design phase.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 35)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[2].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Design phase completed. Technical spec approved. Starting implementation.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 30)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[3].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Found the issue - missing required field validation on password input' },
-        created_at: new Date(Date.now() - 1000 * 60 * 18)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[3].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Investigation phase completed. Root cause identified: Missing required field validation.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 15)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[3].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Fix applied successfully. Added password validation check to form handler.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 10)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[4].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Migration files look good. Need to verify index performance on large tables.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 12)
-      }
-    })
-  );
+  // // Events for running workflows
+  // events.push(...);
 
-  // Events for completed workflows
-  events.push(
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[5].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Great work on this feature! The notification system works perfectly.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 24)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[5].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'All phases completed successfully. Workflow finished.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 24)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[5].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Tests passed: 45 unit tests, 12 integration tests. Code coverage: 92%.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 26)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[6].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Bug fixed and verified in staging. Ready for production.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 12)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[6].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Fix verified successfully. No regressions detected.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 13)
-      }
-    })
-  );
+  // // Events for completed workflows
+  // events.push(...);
 
-  // Events for failed workflows
-  events.push(
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[8].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Integration tests are timing out. Need to investigate query performance.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 6)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[8].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Workflow failed during Testing phase. Error: Integration tests failed with timeout errors.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 6)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[9].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Security review flagged SQL injection vulnerability. Need to use parameterized queries.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 3)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[9].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Workflow failed during Fix phase. Error: Security vulnerability detected in SQL query.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 3)
-      }
-    })
-  );
+  // // Events for failed workflows
+  // events.push(...);
 
-  // Events for paused workflows
-  events.push(
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[6].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Pausing to wait for QA team availability. Will resume tomorrow.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[6].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Workflow paused by user.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[7].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Need more time to analyze memory profiling data. Pausing for now.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 2)
-      }
-    }),
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[7].id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Workflow paused by user.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 2)
-      }
-    })
-  );
+  // // Events for paused workflows
+  // events.push(...);
 
   console.log(`Created ${events.length} workflow events`);
 
@@ -1112,9 +929,10 @@ async function main() {
   console.log('\n📂 Finding existing agent sessions in database...');
 
   // Get up to 5 most recent agent sessions for this project
+  // Order by created_at to match UI query (UI sorts by created_at, not updated_at)
   const existingAgentSessions = await prisma.agentSession.findMany({
     where: { projectId: projectId },
-    orderBy: { updated_at: 'desc' },
+    orderBy: { created_at: 'desc' },
     take: 5
   });
 
@@ -1168,105 +986,25 @@ async function main() {
     console.log(`     Run the app and create some sessions first, then re-run this seed script`);
   }
 
-  // Create Events with Attachments (step-level comment events)
+  // Events with Attachments disabled - 'comment_added' is not a valid WorkflowEventType
+  // TODO: Add comment_added to WorkflowEventType enum if user comments with attachments are needed
+
   const eventsWithAttachments = [];
 
-  // Example 1: User comment with screenshot attachment
-  eventsWithAttachments.push(
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[2].id,
-        workflow_execution_step_id: steps[5]?.id, // Dark mode design step
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Dark mode design mockup completed. Attached the final design for review.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 34),
-        artifacts: {
-          connect: {
-            id: artifacts[6].id // dark-mode-design-mockup.png
-          }
-        }
-      }
-    })
-  );
+  // // Example 1: User comment with screenshot attachment
+  // eventsWithAttachments.push(...);
 
-  // Example 2: Agent comment with test results
-  eventsWithAttachments.push(
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[5].id,
-        workflow_execution_step_id: stepsWithArtifacts[3]?.id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Test suite executed successfully. All 45 unit tests and 12 integration tests passed. See attached test results and coverage report.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 26),
-        artifacts: {
-          connect: [
-            { id: artifacts[0].id }, // test-results.json
-            { id: artifacts[1].id }  // coverage-report.html
-          ]
-        }
-      }
-    })
-  );
+  // // Example 2: Agent comment with test results
+  // eventsWithAttachments.push(...);
 
-  // Example 3: System comment with deployment logs
-  eventsWithAttachments.push(
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[5].id,
-        workflow_execution_step_id: stepsWithArtifacts[4]?.id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Deployment to staging environment completed. Detailed deployment logs attached for verification.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 24),
-        artifacts: {
-          connect: {
-            id: artifacts[2].id // deployment-logs.txt
-          }
-        }
-      }
-    })
-  );
+  // // Example 3: System comment with deployment logs
+  // eventsWithAttachments.push(...);
 
-  // Example 4: User comment with verification screenshot
-  eventsWithAttachments.push(
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[3].id,
-        workflow_execution_step_id: steps[2]?.id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Bug fix verified on staging. Password validation now working correctly - see attached verification screenshot.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 60 * 12),
-        artifacts: {
-          connect: {
-            id: artifacts[3].id // bug-fix-verification.png
-          }
-        }
-      }
-    })
-  );
+  // // Example 4: User comment with verification screenshot
+  // eventsWithAttachments.push(...);
 
-  // Example 5: Agent comment with multiple attachments (code + analysis)
-  eventsWithAttachments.push(
-    await prisma.workflowEvent.create({
-      data: {
-        workflow_execution_id: executions[4].id,
-        workflow_execution_step_id: steps[3]?.id,
-        created_by_user_id: users[0].id,
-        event_type: 'comment_added',
-        event_data: { title: 'Comment', body: 'Database migration schema created and performance analysis completed. Both files attached for review before applying to production.' },
-        created_at: new Date(Date.now() - 1000 * 60 * 11),
-        artifacts: {
-          connect: [
-            { id: artifacts[8].id },  // migration-schema.sql
-            { id: artifacts[9].id }   // performance-analysis.md
-          ]
-        }
-      }
-    })
-  );
+  // // Example 5: Agent comment with multiple attachments
+  // eventsWithAttachments.push(...);
 
   console.log(`Created ${eventsWithAttachments.length} events with attachments`);
 

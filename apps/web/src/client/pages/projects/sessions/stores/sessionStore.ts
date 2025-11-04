@@ -317,7 +317,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     try {
       let session: SessionResponse | undefined;
 
-      // Get session from React Query cache (useProjectsWithSessions)
+      // Try to get session from React Query cache first
       if (queryClient) {
         const cachedProjects = queryClient.getQueryData(projectKeys.withSessions()) as ProjectWithSessions[] | undefined;
 
@@ -327,9 +327,16 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         }
       }
 
-      // Session must be in cache (loaded via useProjectsWithSessions)
+      // If not in cache, fetch session metadata directly from API
       if (!session) {
-        throw new Error(`Session not found in cache: ${sessionId}. Ensure useProjectsWithSessions is loaded.`);
+        try {
+          const data = await api.get<{ data: SessionResponse }>(
+            `/api/projects/${projectId}/sessions/${sessionId}`
+          );
+          session = data.data;
+        } catch (error) {
+          throw new Error(`Session not found: ${sessionId}. ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
       }
 
       // Set loading state with agent type and metadata

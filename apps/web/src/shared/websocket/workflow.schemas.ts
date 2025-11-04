@@ -28,6 +28,14 @@ const BaseWorkflowMessageSchema = z.object({
 // ============================================================================
 
 /**
+ * Workflow created event
+ * Emitted when workflow execution is created
+ */
+const WorkflowCreatedSchema = BaseWorkflowMessageSchema.extend({
+  type: z.literal('workflow:created'),
+});
+
+/**
  * Workflow started event
  * Emitted when workflow execution begins
  */
@@ -195,6 +203,7 @@ const WorkflowAnnotationCreatedSchema = BaseWorkflowMessageSchema.extend({
  * ```
  */
 export const WorkflowWebSocketMessageSchema = z.discriminatedUnion('type', [
+  WorkflowCreatedSchema,
   WorkflowStartedSchema,
   WorkflowCompletedSchema,
   WorkflowFailedSchema,

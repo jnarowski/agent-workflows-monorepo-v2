@@ -24,7 +24,7 @@ export const createWorkflowExecutionSchema = z.object({
   project_id: z.string().cuid(),
   workflow_definition_id: z.string().cuid(),
   name: z.string().min(1).max(200),
-  args: z.record(z.string(), z.any()).default({}),
+  args: z.record(z.string(), z.unknown()).default({}),
 });
 
 // Workflow execution filters schema

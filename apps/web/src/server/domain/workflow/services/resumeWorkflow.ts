@@ -27,7 +27,9 @@ export async function resumeWorkflow(
   await createWorkflowEvent({
     workflow_execution_id: executionId,
     event_type: 'workflow_resumed',
-    event_data: {},
+    event_data: {
+      title: 'Resumed',
+    },
     created_by_user_id: userId,
     logger
   });

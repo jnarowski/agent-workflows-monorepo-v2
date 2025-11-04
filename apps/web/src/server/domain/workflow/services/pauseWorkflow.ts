@@ -25,7 +25,9 @@ export async function pauseWorkflow(
   await createWorkflowEvent({
     workflow_execution_id: executionId,
     event_type: 'workflow_paused',
-    event_data: {},
+    event_data: {
+      title: 'Paused',
+    },
     created_by_user_id: userId,
     created_at: pausedAt,
     logger

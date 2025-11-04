@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/client/lib/api-client';
 import { toast } from 'sonner';
@@ -9,7 +8,7 @@ interface CreateWorkflowInput {
   projectId: string;
   definitionId: string;
   name: string;
-  args: Record<string, any>;
+  args: Record<string, unknown>;
 }
 
 interface CreateWorkflowResponse {
@@ -40,7 +39,7 @@ export function useCreateWorkflow() {
       });
       toast.success('Workflow created successfully');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || 'Failed to create workflow');
     },
   });
@@ -62,7 +61,7 @@ export function usePauseWorkflow() {
       });
       toast.success('Workflow paused');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || 'Failed to pause workflow');
     },
   });
@@ -84,7 +83,7 @@ export function useResumeWorkflow() {
       });
       toast.success('Workflow resumed');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || 'Failed to resume workflow');
     },
   });
@@ -106,7 +105,7 @@ export function useCancelWorkflow() {
       });
       toast.success('Workflow cancelled');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || 'Failed to cancel workflow');
     },
   });
@@ -145,7 +144,7 @@ export function useCreateAnnotation() {
       });
       toast.success('Annotation added');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || 'Failed to add annotation');
     },
   });
@@ -187,7 +186,7 @@ export function useUploadArtifact() {
       });
       toast.success('Artifact uploaded');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || 'Failed to upload artifact');
     },
   });

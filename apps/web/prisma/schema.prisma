@@ -31,22 +31,22 @@ model WorkflowDefinition {
 }
 
 model WorkflowExecution {
-  id                     String    @id @default(cuid())
+  id                     String         @id @default(cuid())
   project_id             String
   user_id                String
   workflow_definition_id String
-  name                   String    // User-provided name for this execution
-  args                   Json      // Workflow arguments
-  current_phase          String?   // Current phase name
-  current_step_index     Int       @default(0)
-  status                 String    // 'pending', 'running', 'paused', 'completed', 'failed', 'cancelled'
+  name                   String         // User-provided name for this execution
+  args                   Json           // Workflow arguments
+  current_phase          String?        // Current phase name
+  current_step_index     Int            @default(0)
+  status                 WorkflowStatus @default(pending)
   error_message          String?
   started_at             DateTime?
   completed_at           DateTime?
   paused_at              DateTime?
   cancelled_at           DateTime?
-  created_at             DateTime  @default(now())
-  updated_at             DateTime  @updatedAt
+  created_at             DateTime       @default(now())
+  updated_at             DateTime       @updatedAt
 
   project             Project                 @relation(fields: [project_id], references: [id], onDelete: Cascade)
   user                User                    @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -62,19 +62,19 @@ model WorkflowExecution {
 }
 
 model WorkflowExecutionStep {
-  id                    String    @id @default(cuid())
+  id                    String     @id @default(cuid())
   workflow_execution_id String
-  step_id               String    // Step identifier from workflow definition
-  name                  String    // Step name
-  phase                 String    // Phase this step belongs to
-  status                String    // 'pending', 'running', 'completed', 'failed', 'skipped'
-  log_directory_path    String?   // Path to logs directory on filesystem
-  agent_session_id      String?   // Link to AgentSession (nullable - only for agent steps)
+  step_id               String     // Step identifier from workflow definition
+  name                  String     // Step name
+  phase                 String     // Phase this step belongs to
+  status                StepStatus @default(pending)
+  log_directory_path    String?    // Path to logs directory on filesystem
+  agent_session_id      String?    // Link to AgentSession (nullable - only for agent steps)
   error_message         String?
   started_at            DateTime?
   completed_at          DateTime?
-  created_at            DateTime  @default(now())
-  updated_at            DateTime  @updatedAt
+  created_at            DateTime   @default(now())
+  updated_at            DateTime   @updatedAt
 
   workflow_execution WorkflowExecution @relation(fields: [workflow_execution_id], references: [id], onDelete: Cascade)
   session            AgentSession?     @relation(fields: [agent_session_id], references: [id], onDelete: Cascade)
@@ -88,14 +88,14 @@ model WorkflowExecutionStep {
 }
 
 model WorkflowEvent {
-  id                         String    @id @default(cuid())
+  id                         String            @id @default(cuid())
   workflow_execution_id      String
-  event_type                 String    // 'annotation_added', 'workflow_started', 'workflow_completed', 'workflow_failed', 'workflow_paused', 'workflow_resumed', 'workflow_cancelled', 'phase_started', 'phase_completed', 'step_started'
-  event_data                 Json      // Event-specific data (comment text, phase name, step info, etc.)
-  workflow_execution_step_id String?   // Nullable - only for step-related events
-  created_by_user_id         String?   // Nullable - only for user-generated events
-  created_at                 DateTime  @default(now())
-  updated_at                 DateTime  @updatedAt
+  event_type                 WorkflowEventType
+  event_data                 Json              // Event-specific data (comment text, phase name, step info, etc.)
+  workflow_execution_step_id String?           // Nullable - only for step-related events
+  created_by_user_id         String?           // Nullable - only for user-generated events
+  created_at                 DateTime          @default(now())
+  updated_at                 DateTime          @updatedAt
 
   workflow_execution WorkflowExecution      @relation(fields: [workflow_execution_id], references: [id], onDelete: Cascade)
   step               WorkflowExecutionStep? @relation(fields: [workflow_execution_step_id], references: [id], onDelete: Cascade)
@@ -169,6 +169,38 @@ enum SessionState {
   idle      // Ready for new messages
   working   // Agent actively processing
   error     // Last execution failed
+}
+
+enum WorkflowStatus {
+  pending
+  running
+  paused
+  completed
+  failed
+  cancelled
+}
+
+enum WorkflowEventType {
+  workflow_created
+  workflow_started
+  workflow_completed
+  workflow_failed
+  workflow_paused
+  workflow_resumed
+  workflow_cancelled
+  phase_started
+  phase_completed
+  step_started
+  step_completed
+  step_failed
+}
+
+enum StepStatus {
+  pending
+  running
+  completed
+  failed
+  skipped
 }
 
 model AgentSession {

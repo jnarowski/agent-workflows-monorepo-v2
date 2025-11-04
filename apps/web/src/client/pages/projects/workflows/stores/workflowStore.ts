@@ -2,9 +2,22 @@ import { create } from 'zustand';
 import type {
   WorkflowExecution,
   WorkflowFilter,
-  WorkflowComment,
+  WorkflowEvent,
 } from '../types';
-import { WorkflowStatus, StepStatus } from '../types';
+import {
+  updateExecutionInMap,
+  applyWorkflowStarted,
+  applyWorkflowCompleted,
+  applyWorkflowFailed,
+  applyWorkflowPaused,
+  applyWorkflowResumed,
+  applyWorkflowCancelled,
+  applyStepStarted,
+  applyStepCompleted,
+  applyStepFailed,
+  applyPhaseCompleted,
+  applyEventCreated,
+} from '../lib/workflowStateUpdates';
 
 interface WorkflowStore {
   // State
@@ -58,9 +71,9 @@ interface WorkflowStore {
   handleWorkflowPaused: (event: { executionId: string }) => void;
   handleWorkflowResumed: (event: { executionId: string }) => void;
   handleWorkflowCancelled: (event: { executionId: string }) => void;
-  handleCommentCreated: (event: {
+  handleEventCreated: (event: {
     executionId: string;
-    comment: WorkflowComment;
+    event: WorkflowEvent;
   }) => void;
 }
 
@@ -135,209 +148,101 @@ export const useWorkflowStore = create<WorkflowStore>((set) => ({
     }),
 
   handleWorkflowStarted: (event) =>
-    set((state) => {
-      const execution = state.executions.get(event.executionId);
-      if (!execution) return state;
-
-      const newExecutions = new Map(state.executions);
-      newExecutions.set(event.executionId, {
-        ...execution,
-        status: WorkflowStatus.RUNNING,
-        started_at: new Date(),
-        updated_at: new Date(),
-      });
-      return { executions: newExecutions };
-    }),
+    set((state) => ({
+      executions: updateExecutionInMap(
+        state.executions,
+        event.executionId,
+        applyWorkflowStarted
+      ),
+    })),
 
   handleStepStarted: (event) =>
-    set((state) => {
-      const execution = state.executions.get(event.executionId);
-      if (!execution) return state;
-
-      // Update current step and phase
-      const newExecution = {
-        ...execution,
-        current_step: event.stepName,
-        current_phase: event.phaseName,
-        updated_at: new Date(),
-      };
-
-      // Update step status if steps are loaded
-      if (execution.steps) {
-        newExecution.steps = execution.steps.map((step) =>
-          step.id === event.stepId
-            ? {
-                ...step,
-                status: StepStatus.RUNNING,
-                started_at: new Date(),
-                updated_at: new Date(),
-              }
-            : step
-        );
-      }
-
-      const newExecutions = new Map(state.executions);
-      newExecutions.set(event.executionId, newExecution);
-      return { executions: newExecutions };
-    }),
+    set((state) => ({
+      executions: updateExecutionInMap(
+        state.executions,
+        event.executionId,
+        (exec) => applyStepStarted(exec, event)
+      ),
+    })),
 
   handleStepCompleted: (event) =>
-    set((state) => {
-      const execution = state.executions.get(event.executionId);
-      if (!execution || !execution.steps) return state;
-
-      const newExecution = {
-        ...execution,
-        steps: execution.steps.map((step) =>
-          step.id === event.stepId
-            ? {
-                ...step,
-                status: StepStatus.COMPLETED,
-                logs: event.logs,
-                completed_at: new Date(),
-                updated_at: new Date(),
-              }
-            : step
-        ),
-        updated_at: new Date(),
-      };
-
-      const newExecutions = new Map(state.executions);
-      newExecutions.set(event.executionId, newExecution);
-      return { executions: newExecutions };
-    }),
+    set((state) => ({
+      executions: updateExecutionInMap(
+        state.executions,
+        event.executionId,
+        (exec) => applyStepCompleted(exec, event)
+      ),
+    })),
 
   handleStepFailed: (event) =>
-    set((state) => {
-      const execution = state.executions.get(event.executionId);
-      if (!execution || !execution.steps) return state;
-
-      const newExecution = {
-        ...execution,
-        steps: execution.steps.map((step) =>
-          step.id === event.stepId
-            ? {
-                ...step,
-                status: StepStatus.FAILED,
-                error_message: event.error,
-                completed_at: new Date(),
-                updated_at: new Date(),
-              }
-            : step
-        ),
-        updated_at: new Date(),
-      };
-
-      const newExecutions = new Map(state.executions);
-      newExecutions.set(event.executionId, newExecution);
-      return { executions: newExecutions };
-    }),
+    set((state) => ({
+      executions: updateExecutionInMap(
+        state.executions,
+        event.executionId,
+        (exec) => applyStepFailed(exec, event)
+      ),
+    })),
 
   handlePhaseCompleted: (event) =>
-    set((state) => {
-      const execution = state.executions.get(event.executionId);
-      if (!execution) return state;
-
-      const newExecution = {
-        ...execution,
-        current_phase: event.nextPhase,
-        updated_at: new Date(),
-      };
-
-      const newExecutions = new Map(state.executions);
-      newExecutions.set(event.executionId, newExecution);
-      return { executions: newExecutions };
-    }),
+    set((state) => ({
+      executions: updateExecutionInMap(
+        state.executions,
+        event.executionId,
+        (exec) => applyPhaseCompleted(exec, event.nextPhase)
+      ),
+    })),
 
   handleWorkflowCompleted: (event) =>
-    set((state) => {
-      const execution = state.executions.get(event.executionId);
-      if (!execution) return state;
-
-      const newExecutions = new Map(state.executions);
-      newExecutions.set(event.executionId, {
-        ...execution,
-        status: WorkflowStatus.COMPLETED,
-        completed_at: new Date(),
-        updated_at: new Date(),
-      });
-      return { executions: newExecutions };
-    }),
+    set((state) => ({
+      executions: updateExecutionInMap(
+        state.executions,
+        event.executionId,
+        applyWorkflowCompleted
+      ),
+    })),
 
   handleWorkflowFailed: (event) =>
-    set((state) => {
-      const execution = state.executions.get(event.executionId);
-      if (!execution) return state;
-
-      const newExecutions = new Map(state.executions);
-      newExecutions.set(event.executionId, {
-        ...execution,
-        status: WorkflowStatus.FAILED,
-        error_message: event.error,
-        completed_at: new Date(),
-        updated_at: new Date(),
-      });
-      return { executions: newExecutions };
-    }),
+    set((state) => ({
+      executions: updateExecutionInMap(
+        state.executions,
+        event.executionId,
+        (exec) => applyWorkflowFailed(exec, event.error)
+      ),
+    })),
 
   handleWorkflowPaused: (event) =>
-    set((state) => {
-      const execution = state.executions.get(event.executionId);
-      if (!execution) return state;
-
-      const newExecutions = new Map(state.executions);
-      newExecutions.set(event.executionId, {
-        ...execution,
-        status: WorkflowStatus.PAUSED,
-        updated_at: new Date(),
-      });
-      return { executions: newExecutions };
-    }),
+    set((state) => ({
+      executions: updateExecutionInMap(
+        state.executions,
+        event.executionId,
+        applyWorkflowPaused
+      ),
+    })),
 
   handleWorkflowResumed: (event) =>
-    set((state) => {
-      const execution = state.executions.get(event.executionId);
-      if (!execution) return state;
-
-      const newExecutions = new Map(state.executions);
-      newExecutions.set(event.executionId, {
-        ...execution,
-        status: WorkflowStatus.RUNNING,
-        updated_at: new Date(),
-      });
-      return { executions: newExecutions };
-    }),
+    set((state) => ({
+      executions: updateExecutionInMap(
+        state.executions,
+        event.executionId,
+        applyWorkflowResumed
+      ),
+    })),
 
   handleWorkflowCancelled: (event) =>
-    set((state) => {
-      const execution = state.executions.get(event.executionId);
-      if (!execution) return state;
+    set((state) => ({
+      executions: updateExecutionInMap(
+        state.executions,
+        event.executionId,
+        applyWorkflowCancelled
+      ),
+    })),
 
-      const newExecutions = new Map(state.executions);
-      newExecutions.set(event.executionId, {
-        ...execution,
-        status: WorkflowStatus.CANCELLED,
-        completed_at: new Date(),
-        updated_at: new Date(),
-      });
-      return { executions: newExecutions };
-    }),
-
-  handleCommentCreated: (event) =>
-    set((state) => {
-      const execution = state.executions.get(event.executionId);
-      if (!execution) return state;
-
-      const newExecution = {
-        ...execution,
-        comments: execution.comments
-          ? [...execution.comments, event.comment]
-          : [event.comment],
-        updated_at: new Date(),
-      };
-
-      const newExecutions = new Map(state.executions);
-      newExecutions.set(event.executionId, newExecution);
-      return { executions: newExecutions };
-    }),
+  handleEventCreated: (event) =>
+    set((state) => ({
+      executions: updateExecutionInMap(
+        state.executions,
+        event.executionId,
+        (exec) => applyEventCreated(exec, event.event)
+      ),
+    })),
 }));
