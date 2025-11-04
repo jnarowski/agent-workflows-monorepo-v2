@@ -279,6 +279,9 @@ importers:
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
+      inngest:
+        specifier: ^3.44.5
+        version: 3.44.5(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(express@4.21.2)(fastify@5.6.1)(typescript@5.9.3)(zod@4.1.12)
       input-otp:
         specifier: ^1.4.2
         version: 1.4.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -630,6 +633,21 @@ importers:
       typescript:
         specifier: 5.9.2
         version: 5.9.2
+
+  packages/workflow-sdk:
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      bunchee:
+        specifier: ^6.6.2
+        version: 6.6.2(typescript@5.9.3)
+      inngest:
+        specifier: ^3.0.0
+        version: 3.44.5(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(express@4.21.2)(fastify@5.6.1)(typescript@5.9.3)(zod@4.1.12)
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
 
 packages:
 

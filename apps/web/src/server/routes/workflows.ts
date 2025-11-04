@@ -14,6 +14,8 @@ import {
   workflowExecutionFiltersSchema,
 } from "@/shared/schemas";
 import { NotFoundError } from "@/server/errors";
+import { scanProjectWorkflows } from "@/server/workflows/engine/scanner";
+import { prisma } from "@/shared/prisma";
 
 // Params schema
 const executionIdSchema = z.object({
@@ -56,8 +58,8 @@ export async function workflowRoutes(fastify: FastifyInstance) {
         throw new NotFoundError('Workflow definition not found');
       }
 
-      // Start execution via orchestrator
-      await executeWorkflow(execution.id, fastify.workflowOrchestrator);
+      // Start execution via Inngest
+      await executeWorkflow(execution.id, fastify);
 
       return reply.code(201).send({ data: execution });
     }
@@ -280,6 +282,112 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       const updated = await cancelWorkflow(id, userId, undefined, fastify.log);
 
       return reply.send({ data: updated });
+    }
+  );
+
+  /**
+   * POST /api/projects/:projectId/workflows/refresh
+   * Re-scan project for workflows
+   */
+  fastify.post<{
+    Params: { projectId: string };
+  }>(
+    "/api/projects/:projectId/workflows/refresh",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: z.object({
+          projectId: z.string().cuid(),
+        }),
+      },
+    },
+    async (request, reply) => {
+      const { projectId } = request.params;
+      const userId = request.user!.id as string;
+
+      fastify.log.info(
+        { userId, projectId },
+        "Refreshing project workflows"
+      );
+
+      // Get project
+      const project = await prisma.project.findUnique({
+        where: { id: projectId },
+      });
+
+      if (!project) {
+        throw new NotFoundError("Project not found");
+      }
+
+      // Verify user owns project
+      if (project.user_id !== userId) {
+        return reply
+          .code(403)
+          .send({ error: { message: "Access denied", statusCode: 403 } });
+      }
+
+      // Scan project for workflows
+      const workflows = await scanProjectWorkflows(
+        projectId,
+        project.path,
+        fastify
+      );
+
+      return reply.send({
+        data: {
+          projectId,
+          discovered: workflows.length,
+          workflows,
+        },
+      });
+    }
+  );
+
+  /**
+   * GET /api/projects/:projectId/workflows
+   * List workflows for a project
+   */
+  fastify.get<{
+    Params: { projectId: string };
+  }>(
+    "/api/projects/:projectId/workflows",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: z.object({
+          projectId: z.string().cuid(),
+        }),
+      },
+    },
+    async (request, reply) => {
+      const { projectId } = request.params;
+      const userId = request.user!.id as string;
+
+      fastify.log.info({ userId, projectId }, "Fetching project workflows");
+
+      // Get project to verify ownership
+      const project = await prisma.project.findUnique({
+        where: { id: projectId },
+      });
+
+      if (!project) {
+        throw new NotFoundError("Project not found");
+      }
+
+      // Verify user owns project
+      if (project.user_id !== userId) {
+        return reply
+          .code(403)
+          .send({ error: { message: "Access denied", statusCode: 403 } });
+      }
+
+      // Get workflow definitions for project
+      const workflows = await prisma.workflowDefinition.findMany({
+        where: { project_id: projectId },
+        orderBy: { name: "asc" },
+      });
+
+      return reply.send({ data: workflows });
     }
   );
 }

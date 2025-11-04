@@ -20,13 +20,14 @@ import { registerShellRoute } from '@/server/routes/shell';
 import { authPlugin } from '@/server/plugins/auth';
 import { setupGracefulShutdown } from '@/server/utils/shutdown';
 import { config } from '@/server/config/Configuration';
-import { MockWorkflowOrchestrator } from '@/server/domain/workflow/services/MockWorkflowOrchestrator';
 import {
   AppError,
   ConflictError,
   buildErrorResponse
 } from '@/server/errors';
 import { ServiceUnavailableError } from '@/server/errors/ServiceUnavailableError';
+import { initializeWorkflowEngine } from '@/server/workflows/engine/registry';
+import { scanAllProjectWorkflows } from '@/server/workflows/engine/scanner';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -316,21 +317,40 @@ export async function createServer() {
   // Register Shell WebSocket handler
   await registerShellRoute(fastify);
 
-  // Initialize MockWorkflowOrchestrator
-  const workflowOrchestrator = new MockWorkflowOrchestrator(fastify.log);
-  fastify.log.info('MockWorkflowOrchestrator initialized');
+  // Initialize workflow engine (Inngest)
+  fastify.log.info('Initializing workflow engine...');
+  await initializeWorkflowEngine(fastify);
+  fastify.log.info('✓ Workflow engine initialized');
 
-  // Start the workflow runner
-  workflowOrchestrator.start();
+  // Scan all projects for workflows on startup
+  fastify.log.info('Scanning projects for workflows...');
+  const scanResults = await scanAllProjectWorkflows(fastify);
 
-  // Store orchestrator on fastify instance for access in routes
-  fastify.decorate('workflowOrchestrator', workflowOrchestrator);
+  if (scanResults.discovered > 0) {
+    fastify.log.info(
+      {
+        projectsScanned: scanResults.scanned,
+        workflowsDiscovered: scanResults.discovered,
+        errors: scanResults.errors.length,
+      },
+      `✓ Found ${scanResults.discovered} workflow(s) in ${scanResults.scanned} project(s)`
+    );
+  } else {
+    fastify.log.info(
+      {
+        projectsScanned: scanResults.scanned,
+        errors: scanResults.errors.length,
+      },
+      `✓ No workflows found in ${scanResults.scanned} project(s) (looking in .agent/workflows/definitions/ directories)`
+    );
+  }
 
-  // Graceful shutdown: Stop the workflow runner on server close
-  fastify.addHook('onClose', async () => {
-    fastify.log.info('Stopping workflow orchestrator...');
-    workflowOrchestrator.stop();
-  });
+  if (scanResults.errors.length > 0) {
+    fastify.log.warn(
+      { errors: scanResults.errors },
+      `Encountered ${scanResults.errors.length} error(s) while scanning`
+    );
+  }
 
   // Serve static files from dist/client/ (production build only)
   // In production, the built client files are in dist/client/

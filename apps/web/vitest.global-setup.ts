@@ -19,7 +19,8 @@ export default async function globalSetup() {
 
   try {
     // Apply schema (skip generate - client already generated during install)
-    execSync("pnpm prisma db push --skip-generate", {
+    // Use --accept-data-loss since this is a test database
+    execSync("pnpm prisma db push --skip-generate --accept-data-loss", {
       stdio: "inherit",
       cwd: process.cwd(),
       env: { ...process.env, DATABASE_URL: testDbPath },

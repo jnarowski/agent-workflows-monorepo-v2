@@ -5,7 +5,8 @@
     { "path": "./tsconfig.node.json" },
     { "path": "./tsconfig.server.json" },
     { "path": "./tsconfig.shared.json" },
-    { "path": "./tsconfig.cli.json" }
+    { "path": "./tsconfig.cli.json" },
+    { "path": "./tsconfig.test.json" }
   ],
   "compilerOptions": {
     "baseUrl": ".",

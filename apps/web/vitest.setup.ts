@@ -1,9 +1,21 @@
-import { expect } from 'vitest';
+import { expect, beforeAll } from 'vitest';
 import * as matchers from '@testing-library/jest-dom/matchers';
 
-// Set required environment variables for tests
+// Set required environment variables for tests FIRST
+// IMPORTANT: This must happen before any imports that use Configuration
 process.env.JWT_SECRET = 'test-jwt-secret-for-vitest';
 // DATABASE_URL is set in vitest.global-setup.ts (runs before this file)
+
+// Reset Configuration after imports to ensure it reads test JWT_SECRET
+beforeAll(async () => {
+  // Dynamic import after JWT_SECRET is set
+  const { Configuration } = await import('./src/server/config/Configuration');
+
+  // Reset Configuration singleton to re-read JWT_SECRET from environment
+  // This ensures Configuration reads the test JWT_SECRET even if it was
+  // imported elsewhere before this setup file ran
+  Configuration.reset();
+});
 
 expect.extend(matchers);
 

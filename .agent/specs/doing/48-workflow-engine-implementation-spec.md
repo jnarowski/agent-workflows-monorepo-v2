@@ -314,86 +314,91 @@ const step = await findOrCreateStep(executionId, 'analyze', currentPhase);
 ### Task Group 1: Setup SDK Package
 
 <!-- prettier-ignore -->
-- [ ] sdk-001 Create SDK package directory structure
+- [x] sdk-001 Create SDK package directory structure
   - Create `packages/workflow-sdk/` with src, types, builder, runtime subdirectories
   - Command: `mkdir -p packages/workflow-sdk/src/{types,builder,runtime}`
-- [ ] sdk-002 Create package.json for SDK
+- [x] sdk-002 Create package.json for SDK
   - File: `packages/workflow-sdk/package.json`
   - Set name to `@sourceborn/workflow-sdk`, version `1.0.0`
   - Add inngest as peerDependency `^3.x.x`
   - Add bunchee as devDependency for building
-- [ ] sdk-003 Create tsconfig.json for SDK
+- [x] sdk-003 Create tsconfig.json for SDK
   - File: `packages/workflow-sdk/tsconfig.json`
   - Extend from `@repo/typescript-config/base.json`
   - Set `moduleResolution: "bundler"`, `module: "ESNext"`
-- [ ] sdk-004 Define WorkflowStep interface with all step methods
+- [x] sdk-004 Define WorkflowStep interface with all step methods
   - File: `packages/workflow-sdk/src/types/steps.ts`
   - Include phase(), agent(), slash(), git(), cli(), artifact(), annotation()
   - Include native Inngest methods: run(), sleep(), waitForEvent()
   - Define all config/result types (AgentStepConfig, GitStepConfig, etc.)
   - Add StepOptions interface: `{ timeout?: number }`
   - All step methods accept optional 3rd parameter: `options?: StepOptions`
-- [ ] sdk-005 Define WorkflowConfig interface and types
+- [x] sdk-005 Define WorkflowConfig interface and types
   - File: `packages/workflow-sdk/src/types/workflow.ts`
   - WorkflowConfig: id, trigger, name, description, phases[], timeout
   - WorkflowContext: event, step
   - PhaseOptions: retries, retryDelay
-- [ ] sdk-006 Implement defineWorkflow() builder
+- [x] sdk-006 Implement defineWorkflow() builder
   - File: `packages/workflow-sdk/src/builder/defineWorkflow.ts`
   - Return factory function with __type marker
   - Include createInngestFunction() method that accepts runtime
-- [ ] sdk-007 Define WorkflowRuntime interface
+- [x] sdk-007 Define WorkflowRuntime interface
   - File: `packages/workflow-sdk/src/runtime/adapter.ts`
   - createWorkflowStep(context): WorkflowStep
-- [ ] sdk-008 Create public API exports
+- [x] sdk-008 Create public API exports
   - File: `packages/workflow-sdk/src/index.ts`
   - Export all types, defineWorkflow, WorkflowRuntime
   - Export version constant
-- [ ] sdk-009 Add SDK to workspace
+- [x] sdk-009 Add SDK to workspace
   - File: `turbo.json`
   - Add workflow-sdk to pipeline with build task
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Created complete SDK package structure with types, builder, and runtime adapter interface
+- All WorkflowStep methods defined with proper TypeScript interfaces including timeout support
+- defineWorkflow() builder returns factory with __type marker for runtime detection
+- WorkflowRuntime interface designed for dependency injection pattern
+- SDK has zero runtime dependencies (Inngest as peer dependency only)
+- Ready for building and local testing
 
 ### Task Group 2: Web App Workflow Infrastructure
 
 <!-- prettier-ignore -->
-- [ ] infra-001 Create workflow engine directory structure
+- [x] infra-001 Create workflow engine directory structure
   - Create `apps/web/src/server/workflows/engine/steps/`
   - Command: `mkdir -p apps/web/src/server/workflows/engine/steps`
-- [ ] infra-002 Implement Inngest client initialization
+- [x] infra-002 Implement Inngest client initialization
   - File: `apps/web/src/server/workflows/engine/client.ts`
   - createWorkflowClient() function
   - Configure with appId, eventKey (from env), isDev
   - Configure SQLite memoization store at `./prisma/workflows.db`
   - Enable signing key validation for webhook auth
-- [ ] infra-003 Create runtime context type
+- [x] infra-003 Create runtime context type
   - File: `apps/web/src/server/workflows/types.ts`
   - RuntimeContext interface: executionId, projectId, userId, currentPhase, logger
-- [ ] infra-004 Implement step helper: findOrCreateStep()
+- [x] infra-004 Implement step helper: findOrCreateStep()
   - File: `apps/web/src/server/workflows/engine/steps/helpers.ts`
   - Dynamic step creation with phase tagging
   - Find existing or create new WorkflowExecutionStep
-- [ ] infra-005 Implement step helper: updateStepStatus()
+- [x] infra-005 Implement step helper: updateStepStatus()
   - File: `apps/web/src/server/workflows/engine/steps/helpers.ts`
   - Update WorkflowExecutionStep status
   - Create WorkflowEvent
   - Broadcast WebSocket event
-- [ ] infra-006 Implement step helper: handleStepFailure()
+- [x] infra-006 Implement step helper: handleStepFailure()
   - File: `apps/web/src/server/workflows/engine/steps/helpers.ts`
   - Update step to failed
   - Broadcast failure event
   - Cleanup resources
-- [ ] infra-007 Implement phase step with retry logic
+- [x] infra-007 Implement phase step with retry logic
   - File: `apps/web/src/server/workflows/engine/steps/phase.ts`
   - createPhaseStep() factory function
   - Update WorkflowExecution.current_phase
   - Retry loop with configurable attempts and delay
   - Create phase_started, phase_completed, phase_failed events
   - Broadcast workflow:phase:started, workflow:phase:retry, workflow:phase:completed
-- [ ] infra-008 Implement agent step
+- [x] infra-008 Implement agent step
   - File: `apps/web/src/server/workflows/engine/steps/agent.ts`
   - createAgentStep() factory
   - Accept optional 3rd parameter: `options?: { timeout?: number }`
@@ -402,12 +407,12 @@ const step = await findOrCreateStep(executionId, 'analyze', currentPhase);
   - Create AgentSession, link to WorkflowExecutionStep
   - Call executeAgent() service with WebSocket streaming
   - Handle errors with cleanup (terminate agent, mark failed)
-- [ ] infra-009 Implement slash command step
+- [x] infra-009 Implement slash command step
   - File: `apps/web/src/server/workflows/engine/steps/slash.ts`
   - createSlashStep() factory
   - Wrapper around agent step that formats slash command
   - Format: `${command} ${args.join(' ')}`
-- [ ] infra-010 Implement git step
+- [x] infra-010 Implement git step
   - File: `apps/web/src/server/workflows/engine/steps/git.ts`
   - createGitStep() factory
   - Accept optional 3rd parameter: `options?: { timeout?: number }`
@@ -416,7 +421,7 @@ const step = await findOrCreateStep(executionId, 'analyze', currentPhase);
   - Support operations: commit, branch, pr
   - Delegate to domain services (createCommit, createBranch, createPullRequest)
   - Create WorkflowArtifact for git operations
-- [ ] infra-011 Implement CLI step
+- [x] infra-011 Implement CLI step
   - File: `apps/web/src/server/workflows/engine/steps/cli.ts`
   - createCliStep() factory
   - Accept optional 3rd parameter: `options?: { timeout?: number }`
@@ -425,21 +430,21 @@ const step = await findOrCreateStep(executionId, 'analyze', currentPhase);
   - Use promisify(exec) or execAsync
   - Support cwd, env options
   - Capture stdout, stderr, exitCode
-- [ ] infra-012 Implement artifact upload step
+- [x] infra-012 Implement artifact upload step
   - File: `apps/web/src/server/workflows/engine/steps/artifact.ts`
   - createArtifactStep() factory
   - Support content (text), file (single), directory (multiple)
   - Create WorkflowArtifact records
   - Broadcast workflow:artifact:uploaded
-- [ ] infra-013 Implement annotation step
+- [x] infra-013 Implement annotation step
   - File: `apps/web/src/server/workflows/engine/steps/annotation.ts`
   - createAnnotationStep() factory
   - Create WorkflowEvent with type annotation_added
   - Broadcast workflow:annotation:created
-- [ ] infra-014 Create step exports index
+- [x] infra-014 Create step exports index
   - File: `apps/web/src/server/workflows/engine/steps/index.ts`
   - Export all step factory functions
-- [ ] infra-015 Implement runtime adapter
+- [x] infra-015 Implement runtime adapter
   - File: `apps/web/src/server/workflows/engine/runtime.ts`
   - createWorkflowRuntime() function
   - Returns WorkflowRuntime implementation
@@ -448,20 +453,27 @@ const step = await findOrCreateStep(executionId, 'analyze', currentPhase);
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- All workflow engine infrastructure files created and implemented
+- Inngest client configured with SQLite memoization at ./prisma/workflows.db
+- Step helper functions implemented with phase tagging and WebSocket broadcasting
+- Phase step implements configurable retry logic with event broadcasting
+- All custom step types implemented: agent, slash, git, cli, artifact, annotation
+- Runtime adapter created to inject step implementations into SDK interfaces
+- All step methods support optional timeout configuration (3rd parameter)
+- Error handling and cleanup implemented across all step types
 
 ### Task Group 3: Workflow Discovery & Loading
 
 <!-- prettier-ignore -->
-- [ ] load-001 Implement workflow file finder
+- [x] load-001 Implement workflow file finder
   - File: `apps/web/src/server/workflows/engine/loader.ts`
   - findWorkflowFiles(dir): Promise<string[]>
   - Recursive directory traversal for .ts/.js files
-- [ ] load-002 Implement workflow module extraction
+- [x] load-002 Implement workflow module extraction
   - File: `apps/web/src/server/workflows/engine/loader.ts`
   - Support export patterns: default, workflow, createWorkflow
   - Check for __type: 'workflow' marker
-- [ ] load-003 Implement loadProjectWorkflows()
+- [x] load-003 Implement loadProjectWorkflows()
   - File: `apps/web/src/server/workflows/engine/loader.ts`
   - Check for .workflows/ directory
   - Find all workflow files
@@ -469,19 +481,19 @@ const step = await findOrCreateStep(executionId, 'analyze', currentPhase);
   - Extract workflow definitions
   - Call createInngestFunction() with runtime
   - Return array of Inngest functions
-- [ ] load-004 Implement scanProjectWorkflows()
+- [x] load-004 Implement scanProjectWorkflows()
   - File: `apps/web/src/server/workflows/engine/scanner.ts`
   - Load workflows from project path
   - Create/update WorkflowDefinition records in database
   - Use upsert with unique constraint on (project_id, name)
   - Store: name, description, type, path, phases
-- [ ] load-005 Implement scanAllProjectWorkflows()
+- [x] load-005 Implement scanAllProjectWorkflows()
   - File: `apps/web/src/server/workflows/engine/scanner.ts`
   - Load all projects from database
   - Scan each project sequentially
   - Collect results: scanned, discovered, errors
   - Return ScanResult
-- [ ] load-006 Implement workflow registry initialization
+- [x] load-006 Implement workflow registry initialization
   - File: `apps/web/src/server/workflows/engine/registry.ts`
   - initializeWorkflowEngine(fastify)
   - Create Inngest client
@@ -495,59 +507,70 @@ const step = await findOrCreateStep(executionId, 'analyze', currentPhase);
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Workflow file finder implemented with recursive directory traversal
+- Dynamic workflow loading from filesystem with pathToFileURL()
+- Multiple export patterns supported (default, workflow, createWorkflow)
+- Project scanning implemented with WorkflowDefinition upsert
+- Registry initialization creates Inngest client and registers endpoint
+- Fastify decorated with workflowClient for triggering workflows
+- Scan results tracked (projects scanned, workflows discovered, errors)
 
 ### Task Group 4: API Endpoints & Routes
 
 <!-- prettier-ignore -->
-- [ ] api-001 Create workflow refresh endpoint
+- [x] api-001 Create workflow refresh endpoint
   - File: `apps/web/src/server/routes/workflows.ts`
   - POST /api/projects/:projectId/workflows/refresh
   - Re-scan project for workflows
   - Call scanProjectWorkflows()
   - Return discovered workflows count
-- [ ] api-002 Create list workflows endpoint
+- [x] api-002 Create list workflows endpoint
   - File: `apps/web/src/server/routes/workflows.ts`
   - GET /api/projects/:projectId/workflows
   - Query WorkflowDefinition by project_id
   - Return workflow metadata (id, name, description, phases)
-- [ ] api-003 Create get workflow definition endpoint
+- [x] api-003 Create get workflow definition endpoint
   - File: `apps/web/src/server/routes/workflows.ts`
   - GET /api/workflow-definitions/:definitionId
   - Return full WorkflowDefinition record
-- [ ] api-004 Register workflow routes
+- [x] api-004 Register workflow routes
   - File: `apps/web/src/server/routes/index.ts`
   - Import and register workflow routes
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added POST /api/projects/:projectId/workflows/refresh endpoint for project re-scanning
+- Added GET /api/projects/:projectId/workflows endpoint to list workflows by project
+- GET /api/workflow-definitions/:definitionId already existed in workflow-definitions.ts
+- Workflow routes already registered in routes/index.ts
+- All endpoints implement authentication and authorization (verify project ownership)
+- Endpoints use scanProjectWorkflows() and prisma queries for data access
 
 ### Task Group 5: Server Integration
 
 <!-- prettier-ignore -->
-- [ ] server-001 Add Inngest dependency and concurrently
+- [x] server-001 Add Inngest dependency and concurrently
   - File: `apps/web/package.json`
   - Add inngest: `^3.x.x`
   - Add concurrently: `^9.1.0` (devDependency)
   - Add script: `"inngest": "npx inngest-cli@latest dev -u http://localhost:3456/api/workflows/inngest"`
   - Update script: `"dev": "concurrently \"pnpm inngest\" \"pnpm dev:server\" \"pnpm dev:client\""`
   - Run: `pnpm install`
-- [ ] server-002 Integrate workflow engine into server startup
+- [x] server-002 Integrate workflow engine into server startup
   - File: `apps/web/src/server/index.ts`
   - Import initializeWorkflowEngine, scanAllProjectWorkflows
   - Call initializeWorkflowEngine(fastify) before server start
   - Call scanAllProjectWorkflows(fastify) after engine init
   - Log scan results
-- [ ] server-003 Replace MockWorkflowOrchestrator in executeWorkflow
+- [x] server-003 Replace MockWorkflowOrchestrator in executeWorkflow
   - File: `apps/web/src/server/domain/workflow/services/executeWorkflow.ts`
   - Remove MockWorkflowOrchestrator import and usage
   - Update to trigger Inngest workflow via fastify.workflowClient.send()
   - Pass executionId, projectId, userId, projectPath, args in event data
-- [ ] server-004 Delete MockWorkflowOrchestrator
+- [x] server-004 Delete MockWorkflowOrchestrator
   - File: `apps/web/src/server/domain/workflow/services/MockWorkflowOrchestrator.ts`
   - Delete entire file
-- [ ] server-005 Add workflow engine environment variables
+- [x] server-005 Add workflow engine environment variables
   - File: `apps/web/.env.example`
   - WORKFLOW_ENGINE_ENABLED (default: true)
   - INNGEST_EVENT_KEY (signing key for webhook auth, optional for dev)
@@ -557,12 +580,19 @@ const step = await findOrCreateStep(executionId, 'analyze', currentPhase);
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added inngest ^3.44.5 and updated concurrently script in package.json
+- Added "inngest" script to run Inngest dev server alongside web app
+- Updated "dev" script to run inngest, server, and client concurrently
+- Integrated initializeWorkflowEngine and scanAllProjectWorkflows into server/index.ts startup
+- Removed MockWorkflowOrchestrator and updated executeWorkflow to use Inngest
+- executeWorkflow now triggers workflows via fastify.workflowClient.send()
+- Added comprehensive workflow engine environment variables to .env.example
+- Server now logs workflow scanning results on startup
 
 ### Task Group 6: Example Workflow & Testing
 
 <!-- prettier-ignore -->
-- [ ] example-001 Create example workflow in test project
+- [x] example-001 Create example workflow in test project
   - Create test project at `apps/web/test-project/.workflows/`
   - File: `apps/web/test-project/.workflows/example-workflow.ts`
   - Install @sourceborn/workflow-sdk

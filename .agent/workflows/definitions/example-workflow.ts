@@ -1,0 +1,87 @@
+import { defineWorkflow } from "../../../packages/workflow-sdk/dist";
+
+/**
+ * Example workflow that demonstrates basic text output functionality.
+ * This workflow runs through three phases and outputs text at each step.
+ */
+export default defineWorkflow(
+  {
+    id: "example-text-workflow",
+    trigger: "workflow/example-text",
+    name: "Example Text Workflow",
+    description: "Simple workflow that outputs text for testing",
+    phases: ["initialize", "process", "complete"],
+  },
+  async ({ event, step }) => {
+    // Phase 1: Initialize
+
+    await step.phase("initialize", async () => {
+      await step.annotation("Starting example workflow - initialization phase");
+
+      // Simulate some work
+      await step.run("log-start", async () => {
+        console.log("Workflow started at:", new Date().toISOString());
+        return { message: "Initialization complete" };
+      });
+    });
+
+    // Phase 2: Process
+    await step.phase("process", async () => {
+      await step.annotation("Processing data - this is the main work phase");
+
+      // Output some text data
+      await step.run("process-data", async () => {
+        const data = {
+          input: event.data,
+          processed: true,
+          timestamp: new Date().toISOString(),
+          result: "Data processing complete",
+        };
+
+        console.log("Processing data:", JSON.stringify(data, null, 2));
+        return data;
+      });
+
+      // Create a text artifact
+      await step.artifact("process-results", {
+        name: "processing-results.txt",
+        content: `Workflow Execution Results
+===========================
+Workflow ID: example-text-workflow
+Execution Time: ${new Date().toISOString()}
+Status: Processing Complete
+Input Data: ${JSON.stringify(event.data, null, 2)}
+
+This is a simple text output demonstrating the workflow system.
+All phases are executing correctly.
+`,
+        type: "text",
+      });
+    });
+
+    // Phase 3: Complete
+    await step.phase("complete", async () => {
+      await step.annotation("Finalizing workflow - cleanup phase");
+
+      await step.run("finalize", async () => {
+        const summary = {
+          workflowId: "example-text-workflow",
+          status: "completed",
+          phasesExecuted: ["initialize", "process", "complete"],
+          completedAt: new Date().toISOString(),
+          message: "Workflow execution successful!",
+        };
+
+        console.log("Workflow Summary:", JSON.stringify(summary, null, 2));
+        return summary;
+      });
+    });
+
+    // Return final result
+    return {
+      success: true,
+      message: "Example workflow completed successfully",
+      timestamp: new Date().toISOString(),
+    };
+  }
+);

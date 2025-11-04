@@ -12,25 +12,17 @@ import { cleanTestDB } from "@/server/test-utils/db";
 import {
   createTestApp,
   closeTestApp,
-  injectAuth,
 } from "@/server/test-utils/fastify";
 import {
-  createTestUser,
+  createAuthenticatedUser,
   createTestProject,
 } from "@/server/test-utils/fixtures";
 import { projectResponseSchema } from "@/server/domain/project/schemas";
-import { Configuration } from "@/server/config/Configuration";
 
 describe("GET /api/projects/:id", () => {
   let app: FastifyInstance & { jwt: { sign: (payload: object) => string } };
 
   beforeAll(async () => {
-    // IMPORTANT: Reset Configuration singleton to re-read JWT_SECRET from environment
-    // vitest.setup.ts sets process.env.JWT_SECRET before tests run,
-    // but Configuration singleton reads it at import time.
-    // This reset forces it to re-read the environment variable.
-    Configuration.reset();
-
     // Schema already applied by globalSetup - just create app
     app = await createTestApp();
   });
@@ -48,7 +40,7 @@ describe("GET /api/projects/:id", () => {
 
   it("should return 200 with project data for authenticated valid request", async () => {
     // Arrange: Create test user and project
-    const user = await createTestUser(prisma, {
+    const { headers } = await createAuthenticatedUser(prisma, app, {
       email: "test@example.com",
     });
 
@@ -56,9 +48,6 @@ describe("GET /api/projects/:id", () => {
       name: "Test Project",
       path: "/tmp/test-project",
     });
-
-    // Generate auth token
-    const headers = injectAuth(user.id, user.email, app);
 
     // Act: Make request
     const response = await app.inject({
@@ -87,11 +76,9 @@ describe("GET /api/projects/:id", () => {
 
   it("should return 404 for non-existent project ID", async () => {
     // Arrange: Create test user (but no project)
-    const user = await createTestUser(prisma, {
+    const { headers } = await createAuthenticatedUser(prisma, app, {
       email: "test@example.com",
     });
-
-    const headers = injectAuth(user.id, user.email, app);
 
     // Use valid CUID format but non-existent ID
     const nonExistentId = "clx0000000000000000000001";
@@ -137,11 +124,9 @@ describe("GET /api/projects/:id", () => {
 
   it("should return 400 for invalid project ID format", async () => {
     // Arrange: Create test user
-    const user = await createTestUser(prisma, {
+    const { headers } = await createAuthenticatedUser(prisma, app, {
       email: "test@example.com",
     });
-
-    const headers = injectAuth(user.id, user.email, app);
 
     // Invalid CUID format
     const invalidId = "not-a-valid-cuid-format";
@@ -167,7 +152,7 @@ describe("GET /api/projects/:id", () => {
 
   it("should validate response schema with all fields populated", async () => {
     // Arrange: Create test user and project with all fields
-    const user = await createTestUser(prisma, {
+    const { headers } = await createAuthenticatedUser(prisma, app, {
       email: "test@example.com",
     });
 
@@ -177,8 +162,6 @@ describe("GET /api/projects/:id", () => {
       is_hidden: true,
       is_starred: true,
     });
-
-    const headers = injectAuth(user.id, user.email, app);
 
     // Act: Make request
     const response = await app.inject({
@@ -211,7 +194,7 @@ describe("GET /api/projects/:id", () => {
 
   it("should handle concurrent requests correctly", async () => {
     // Arrange: Create test user and multiple projects
-    const user = await createTestUser(prisma, {
+    const { headers } = await createAuthenticatedUser(prisma, app, {
       email: "test@example.com",
     });
 
@@ -224,8 +207,6 @@ describe("GET /api/projects/:id", () => {
       name: "Project 2",
       path: "/tmp/project-2",
     });
-
-    const headers = injectAuth(user.id, user.email, app);
 
     // Act: Make concurrent requests
     const [response1, response2] = await Promise.all([
