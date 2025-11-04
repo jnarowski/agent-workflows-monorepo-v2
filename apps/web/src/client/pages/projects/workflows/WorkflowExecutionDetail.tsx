@@ -3,7 +3,7 @@ import { useEffect, useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { WorkflowExecutionHeader } from './components/WorkflowExecutionHeader';
 import { WorkflowTimeline } from './components/WorkflowTimeline';
-import { buildTimelineModel } from './lib/timelineModel';
+import { buildTimelineModel } from './lib/buildTimelineModel';
 import { useWorkflowExecution } from './hooks/useWorkflowExecution';
 import { useWorkflowDefinition } from './hooks/useWorkflowDefinition';
 import { useWorkflowWebSocket } from './hooks/useWorkflowWebSocket';

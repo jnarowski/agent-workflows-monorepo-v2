@@ -1,4 +1,4 @@
-import type { TimelineModel } from "../lib/timelineModel";
+import type { TimelineModel } from "../lib/buildTimelineModel";
 import { StepItem } from "./timeline/StepItem";
 import { EventItem } from "./timeline/EventItem";
 import { EventCommentItem } from "./timeline/EventCommentItem";

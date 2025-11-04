@@ -165,7 +165,7 @@ export type {
   AnnotationTimelineItem,
   ExecutionSummary,
   LiveState,
-} from './lib/timelineModel';
+} from './lib/buildTimelineModel';
 
 // Filter types
 export interface WorkflowFilter {

@@ -22,7 +22,7 @@ import type {
   StepStatus as BaseStepStatus,
   WorkflowStatus,
 } from '../types';
-import { getEventConfig } from './eventConfig';
+import { getEventConfig } from './eventDisplayConfig';
 
 // ============================================================================
 // Core Domain Types
