@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { TimelineRow } from "./TimelineRow";
 import { TimelineHeader } from "./TimelineHeader";
 import { TimelineBody } from "./TimelineBody";
@@ -16,7 +16,7 @@ export interface EventDefaultItemProps {
  * Uses pre-computed display properties from domain model
  * Handles any event type using the base event data structure
  */
-export function EventDefaultItem({ item }: EventDefaultItemProps) {
+function EventDefaultItemComponent({ item }: EventDefaultItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Check if there's expandable content
@@ -55,3 +55,8 @@ export function EventDefaultItem({ item }: EventDefaultItemProps) {
     </TimelineRow>
   );
 }
+
+/**
+ * Memoized EventDefaultItem to prevent unnecessary re-renders
+ */
+export const EventDefaultItem = memo(EventDefaultItemComponent);

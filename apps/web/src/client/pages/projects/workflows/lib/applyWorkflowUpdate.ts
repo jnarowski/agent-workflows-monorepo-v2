@@ -135,7 +135,7 @@ function applyWorkflowStatusUpdate(
 
 /**
  * Apply step started update
- * Creates a new step_started event and updates step status
+ * Updates step status - backend creates events
  */
 function applyStepStarted(
   execution: WorkflowExecution,
@@ -154,26 +154,10 @@ function applyStepStarted(
         : step
     ) || [];
 
-  // Create step_started event
-  const stepStartedEvent: WorkflowEvent = {
-    id: `event-${Date.now()}-${Math.random()}`, // Temp ID until server confirms
-    workflow_execution_id: execution.id,
-    workflow_execution_step_id: update.stepId,
-    event_type: "step_started",
-    event_data: {
-      title: `Step Started: ${update.stepName}`,
-      body: `Step "${update.stepName}" has started execution`,
-      step_id: update.stepId,
-      step_name: update.stepName,
-    },
-    created_by_user_id: null,
-    created_at: update.startedAt,
-  };
-
+  // Backend creates events - no client-side event creation needed
   return {
     ...execution,
     steps: updatedSteps,
-    events: [...(execution.events || []), stepStartedEvent],
     current_step: update.stepName,
     updated_at: new Date(),
   };

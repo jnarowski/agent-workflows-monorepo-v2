@@ -3,6 +3,7 @@ import { useEffect, useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { WorkflowExecutionHeader } from './components/WorkflowExecutionHeader';
 import { WorkflowTimeline } from './components/WorkflowTimeline';
+import { TimelineErrorBoundary } from './components/timeline/WorkflowTimeline.ErrorBoundary';
 import { buildTimelineModel } from './lib/buildTimelineModel';
 import { useWorkflowExecution } from './hooks/useWorkflowExecution';
 import { useWorkflowDefinition } from './hooks/useWorkflowDefinition';
@@ -109,10 +110,12 @@ export function WorkflowExecutionDetail() {
           <section>
             <h2 className="text-xl font-bold mb-4">Execution Timeline</h2>
             {timelineModel && (
-              <WorkflowTimeline
-                model={timelineModel}
-                projectId={projectId!}
-              />
+              <TimelineErrorBoundary>
+                <WorkflowTimeline
+                  model={timelineModel}
+                  projectId={projectId!}
+                />
+              </TimelineErrorBoundary>
             )}
           </section>
         </div>

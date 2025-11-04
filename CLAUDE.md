@@ -241,6 +241,7 @@ pnpm check               # Run lint + type-check + tests
 **Import Extensions:**
 
 **DO NOT include file extensions in imports**:
+
 - ✅ `import { foo } from "./bar"`
 - ❌ `import { foo } from "./bar.js"`
 
@@ -249,6 +250,7 @@ pnpm check               # Run lint + type-check + tests
 **4. Multi-Agent Architecture**
 
 The web app supports multiple AI CLI tools:
+
 - **Claude Code** (primary): Full integration with session loading, JSONL parsing
 - **OpenAI Codex**: Full integration via agent-cli-sdk
 - **Google Gemini**: Full integration via agent-cli-sdk
@@ -259,6 +261,7 @@ All agents normalized to `UnifiedMessage` format via agent-cli-sdk.
 **5. Tool Result Matching Pattern**
 
 All interactive tools in the web app follow a standardized pattern:
+
 - Tool results are matched to tool invocations via `tool_use_id` automatically
 - Matching happens once during message enrichment (O(1) Map-based lookup)
 - Results are nested into `tool_use` blocks before rendering
@@ -271,6 +274,7 @@ All interactive tools in the web app follow a standardized pattern:
 The web app backend (`apps/web/src/server/`) follows a domain-driven functional architecture:
 
 **Domain Structure:**
+
 ```
 server/
 ├── domain/                 # Business logic organized by domain
@@ -293,6 +297,7 @@ server/
 ```
 
 **Key Principles:**
+
 - **One function per file** in `domain/*/services/` - file name matches exported function
 - **Group by domain**, not by technical layer (no generic "services/" folder)
 - **Pure functions** - all dependencies passed as parameters, no classes
@@ -301,6 +306,7 @@ server/
 - **Centralized config** - all environment variables accessed via `config.ts`
 
 **Example Domain Function:**
+
 ```typescript
 // domain/project/services/getProjectById.ts
 export async function getProjectById(id: string): Promise<Project | null> {
@@ -313,13 +319,14 @@ export async function getProjectById(id: string): Promise<Project | null> {
 ```
 
 **Import Pattern:**
+
 ```typescript
 // ✅ GOOD - Import from domain
-import { getProjectById } from '@/server/domain/project/services/getProjectById';
-import { readFile } from '@/server/domain/file/services/readFile';
+import { getProjectById } from "@/server/domain/project/services/getProjectById";
+import { readFile } from "@/server/domain/file/services/readFile";
 
 // ❌ BAD - Don't import from old services/ directory
-import { getProjectById } from '@/server/services/project.service';
+import { getProjectById } from "@/server/services/project.service";
 ```
 
 ## Important Rules & Conventions
@@ -335,6 +342,7 @@ import { getProjectById } from '@/server/services/project.service';
 ### Web App Specific Rules
 
 **Backend Domain Organization:**
+
 - ✅ **One function per file** in `domain/*/services/` - file name MUST match exported function name
   - Example: `getProjectById.ts` exports `export async function getProjectById()`
 - ✅ **Group by domain**, not by technical layer - use `domain/project/`, `domain/session/`, etc.
@@ -346,23 +354,28 @@ import { getProjectById } from '@/server/services/project.service';
 - ✅ **Use centralized config** - import from `@/server/config`, don't access `process.env` directly
 
 **Import Paths:**
+
 - ✅ Always use `@/` aliases: `@/client/*`, `@/server/*`, `@/shared/*`
 - ❌ Never use relative imports beyond the same directory
 
 **React Hooks:**
+
 - Import directly: `import { useEffect, useState } from 'react'`
 - Not: `React.useEffect`
 
 **useEffect Dependencies:**
+
 - Only include primitive values (strings, numbers, booleans)
 - ❌ Bad: `[user, project, data]` (objects cause infinite loops)
 - ✅ Good: `[userId, projectId, isEnabled]`
 - Zustand store functions are stable - safe to omit from deps
 
 **Zustand State Management:**
+
 - Always update state immutably
 - Return new state from `set()` function
 - Create new arrays/objects for updates:
+
   ```typescript
   // ❌ BAD - Mutation
   set((state) => {
@@ -372,11 +385,12 @@ import { getProjectById } from '@/server/services/project.service';
 
   // ✅ GOOD - Immutable
   set((state) => ({
-    messages: [...state.messages, newMsg]
+    messages: [...state.messages, newMsg],
   }));
   ```
 
 **Fastify Response Schemas:**
+
 - When adding fields to API responses, update Zod schema:
   ```typescript
   schema: {
@@ -387,12 +401,14 @@ import { getProjectById } from '@/server/services/project.service';
   ```
 
 **File Organization:**
+
 - Feature-based structure under `pages/{feature}/`
 - Each feature has: `components/`, `hooks/`, `stores/`, `lib/`, `utils/`
 - Only truly shared components go in top-level `components/`
 - PascalCase for components, kebab-case only for shadcn/ui components in `components/ui/`
 
 **Testing:**
+
 - Tests go next to the file: `component.tsx` → `component.test.tsx`
 - Use `@testing-library/react` for component tests
 - Use `happy-dom` as test environment
@@ -401,6 +417,7 @@ import { getProjectById } from '@/server/services/project.service';
 ### Package-Specific Rules
 
 **agent-cli-sdk:**
+
 - Files in camelCase: `loadSession.ts`, `parseFormat.ts`
 - One primary export per file matching filename
 - Use exhaustive type checking with `never` for tool selection
@@ -409,6 +426,7 @@ import { getProjectById } from '@/server/services/project.service';
 - Supports Claude, Codex, and Gemini
 
 **agent-workflows:**
+
 - Config-based API (pass config objects, not individual params)
 - Result pattern for error handling: `Result<T, E>`
 - Use `unwrap()` for fail-fast, or handle `result.ok` explicitly
@@ -420,6 +438,7 @@ import { getProjectById } from '@/server/services/project.service';
 ### Starting Development
 
 **First Time:**
+
 ```bash
 # From root
 pnpm install
@@ -432,6 +451,7 @@ pnpm dev          # Start both client and server
 ```
 
 **Ongoing:**
+
 ```bash
 # From apps/web
 pnpm dev          # Runs both client and server with watch mode
@@ -444,10 +464,12 @@ pnpm dev          # Runs both client and server with watch mode
 ### Making Changes
 
 **To Web App Code:**
+
 - Frontend changes: Hot reload automatically
 - Backend changes: Server auto-restarts via `tsx watch`
 
 **To Workspace Packages:**
+
 ```bash
 # Rebuild the package
 cd packages/agent-cli-sdk
@@ -460,6 +482,7 @@ pnpm --filter @repo/agent-cli-sdk build
 ```
 
 **To Database Schema:**
+
 ```bash
 cd apps/web
 # Edit prisma/schema.prisma
@@ -497,6 +520,7 @@ pnpm vitest run src/path/to/file.test.ts
 ### Build System Details
 
 **When Builds Happen:**
+
 - ✅ Explicit: `pnpm build`
 - ✅ Development: Turborepo rebuilds on changes
 - ✅ Publishing: `prepublishOnly` hook
@@ -504,12 +528,14 @@ pnpm vitest run src/path/to/file.test.ts
 - ❌ NOT during `pnpm install` for TypeScript packages
 
 **Build Tools:**
+
 - **Turborepo**: Orchestrates builds with caching
 - **Vite**: Frontend bundling (web app)
 - **TSC**: Server-side TypeScript compilation (web app)
 - **Bunchee**: Package bundling (agent-cli-sdk, agent-workflows)
 
 **Clean Build:**
+
 ```bash
 # Remove all build artifacts
 rm -rf packages/*/dist apps/*/dist
@@ -523,6 +549,7 @@ pnpm build
 ### Web App Debugging
 
 **Check Server Logs:**
+
 ```bash
 # Real-time log watching
 tail -f apps/web/logs/app.log
@@ -543,11 +570,13 @@ tail -f apps/web/logs/app.log | jq 'select(.level >= 50)'
 5. **Auth issues**: Check JWT_SECRET, regenerate token
 
 **Health Check:**
+
 ```bash
 curl http://localhost:3456/api/health
 ```
 
 **Test Authentication:**
+
 ```bash
 curl -X POST http://localhost:3456/api/auth/login \
   -H "Content-Type: application/json" \
@@ -557,6 +586,7 @@ curl -X POST http://localhost:3456/api/auth/login \
 ### Package Debugging
 
 **TypeScript Errors:**
+
 ```bash
 # Regenerate Prisma client
 cd apps/web
@@ -571,6 +601,7 @@ pnpm install
 ```
 
 **Module Not Found:**
+
 ```bash
 # Build the missing package
 pnpm --filter @repo/agent-cli-sdk build
@@ -580,6 +611,7 @@ pnpm build
 ```
 
 **Test Failures:**
+
 ```bash
 # Run with verbose output
 pnpm test --reporter=verbose
@@ -591,6 +623,7 @@ pnpm vitest run path/to/test.test.ts
 ## Technology Stack
 
 ### Web App
+
 - **Frontend**: React 19, Vite, React Router, TanStack Query, Zustand
 - **Backend**: Fastify, WebSocket, Prisma (SQLite), JWT auth
 - **UI**: Tailwind CSS v4, shadcn/ui (Radix UI components)
@@ -599,11 +632,13 @@ pnpm vitest run path/to/test.test.ts
 - **AI SDK**: Vercel AI SDK (@ai-sdk/anthropic, @ai-sdk/openai)
 
 ### Packages
+
 - **agent-cli-sdk**: TypeScript, cross-spawn, Vitest, boxen, chalk
 - **agent-workflows**: TypeScript, simple-git, gray-matter, Zod, Vitest
 - **Build Tools**: Turborepo, Bunchee, TSX, ESBuild
 
 ### Key Dependencies
+
 - **Node.js**: >= 22.0.0 (agent-cli-sdk, agent-workflows), >= 18.0.0 (monorepo)
 - **pnpm**: 10.19.0 (package manager)
 - **TypeScript**: 5.9.x
@@ -618,10 +653,12 @@ pnpm vitest run path/to/test.test.ts
 ### Web App (apps/web/.env)
 
 **Required:**
+
 - `JWT_SECRET`: JWT signing key (generate: `openssl rand -base64 32`)
 - `DATABASE_URL`: SQLite database path (default: `file:./dev.db`)
 
 **Optional (with defaults):**
+
 - `PORT`: Backend port (default: 3456)
 - `VITE_PORT`: Frontend port (default: 5173)
 - `HOST`: Server host (default: 127.0.0.1)
@@ -636,6 +673,7 @@ pnpm vitest run path/to/test.test.ts
 See `.env.example` for complete configuration template.
 
 **First-time setup:**
+
 ```bash
 cd apps/web
 pnpm dev:setup    # Auto-generates .env from .env.example
@@ -644,6 +682,7 @@ pnpm dev:setup    # Auto-generates .env from .env.example
 ## Publishing Packages
 
 ### agent-cli-sdk
+
 ```bash
 cd packages/agent-cli-sdk
 # Build and publish manually
@@ -652,6 +691,7 @@ npm publish
 ```
 
 ### agent-workflows
+
 ```bash
 cd packages/agent-workflows
 pnpm ship
@@ -674,6 +714,7 @@ pnpm ship
 ## Quick Reference
 
 **File Locations:**
+
 - Server logs: `apps/web/logs/app.log`
 - Database: `apps/web/prisma/dev.db`
 - Workflow logs: `.agent/workflows/logs/{workflowId}/`
@@ -681,13 +722,23 @@ pnpm ship
 - Extended docs: `.agent/docs/`
 
 **Port Numbers:**
+
 - Frontend dev server: 5173
 - Backend API: 3456
 - Prisma Studio: 5555
 
 **Common Tasks:**
+
 - Add new dependency: `pnpm add <package>` (in specific workspace)
 - Add dev dependency: `pnpm add -D <package>`
 - Remove dependency: `pnpm remove <package>`
 - Update dependencies: `pnpm update`
 - Clear Turborepo cache: `rm -rf .turbo`
+
+## Important
+
+1. In all interactions and commit messages, be extremely concise and sacrifice grammar for the sake of concision.
+
+## Plans
+
+- At the end of each plan, give me a list of unresolved questions to answer, if any. Make the questions extremely concise. Sacrifice grammar for the sake of concision.

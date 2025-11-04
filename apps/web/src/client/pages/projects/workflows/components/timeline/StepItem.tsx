@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import type { StepTimelineItem } from "../../lib/buildTimelineModel";
 import { TimelineRow } from "./TimelineRow";
 import { TimelineHeader } from "./TimelineHeader";
@@ -27,7 +27,7 @@ export interface StepItemProps {
  * in the domain model. This component is a "dumb renderer" that consumes
  * the enriched StepTimelineItem data.
  */
-export function StepItem({ item, projectId }: StepItemProps) {
+function StepItemComponent({ item, projectId }: StepItemProps) {
   // Destructure pre-computed data from domain model
   const { step, metadata, display, debug, annotations, artifacts } = item;
 
@@ -166,3 +166,15 @@ export function StepItem({ item, projectId }: StepItemProps) {
     </TimelineRow>
   );
 }
+
+/**
+ * Memoized StepItem to prevent unnecessary re-renders
+ * Only re-renders when item ID or status changes
+ */
+export const StepItem = memo(StepItemComponent, (prev, next) => {
+  return (
+    prev.item.id === next.item.id &&
+    prev.item.display.status === next.item.display.status &&
+    prev.projectId === next.projectId
+  );
+});

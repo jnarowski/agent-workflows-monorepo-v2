@@ -7,7 +7,6 @@ import type {
   WorkflowArtifact,
 } from '../types';
 import type {
-  WebSocketUpdate,
   WorkflowStatusUpdate,
   StepStartedUpdate,
   StepUpdatedUpdate,

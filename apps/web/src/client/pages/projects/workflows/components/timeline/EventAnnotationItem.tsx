@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { MessageSquare } from "lucide-react";
 import { TimelineRow } from "./TimelineRow";
 import { TimelineHeader } from "./TimelineHeader";
 import { formatRelativeTime } from "../../utils/workflowFormatting";
-import type { AnnotationTimelineItem } from "../../lib/timelineModel";
+import type { AnnotationTimelineItem } from "../../lib/buildTimelineModel";
 
 export interface EventAnnotationItemProps {
   annotation: AnnotationTimelineItem;
@@ -13,7 +14,7 @@ export interface EventAnnotationItemProps {
  * Standardized using shared TimelineRow + TimelineHeader components
  * Uses pre-computed display properties from domain model
  */
-export function EventAnnotationItem({ annotation }: EventAnnotationItemProps) {
+function EventAnnotationItemComponent({ annotation }: EventAnnotationItemProps) {
   // Type-safe access to annotation data
   const body = annotation.metadata.text || "";
   const username = annotation.metadata.created_by_username || "System";
@@ -28,3 +29,8 @@ export function EventAnnotationItem({ annotation }: EventAnnotationItemProps) {
     </TimelineRow>
   );
 }
+
+/**
+ * Memoized EventAnnotationItem to prevent unnecessary re-renders
+ */
+export const EventAnnotationItem = memo(EventAnnotationItemComponent);

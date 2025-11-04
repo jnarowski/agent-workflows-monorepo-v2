@@ -517,10 +517,12 @@ async function main() {
 
   // Helper to create workflow lifecycle events
   const createLifecycleEvent = async (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     execution: any,
     eventType: string,
     title: string,
     body: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     additionalData: Record<string, any> = {},
     createdAt: Date
   ) => {

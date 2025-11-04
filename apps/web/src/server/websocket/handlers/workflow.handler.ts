@@ -13,7 +13,7 @@ import type {
   WorkflowPausedData,
   WorkflowResumedData,
   WorkflowCancelledData,
-  WorkflowCommentCreatedData,
+  WorkflowAnnotationCreatedData,
 } from '@/shared/websocket/types';
 
 /**

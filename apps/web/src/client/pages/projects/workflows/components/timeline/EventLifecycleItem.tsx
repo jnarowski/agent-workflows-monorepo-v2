@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { TimelineRow } from "./TimelineRow";
 import { TimelineHeader } from "./TimelineHeader";
 import { TimelineBody } from "./TimelineBody";
@@ -27,7 +27,7 @@ export interface EventLifecycleItemProps {
  *
  * Uses pre-computed display properties from domain model (icon, color, label, variant).
  */
-export function EventLifecycleItem({ item }: EventLifecycleItemProps) {
+function EventLifecycleItemComponent({ item }: EventLifecycleItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Extract event-specific data
@@ -81,3 +81,8 @@ export function EventLifecycleItem({ item }: EventLifecycleItemProps) {
     </TimelineRow>
   );
 }
+
+/**
+ * Memoized EventLifecycleItem to prevent unnecessary re-renders
+ */
+export const EventLifecycleItem = memo(EventLifecycleItemComponent);

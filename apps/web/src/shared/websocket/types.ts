@@ -388,7 +388,11 @@ export interface WorkflowCancelledData {
 export interface WorkflowAnnotationCreatedData {
   executionId: string;
   projectId: string;
-  annotationId: string;
+  commentId: string;
+  text: string;
+  body?: string; // Alternative field name for compatibility
+  stepId?: string;
+  userId: string | null;
   timestamp: string;
 }
 

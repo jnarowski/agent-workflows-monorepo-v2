@@ -7,7 +7,6 @@ import type {
   WorkflowArtifact,
 } from '../types';
 import type {
-  TimelineModel,
   StepTimelineItem,
   EventTimelineItem,
   AnnotationTimelineItem,
@@ -899,6 +898,7 @@ describe('buildTimelineModel - Edge Cases', () => {
     const execution = createMockExecution();
     const event = createMockEvent({
       event_type: 'workflow_started',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       event_data: null as any,
     });
 

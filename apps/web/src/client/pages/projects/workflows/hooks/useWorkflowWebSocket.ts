@@ -180,8 +180,9 @@ export function useWorkflowWebSocket(projectId: string) {
       applyIncrementalUpdate(event.data.executionId, {
         type: 'annotation_added',
         annotationId: event.data.commentId,
-        text: '', // Will be populated by event data
-        userId: null,
+        text: event.data.text || event.data.body || '', // Extract actual text
+        stepId: event.data.stepId || undefined,
+        userId: event.data.userId || null,
         createdAt: new Date(event.data.timestamp),
       });
     };
