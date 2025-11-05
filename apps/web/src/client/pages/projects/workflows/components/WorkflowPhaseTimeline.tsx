@@ -1,4 +1,4 @@
-import { StepStatus } from '../types';
+import { StepStatusValues } from '@/shared/schemas';
 import type { WorkflowExecution } from '../types';
 import { CheckCircle2, XCircle, Circle, Loader2 } from 'lucide-react';
 
@@ -21,24 +21,24 @@ export function WorkflowPhaseTimeline({
     phaseName: string
   ): 'pending' | 'running' | 'completed' | 'failed' => {
     const phaseSteps =
-      execution.steps?.filter((step) => step.phase_name === phaseName) || [];
+      execution.steps?.filter((step) => step.phase === phaseName) || [];
 
     if (phaseSteps.length === 0) return 'pending';
 
     const hasFailedStep = phaseSteps.some(
-      (step) => step.status === StepStatus.FAILED
+      (step) => step.status === StepStatusValues.FAILED
     );
     if (hasFailedStep) return 'failed';
 
     const allCompleted = phaseSteps.every(
       (step) =>
-        step.status === StepStatus.COMPLETED ||
-        step.status === StepStatus.SKIPPED
+        step.status === StepStatusValues.COMPLETED ||
+        step.status === StepStatusValues.SKIPPED
     );
     if (allCompleted) return 'completed';
 
     const hasRunningStep = phaseSteps.some(
-      (step) => step.status === StepStatus.RUNNING
+      (step) => step.status === StepStatusValues.RUNNING
     );
     if (hasRunningStep || execution.current_phase === phaseName)
       return 'running';

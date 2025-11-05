@@ -1,4 +1,5 @@
-import { WorkflowStatus, StepStatus } from "@/shared/schemas";
+import { WorkflowStatusValues } from "@/shared/schemas/workflow.schemas";
+import type { WorkflowStatus, StepStatus } from "@/shared/schemas/workflow.schemas";
 import {
   getWorkflowStatusConfig,
   getStepStatusConfig,
@@ -20,7 +21,7 @@ export function WorkflowStatusBadge({
   className = "",
 }: WorkflowStatusBadgeProps) {
   // Determine if it's a workflow or step status
-  const isWorkflowStatus = Object.values(WorkflowStatus).includes(
+  const isWorkflowStatus = Object.values(WorkflowStatusValues).includes(
     status as WorkflowStatus
   );
   const config = isWorkflowStatus
@@ -43,8 +44,7 @@ export function WorkflowStatusBadge({
   };
 
   // Add pulse animation for running status
-  const isRunning =
-    status === WorkflowStatus.RUNNING || status === StepStatus.RUNNING;
+  const isRunning = status === "running";
 
   return (
     <span

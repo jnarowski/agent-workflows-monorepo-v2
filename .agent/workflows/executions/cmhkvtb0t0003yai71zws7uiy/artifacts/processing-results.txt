@@ -1,0 +1,15 @@
+Workflow Execution Results
+===========================
+Workflow ID: example-text-workflow
+Execution Time: 2025-11-04T18:07:49.393Z
+Status: Processing Complete
+Input Data: {
+  "args": {},
+  "executionId": "cmhkvtb0t0003yai71zws7uiy",
+  "projectId": "cmhkp7u3j0008yazmzf7q6msx",
+  "projectPath": "/Users/jnarowski/Dev/sourceborn/src/agent-workflows-monorepo-v2",
+  "userId": "394a53be-080c-41fc-940c-2cda6214d332"
+}
+
+This is a simple text output demonstrating the workflow system.
+All phases are executing correctly.

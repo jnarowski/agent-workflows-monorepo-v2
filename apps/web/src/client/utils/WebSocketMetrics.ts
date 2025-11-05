@@ -41,7 +41,7 @@ export class WebSocketMetrics {
   constructor() {
     // Expose metrics to window in dev mode for debugging
     if (import.meta.env.DEV) {
-      (window as Record<string, unknown>).__WS_METRICS__ = this;
+      (window as unknown as Record<string, unknown>).__WS_METRICS__ = this;
     }
   }
 

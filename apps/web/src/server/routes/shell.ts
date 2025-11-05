@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import type { WebSocket } from '@fastify/websocket';
 import {
   createShellSession,
   getShellSession,
@@ -21,7 +22,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
         try {
           fastify.log.info('Shell WebSocket connection attempt');
           let sessionId: string | null = null;
-          let userId: number | null = null;
+          let userId: string | null = null;
 
           // Authenticate the WebSocket connection using JWT
           try {
@@ -102,8 +103,8 @@ export async function registerShellRoute(fastify: FastifyInstance) {
         // Handle shell initialization
         async function handleInit(
           message: InitMessage,
-          userId: number,
-          socket: typeof socket,
+          userId: string,
+          socket: WebSocket,
           fastify: FastifyInstance
         ) {
           try {
@@ -113,7 +114,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             // Create shell session
             const session = await createShellSession(
               projectId,
-              userId.toString(),
+              userId,
               cols,
               rows
             );
@@ -185,7 +186,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
         function handleInput(
           message: InputMessage,
           sessionId: string | null,
-          socket: typeof socket
+          socket: WebSocket
         ) {
           if (!sessionId) {
             socket.send(
@@ -222,7 +223,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
         function handleResize(
           message: ResizeMessage,
           sessionId: string | null,
-          socket: typeof socket,
+          socket: WebSocket,
           fastify: FastifyInstance
         ) {
           if (!sessionId) {

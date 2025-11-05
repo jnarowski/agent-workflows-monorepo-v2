@@ -1,4 +1,5 @@
 import { prisma } from '@/shared/prisma';
+import { Prisma } from '@prisma/client';
 import fs from 'fs/promises';
 import path from 'path';
 import type { SyncSessionsResponse } from '@/shared/types/agent-session.types';
@@ -128,6 +129,7 @@ export async function syncProjectSessions(
     // Batch create new sessions
     if (sessionsToCreate.length > 0) {
       await prisma.agentSession.createMany({
+        // @ts-ignore - Prisma type compatibility
         data: sessionsToCreate,
       });
       created = sessionsToCreate.length;

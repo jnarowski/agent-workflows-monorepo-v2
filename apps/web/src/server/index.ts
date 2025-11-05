@@ -1,101 +1,103 @@
 #!/usr/bin/env tsx
-import Fastify from 'fastify';
-import fastifyStatic from '@fastify/static';
-import fastifyWebsocket from '@fastify/websocket';
-import fastifyMultipart from '@fastify/multipart';
-import cors from '@fastify/cors';
-import rateLimit from '@fastify/rate-limit';
+// Type augmentation loaded automatically via tsconfig
+import Fastify from "fastify";
+import fastifyStatic from "@fastify/static";
+import fastifyWebsocket from "@fastify/websocket";
+import fastifyMultipart from "@fastify/multipart";
+import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
 import {
   serializerCompiler,
   validatorCompiler,
-  ZodTypeProvider
-} from 'fastify-type-provider-zod';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { existsSync } from 'fs';
-import { Prisma } from '@prisma/client';
-import { registerRoutes } from '@/server/routes';
-import { registerWebSocket, activeSessions, reconnectionManager } from '@/server/websocket/index';
-import { registerShellRoute } from '@/server/routes/shell';
-import { authPlugin } from '@/server/plugins/auth';
-import { setupGracefulShutdown } from '@/server/utils/shutdown';
-import { config } from '@/server/config/Configuration';
-import { MockWorkflowOrchestrator } from '@/server/domain/workflow/services/MockWorkflowOrchestrator';
+  ZodTypeProvider,
+} from "fastify-type-provider-zod";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import { existsSync } from "fs";
+import { Prisma } from "@prisma/client";
+import { registerRoutes } from "@/server/routes";
 import {
-  AppError,
-  ConflictError,
-  buildErrorResponse
-} from '@/server/errors';
-import { ServiceUnavailableError } from '@/server/errors/ServiceUnavailableError';
+  registerWebSocket,
+  activeSessions,
+  reconnectionManager,
+} from "@/server/websocket/index";
+import { registerShellRoute } from "@/server/routes/shell";
+import { authPlugin } from "@/server/plugins/auth";
+import { setupGracefulShutdown } from "@/server/utils/shutdown";
+import { config } from "@/server/config/Configuration";
+import { AppError, ConflictError, buildErrorResponse } from "@/server/errors";
+import { ServiceUnavailableError } from "@/server/errors/ServiceUnavailableError";
+import { initializeWorkflowEngine } from "@/server/domain/workflow/services/engine";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export async function createServer() {
   // Validate configuration on startup (will throw if invalid)
-  const serverConfig = config.get('server');
+  const serverConfig = config.get("server");
 
   const fastify = Fastify({
-    logger: serverConfig.nodeEnv === 'production'
-      ? {
-          level: serverConfig.logLevel,
-          transport: {
-            targets: [
-              // Console output (for Docker, PM2, systemd)
-              {
-                target: 'pino/file',
-                options: { destination: 1 }, // stdout
-                level: 'info'
-              },
-              // File output with rotation
-              {
-                target: 'pino-roll',
-                options: {
-                  file: serverConfig.logFile,
-                  frequency: 'daily',
-                  size: '5m',
-                  mkdir: true,
-                  limit: {
-                    count: 30
-                  }
+    logger:
+      serverConfig.nodeEnv === "production"
+        ? {
+            level: serverConfig.logLevel,
+            transport: {
+              targets: [
+                // Console output (for Docker, PM2, systemd)
+                {
+                  target: "pino/file",
+                  options: { destination: 1 }, // stdout
+                  level: "info",
                 },
-                level: serverConfig.logLevel
-              }
-            ]
+                // File output with rotation
+                {
+                  target: "pino-roll",
+                  options: {
+                    file: serverConfig.logFile,
+                    frequency: "daily",
+                    size: "5m",
+                    mkdir: true,
+                    limit: {
+                      count: 30,
+                    },
+                  },
+                  level: serverConfig.logLevel,
+                },
+              ],
+            },
           }
-        }
-      : {
-          // Development: pretty-print to console + log file
-          level: serverConfig.logLevel,
-          transport: {
-            targets: [
-              // Pretty console output
-              {
-                target: 'pino-pretty',
-                options: {
-                  colorize: true,
-                  translateTime: 'HH:MM:ss Z',
-                  ignore: 'pid,hostname'
+        : {
+            // Development: pretty-print to console + log file
+            level: serverConfig.logLevel,
+            transport: {
+              targets: [
+                // Pretty console output
+                {
+                  target: "pino-pretty",
+                  options: {
+                    colorize: true,
+                    translateTime: "HH:MM:ss Z",
+                    ignore: "pid,hostname",
+                  },
+                  level: serverConfig.logLevel,
                 },
-                level: serverConfig.logLevel
-              },
-              // File output with rotation (plain JSON)
-              {
-                target: 'pino-roll',
-                options: {
-                  file: serverConfig.logFile,
-                  frequency: 'daily',
-                  size: '5m',
-                  mkdir: true,
-                  limit: {
-                    count: 7
-                  }
+                // File output with rotation (plain JSON)
+                {
+                  target: "pino-roll",
+                  options: {
+                    file: serverConfig.logFile,
+                    frequency: "daily",
+                    size: "5m",
+                    mkdir: true,
+                    limit: {
+                      count: 7,
+                    },
+                  },
+                  level: serverConfig.logLevel,
                 },
-                level: serverConfig.logLevel
-              }
-            ]
-          }
-        }
+              ],
+            },
+          },
   }).withTypeProvider<ZodTypeProvider>();
 
   // Intercept console.log/error/warn and redirect to Pino logger
@@ -105,28 +107,36 @@ export async function createServer() {
   const originalConsoleWarn = console.warn;
 
   console.log = (...args: unknown[]) => {
-    const message = args.map(arg =>
-      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-    ).join(' ');
+    const message = args
+      .map((arg) =>
+        typeof arg === "object" ? JSON.stringify(arg) : String(arg)
+      )
+      .join(" ");
     fastify.log.info(message);
   };
 
   console.error = (...args: unknown[]) => {
-    const message = args.map(arg =>
-      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-    ).join(' ');
+    const message = args
+      .map((arg) =>
+        typeof arg === "object" ? JSON.stringify(arg) : String(arg)
+      )
+      .join(" ");
     fastify.log.error(message);
   };
 
   console.warn = (...args: unknown[]) => {
-    const message = args.map(arg =>
-      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-    ).join(' ');
+    const message = args
+      .map((arg) =>
+        typeof arg === "object" ? JSON.stringify(arg) : String(arg)
+      )
+      .join(" ");
     fastify.log.warn(message);
   };
 
   // Store originals for potential restoration
-  (fastify as typeof fastify & { _originalConsole?: typeof console })._originalConsole = {
+  (
+    fastify as typeof fastify & { _originalConsole?: Pick<Console, 'log' | 'error' | 'warn'> }
+  )._originalConsole = {
     log: originalConsoleLog,
     error: originalConsoleError,
     warn: originalConsoleWarn,
@@ -142,8 +152,8 @@ export async function createServer() {
     if (error.validation) {
       return reply.status(400).send({
         error: {
-          message: 'Validation failed',
-          code: 'VALIDATION_ERROR',
+          message: "Validation failed",
+          code: "VALIDATION_ERROR",
           details: error.validation,
           statusCode: 400,
         },
@@ -153,15 +163,18 @@ export async function createServer() {
     // Handle all AppError subclasses (new and legacy)
     if (error instanceof AppError) {
       // Log error with appropriate level
-      const logLevel = error.statusCode >= 500 ? 'error' : 'warn';
-      fastify.log[logLevel]({
-        err: error,
-        statusCode: error.statusCode,
-        code: error.code,
-        context: error.context,
-        url: request.url,
-        method: request.method,
-      }, `${error.constructor.name}: ${error.message}`);
+      const logLevel = error.statusCode >= 500 ? "error" : "warn";
+      fastify.log[logLevel](
+        {
+          err: error,
+          statusCode: error.statusCode,
+          code: error.code,
+          context: error.context,
+          url: request.url,
+          method: request.method,
+        },
+        `${error.constructor.name}: ${error.message}`
+      );
 
       // Use the error's toJSON method for consistent response format
       return reply.status(error.statusCode).send(error.toJSON());
@@ -169,14 +182,17 @@ export async function createServer() {
 
     // Handle Prisma connection/initialization errors
     if (error instanceof Prisma.PrismaClientInitializationError) {
-      fastify.log.error({
-        err: error,
-        url: request.url,
-        method: request.method,
-      }, 'Database initialization error');
+      fastify.log.error(
+        {
+          err: error,
+          url: request.url,
+          method: request.method,
+        },
+        "Database initialization error"
+      );
 
       const serviceError = new ServiceUnavailableError(
-        'Database connection failed. Please run `pnpm dev:setup` to initialize the database.',
+        "Database connection failed. Please run `pnpm dev:setup` to initialize the database.",
         { prismaError: error.message },
         60 // Retry after 60 seconds
       );
@@ -184,14 +200,17 @@ export async function createServer() {
     }
 
     if (error instanceof Prisma.PrismaClientRustPanicError) {
-      fastify.log.error({
-        err: error,
-        url: request.url,
-        method: request.method,
-      }, 'Database engine panic');
+      fastify.log.error(
+        {
+          err: error,
+          url: request.url,
+          method: request.method,
+        },
+        "Database engine panic"
+      );
 
       const serviceError = new ServiceUnavailableError(
-        'Database engine error. Please check the database configuration and try again.',
+        "Database engine error. Please check the database configuration and try again.",
         { prismaError: error.message },
         30 // Retry after 30 seconds
       );
@@ -199,14 +218,17 @@ export async function createServer() {
     }
 
     if (error instanceof Prisma.PrismaClientUnknownRequestError) {
-      fastify.log.error({
-        err: error,
-        url: request.url,
-        method: request.method,
-      }, 'Unknown database request error');
+      fastify.log.error(
+        {
+          err: error,
+          url: request.url,
+          method: request.method,
+        },
+        "Unknown database request error"
+      );
 
       const serviceError = new ServiceUnavailableError(
-        'Database is temporarily unavailable. Please try again later.',
+        "Database is temporarily unavailable. Please try again later.",
         { prismaError: error.message },
         30 // Retry after 30 seconds
       );
@@ -214,54 +236,76 @@ export async function createServer() {
     }
 
     if (error instanceof Prisma.PrismaClientValidationError) {
-      fastify.log.error({
-        err: error,
-        url: request.url,
-        method: request.method,
-      }, 'Database validation error');
+      fastify.log.error(
+        {
+          err: error,
+          url: request.url,
+          method: request.method,
+        },
+        "Database validation error"
+      );
 
-      return reply.status(500).send(buildErrorResponse(
-        500,
-        'Database validation error',
-        'DATABASE_VALIDATION_ERROR'
-      ));
+      return reply
+        .status(500)
+        .send(
+          buildErrorResponse(
+            500,
+            "Database validation error",
+            "DATABASE_VALIDATION_ERROR"
+          )
+        );
     }
 
     // Handle Prisma errors
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2025') {
+      if (error.code === "P2025") {
         // Record not found
-        return reply.status(404).send(buildErrorResponse(404, 'Resource not found', 'PRISMA_NOT_FOUND'));
+        return reply
+          .status(404)
+          .send(
+            buildErrorResponse(404, "Resource not found", "PRISMA_NOT_FOUND")
+          );
       }
-      if (error.code === 'P2002') {
+      if (error.code === "P2002") {
         // Unique constraint violation
-        const conflictError = new ConflictError('Resource already exists', {
+        const conflictError = new ConflictError("Resource already exists", {
           prismaCode: error.code,
           meta: error.meta,
         });
         return reply.status(409).send(conflictError.toJSON());
       }
       // Other Prisma errors
-      fastify.log.error({
-        err: error,
-        prismaCode: error.code,
-        url: request.url,
-        method: request.method,
-      }, 'Prisma error');
-      return reply.status(500).send(buildErrorResponse(500, 'Database error', 'DATABASE_ERROR'));
+      fastify.log.error(
+        {
+          err: error,
+          prismaCode: error.code,
+          url: request.url,
+          method: request.method,
+        },
+        "Prisma error"
+      );
+      return reply
+        .status(500)
+        .send(buildErrorResponse(500, "Database error", "DATABASE_ERROR"));
     }
 
     // Default error handling for unexpected errors
     const statusCode = error.statusCode || 500;
-    fastify.log.error({
-      err: error,
-      url: request.url,
-      method: request.method,
-    }, 'Unhandled request error');
+    fastify.log.error(
+      {
+        err: error,
+        url: request.url,
+        method: request.method,
+      },
+      "Unhandled request error"
+    );
 
     return reply.status(statusCode).send({
       error: {
-        message: statusCode === 500 ? 'Internal server error' : (error.message || 'Request failed'),
+        message:
+          statusCode === 500
+            ? "Internal server error"
+            : error.message || "Request failed",
         statusCode,
       },
     });
@@ -269,12 +313,12 @@ export async function createServer() {
 
   // Configure JSON parser to allow empty bodies
   fastify.addContentTypeParser(
-    'application/json',
-    { parseAs: 'string' },
-    (req, body, done) => {
+    "application/json",
+    { parseAs: "string" },
+    (_req, body, done) => {
       try {
         // Allow empty bodies (e.g., DELETE requests with Content-Type: application/json)
-        const json = body === '' ? {} : JSON.parse(body as string);
+        const json = body === "" ? {} : JSON.parse(body as string);
         done(null, json);
       } catch (err) {
         done(err as Error, undefined);
@@ -283,7 +327,7 @@ export async function createServer() {
   );
 
   // Register CORS
-  const corsConfig = config.get('cors');
+  const corsConfig = config.get("cors");
   await fastify.register(cors, {
     origin: corsConfig.allowedOrigins,
     credentials: true,
@@ -316,52 +360,47 @@ export async function createServer() {
   // Register Shell WebSocket handler
   await registerShellRoute(fastify);
 
-  // Initialize MockWorkflowOrchestrator
-  const workflowOrchestrator = new MockWorkflowOrchestrator(fastify.log);
-  fastify.log.info('MockWorkflowOrchestrator initialized');
-
-  // Start the workflow runner
-  workflowOrchestrator.start();
-
-  // Store orchestrator on fastify instance for access in routes
-  fastify.decorate('workflowOrchestrator', workflowOrchestrator);
-
-  // Graceful shutdown: Stop the workflow runner on server close
-  fastify.addHook('onClose', async () => {
-    fastify.log.info('Stopping workflow orchestrator...');
-    workflowOrchestrator.stop();
-  });
+  // Initialize workflow engine (includes project scanning)
+  await initializeWorkflowEngine(fastify);
 
   // Serve static files from dist/client/ (production build only)
   // In production, the built client files are in dist/client/
-  const distDir = join(__dirname, '../../dist/client');
+  const distDir = join(__dirname, "../../dist/client");
   const hasDistDir = existsSync(distDir);
 
   if (hasDistDir) {
     await fastify.register(fastifyStatic, {
       root: distDir,
-      prefix: '/',
+      prefix: "/",
     });
 
     // SPA fallback: serve index.html for all non-API routes
     fastify.setNotFoundHandler((request, reply) => {
-      if (request.url.startsWith('/api') || request.url.startsWith('/ws') || request.url.startsWith('/shell')) {
-        reply.code(404).send({ error: 'Not found' });
+      if (
+        request.url.startsWith("/api") ||
+        request.url.startsWith("/ws") ||
+        request.url.startsWith("/shell")
+      ) {
+        reply.code(404).send({ error: "Not found" });
       } else {
-        reply.sendFile('index.html');
+        reply.sendFile("index.html");
       }
     });
   } else {
     // Development mode: no static files, just API and WebSocket
     fastify.setNotFoundHandler((request, reply) => {
-      if (request.url.startsWith('/api') || request.url.startsWith('/ws') || request.url.startsWith('/shell')) {
-        reply.code(404).send({ error: 'Not found' });
+      if (
+        request.url.startsWith("/api") ||
+        request.url.startsWith("/ws") ||
+        request.url.startsWith("/shell")
+      ) {
+        reply.code(404).send({ error: "Not found" });
       } else {
         reply.code(200).send({
-          message: 'Development mode: Frontend not built',
+          message: "Development mode: Frontend not built",
           hint: 'Run "pnpm dev" to start both frontend (Vite) and backend servers',
-          viteUrl: 'http://localhost:5173',
-          apiUrl: 'http://localhost:3456/api',
+          viteUrl: "http://localhost:5173",
+          apiUrl: "http://localhost:3456/api",
         });
       }
     });
@@ -373,7 +412,7 @@ export async function createServer() {
 // Start server when run directly (not imported as module)
 if (import.meta.url === `file://${process.argv[1]}`) {
   // Validate configuration (will throw on startup if invalid)
-  const serverConfig = config.get('server');
+  const serverConfig = config.get("server");
   const PORT = serverConfig.port;
   const HOST = serverConfig.host;
 
@@ -387,9 +426,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   // Setup graceful shutdown handlers
   await setupGracefulShutdown(server, activeSessions, reconnectionManager);
 
-  console.log('');
-  console.log('🚀 Fastify server running at:');
+  console.log("");
+  console.log("🚀 Fastify server running at:");
   console.log(`   http://${HOST}:${PORT}`);
-  console.log('   Press Ctrl+C to stop gracefully');
-  console.log('');
+  console.log("   Press Ctrl+C to stop gracefully");
+  console.log("");
 }

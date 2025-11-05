@@ -34,8 +34,6 @@ interface ChatInterfaceProps {
 export function ChatInterface({
   projectId,
   sessionId,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  agent = "claude",
   messages = [],
   isLoading = false,
   error = null,

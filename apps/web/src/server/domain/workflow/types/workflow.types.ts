@@ -17,6 +17,7 @@ export interface CreateWorkflowExecutionInput {
   workflow_definition_id: string;
   name: string;
   args: Record<string, unknown>;
+  inngest_run_id?: string;
 }
 
 // Workflow execution filters for querying

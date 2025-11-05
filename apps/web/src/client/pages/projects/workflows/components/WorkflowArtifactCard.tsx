@@ -11,7 +11,7 @@ export function WorkflowArtifactCard({
   artifact,
   onDownload,
 }: WorkflowArtifactCardProps) {
-  const fileIcon = getFileIcon(artifact.file_name, artifact.mime_type);
+  const fileIcon = getFileIcon(artifact.name, artifact.mime_type);
   const isImage = artifact.mime_type.startsWith('image/');
 
   const handleDownload = () => {
@@ -30,7 +30,7 @@ export function WorkflowArtifactCard({
         <div className="aspect-video w-full overflow-hidden bg-muted">
           <img
             src={artifact.file_path}
-            alt={artifact.file_name}
+            alt={artifact.name}
             className="h-full w-full object-cover"
             loading="lazy"
           />
@@ -47,8 +47,8 @@ export function WorkflowArtifactCard({
       {/* Details */}
       <div className="p-3">
         <div className="mb-1">
-          <h3 className="truncate text-sm font-medium" title={artifact.file_name}>
-            {artifact.file_name}
+          <h3 className="truncate text-sm font-medium" title={artifact.name}>
+            {artifact.name}
           </h3>
         </div>
 
@@ -68,7 +68,7 @@ export function WorkflowArtifactCard({
         <button
           onClick={handleDownload}
           className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-colors hover:bg-primary/90"
-          aria-label={`Download ${artifact.file_name}`}
+          aria-label={`Download ${artifact.name}`}
         >
           <Download className="h-4 w-4" />
           <span>Download</span>

@@ -50,8 +50,10 @@ export const SessionEventTypes = {
 /**
  * Data interfaces for session events
  */
+import type { UnifiedMessage } from '@repo/agent-cli-sdk';
+
 export interface StreamOutputData {
-  message: string;
+  message: UnifiedMessage;
   sessionId: string;
   timestamp?: number;
 }
@@ -60,10 +62,19 @@ export interface MessageCompleteData {
   sessionId: string;
   messageId?: string;
   timestamp?: number;
+  usage?: {
+    inputTokens: number;
+    outputTokens: number;
+    totalTokens: number;
+    cacheCreationTokens?: number;
+    cacheReadTokens?: number;
+  };
+  metadata?: Record<string, unknown>;
 }
 
 export interface SessionErrorData {
   error: string;
+  message?: string; // Alias for error (backwards compat)
   sessionId: string;
   code?: string;
   timestamp?: number;
@@ -391,6 +402,7 @@ export interface WorkflowAnnotationCreatedData {
   commentId: string;
   text: string;
   body?: string; // Alternative field name for compatibility
+  phase: string | null;
   stepId?: string;
   userId: string | null;
   timestamp: string;

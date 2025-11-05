@@ -1,6 +1,6 @@
 import { Package } from 'lucide-react';
 import type { WorkflowExecution } from '../types';
-import { WorkflowExecutionPhaseCard } from './WorkflowExecutionPhaseCard';
+import { WorkflowExecutionCard } from './WorkflowExecutionCard';
 
 export interface WorkflowPhaseKanbanColumnProps {
   phase: string;
@@ -37,7 +37,7 @@ export function WorkflowPhaseKanbanColumn({
           </div>
         ) : (
           executions.map((execution) => (
-            <WorkflowExecutionPhaseCard
+            <WorkflowExecutionCard
               key={execution.id}
               execution={execution}
               onClick={() => onExecutionClick(execution)}

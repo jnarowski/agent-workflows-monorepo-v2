@@ -2,7 +2,7 @@ import { useEffect, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
-import type { UnifiedContent } from "@repo/agent-cli-sdk";
+import type { UnifiedContent, PermissionMode, AgentType } from "@repo/agent-cli-sdk";
 import {
   SessionEventTypes,
   type SessionEvent,
@@ -12,7 +12,6 @@ import { sessionKeys } from "./useAgentSessions";
 import { generateUUID } from "@/client/utils/cn";
 import { projectKeys } from "@/client/pages/projects/hooks/useProjects";
 import type { ProjectWithSessions } from "@/shared/types/project.types";
-import type { ClaudePermissionMode, AgentType } from "@repo/agent-cli-sdk";
 
 interface UseSessionWebSocketOptions {
   sessionId: string;
@@ -22,7 +21,7 @@ interface UseSessionWebSocketOptions {
 interface SessionConfig {
   resume?: boolean;
   sessionId?: string;
-  permissionMode?: ClaudePermissionMode;
+  permissionMode?: PermissionMode;
   agentType?: AgentType;
   [key: string]: unknown;
 }
@@ -67,7 +66,8 @@ export function useSessionWebSocket({
           // SDK already provides clean UnifiedMessage
           if (message) {
             // Validate content before updating
-            if (!Array.isArray(message.content)) {
+            const content = message.content;
+            if (!Array.isArray(content)) {
               console.error(
                 "[useSessionWebSocket] Message content is not an array:",
                 message
@@ -76,8 +76,9 @@ export function useSessionWebSocket({
             }
 
             // Check for empty content blocks
-            const emptyTextBlocks = message.content.filter(
+            const emptyTextBlocks = content.filter(
               (block) =>
+                typeof block !== 'string' &&
                 block.type === "text" &&
                 (!block.text || block.text.trim() === "")
             );
@@ -89,7 +90,7 @@ export function useSessionWebSocket({
               );
             }
 
-            if (message.content.length === 0) {
+            if (content.length === 0) {
               console.warn(
                 "[useSessionWebSocket] Message has EMPTY content array"
               );
@@ -99,7 +100,7 @@ export function useSessionWebSocket({
               .getState()
               .updateStreamingMessage(
                 message.id,
-                message.content as UnifiedContent[]
+                content as UnifiedContent[]
               );
           } else {
             console.warn(
@@ -184,7 +185,7 @@ export function useSessionWebSocket({
                           ...session,
                           state: data.state ?? session.state,
                           error_message: data.error_message ?? session.error_message,
-                          metadata: data.metadata ?? session.metadata,
+                          metadata: (data.metadata as unknown as typeof session.metadata) ?? session.metadata,
                           name: data.name ?? session.name,
                           updated_at: data.updated_at
                             ? new Date(data.updated_at)
@@ -247,6 +248,7 @@ export function useSessionWebSocket({
             ],
             timestamp: Date.now(),
             isError: true,
+            _original: undefined,
           });
 
           // Set error in store
@@ -362,6 +364,7 @@ export function useSessionWebSocket({
         },
       ],
       timestamp: Date.now(),
+      _original: undefined,
     });
 
     // Update streaming state

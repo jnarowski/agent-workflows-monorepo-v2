@@ -56,7 +56,6 @@ export default function ProjectSourceControl() {
 
   // Changes tab state
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
-  const [expandedFiles, setExpandedFiles] = useState<Set<string>>(new Set());
   const [commitMessage, setCommitMessage] = useState("");
 
   // History tab state
@@ -67,18 +66,6 @@ export default function ProjectSourceControl() {
   // Helper functions for Changes tab
   const handleToggleFile = (filepath: string) => {
     setSelectedFiles((prev) => {
-      const next = new Set(prev);
-      if (next.has(filepath)) {
-        next.delete(filepath);
-      } else {
-        next.add(filepath);
-      }
-      return next;
-    });
-  };
-
-  const handleToggleFileExpand = (filepath: string) => {
-    setExpandedFiles((prev) => {
       const next = new Set(prev);
       if (next.has(filepath)) {
         next.delete(filepath);
@@ -119,7 +106,6 @@ export default function ProjectSourceControl() {
       // Clear selections and message on success
       setSelectedFiles(new Set());
       setCommitMessage("");
-      setExpandedFiles(new Set());
     } catch (error) {
       // Error handling is done in the mutation hooks via toast
       console.error("Commit failed:", error);
@@ -219,10 +205,8 @@ export default function ProjectSourceControl() {
               path={projectPath}
               files={gitStatus?.files}
               selectedFiles={selectedFiles}
-              expandedFiles={expandedFiles}
               commitMessage={commitMessage}
               onToggleFile={handleToggleFile}
-              onToggleExpand={handleToggleFileExpand}
               onSelectAll={handleSelectAll}
               onDeselectAll={handleDeselectAll}
               onCommitMessageChange={setCommitMessage}

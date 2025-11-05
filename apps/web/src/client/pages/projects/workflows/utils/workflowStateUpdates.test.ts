@@ -15,7 +15,7 @@ import {
   applyEventCreated,
 } from './workflowStateUpdates';
 import type { WorkflowExecution, WorkflowEvent } from '../types';
-import { WorkflowStatus, StepStatus } from '@/shared/schemas';
+import { WorkflowStatusValues, StepStatusValues } from '@/shared/schemas/workflow.schemas';
 
 // ============================================================================
 // Mock Data
@@ -26,7 +26,7 @@ const mockExecution: WorkflowExecution = {
   workflow_definition_id: 'def-1',
   project_id: 'proj-1',
   name: 'Test Execution',
-  status: WorkflowStatus.RUNNING,
+  status: WorkflowStatusValues.RUNNING,
   args: null,
   current_step: null,
   current_phase: null,
@@ -46,7 +46,7 @@ const mockExecutionWithSteps: WorkflowExecution = {
       workflow_execution_id: 'exec-1',
       name: 'Step 1',
       phase: 'Phase 1',
-      status: StepStatus.PENDING,
+      status: StepStatusValues.PENDING,
       logs: null,
       error_message: null,
       agent_session_id: null,
@@ -60,7 +60,7 @@ const mockExecutionWithSteps: WorkflowExecution = {
       workflow_execution_id: 'exec-1',
       name: 'Step 2',
       phase: 'Phase 1',
-      status: StepStatus.PENDING,
+      status: StepStatusValues.PENDING,
       logs: null,
       error_message: null,
       agent_session_id: null,
@@ -91,24 +91,24 @@ describe('updateExecutionInMap', () => {
     const executions = new Map([['exec-1', mockExecution]]);
     const result = updateExecutionInMap(executions, 'exec-1', (exec) => ({
       ...exec,
-      status: WorkflowStatus.COMPLETED,
+      status: WorkflowStatusValues.COMPLETED,
     }));
 
     // New map created
     expect(result).not.toBe(executions);
 
     // Original unchanged
-    expect(executions.get('exec-1')!.status).toBe(WorkflowStatus.RUNNING);
+    expect(executions.get('exec-1')!.status).toBe(WorkflowStatusValues.RUNNING);
 
     // Updated in new map
-    expect(result.get('exec-1')!.status).toBe(WorkflowStatus.COMPLETED);
+    expect(result.get('exec-1')!.status).toBe(WorkflowStatusValues.COMPLETED);
   });
 
   it('returns original map if execution not found', () => {
     const executions = new Map([['exec-1', mockExecution]]);
     const result = updateExecutionInMap(executions, 'non-existent', (exec) => ({
       ...exec,
-      status: WorkflowStatus.COMPLETED,
+      status: WorkflowStatusValues.COMPLETED,
     }));
 
     expect(result).toBe(executions);
@@ -119,7 +119,7 @@ describe('updateStepInExecution', () => {
   it('updates step immutably', () => {
     const execution = mockExecutionWithSteps;
     const result = updateStepInExecution(execution, 'step-1', {
-      status: StepStatus.COMPLETED,
+      status: StepStatusValues.COMPLETED,
     });
 
     // New object created
@@ -127,17 +127,17 @@ describe('updateStepInExecution', () => {
     expect(result.steps).not.toBe(execution.steps);
 
     // Original unchanged
-    expect(execution.steps![0].status).toBe(StepStatus.PENDING);
+    expect(execution.steps![0].status).toBe(StepStatusValues.PENDING);
 
     // Updated in new object
-    expect(result.steps![0].status).toBe(StepStatus.COMPLETED);
+    expect(result.steps![0].status).toBe(StepStatusValues.COMPLETED);
     expect(result.steps![0].updated_at).toBeInstanceOf(Date);
   });
 
   it('returns unchanged execution if no steps', () => {
     const execution = mockExecution;
     const result = updateStepInExecution(execution, 'step-1', {
-      status: StepStatus.COMPLETED,
+      status: StepStatusValues.COMPLETED,
     });
 
     expect(result).toBe(execution);
@@ -146,11 +146,11 @@ describe('updateStepInExecution', () => {
   it('only updates matching step', () => {
     const execution = mockExecutionWithSteps;
     const result = updateStepInExecution(execution, 'step-1', {
-      status: StepStatus.COMPLETED,
+      status: StepStatusValues.COMPLETED,
     });
 
-    expect(result.steps![0].status).toBe(StepStatus.COMPLETED);
-    expect(result.steps![1].status).toBe(StepStatus.PENDING);
+    expect(result.steps![0].status).toBe(StepStatusValues.COMPLETED);
+    expect(result.steps![1].status).toBe(StepStatusValues.PENDING);
   });
 });
 
@@ -169,7 +169,7 @@ describe('applyStepStarted', () => {
 
     expect(result.current_step).toBe('Step 1');
     expect(result.current_phase).toBe('Phase 1');
-    expect(result.steps![0].status).toBe(StepStatus.RUNNING);
+    expect(result.steps![0].status).toBe(StepStatusValues.RUNNING);
     expect(result.steps![0].started_at).toBeInstanceOf(Date);
     expect(result.updated_at).toBeInstanceOf(Date);
   });
@@ -196,7 +196,7 @@ describe('applyStepCompleted', () => {
       logs: 'Step completed successfully',
     });
 
-    expect(result.steps![0].status).toBe(StepStatus.COMPLETED);
+    expect(result.steps![0].status).toBe(StepStatusValues.COMPLETED);
     expect(result.steps![0].logs).toBe('Step completed successfully');
     expect(result.steps![0].completed_at).toBeInstanceOf(Date);
   });
@@ -220,7 +220,7 @@ describe('applyStepFailed', () => {
       error: 'Step failed with error',
     });
 
-    expect(result.steps![0].status).toBe(StepStatus.FAILED);
+    expect(result.steps![0].status).toBe(StepStatusValues.FAILED);
     expect(result.steps![0].error_message).toBe('Step failed with error');
     expect(result.steps![0].completed_at).toBeInstanceOf(Date);
   });
@@ -259,10 +259,10 @@ describe('applyPhaseCompleted', () => {
 
 describe('applyWorkflowStarted', () => {
   it('updates status to running and sets started_at', () => {
-    const execution = { ...mockExecution, status: WorkflowStatus.PENDING };
+    const execution = { ...mockExecution, status: WorkflowStatusValues.PENDING };
     const result = applyWorkflowStarted(execution);
 
-    expect(result.status).toBe(WorkflowStatus.RUNNING);
+    expect(result.status).toBe(WorkflowStatusValues.RUNNING);
     expect(result.started_at).toBeInstanceOf(Date);
     expect(result.updated_at).toBeInstanceOf(Date);
   });
@@ -273,7 +273,7 @@ describe('applyWorkflowCompleted', () => {
     const execution = mockExecution;
     const result = applyWorkflowCompleted(execution);
 
-    expect(result.status).toBe(WorkflowStatus.COMPLETED);
+    expect(result.status).toBe(WorkflowStatusValues.COMPLETED);
     expect(result.completed_at).toBeInstanceOf(Date);
     expect(result.updated_at).toBeInstanceOf(Date);
   });
@@ -284,7 +284,7 @@ describe('applyWorkflowFailed', () => {
     const execution = mockExecution;
     const result = applyWorkflowFailed(execution, 'Workflow failed');
 
-    expect(result.status).toBe(WorkflowStatus.FAILED);
+    expect(result.status).toBe(WorkflowStatusValues.FAILED);
     expect(result.error_message).toBe('Workflow failed');
     expect(result.completed_at).toBeInstanceOf(Date);
     expect(result.updated_at).toBeInstanceOf(Date);
@@ -296,17 +296,17 @@ describe('applyWorkflowPaused', () => {
     const execution = mockExecution;
     const result = applyWorkflowPaused(execution);
 
-    expect(result.status).toBe(WorkflowStatus.PAUSED);
+    expect(result.status).toBe(WorkflowStatusValues.PAUSED);
     expect(result.updated_at).toBeInstanceOf(Date);
   });
 });
 
 describe('applyWorkflowResumed', () => {
   it('updates status to running', () => {
-    const execution = { ...mockExecution, status: WorkflowStatus.PAUSED };
+    const execution = { ...mockExecution, status: WorkflowStatusValues.PAUSED };
     const result = applyWorkflowResumed(execution);
 
-    expect(result.status).toBe(WorkflowStatus.RUNNING);
+    expect(result.status).toBe(WorkflowStatusValues.RUNNING);
     expect(result.updated_at).toBeInstanceOf(Date);
   });
 });
@@ -316,7 +316,7 @@ describe('applyWorkflowCancelled', () => {
     const execution = mockExecution;
     const result = applyWorkflowCancelled(execution);
 
-    expect(result.status).toBe(WorkflowStatus.CANCELLED);
+    expect(result.status).toBe(WorkflowStatusValues.CANCELLED);
     expect(result.completed_at).toBeInstanceOf(Date);
     expect(result.updated_at).toBeInstanceOf(Date);
   });

@@ -1,0 +1,42 @@
+{
+  "name": "@repo/workflow-sdk",
+  "version": "1.0.0",
+  "description": "Type-safe workflow SDK for Sourceborn workflow engine",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bunchee",
+    "dev": "bunchee --watch",
+    "clean": "rm -rf dist",
+    "check-types": "tsc --noEmit"
+  },
+  "keywords": [
+    "workflow",
+    "orchestration",
+    "inngest",
+    "typescript",
+    "sourceborn"
+  ],
+  "author": "Sourceborn",
+  "license": "MIT",
+  "peerDependencies": {
+    "inngest": "^3.0.0"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "bunchee": "^6.6.2",
+    "inngest": "^3.0.0",
+    "typescript": "^5.9.0"
+  }
+}

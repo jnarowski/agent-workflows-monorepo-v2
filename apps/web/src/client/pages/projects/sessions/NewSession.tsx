@@ -5,6 +5,7 @@ import {
   ChatPromptInput,
   type ChatPromptInputHandle,
 } from "./components/ChatPromptInput";
+import type { PromptInputMessage } from "@/client/components/ai-elements/PromptInput";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { useActiveProject } from "@/client/hooks/navigation";
@@ -47,11 +48,13 @@ export default function NewSession() {
     return () => clearTimeout(timeoutId);
   }, []);
 
-  const handleSubmit = async (message: string, images?: File[]) => {
+  const handleSubmit = async ({ text }: PromptInputMessage) => {
     if (!projectId) {
       console.error("[NewSession] No projectId available");
       return;
     }
+
+    const message = text || "";
 
     try {
       // Get current agent from store
@@ -73,8 +76,8 @@ export default function NewSession() {
         queryKey: projectKeys.withSessions(),
       });
 
-      // Convert images to base64 if present
-      const imagePaths = images ? await handleImageUpload(images) : undefined;
+      // No image upload for now - files parameter not used
+      const imagePaths = undefined;
 
       // Get permission mode from form
       const getPermissionMode = useSessionStore.getState().getPermissionMode;
@@ -110,21 +113,6 @@ export default function NewSession() {
     } catch (error) {
       console.error("[NewSession] Error creating session:", error);
     }
-  };
-
-  const handleImageUpload = async (files: File[]): Promise<string[]> => {
-    // Convert File objects to base64 data URLs for WebSocket transmission
-    return Promise.all(
-      files.map(
-        (file) =>
-          new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          })
-      )
-    );
   };
 
   return (

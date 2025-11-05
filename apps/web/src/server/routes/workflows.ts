@@ -12,8 +12,11 @@ import {
 import {
   createWorkflowExecutionSchema,
   workflowExecutionFiltersSchema,
-} from "@/shared/schemas";
+} from "@/shared/schemas/workflow.schemas";
 import { NotFoundError } from "@/server/errors";
+import { scanProjectWorkflows } from "@/server/domain/workflow/services/engine";
+import { prisma } from "@/shared/prisma";
+import '@/server/plugins/auth';
 
 // Params schema
 const executionIdSchema = z.object({
@@ -36,7 +39,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request.user!.id as string);
+      const userId = (request.user! as { id: string }).id;
       const body = request.body;
 
       fastify.log.info(
@@ -53,11 +56,27 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       });
 
       if (!execution) {
-        throw new NotFoundError('Workflow definition not found');
+        throw new NotFoundError("Workflow definition not found");
       }
 
-      // Start execution via orchestrator
-      await executeWorkflow(execution.id, fastify.workflowOrchestrator);
+      // Start execution via Inngest
+      try {
+        await executeWorkflow(execution.id, fastify, fastify.log);
+
+        fastify.log.info(
+          { executionId: execution.id, userId },
+          "Workflow execution triggered successfully"
+        );
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        fastify.log.error(
+          { err, executionId: execution.id, userId },
+          "Failed to trigger workflow execution"
+        );
+
+        // Re-throw to let global error handler return 500
+        throw err;
+      }
 
       return reply.code(201).send({ data: execution });
     }
@@ -78,15 +97,13 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request.user!.id as string);
+      const userId = (request.user! as { id: string }).id;
       const { project_id, status } = request.query;
 
       if (!project_id) {
-        return reply
-          .code(400)
-          .send({
-            error: { message: "project_id is required", statusCode: 400 },
-          });
+        return reply.code(400).send({
+          error: { message: "project_id is required", statusCode: 400 },
+        });
       }
 
       fastify.log.info(
@@ -120,7 +137,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = (request.user!.id as string);
+      const userId = (request.user! as { id: string }).id;
 
       fastify.log.info(
         { userId, executionId: id },
@@ -160,7 +177,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = (request.user!.id as string);
+      const userId = (request.user! as { id: string }).id;
 
       fastify.log.info(
         { userId, executionId: id },
@@ -180,11 +197,9 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       }
 
       if (execution.status !== "running") {
-        return reply
-          .code(400)
-          .send({
-            error: { message: "Execution is not running", statusCode: 400 },
-          });
+        return reply.code(400).send({
+          error: { message: "Execution is not running", statusCode: 400 },
+        });
       }
 
       const updated = await pauseWorkflow(id, userId, fastify.log);
@@ -209,7 +224,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = (request.user!.id as string);
+      const userId = (request.user! as { id: string }).id;
 
       fastify.log.info(
         { userId, executionId: id },
@@ -229,11 +244,9 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       }
 
       if (execution.status !== "paused") {
-        return reply
-          .code(400)
-          .send({
-            error: { message: "Execution is not paused", statusCode: 400 },
-          });
+        return reply.code(400).send({
+          error: { message: "Execution is not paused", statusCode: 400 },
+        });
       }
 
       const updated = await resumeWorkflow(id, userId, fastify.log);
@@ -258,7 +271,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = (request.user!.id as string);
+      const userId = (request.user! as { id: string }).id;
 
       fastify.log.info(
         { userId, executionId: id },
@@ -280,6 +293,96 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       const updated = await cancelWorkflow(id, userId, undefined, fastify.log);
 
       return reply.send({ data: updated });
+    }
+  );
+
+  /**
+   * POST /api/projects/:projectId/workflows/refresh
+   * Re-scan project for workflows
+   */
+  fastify.post<{
+    Params: { projectId: string };
+  }>(
+    "/api/projects/:projectId/workflows/refresh",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: z.object({
+          projectId: z.string().cuid(),
+        }),
+      },
+    },
+    async (request, reply) => {
+      const { projectId } = request.params;
+      const userId = (request.user! as { id: string }).id;
+
+      fastify.log.info({ userId, projectId }, "Refreshing project workflows");
+
+      // Get project
+      const project = await prisma.project.findUnique({
+        where: { id: projectId },
+      });
+
+      if (!project) {
+        throw new NotFoundError("Project not found");
+      }
+
+      // Scan project for workflows
+      const discovered = await scanProjectWorkflows(
+        projectId,
+        project.path,
+        // @ts-ignore - workflowOrchestrator added by plugin
+        fastify.workflowOrchestrator,
+        fastify.log
+      );
+
+      return reply.send({
+        data: {
+          projectId,
+          discovered,
+        },
+      });
+    }
+  );
+
+  /**
+   * GET /api/projects/:projectId/workflows
+   * List workflows for a project
+   */
+  fastify.get<{
+    Params: { projectId: string };
+  }>(
+    "/api/projects/:projectId/workflows",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: z.object({
+          projectId: z.string().cuid(),
+        }),
+      },
+    },
+    async (request, reply) => {
+      const { projectId } = request.params;
+      const userId = (request.user! as { id: string }).id;
+
+      fastify.log.info({ userId, projectId }, "Fetching project workflows");
+
+      // Get project to verify ownership
+      const project = await prisma.project.findUnique({
+        where: { id: projectId },
+      });
+
+      if (!project) {
+        throw new NotFoundError("Project not found");
+      }
+
+      // Get workflow definitions for project
+      const workflows = await prisma.workflowDefinition.findMany({
+        where: { project_id: projectId },
+        orderBy: { name: "asc" },
+      });
+
+      return reply.send({ data: workflows });
     }
   );
 }

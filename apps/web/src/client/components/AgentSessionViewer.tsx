@@ -79,6 +79,7 @@ export function AgentSessionViewer({
         }
 
         // Load new session
+        // @ts-expect-error - QueryClient type incompatibility between versions
         await loadSession(sessionId, projectId, queryClient);
 
         // Get loaded session and trigger callback

@@ -419,6 +419,12 @@ pnpm prisma:migrate  # = prisma migrate dev
 # Apply existing migrations (auto-runs with 'pnpm dev')
 prisma migrate deploy
 
+# Reset database and flatten migrations (pre-1.0 only)
+pnpm prisma:reset
+
+# Run seed script manually
+pnpm prisma:seed
+
 # Open Prisma Studio
 pnpm prisma:studio
 ```
@@ -426,6 +432,70 @@ pnpm prisma:studio
 Database file: `prisma/dev.db` (SQLite)
 
 **Note**: Migrations are automatically applied when running `pnpm dev`, so you typically only need to run `pnpm prisma:migrate` when you've changed the schema.
+
+### Development: Resetting Database (Pre-1.0)
+
+During active pre-1.0 development, you can reset the database and collapse migrations for a clean slate. This is useful when accumulating too many migration files or when you want to simplify schema history.
+
+**⚠️ WARNING**: This workflow is ONLY for pre-1.0 development. Never use this in production or after v1.0 launch.
+
+**When to use:**
+- Active schema iteration during development
+- Too many migration files accumulated (>20)
+- Want to simplify migration history before 1.0
+- No production data to preserve
+
+**How to reset:**
+
+```bash
+cd apps/web
+
+# Option 1: Use convenient npm script (recommended)
+pnpm prisma:reset
+
+# Option 2: Manual commands
+rm -rf prisma/migrations/
+rm -f prisma/dev.db
+rm -f prisma/test-temp.db
+pnpm prisma generate
+pnpm prisma migrate dev --name init
+
+# Expected output:
+# - Creates single migration folder: migrations/YYYYMMDDHHMMSS_init/
+# - Applies migration to fresh database
+# - Runs seed script automatically (creates admin user)
+# - Admin credentials: admin@example.com / password
+```
+
+**What happens automatically:**
+- New SQLite database created at `prisma/dev.db`
+- Single migration created from current `schema.prisma`
+- Seed script runs and creates default admin user
+- Admin user: email=`admin@example.com`, password=`password`
+
+**Verify reset worked:**
+
+```bash
+# Check only one migration exists
+ls -1 prisma/migrations/ | grep -v migration_lock.toml | wc -l
+# Should output: 1
+
+# Verify database and admin user exist
+pnpm prisma:studio
+# Open Users table, should see one admin user
+
+# Test login
+pnpm dev
+# Navigate to http://localhost:5173 and login with admin@example.com / password
+```
+
+**Production Deployment:**
+
+When deploying to production (v1.0+):
+- Use `prisma migrate deploy` (NOT `prisma migrate dev`)
+- Never delete migrations
+- Build proper migration history for rollback capability
+- Use proper seed data (not hardcoded admin user)
 
 ## Architecture
 

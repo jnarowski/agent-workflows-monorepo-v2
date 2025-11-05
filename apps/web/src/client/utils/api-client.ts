@@ -39,9 +39,11 @@ class ApiClient {
       ...options.headers,
     };
 
-    // Build request options
+    // Build request options (exclude body from spread to avoid type conflict)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { body, ...restOptions } = options;
     const requestOptions: RequestInit = {
-      ...options,
+      ...restOptions,
       headers,
       body: options.body ? JSON.stringify(options.body) : undefined,
     };
@@ -75,7 +77,7 @@ class ApiClient {
 
       const errorMessage = error.error.message || `HTTP ${response.status}: ${response.statusText}`;
 
-      throw new ApiError(errorMessage, response.status, error);
+      throw new ApiError(errorMessage, response.status, error.error.code, error.error.details);
     }
 
     // Parse successful response
@@ -101,9 +103,11 @@ class ApiClient {
       ...options?.headers,
     };
 
-    // Make the request
+    // Make the request (exclude body from options spread)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { body, ...restOptions } = options || {};
     const response = await fetch(url, {
-      ...options,
+      ...restOptions,
       method: 'GET',
       headers,
     });

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/shared/prisma';
 import { buildSuccessResponse } from '@/server/utils/response';
 import { NotFoundError } from '@/server/errors';
+import '@/server/plugins/auth';
 
 /**
  * Zod schemas for workflow definitions
@@ -34,7 +35,9 @@ export async function registerWorkflowDefinitionRoutes(
    * GET /api/workflow-definitions
    * List all workflow templates
    */
-  fastify.get(
+  fastify.get<{
+    Reply: { data: unknown };
+  }>(
     '/api/workflow-definitions',
     {
       schema: {
@@ -47,7 +50,7 @@ export async function registerWorkflowDefinitionRoutes(
       preHandler: fastify.authenticate,
     },
     async (request, reply) => {
-      const userId = (request.user!.id as string);
+      const userId = (request.user! as { id: string }).id;
 
       fastify.log.info({ userId }, 'Fetching workflow definitions');
 
@@ -94,7 +97,7 @@ export async function registerWorkflowDefinitionRoutes(
     },
     async (request, reply) => {
       const { id } = request.params;
-      const userId = (request.user!.id as string);
+      const userId = ((request.user! as { id: string }).id);
 
       fastify.log.info({ userId, definitionId: id }, 'Fetching workflow definition');
 

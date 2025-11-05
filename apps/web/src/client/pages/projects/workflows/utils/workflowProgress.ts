@@ -1,24 +1,6 @@
 import type { WorkflowExecution } from "../types";
-import { StepStatus } from "@/shared/schemas";
+import { StepStatusValues } from "@/shared/schemas/workflow.schemas";
 import { isStepTerminal } from "./workflowStatus";
-
-/**
- * Calculate workflow progress as a percentage (0-100)
- * Based on the ratio of completed/failed/skipped steps to total steps
- */
-export function calculateProgress(execution: WorkflowExecution): number {
-  const steps = execution.steps || [];
-
-  if (steps.length === 0) {
-    return 0;
-  }
-
-  const completedSteps = steps.filter((step) =>
-    isStepTerminal(step.status)
-  ).length;
-
-  return Math.round((completedSteps / steps.length) * 100);
-}
 
 /**
  * Estimate time remaining for a workflow execution
@@ -34,7 +16,7 @@ export function estimateTimeRemaining(execution: WorkflowExecution): string {
   // Filter completed steps with timing information
   const completedSteps = steps.filter(
     (step) =>
-      step.status === StepStatus.COMPLETED &&
+      step.status === StepStatusValues.COMPLETED &&
       step.started_at &&
       step.completed_at
   );
@@ -54,7 +36,7 @@ export function estimateTimeRemaining(execution: WorkflowExecution): string {
 
   // Count remaining steps
   const remainingSteps = steps.filter(
-    (step) => step.status === StepStatus.PENDING
+    (step) => step.status === StepStatusValues.PENDING
   ).length;
 
   const estimatedMs = avgStepDuration * remainingSteps;
@@ -112,7 +94,7 @@ export function getPhaseProgress(
   phaseName: string
 ): { completed: number; total: number; percentage: number } {
   const phaseSteps =
-    execution.steps?.filter((step) => step.phase_name === phaseName) || [];
+    execution.steps?.filter((step) => step.phase === phaseName) || [];
 
   const completed = phaseSteps.filter((step) =>
     isStepTerminal(step.status)

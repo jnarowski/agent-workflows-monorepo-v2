@@ -1,5 +1,5 @@
 import type { WebSocket } from "@fastify/websocket";
-import type { ChannelEvent } from "@/shared/websocket/index";
+import type { ChannelEvent } from "@/shared/types/websocket.types";
 
 /**
  * Send a WebSocket message using Phoenix Channels pattern

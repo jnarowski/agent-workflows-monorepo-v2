@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="../types/fastify.d.ts" />
 import type { FastifyInstance } from "fastify";
 import {
   getSessionsByProject,
@@ -13,7 +14,6 @@ import {
   projectIdSchema,
   updateSessionNameSchema,
 } from "@/server/domain/session/schemas";
-import { errorResponse } from "@/server/schemas/response";
 import type { CreateSessionRequest } from "@/shared/types/agent-session.types";
 import { buildErrorResponse } from "@/server/errors";
 import { prisma } from "@/shared/prisma";

@@ -83,13 +83,14 @@ export function CreatePullRequestDialog({
   // Pre-fill form when prData loads
   useEffect(() => {
     if (prData) {
-      setValues((prev) => ({
-        ...prev,
+      setValues({
+        ...values,
         title: prData.title,
         description: prData.description,
-      }));
+      });
     }
-  }, [prData, setValues]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prData]);
 
   return (
     <BaseDialog

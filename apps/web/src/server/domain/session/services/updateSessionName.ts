@@ -41,7 +41,7 @@ export async function updateSessionName(
       agent: updatedSession.agent,
       cli_session_id: updatedSession.cli_session_id ?? undefined,
       session_path: updatedSession.session_path ?? undefined,
-      metadata: updatedSession.metadata as AgentSessionMetadata,
+      metadata: updatedSession.metadata as unknown as AgentSessionMetadata,
       state: updatedSession.state as 'idle' | 'working' | 'error',
       error_message: updatedSession.error_message ?? undefined,
       created_at: updatedSession.created_at,

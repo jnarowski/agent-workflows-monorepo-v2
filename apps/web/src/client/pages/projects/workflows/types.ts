@@ -1,8 +1,11 @@
-import {
+import type {
   WorkflowStatus,
   StepStatus,
-  type WorkflowEventType,
-} from "@/shared/schemas";
+  WorkflowEventType,
+} from "@/shared/schemas/workflow.schemas";
+
+// Re-export types only
+export type { WorkflowStatus, StepStatus, WorkflowEventType };
 
 export interface WorkflowDefinition {
   id: string;
@@ -55,6 +58,10 @@ export interface WorkflowExecution {
   steps?: WorkflowExecutionStep[];
   events?: WorkflowEvent[];
   artifacts?: WorkflowArtifact[];
+  _count?: {
+    steps: number;
+    events: number;
+  };
 }
 
 export interface WorkflowExecutionStep {
@@ -117,14 +124,13 @@ export interface EventDataMap {
 export interface WorkflowEvent {
   id: string;
   workflow_execution_id: string;
-  workflow_execution_step_id: string | null;
   event_type: WorkflowEventType;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   event_data: any; // JSON field, type-safe access via EventDataMap
+  phase: string | null; // Phase column from Prisma
   created_by_user_id: string | null;
   created_at: Date;
   created_by_user?: User | null;
-  workflow_execution_step?: WorkflowExecutionStep | null;
   artifacts?: WorkflowArtifact[];
 }
 
@@ -137,21 +143,13 @@ export interface WorkflowArtifact {
   file_type: string;
   mime_type: string;
   size_bytes: number;
+  phase: string | null;
   created_at: Date;
 }
-
-// Re-export domain model types for timeline
-export type {
-  TimelineModel,
-  TimelineItem,
-  StepTimelineItem,
-  EventTimelineItem,
-  AnnotationTimelineItem,
-  ExecutionSummary,
-  LiveState,
-} from "./utils/buildTimelineModel";
 
 // Filter types
 export interface WorkflowFilter {
   status?: WorkflowStatus;
+  definitionId?: string;
+  search?: string;
 }

@@ -12,15 +12,10 @@ const resolveConfig = {
 export default defineConfig({
   plugins: [
     react({
-      jsxRuntime: 'automatic',
+      jsxRuntime: "automatic",
     }),
   ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-    extensions: [".mjs", "", ".mts", ".ts", ".jsx", ".tsx", ".json"],
-  },
+  resolve: resolveConfig,
   test: {
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
@@ -40,7 +35,7 @@ export default defineConfig({
       {
         plugins: [
           react({
-            jsxRuntime: 'automatic',
+            jsxRuntime: "automatic",
           }),
         ],
         test: {
@@ -50,14 +45,6 @@ export default defineConfig({
           include: [
             "src/client/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}",
           ],
-          // Suppress harmless happy-dom AbortError messages during teardown
-          onConsoleLog(log: string, type: 'stdout' | 'stderr') {
-            // Filter out happy-dom's AbortError stack traces from teardown
-            if (type === 'stderr' && log.includes('DOMException [AbortError]')) {
-              return false; // Don't print this log
-            }
-            // Allow all other logs through
-          },
         },
         resolve: resolveConfig,
       },
@@ -66,9 +53,13 @@ export default defineConfig({
           name: "server",
           environment: "node",
           setupFiles: ["./vitest.setup.ts"],
+          globalSetup: ["./vitest.global-setup.ts"],
           include: [
             "src/server/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}",
           ],
+          // Pool options for server tests
+          pool: "forks", // Use forks for native modules
+          fileParallelism: false,
         },
         resolve: resolveConfig,
       },

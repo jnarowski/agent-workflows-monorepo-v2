@@ -13,6 +13,7 @@ import {
   PromptInputTools,
   usePromptInputController,
 } from "@/client/components/ai-elements/PromptInput";
+import type { PromptInputMessage } from "@/client/components/ai-elements/PromptInput";
 import { useAgentCapabilities } from "@/client/hooks/useSettings";
 import { ChatPromptInputFiles } from "./ChatPromptInputFiles";
 import { ChatPromptInputSlashCommands } from "./ChatPromptInputSlashCommands";
@@ -34,7 +35,7 @@ import { TokenUsageCircle } from "./TokenUsageCircle";
 import { usePromptInputState } from "../hooks/usePromptInputState";
 
 interface ChatPromptInputProps {
-  onSubmit?: (message: string, images?: File[]) => void | Promise<void>;
+  onSubmit?: (message: PromptInputMessage) => void | Promise<void>;
   disabled?: boolean;
   isStreaming?: boolean;
   totalTokens?: number; // Total session tokens
@@ -97,7 +98,7 @@ const ChatPromptInputInner = forwardRef<
       const isValidModel = model && capabilities.models.some((m) => m.id === model);
 
       // Use stored model if valid, otherwise use first available model
-      return isValidModel ? model : capabilities.models[0].id;
+      return isValidModel ? (model ?? "") : capabilities.models[0].id;
     }, [model, capabilities.models]);
 
     // Use the extracted state hook
@@ -165,7 +166,7 @@ const ChatPromptInputInner = forwardRef<
             <PromptInputTextarea
               onChange={handleTextChange}
               onKeyDown={handleKeyDown}
-              ref={textareaRef}
+              ref={textareaRef as React.RefObject<HTMLTextAreaElement>}
             />
           </PromptInputBody>
           <PromptInputFooter>
@@ -184,7 +185,7 @@ const ChatPromptInputInner = forwardRef<
                 <ChatPromptInputSlashCommands
                   open={isSlashMenuOpen}
                   onOpenChange={setIsSlashMenuOpen}
-                  projectId={activeProjectId}
+                  projectId={activeProjectId ?? undefined}
                   onCommandSelect={handleCommandSelect}
                 />
               )}
@@ -218,7 +219,7 @@ const ChatPromptInputInner = forwardRef<
                     "bg-green-500 hover:bg-green-600 text-white",
                   permissionMode === "acceptEdits" &&
                     "bg-purple-500 hover:bg-purple-600 text-white",
-                  permissionMode === "reject" &&
+                  permissionMode === "bypassPermissions" &&
                     "bg-red-500 hover:bg-red-600 text-white",
                   permissionMode === "default" &&
                     "bg-gray-500 hover:bg-gray-600 text-white"

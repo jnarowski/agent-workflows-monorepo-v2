@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { AgentSessionViewer } from "@/client/components/AgentSessionViewer";
 import { ChatPromptInput } from "./components/ChatPromptInput";
+import type { PromptInputMessage } from "@/client/components/ai-elements/PromptInput";
+import type { FileUIPart } from "ai";
 import { useSessionWebSocket } from "./hooks/useSessionWebSocket";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import {
@@ -130,6 +132,7 @@ export default function ProjectSession() {
           role: "user",
           content: [{ type: "text", text: decodedMessage }],
           timestamp: Date.now(),
+          _original: undefined,
         });
 
         // Set streaming state to show loading indicator
@@ -150,14 +153,16 @@ export default function ProjectSession() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, location.search]);
 
-  const handleSubmit = async (message: string, images?: File[]) => {
+  const handleSubmit = async ({ text, files }: PromptInputMessage) => {
     if (!projectId || !sessionId) {
       console.error("[ProjectSession] No projectId or sessionId available");
       return;
     }
 
+    const message = text || "";
+
     // Convert images to base64 before sending via WebSocket
-    const imagePaths = images ? await handleImageUpload(images) : undefined;
+    const imagePaths = files ? await handleImageUpload(files) : undefined;
 
     // Add user message to store immediately
     addMessage({
@@ -166,6 +171,7 @@ export default function ProjectSession() {
       content: [{ type: "text", text: message }],
       images: imagePaths,
       timestamp: Date.now(),
+      _original: undefined,
     });
 
     // Set streaming state immediately to show loading indicator
@@ -189,18 +195,30 @@ export default function ProjectSession() {
     wsSendMessage(message, imagePaths, config);
   };
 
-  const handleImageUpload = async (files: File[]): Promise<string[]> => {
-    // Convert File objects to base64 data URLs for WebSocket transmission
+  const handleImageUpload = async (files: FileUIPart[]): Promise<string[]> => {
+    // FileUIPart.url is already a blob URL or data URL
+    // If it's a blob URL, we need to fetch it and convert to data URL
     return Promise.all(
-      files.map(
-        (file) =>
-          new Promise<string>((resolve, reject) => {
+      files.map(async (fileUIPart) => {
+        const url = fileUIPart.url;
+        // If already a data URL, return as-is
+        if (url.startsWith('data:')) {
+          return url;
+        }
+        // If blob URL, convert to data URL
+        if (url.startsWith('blob:')) {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          return new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as string);
             reader.onerror = reject;
-            reader.readAsDataURL(file);
-          })
-      )
+            reader.readAsDataURL(blob);
+          });
+        }
+        // Otherwise return the URL as-is
+        return url;
+      })
     );
   };
 
@@ -215,7 +233,7 @@ export default function ProjectSession() {
 
   const inputDisabled =
     !globalIsConnected || // Disable if global WebSocket not connected
-    waitingForFirstResponse; // Block until first assistant response
+    Boolean(waitingForFirstResponse); // Block until first assistant response
 
   // Only auto-load if no query parameter (AgentSessionViewer handles loading)
   const searchParams = new URLSearchParams(location.search);

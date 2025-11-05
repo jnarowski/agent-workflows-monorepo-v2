@@ -29,7 +29,7 @@ export async function getSessionsByProject(
     agent: session.agent,
     cli_session_id: session.cli_session_id ?? undefined,
     session_path: session.session_path ?? undefined,
-    metadata: session.metadata as AgentSessionMetadata,
+    metadata: session.metadata as unknown as AgentSessionMetadata,
     state: session.state as 'idle' | 'working' | 'error',
     error_message: session.error_message ?? undefined,
     created_at: session.created_at,

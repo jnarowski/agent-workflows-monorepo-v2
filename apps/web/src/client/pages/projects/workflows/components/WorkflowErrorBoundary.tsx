@@ -92,7 +92,7 @@ export class WorkflowErrorBoundary extends Component<Props, State> {
                 </div>
               )}
 
-              {process.env.NODE_ENV === "development" &&
+              {import.meta.env.DEV &&
                 this.state.errorInfo && (
                   <details className="rounded-md bg-muted p-4">
                     <summary className="cursor-pointer font-medium">

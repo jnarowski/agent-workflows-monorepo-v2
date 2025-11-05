@@ -3,7 +3,6 @@ import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useProjectsWithSessions } from "@/client/pages/projects/hooks/useProjects";
 import { useActiveSession } from "@/client/hooks/navigation/useActiveSession";
-import { useSessionStore } from "@/client/pages/projects/sessions/stores/sessionStore";
 import { Button } from "@/client/components/ui/button";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import {
@@ -14,6 +13,7 @@ import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { useNavigationStore } from "@/client/stores/index";
 import { ProjectHeader } from "@/client/components/ProjectHeader";
 import { getSessionDisplayName } from "@/client/utils/getSessionDisplayName";
+import type { SessionResponse } from "@/shared/types/agent-session.types";
 
 export default function ProjectDetailLayout() {
   const { id } = useParams<{ id: string }>();
@@ -28,21 +28,14 @@ export default function ProjectDetailLayout() {
 
   // Try to get session from React Query cache first (for sidebar sessions)
   const { session: cachedSession } = useActiveSession();
-  // Fall back to sessionStore for active session (when viewing a session page)
-  const activeSession = useSessionStore((s) => s.session);
 
   // Build current session with proper display name logic
   // Use utility function for consistent session naming
-  const currentSession = activeSessionId ? (
-    cachedSession ? {
-      ...cachedSession,
-      name: getSessionDisplayName(cachedSession)
-    } : (activeSession ? {
-      id: activeSession.id,
-      agent: activeSession.agent,
-      name: getSessionDisplayName({ metadata: activeSession.metadata }),
-    } : null)
-  ) : null;
+  // Only use cachedSession (from React Query) as it has all required fields
+  const currentSession: SessionResponse | null = activeSessionId && cachedSession ? {
+    ...cachedSession,
+    name: getSessionDisplayName(cachedSession)
+  } : null;
 
   // Sync projectId with navigationStore on mount and when id changes
   useEffect(() => {

@@ -43,25 +43,7 @@ async function authPluginFunction(fastify: FastifyInstance) {
 }
 
 // Export wrapped with fastify-plugin to avoid encapsulation
+// Note: Type augmentation for FastifyInstance and FastifyRequest is in src/server/types/fastify.d.ts
 export const authPlugin = fastifyPlugin(authPluginFunction, {
   name: "auth-plugin",
 });
-
-// Type augmentation for FastifyInstance
-declare module "fastify" {
-  interface FastifyInstance {
-    authenticate: (
-      request: FastifyRequest,
-      reply: FastifyReply
-    ) => Promise<void>;
-    workflowOrchestrator: import('@/server/domain/workflow/services/MockWorkflowOrchestrator').MockWorkflowOrchestrator;
-  }
-
-  interface FastifyRequest {
-    user?: {
-      id: string;
-      email: string;
-      is_active: boolean;
-    };
-  }
-}

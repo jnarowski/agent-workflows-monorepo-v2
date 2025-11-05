@@ -104,3 +104,10 @@ class Configuration {
  * const jwtSecret = config.get('jwt').secret;
  */
 export const config = Configuration.getInstance();
+
+/**
+ * Export Configuration class for testing purposes
+ * Allows tests to call Configuration.reset()
+ * @internal
+ */
+export { Configuration };

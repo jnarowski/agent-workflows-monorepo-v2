@@ -1,45 +1,68 @@
 import { z } from 'zod';
 
 /**
- * Workflow Status Enum
- *
- * TypeScript enum for code usage (e.g., WorkflowStatus.PENDING)
- */
-export enum WorkflowStatus {
-  PENDING = 'pending',
-  RUNNING = 'running',
-  PAUSED = 'paused',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  CANCELLED = 'cancelled',
-}
-
-/**
  * Workflow Status Schema
  *
- * Zod schema for validation
+ * Zod schema for validation - produces string union type
  */
-export const workflowStatusSchema = z.nativeEnum(WorkflowStatus);
+export const workflowStatusSchema = z.enum([
+  'pending',
+  'running',
+  'paused',
+  'completed',
+  'failed',
+  'cancelled',
+]);
 
 /**
- * Step Status Enum
- *
- * TypeScript enum for code usage (e.g., StepStatus.RUNNING)
+ * Workflow Status Enum Values (for runtime use)
+ * Object with const values matching the schema
  */
-export enum StepStatus {
-  PENDING = 'pending',
-  RUNNING = 'running',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  SKIPPED = 'skipped',
-}
+export const WorkflowStatusValues = {
+  PENDING: 'pending',
+  RUNNING: 'running',
+  PAUSED: 'paused',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+  CANCELLED: 'cancelled',
+} as const;
+
+/**
+ * Workflow Status Type (for type annotations)
+ * String union type derived from schema
+ */
+export type WorkflowStatus = z.infer<typeof workflowStatusSchema>;
 
 /**
  * Step Status Schema
  *
- * Zod schema for validation
+ * Zod schema for validation - produces string union type
  */
-export const stepStatusSchema = z.nativeEnum(StepStatus);
+export const stepStatusSchema = z.enum([
+  'pending',
+  'running',
+  'completed',
+  'failed',
+  'skipped',
+]);
+
+/**
+ * Step Status Enum Values (for runtime use)
+ * Object with const values matching the schema
+ */
+export const StepStatusValues = {
+  PENDING: 'pending',
+  RUNNING: 'running',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+  SKIPPED: 'skipped',
+} as const;
+
+/**
+ * Step Status Type (for type annotations)
+ * String union type derived from schema
+ */
+export type StepStatus = z.infer<typeof stepStatusSchema>;
 
 /**
  * Artifact Type Enum Schema
@@ -77,7 +100,10 @@ export const workflowEventTypeSchema = z.enum([
   'workflow_cancelled',
   'phase_started',
   'phase_completed',
+  'phase_retry',
+  'phase_failed',
   'step_started',
+  'step_running',
   'step_completed',
   'step_failed',
 ]);
@@ -103,6 +129,7 @@ export const createWorkflowExecutionSchema = z.object({
   workflow_definition_id: z.string().cuid(),
   name: z.string().min(1).max(200),
   args: z.record(z.string(), z.unknown()).default({}),
+  inngest_run_id: z.string().optional(),
 });
 
 /**
@@ -232,6 +259,7 @@ export const workflowExecutionResponseSchema = z.object({
   current_step_index: z.number(),
   status: z.string(),
   error_message: z.string().nullable(),
+  inngest_run_id: z.string().nullable(),
   started_at: z.string().nullable(),
   completed_at: z.string().nullable(),
   paused_at: z.string().nullable(),

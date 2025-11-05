@@ -1,4 +1,4 @@
-import { WorkflowStatus, StepStatus } from "@/shared/schemas";
+import type { WorkflowStatus, StepStatus } from "@/shared/schemas/workflow.schemas";
 import type { LucideIcon } from "lucide-react";
 import {
   Clock,
@@ -20,42 +20,42 @@ export interface StatusConfig {
 }
 
 const WORKFLOW_STATUS_CONFIG: Record<WorkflowStatus, StatusConfig> = {
-  [WorkflowStatus.PENDING]: {
+  pending: {
     color: "gray",
     bgColor: "bg-gray-100",
     textColor: "text-gray-700",
     icon: Clock,
     label: "Pending",
   },
-  [WorkflowStatus.RUNNING]: {
+  running: {
     color: "blue",
     bgColor: "bg-blue-100",
     textColor: "text-blue-700",
     icon: Play,
     label: "Running",
   },
-  [WorkflowStatus.PAUSED]: {
+  paused: {
     color: "yellow",
     bgColor: "bg-yellow-100",
     textColor: "text-yellow-700",
     icon: Pause,
     label: "Paused",
   },
-  [WorkflowStatus.COMPLETED]: {
+  completed: {
     color: "green",
     bgColor: "bg-green-100",
     textColor: "text-green-700",
     icon: CheckCircle2,
     label: "Completed",
   },
-  [WorkflowStatus.FAILED]: {
+  failed: {
     color: "red",
     bgColor: "bg-red-100",
     textColor: "text-red-700",
     icon: XCircle,
     label: "Failed",
   },
-  [WorkflowStatus.CANCELLED]: {
+  cancelled: {
     color: "gray",
     bgColor: "bg-gray-100",
     textColor: "text-gray-700",
@@ -65,35 +65,35 @@ const WORKFLOW_STATUS_CONFIG: Record<WorkflowStatus, StatusConfig> = {
 };
 
 const STEP_STATUS_CONFIG: Record<StepStatus, StatusConfig> = {
-  [StepStatus.PENDING]: {
+  pending: {
     color: "gray",
     bgColor: "bg-gray-100",
     textColor: "text-gray-700",
     icon: Circle,
     label: "Pending",
   },
-  [StepStatus.RUNNING]: {
+  running: {
     color: "blue",
     bgColor: "bg-blue-100",
     textColor: "text-blue-700",
     icon: Loader2,
     label: "Running",
   },
-  [StepStatus.COMPLETED]: {
+  completed: {
     color: "green",
     bgColor: "bg-green-100",
     textColor: "text-green-700",
     icon: CheckCircle2,
     label: "Completed",
   },
-  [StepStatus.FAILED]: {
+  failed: {
     color: "red",
     bgColor: "bg-red-100",
     textColor: "text-red-700",
     icon: XCircle,
     label: "Failed",
   },
-  [StepStatus.SKIPPED]: {
+  skipped: {
     color: "gray",
     bgColor: "bg-gray-100",
     textColor: "text-gray-500",
@@ -112,21 +112,15 @@ export function getStepStatusConfig(status: StepStatus): StatusConfig {
 
 // Utility to check if a workflow is in a terminal state
 export function isTerminalStatus(status: WorkflowStatus): boolean {
-  return [
-    WorkflowStatus.COMPLETED,
-    WorkflowStatus.FAILED,
-    WorkflowStatus.CANCELLED,
-  ].includes(status);
+  return ["completed", "failed", "cancelled"].includes(status);
 }
 
 // Utility to check if a workflow is active
 export function isActiveStatus(status: WorkflowStatus): boolean {
-  return [WorkflowStatus.RUNNING, WorkflowStatus.PAUSED].includes(status);
+  return ["running", "paused"].includes(status);
 }
 
 // Utility to check if a step is in a terminal state
 export function isStepTerminal(status: StepStatus): boolean {
-  return [StepStatus.COMPLETED, StepStatus.FAILED, StepStatus.SKIPPED].includes(
-    status
-  );
+  return ["completed", "failed", "skipped"].includes(status);
 }

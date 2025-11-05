@@ -11,9 +11,27 @@ interface UserMessageProps {
 }
 
 export function UserMessage({ message }: UserMessageProps) {
+  // Handle string content
+  if (typeof message.content === 'string') {
+    if (!message.content.trim()) {
+      console.warn('[UserMessage] Message has empty string content:', message.id);
+      return null;
+    }
+    return (
+      <div className="max-w-full">
+        <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
+          <div className="whitespace-pre-wrap break-words">{message.content}</div>
+        </div>
+      </div>
+    );
+  }
+
   // Filter out tool_result blocks (already shown inline with tool_use)
   // and empty text blocks
   const renderableBlocks = message.content.filter((block) => {
+    // Skip string blocks (shouldn't happen but guard against it)
+    if (typeof block === 'string') return false;
+
     // Filter out tool_result blocks
     if (block.type === "tool_result") {
       return false;
