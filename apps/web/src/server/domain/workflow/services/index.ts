@@ -1,5 +1,5 @@
 // Barrel export for workflow services
-export * from "../executions/createWorkflowExecution";
+export * from "./executions/createWorkflowExecution";
 export * from "./executions/getWorkflowExecutionById";
 export * from "./executions/getWorkflowExecutions";
 export * from "./steps/getWorkflowStepById";

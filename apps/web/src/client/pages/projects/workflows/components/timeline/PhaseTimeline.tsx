@@ -102,6 +102,7 @@ export function PhaseTimeline({ execution, projectId }: PhaseTimelineProps) {
       {phaseGroups.map((group) => (
         <PhaseCard
           key={group.phaseId}
+          phaseId={group.phaseId}
           phaseName={group.phaseLabel}
           steps={group.steps}
           events={group.events}

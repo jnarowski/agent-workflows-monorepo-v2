@@ -10,6 +10,7 @@ import type {
 } from "../../types";
 
 interface PhaseCardProps {
+  phaseId: string;
   phaseName: string;
   steps: WorkflowExecutionStep[];
   events: WorkflowEvent[];
@@ -29,6 +30,7 @@ interface PhaseMetadata {
 }
 
 export function PhaseCard({
+  phaseId,
   phaseName,
   steps,
   events,
@@ -36,7 +38,7 @@ export function PhaseCard({
   currentPhase,
   projectId,
 }: PhaseCardProps) {
-  const [isExpanded, setIsExpanded] = useState(phaseName === currentPhase);
+  const [isExpanded, setIsExpanded] = useState(phaseId === currentPhase);
 
   // Calculate phase status and metadata
   const metadata = useMemo((): PhaseMetadata => {
@@ -49,17 +51,17 @@ export function PhaseCard({
     for (const event of events) {
       if (
         event.event_type === "phase_started" &&
-        event.event_data?.phase === phaseName
+        event.event_data?.phase === phaseId
       ) {
         startedAt = new Date(event.created_at);
       } else if (
         event.event_type === "phase_completed" &&
-        event.event_data?.phase === phaseName
+        event.event_data?.phase === phaseId
       ) {
         completedAt = new Date(event.created_at);
       } else if (
         event.event_type === "phase_retry" &&
-        event.event_data?.phase === phaseName
+        event.event_data?.phase === phaseId
       ) {
         retryCount++;
       }
@@ -70,10 +72,10 @@ export function PhaseCard({
 
     // Check for phase completion/failure events
     const hasPhaseCompletedEvent = events.some(
-      (e) => e.event_type === "phase_completed" && e.event_data?.phase === phaseName
+      (e) => e.event_type === "phase_completed" && e.event_data?.phase === phaseId
     );
     const hasPhaseFailedEvent = events.some(
-      (e) => e.event_type === "phase_failed" && e.event_data?.phase === phaseName
+      (e) => e.event_type === "phase_failed" && e.event_data?.phase === phaseId
     );
 
     if (hasPhaseFailedEvent || stepStatuses.some((s) => s === "failed")) {
@@ -82,7 +84,7 @@ export function PhaseCard({
       status = "completed";
     } else if (
       stepStatuses.some((s) => s === "running") ||
-      currentPhase === phaseName
+      currentPhase === phaseId
     ) {
       status = "running";
     } else {
@@ -102,17 +104,17 @@ export function PhaseCard({
       retryCount,
       duration,
     };
-  }, [steps, events, phaseName, currentPhase]);
+  }, [steps, events, phaseId, currentPhase]);
 
   // Sync expansion state with currentPhase changes
   // Only current phase should be expanded, collapse when phase moves on
   useEffect(() => {
-    if (phaseName === currentPhase) {
+    if (phaseId === currentPhase) {
       setIsExpanded(true);
     } else {
       setIsExpanded(false);
     }
-  }, [phaseName, currentPhase]);
+  }, [phaseId, currentPhase]);
 
   // Combine and sort timeline items by created_at ASC (oldest first)
   const timelineItems = useMemo(() => {
@@ -223,7 +225,7 @@ export function PhaseCard({
         <div className="border-t">
           {timelineItems.length === 0 ? (
             <div className="p-4 text-center text-muted-foreground">
-              {phaseName === currentPhase ? (
+              {phaseId === currentPhase ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                   <span>Processing...</span>
