@@ -14,6 +14,7 @@ export type {
   CliStepResult,
   ArtifactStepConfig,
   ArtifactStepResult,
+  AnnotationStepConfig,
 } from "./steps";
 
 export type {
@@ -21,6 +22,7 @@ export type {
   WorkflowContext,
   WorkflowEventData,
   WorkflowFunction,
+  PhaseDefinition,
 } from "./workflow";
 
 export type { PhaseOptions as PhaseOptionsAlias } from "./phases";

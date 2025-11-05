@@ -1,4 +1,5 @@
 import type { WorkflowExecution } from "../types";
+import { getPhaseId } from "@/shared/utils/phase.utils";
 
 /**
  * Execution metrics for display in UI components
@@ -35,7 +36,7 @@ export function getExecutionMetrics(
   let currentPhaseNumber = 0;
   if (execution.current_phase) {
     const currentPhaseIndex = phases.findIndex(
-      (phase) => phase.name === execution.current_phase
+      (phase) => getPhaseId(phase) === execution.current_phase
     );
     if (currentPhaseIndex !== -1) {
       currentPhaseNumber = currentPhaseIndex + 1;

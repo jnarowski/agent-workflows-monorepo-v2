@@ -8,8 +8,7 @@ interface WorkflowEventAnnotationItemProps {
 export function WorkflowEventAnnotationItem({
   event,
 }: WorkflowEventAnnotationItemProps) {
-  const message = event.event_data?.message || event.event_data?.title || "Annotation";
-  const body = event.event_data?.body || "";
+  const message = event.event_data?.message || "Annotation";
 
   return (
     <div className="flex items-start gap-3 p-3 bg-purple-500/10 transition-colors">
@@ -33,12 +32,6 @@ export function WorkflowEventAnnotationItem({
         <p className="text-sm text-foreground mt-1 whitespace-pre-wrap">
           {message}
         </p>
-
-        {body && (
-          <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
-            {body}
-          </p>
-        )}
 
         <div className="text-xs text-muted-foreground mt-1">
           {new Date(event.created_at).toLocaleString()}

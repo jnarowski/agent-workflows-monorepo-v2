@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { StepRow } from "./StepRow";
 import { ArtifactRow } from "./ArtifactRow";
@@ -10,6 +10,7 @@ import type {
 } from "../../types";
 
 interface PhaseCardProps {
+  phaseId: string;
   phaseName: string;
   steps: WorkflowExecutionStep[];
   events: WorkflowEvent[];
@@ -29,6 +30,7 @@ interface PhaseMetadata {
 }
 
 export function PhaseCard({
+  phaseId,
   phaseName,
   steps,
   events,
@@ -36,8 +38,7 @@ export function PhaseCard({
   currentPhase,
   projectId,
 }: PhaseCardProps) {
-  // Only expand if this is the current phase
-  const [isExpanded, setIsExpanded] = useState(phaseName === currentPhase);
+  const [isExpanded, setIsExpanded] = useState(phaseId === currentPhase);
 
   // Calculate phase status and metadata
   const metadata = useMemo((): PhaseMetadata => {
@@ -50,31 +51,40 @@ export function PhaseCard({
     for (const event of events) {
       if (
         event.event_type === "phase_started" &&
-        event.event_data?.phase === phaseName
+        event.event_data?.phase === phaseId
       ) {
         startedAt = new Date(event.created_at);
       } else if (
         event.event_type === "phase_completed" &&
-        event.event_data?.phase === phaseName
+        event.event_data?.phase === phaseId
       ) {
         completedAt = new Date(event.created_at);
       } else if (
         event.event_type === "phase_retry" &&
-        event.event_data?.phase === phaseName
+        event.event_data?.phase === phaseId
       ) {
         retryCount++;
       }
     }
 
-    // Calculate status from steps
+    // Calculate status from steps and events
     const stepStatuses = steps.map((s) => s.status);
-    if (stepStatuses.some((s) => s === "failed")) {
+
+    // Check for phase completion/failure events
+    const hasPhaseCompletedEvent = events.some(
+      (e) => e.event_type === "phase_completed" && e.event_data?.phase === phaseId
+    );
+    const hasPhaseFailedEvent = events.some(
+      (e) => e.event_type === "phase_failed" && e.event_data?.phase === phaseId
+    );
+
+    if (hasPhaseFailedEvent || stepStatuses.some((s) => s === "failed")) {
       status = "failed";
-    } else if (stepStatuses.every((s) => s === "completed")) {
+    } else if (hasPhaseCompletedEvent || (steps.length > 0 && stepStatuses.every((s) => s === "completed" || s === "skipped"))) {
       status = "completed";
     } else if (
       stepStatuses.some((s) => s === "running") ||
-      currentPhase === phaseName
+      currentPhase === phaseId
     ) {
       status = "running";
     } else {
@@ -94,7 +104,17 @@ export function PhaseCard({
       retryCount,
       duration,
     };
-  }, [steps, events, phaseName, currentPhase]);
+  }, [steps, events, phaseId, currentPhase]);
+
+  // Sync expansion state with currentPhase changes
+  // Only current phase should be expanded, collapse when phase moves on
+  useEffect(() => {
+    if (phaseId === currentPhase) {
+      setIsExpanded(true);
+    } else {
+      setIsExpanded(false);
+    }
+  }, [phaseId, currentPhase]);
 
   // Combine and sort timeline items by created_at ASC (oldest first)
   const timelineItems = useMemo(() => {
@@ -115,10 +135,9 @@ export function PhaseCard({
     });
 
     // Add lifecycle and annotation events
+    // Note: phase_started/phase_completed excluded from display (used for header metadata only)
     events.forEach((event) => {
       const isLifecycle = [
-        "phase_started",
-        "phase_completed",
         "phase_retry",
         "phase_failed",
         "step_started",
@@ -206,7 +225,14 @@ export function PhaseCard({
         <div className="border-t">
           {timelineItems.length === 0 ? (
             <div className="p-4 text-center text-muted-foreground">
-              No activity yet
+              {phaseId === currentPhase ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  <span>Processing...</span>
+                </div>
+              ) : (
+                "No activity yet"
+              )}
             </div>
           ) : (
             <div className="divide-y">

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import type { WorkflowDefinition } from '../types';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getPhaseLabel } from '@/shared/utils/phase.utils';
 
 export interface NewWorkflowModalProps {
   isOpen: boolean;
@@ -138,13 +139,13 @@ export function NewWorkflowModal({
                         )}
                         <div className="mt-2 flex flex-wrap gap-2">
                           {definition.phases.map((phase, index) => {
-                            const stepCount = Array.isArray(phase.steps) ? phase.steps.length : 0;
+                            const phaseLabel = getPhaseLabel(phase);
                             return (
                               <span
                                 key={index}
                                 className="rounded-full bg-muted px-2 py-0.5 text-xs"
                               >
-                                {phase.name} ({stepCount})
+                                {phaseLabel}
                               </span>
                             );
                           })}

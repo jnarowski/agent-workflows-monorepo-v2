@@ -1,14 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/client/utils/api-client';
-import type { WorkflowExecution } from '../types';
+import type { WorkflowExecutionDetail } from '../types';
 
 interface WorkflowExecutionResponse {
-  data: WorkflowExecution;
+  data: WorkflowExecutionDetail;
 }
 
 async function fetchWorkflowExecution(
   executionId: string
-): Promise<WorkflowExecution> {
+): Promise<WorkflowExecutionDetail> {
   const response = await api.get<WorkflowExecutionResponse>(
     `/api/workflow-executions/${executionId}`
   );

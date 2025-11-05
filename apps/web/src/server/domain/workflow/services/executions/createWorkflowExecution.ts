@@ -1,5 +1,5 @@
 import { prisma } from '@/shared/prisma';
-import type { CreateWorkflowExecutionInput } from '../types';
+import type { CreateWorkflowExecutionInput } from '../../types';
 import type { WorkflowExecution } from '@prisma/client';
 
 /**
@@ -19,9 +19,9 @@ export async function createWorkflowExecution(
     return null;
   }
 
-  // Extract first phase from phases JSON array
-  const phases = definition.phases as string[];
-  const firstPhase = phases.length > 0 ? phases[0] : null;
+  // Extract first phase ID from phases JSON array
+  const phases = definition.phases as Array<{ id: string; label: string }>;
+  const firstPhaseId = phases.length > 0 ? phases[0].id : null;
 
   const execution = await prisma.workflowExecution.create({
     data: {
@@ -31,7 +31,7 @@ export async function createWorkflowExecution(
       name: data.name,
       // @ts-ignore - JSON value type
       args: data.args,
-      current_phase: firstPhase,
+      current_phase: firstPhaseId,
       current_step_index: 0,
       status: 'pending',
     },

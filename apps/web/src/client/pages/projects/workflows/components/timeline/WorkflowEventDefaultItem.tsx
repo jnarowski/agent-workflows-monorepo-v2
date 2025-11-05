@@ -23,7 +23,7 @@ const EVENT_CONFIG: Record<
     icon: LucideIcon;
     color: string;
     bgColor: string;
-    generateContent: (data: Record<string, any>) => { title: string; body: string };
+    generateContent: (data: Record<string, unknown>) => { title: string; body: string };
   }
 > = {
   phase_started: {
@@ -59,7 +59,7 @@ const EVENT_CONFIG: Record<
     bgColor: "bg-red-500/10",
     generateContent: (data) => ({
       title: `Phase Failed: ${data.phase || "Unknown"}`,
-      body: data.error || "",
+      body: String(data.error || ""),
     }),
   },
   step_started: {
@@ -95,7 +95,7 @@ const EVENT_CONFIG: Record<
     bgColor: "bg-red-500/10",
     generateContent: (data) => ({
       title: `Step Failed: ${data.stepName || data.step_name || "Unknown"}`,
-      body: data.error || "",
+      body: String(data.error || ""),
     }),
   },
 };
@@ -105,9 +105,9 @@ const DEFAULT_CONFIG = {
   icon: MessageSquare,
   color: "text-gray-500",
   bgColor: "bg-gray-500/10",
-  generateContent: (data: Record<string, any>) => ({
-    title: data.title || formatEventType(data.event_type || "Unknown"),
-    body: data.body || data.message || "",
+  generateContent: (data: Record<string, unknown>) => ({
+    title: String(data.title || formatEventType(String(data.event_type || "Unknown"))),
+    body: String(data.body || data.message || ""),
   }),
 };
 

@@ -1,21 +1,51 @@
 import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
+import { generateInngestStepId } from "./utils/generateInngestStepId";
+import { findOrCreateStep } from "./findOrCreateStep";
+import { updateStepStatus } from "./updateStepStatus";
+import { handleStepFailure } from "./handleStepFailure";
 
 /**
  * Create generic run step factory function
- * Wraps Inngest's native step.run() directly
- * This is a simple passthrough to inngest.step.run()
+ * Wraps Inngest's native step.run() with phase prefixing and status tracking
  */
 export function createRunStep(
-  _context: RuntimeContext,
+  context: RuntimeContext,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inngestStep: GetStepTools<any>
 ) {
   return async function run<T>(
-    stepId: string,
+    id: string,
     fn: () => Promise<T> | T
   ): Promise<T> {
-    // Simple passthrough to inngest.step.run()
-    return (await inngestStep.run(stepId, fn)) as unknown as Promise<T>;
+    // Generate phase-prefixed Inngest step ID
+    const inngestStepId = generateInngestStepId(context, id);
+
+    return (await inngestStep.run(inngestStepId, async () => {
+      // Find or create step in database
+      const step = await findOrCreateStep(context, inngestStepId, id);
+
+      // Update to running
+      await updateStepStatus(context, step.id, "running");
+
+      try {
+        // Execute step function
+        const result = await fn();
+
+        // Update to completed
+        await updateStepStatus(
+          context,
+          step.id,
+          "completed",
+          result as Record<string, unknown>
+        );
+
+        return result;
+      } catch (error) {
+        // Handle failure
+        await handleStepFailure(context, step.id, error as Error);
+        throw error;
+      }
+    })) as unknown as Promise<T>;
   };
 }

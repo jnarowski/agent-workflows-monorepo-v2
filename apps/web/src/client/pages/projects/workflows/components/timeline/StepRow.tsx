@@ -81,22 +81,27 @@ export function StepRow({ step, projectId }: StepRowProps) {
             <span className="text-red-500">{step.error_message}</span>
           )}
         </div>
+
+        {/* Status Badge beneath step info */}
+        <div className="mt-1">
+          <span
+            className={`px-2 py-1 text-xs font-medium rounded ${
+              {
+                pending: "bg-gray-500/10 text-gray-500",
+                running: "bg-blue-500/10 text-blue-500",
+                completed: "bg-green-500/10 text-green-500",
+                failed: "bg-red-500/10 text-red-500",
+                skipped: "bg-gray-500/10 text-gray-500",
+              }[step.status]
+            }`}
+          >
+            {step.status}
+          </span>
+        </div>
       </div>
 
-      {/* Status Badge */}
-      <span
-        className={`px-2 py-1 text-xs font-medium rounded ${
-          {
-            pending: "bg-gray-500/10 text-gray-500",
-            running: "bg-blue-500/10 text-blue-500",
-            completed: "bg-green-500/10 text-green-500",
-            failed: "bg-red-500/10 text-red-500",
-            skipped: "bg-gray-500/10 text-gray-500",
-          }[step.status]
-        }`}
-      >
-        {step.status}
-      </span>
+      {/* Label */}
+      <span className="text-xs text-muted-foreground">Step</span>
     </div>
   );
 }

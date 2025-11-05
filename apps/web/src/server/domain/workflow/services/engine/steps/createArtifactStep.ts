@@ -1,15 +1,15 @@
 import { readdir, stat, writeFile, mkdir, copyFile } from "node:fs/promises";
 import { join, relative, extname, dirname } from "node:path";
 import type { GetStepTools } from "inngest";
-import { Channels } from "@/shared/websocket/channels";
-import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import type { RuntimeContext } from "../../../types/engine.types";
 import type {
   ArtifactStepConfig,
   ArtifactStepResult,
 } from "@repo/workflow-sdk";
-import { findWorkflowStepByName } from "../../steps/findWorkflowStepByName";
+import { findOrCreateStep } from "./findOrCreateStep";
 import { createWorkflowArtifact } from "../../artifacts/createWorkflowArtifact";
+import { generateInngestStepId } from "./utils/generateInngestStepId";
+import { emitArtifactCreatedEvent } from "./utils/emitArtifactCreatedEvent";
 
 /**
  * Get MIME type from file extension
@@ -49,20 +49,21 @@ export function createArtifactStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function artifact(
-    name: string,
+    id: string,
     config: ArtifactStepConfig
   ): Promise<ArtifactStepResult> {
-    return await inngestStep.run(`artifact-${name}`, async () => {
+    const name = config.displayName ?? id;
+
+    // Generate phase-prefixed Inngest step ID
+    const inngestStepId = generateInngestStepId(context, id);
+
+    return await inngestStep.run(inngestStepId, async () => {
       const { executionId, projectId, projectPath, currentPhase, logger } = context;
       const artifactIds: string[] = [];
       let totalSize = 0;
 
-      // Get step ID for linking using domain service
-      const step = await findWorkflowStepByName(executionId, name, undefined, logger);
-
-      if (!step) {
-        throw new Error(`Step not found: ${name}`);
-      }
+      // Find or create step record for linking artifacts
+      const step = await findOrCreateStep(context, inngestStepId, name);
 
       // Create artifacts directory: {projectPath}/.agent/workflows/executions/{executionId}/artifacts
       const artifactsDir = join(
@@ -95,6 +96,7 @@ export function createArtifactStep(
           // Create artifact using domain service
           const artifact = await createWorkflowArtifact(
             {
+              workflow_execution_id: executionId,
               name: config.name,
               file_type: "text",
               file_path: relativePath, // Relative to project root
@@ -106,6 +108,9 @@ export function createArtifactStep(
           );
           artifactIds.push(artifact.id);
           totalSize += sizeBytes;
+
+          // Emit artifact:created event for this artifact
+          emitArtifactCreatedEvent(projectId, executionId, artifact);
           break;
         }
 
@@ -129,6 +134,7 @@ export function createArtifactStep(
           // Create artifact using domain service
           const artifact = await createWorkflowArtifact(
             {
+              workflow_execution_id: executionId,
               name: config.name,
               file_type: config.type,
               file_path: relativePath, // Relative to project root
@@ -140,6 +146,9 @@ export function createArtifactStep(
           );
           artifactIds.push(artifact.id);
           totalSize += fileStats.size;
+
+          // Emit artifact:created event for this artifact
+          emitArtifactCreatedEvent(projectId, executionId, artifact);
           break;
         }
 
@@ -175,6 +184,7 @@ export function createArtifactStep(
             // Create artifact using domain service
             const artifact = await createWorkflowArtifact(
               {
+                workflow_execution_id: executionId,
                 name: `${config.name}/${relativeToSource}`,
                 file_type: "file",
                 file_path: relativeToProject, // Relative to project root
@@ -186,23 +196,13 @@ export function createArtifactStep(
             );
             artifactIds.push(artifact.id);
             totalSize += fileStats.size;
+
+            // Emit artifact:created event for this artifact
+            emitArtifactCreatedEvent(projectId, executionId, artifact);
           }
           break;
         }
       }
-
-      // Broadcast artifact uploaded event
-      broadcast(Channels.project(projectId), {
-        type: "workflow:artifact:uploaded",
-        data: {
-          executionId,
-          stepId: step.id,
-          artifactIds,
-          count: artifactIds.length,
-          totalSize,
-          timestamp: new Date().toISOString(),
-        },
-      });
 
       logger.info(
         { executionId, stepId: step.id, count: artifactIds.length, totalSize },

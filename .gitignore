@@ -1,6 +1,6 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 logs/**
-apps/inngest-poc/**
+apps/inngest-poc
 
 # Dependencies
 node_modules
@@ -53,4 +53,5 @@ yarn-error.log*
 # Agent logs
 .agent/agents/logs/**
 .agent/logs/**
+.agent/workflows/executions/**
 .playwright-mcp/**

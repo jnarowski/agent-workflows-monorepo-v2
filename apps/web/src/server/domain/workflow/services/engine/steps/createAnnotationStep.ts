@@ -3,6 +3,11 @@ import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import type { RuntimeContext } from "../../../types/engine.types";
 import { createWorkflowEvent } from "../../events/createWorkflowEvent";
+import { generateInngestStepId } from "./utils/generateInngestStepId";
+
+export interface AnnotationStepConfig {
+  message: string;
+}
 
 /**
  * Create annotation step factory function
@@ -14,22 +19,20 @@ export function createAnnotationStep(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inngestStep: GetStepTools<any>
 ) {
-  return async function annotation(message: string): Promise<void> {
+  return async function annotation(id: string, config: AnnotationStepConfig): Promise<void> {
     const { executionId, projectId, currentPhase, logger } = context;
+    const message = config.message;
 
-    // Generate deterministic step ID from message content
-    // Use first 32 chars of base64-encoded message for uniqueness
-    const stepId = `annotation-${Buffer.from(message).toString("base64").slice(0, 32)}`;
+    // Generate phase-prefixed Inngest step ID
+    const inngestStepId = generateInngestStepId(context, id);
 
     // Wrap in Inngest step.run for memoization
-    return await inngestStep.run(stepId, async () => {
+    return await inngestStep.run(inngestStepId, async () => {
       // Create annotation event using domain service
       const event = await createWorkflowEvent({
         workflow_execution_id: executionId,
         event_type: "annotation_added",
         event_data: {
-          title: "Annotation Added",
-          body: message,
           message,
         },
         phase: currentPhase,

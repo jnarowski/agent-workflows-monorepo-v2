@@ -1,15 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/client/utils/api-client';
-import type { WorkflowExecution, WorkflowFilter } from '../types';
+import type { WorkflowExecutionListItem, WorkflowFilter } from '../types';
 
 interface WorkflowExecutionsResponse {
-  data: WorkflowExecution[];
+  data: WorkflowExecutionListItem[];
 }
 
 async function fetchWorkflowExecutions(
   projectId: string,
   filter?: WorkflowFilter
-): Promise<WorkflowExecution[]> {
+): Promise<WorkflowExecutionListItem[]> {
   const params = new URLSearchParams();
   params.append('project_id', projectId);
 

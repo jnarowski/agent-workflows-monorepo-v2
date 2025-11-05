@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { PhaseCard } from "./PhaseCard";
+import { getPhaseId, getPhaseLabel } from "@/shared/utils/phase.utils";
 import type {
   WorkflowExecution,
   WorkflowExecutionStep,
@@ -13,7 +14,8 @@ interface PhaseTimelineProps {
 }
 
 interface PhaseGroup {
-  phaseName: string;
+  phaseId: string;
+  phaseLabel: string;
   steps: WorkflowExecutionStep[];
   events: WorkflowEvent[];
   artifacts: WorkflowArtifact[];
@@ -28,11 +30,11 @@ export function PhaseTimeline({ execution, projectId }: PhaseTimelineProps) {
     const artifacts = execution.artifacts || [];
 
     return phases.map((phase) => {
-      // Phase can be either a string or an object with name property
-      const phaseName = typeof phase === 'string' ? phase : phase.name;
+      const phaseId = getPhaseId(phase);
+      const phaseLabel = getPhaseLabel(phase);
 
-      // Filter steps for this phase
-      const phaseSteps = steps.filter((step) => step.phase === phaseName);
+      // Filter steps for this phase (use ID for matching)
+      const phaseSteps = steps.filter((step) => step.phase === phaseId);
 
       // Filter events for this phase (includes lifecycle + annotations)
       const phaseEvents = events.filter((event) => {
@@ -45,7 +47,7 @@ export function PhaseTimeline({ execution, projectId }: PhaseTimelineProps) {
             "phase_failed",
           ].includes(event.event_type)
         ) {
-          return event.event_data?.phase === phaseName;
+          return event.event_data?.phase === phaseId;
         }
 
         // Step-level lifecycle events (match by step's phase)
@@ -66,7 +68,7 @@ export function PhaseTimeline({ execution, projectId }: PhaseTimelineProps) {
 
         // Annotations - match by phase column
         if (event.event_type === "annotation_added") {
-          return event.phase === phaseName;
+          return event.phase === phaseId;
         }
 
         return false;
@@ -74,11 +76,12 @@ export function PhaseTimeline({ execution, projectId }: PhaseTimelineProps) {
 
       // Filter artifacts for this phase using the phase column
       const phaseArtifacts = artifacts.filter(
-        (artifact) => artifact.phase === phaseName
+        (artifact) => artifact.phase === phaseId
       );
 
       return {
-        phaseName,
+        phaseId,
+        phaseLabel,
         steps: phaseSteps,
         events: phaseEvents,
         artifacts: phaseArtifacts,
@@ -98,8 +101,9 @@ export function PhaseTimeline({ execution, projectId }: PhaseTimelineProps) {
     <div className="space-y-4">
       {phaseGroups.map((group) => (
         <PhaseCard
-          key={group.phaseName}
-          phaseName={group.phaseName}
+          key={group.phaseId}
+          phaseId={group.phaseId}
+          phaseName={group.phaseLabel}
           steps={group.steps}
           events={group.events}
           artifacts={group.artifacts}

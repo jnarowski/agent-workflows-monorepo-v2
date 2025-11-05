@@ -1,9 +1,12 @@
 import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
 import type { GitStepConfig, GitStepResult } from "@repo/workflow-sdk";
+import type { GitStepOptions } from "../../../types/event.types";
 import { commitChanges } from "@/server/domain/git/services/commitChanges";
 import { createAndSwitchBranch } from "@/server/domain/git/services/createAndSwitchBranch";
 import { createPullRequest } from "@/server/domain/git/services/createPullRequest";
+import { generateInngestStepId } from "./utils/generateInngestStepId";
+import { withTimeout } from "./utils/withTimeout";
 
 const DEFAULT_GIT_TIMEOUT = 120000; // 2 minutes
 
@@ -17,25 +20,23 @@ export function createGitStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function git(
-    name: string,
+    id: string,
     config: GitStepConfig,
-    options?: { timeout?: number }
+    options?: GitStepOptions
   ): Promise<GitStepResult> {
     const timeout = options?.timeout ?? DEFAULT_GIT_TIMEOUT;
 
-    return await inngestStep.run(`git-${name}`, async () => {
+    // Generate phase-prefixed Inngest step ID
+    const inngestStepId = generateInngestStepId(context, id);
+
+    return await inngestStep.run(inngestStepId, async () => {
       const { projectPath } = context;
 
-      const operation = await Promise.race([
+      const operation = await withTimeout(
         executeGitOperation(projectPath, config),
-        new Promise<never>((_, reject) =>
-          setTimeout(
-            () =>
-              reject(new Error(`Git operation timed out after ${timeout}ms`)),
-            timeout
-          )
-        ),
-      ]);
+        timeout,
+        "Git operation"
+      );
 
       return operation;
     });

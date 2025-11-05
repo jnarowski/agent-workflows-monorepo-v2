@@ -7,6 +7,7 @@ import { NewExecutionDialog } from './components/NewExecutionDialog';
 import { useWorkflowDefinition } from './hooks/useWorkflowDefinition';
 import { useWorkflowExecutions } from './hooks/useWorkflowExecutions';
 import { useWorkflowWebSocket } from './hooks/useWorkflowWebSocket';
+import { getPhaseId, getPhaseLabel } from '@/shared/utils/phase.utils';
 
 export function WorkflowDefinitionView() {
   const { projectId, definitionId } = useParams<{
@@ -110,7 +111,8 @@ export function WorkflowDefinitionView() {
           {executionsByPhase['Not Started'] && (
             <div className="flex-1 min-w-80 h-full">
               <WorkflowPhaseKanbanColumn
-                phase="Not Started"
+                phaseId="not-started"
+                phaseLabel="Not Started"
                 executions={executionsByPhase['Not Started']}
                 onExecutionClick={handleExecutionClick}
               />
@@ -119,12 +121,14 @@ export function WorkflowDefinitionView() {
 
           {/* Then add columns for each phase from the definition */}
           {phases.map((phase: any) => {
-            const phaseName = typeof phase === 'string' ? phase : phase.name;
+            const phaseId = getPhaseId(phase);
+            const phaseLabel = getPhaseLabel(phase);
             return (
-              <div key={phaseName} className="flex-1 min-w-80 h-full">
+              <div key={phaseId} className="flex-1 min-w-80 h-full">
                 <WorkflowPhaseKanbanColumn
-                  phase={phaseName}
-                  executions={executionsByPhase[phaseName] || []}
+                  phaseId={phaseId}
+                  phaseLabel={phaseLabel}
+                  executions={executionsByPhase[phaseId] || []}
                   onExecutionClick={handleExecutionClick}
                 />
               </div>

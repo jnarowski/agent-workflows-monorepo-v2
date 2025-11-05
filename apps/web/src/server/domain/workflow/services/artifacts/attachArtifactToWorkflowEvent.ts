@@ -1,10 +1,12 @@
 import { prisma } from '@/shared/prisma';
 import type { WorkflowArtifact } from '@prisma/client';
+import { emitWorkflowEvent } from '../events/emitWorkflowEvent';
 
 /**
  * Attach an artifact to an event
  * Validates event exists
  * Returns null if artifact not found or event not found
+ * Emits artifact:created WebSocket event
  */
 export async function attachArtifactToWorkflowEvent(
   artifactId: string,
@@ -19,9 +21,14 @@ export async function attachArtifactToWorkflowEvent(
     return null;
   }
 
-  // Get event to validate it exists
+  // Get event to validate it exists and get execution + project info
   const event = await prisma.workflowEvent.findUnique({
     where: { id: eventId },
+    include: {
+      workflow_execution: {
+        select: { id: true, project_id: true },
+      },
+    },
   });
 
   if (!event) {
@@ -33,6 +40,28 @@ export async function attachArtifactToWorkflowEvent(
     where: { id: artifactId },
     data: {
       workflow_event_id: eventId,
+    },
+  });
+
+  // Emit artifact:created WebSocket event
+  emitWorkflowEvent(event.workflow_execution.project_id, {
+    type: 'workflow:execution:artifact:created',
+    data: {
+      execution_id: event.workflow_execution.id,
+      artifact: {
+        id: updatedArtifact.id,
+        workflow_execution_id: updatedArtifact.workflow_execution_id,
+        workflow_execution_step_id: null, // WorkflowArtifact doesn't have step_id - attached to events only
+        workflow_event_id: updatedArtifact.workflow_event_id,
+        name: updatedArtifact.name,
+        file_path: updatedArtifact.file_path,
+        file_type: updatedArtifact.file_type,
+        mime_type: updatedArtifact.mime_type,
+        size_bytes: updatedArtifact.size_bytes,
+        phase: updatedArtifact.phase,
+        inngest_step_id: updatedArtifact.inngest_step_id,
+        created_at: updatedArtifact.created_at,
+      },
     },
   });
 
