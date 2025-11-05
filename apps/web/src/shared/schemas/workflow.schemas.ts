@@ -129,6 +129,7 @@ export const createWorkflowExecutionSchema = z.object({
   workflow_definition_id: z.string().cuid(),
   name: z.string().min(1).max(200),
   args: z.record(z.string(), z.unknown()).default({}),
+  inngest_run_id: z.string().optional(),
 });
 
 /**
@@ -258,6 +259,7 @@ export const workflowExecutionResponseSchema = z.object({
   current_step_index: z.number(),
   status: z.string(),
   error_message: z.string().nullable(),
+  inngest_run_id: z.string().nullable(),
   started_at: z.string().nullable(),
   completed_at: z.string().nullable(),
   paused_at: z.string().nullable(),

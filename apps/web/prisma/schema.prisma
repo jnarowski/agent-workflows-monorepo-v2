@@ -43,6 +43,7 @@ model WorkflowExecution {
   current_step_index     Int            @default(0)
   status                 WorkflowStatus @default(pending)
   error_message          String?
+  inngest_run_id         String?        // Inngest workflow run ID for status tracking
   started_at             DateTime?
   completed_at           DateTime?
   paused_at              DateTime?
@@ -60,6 +61,7 @@ model WorkflowExecution {
   @@index([user_id, status])
   @@index([workflow_definition_id])
   @@index([status])
+  @@index([inngest_run_id])
   @@map("workflow_executions")
 }
 
