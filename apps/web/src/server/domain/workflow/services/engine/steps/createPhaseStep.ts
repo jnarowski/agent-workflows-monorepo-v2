@@ -20,9 +20,10 @@ import { findOrCreateWorkflowEvent } from "../../events/findOrCreateWorkflowEven
  */
 export function createPhaseStep(context: RuntimeContext) {
   return async function phase<T>(
-    name: string,
+    id: string,
     fn: () => Promise<T>
   ): Promise<T> {
+    const name = id;
     const { executionId, projectId, logger } = context;
 
     // Generate consistent step ID for phase lifecycle events (for deduplication on replay)

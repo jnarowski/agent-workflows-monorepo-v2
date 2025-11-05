@@ -37,10 +37,12 @@ export type {
   CliStepResult,
   ArtifactStepConfig,
   ArtifactStepResult,
+  AnnotationStepConfig,
   WorkflowConfig,
   WorkflowContext,
   WorkflowEventData,
   WorkflowFunction,
+  PhaseDefinition,
 } from "./types";
 
 // Runtime exports

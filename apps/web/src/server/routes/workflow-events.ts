@@ -44,7 +44,7 @@ export async function workflowEventRoutes(fastify: FastifyInstance) {
       const event = await createWorkflowEvent({
         workflow_execution_id: id,
         event_type: "annotation_added" as const,
-        event_data: { title: "Annotation", body: body.text },
+        event_data: { message: body.text },
         phase: execution?.current_phase,
         created_by_user_id: userId,
         logger: fastify.log,

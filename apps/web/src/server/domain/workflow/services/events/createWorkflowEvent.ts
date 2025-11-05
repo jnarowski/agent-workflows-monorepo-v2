@@ -39,6 +39,7 @@ export async function createWorkflowEvent<T extends keyof EventDataMap>(
       event_type,
       phase,
       inngest_step_id,
+      event_data,
     },
     'Creating workflow event'
   );

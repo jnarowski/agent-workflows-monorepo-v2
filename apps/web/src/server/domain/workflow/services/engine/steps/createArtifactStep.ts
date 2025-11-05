@@ -48,13 +48,15 @@ export function createArtifactStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function artifact(
-    name: string,
+    id: string,
     config: ArtifactStepConfig
   ): Promise<ArtifactStepResult> {
+    const name = config.displayName ?? id;
+
     // Generate phase-prefixed Inngest step ID
     const inngestStepId = context.currentPhase
-      ? `${context.currentPhase}-${name}`
-      : name;
+      ? `${context.currentPhase}-${id}`
+      : id;
 
     return await inngestStep.run(inngestStepId, async () => {
       const { executionId, projectId, projectPath, currentPhase, logger } = context;

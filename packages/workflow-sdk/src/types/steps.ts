@@ -7,19 +7,19 @@ export interface StepOptions {
 }
 
 /**
- * Configuration for phase execution with retry logic
+ * Configuration for phase execution
  */
 export interface PhaseOptions {
-  /** Number of retry attempts on failure (default: 3) */
-  retries?: number;
-  /** Delay between retries in milliseconds (default: 5000) */
-  retryDelay?: number;
+  /** Optional description for the phase */
+  description?: string;
 }
 
 /**
  * Configuration for agent execution step
  */
 export interface AgentStepConfig {
+  /** Display name for the step (defaults to step ID) */
+  name?: string;
   /** Agent type: claude, codex, gemini */
   agent: "claude" | "codex" | "gemini";
   /** Prompt or instruction for the agent */
@@ -52,6 +52,8 @@ export interface AgentStepResult {
  * Configuration for git operation step
  */
 export interface GitStepConfig {
+  /** Display name for the step (defaults to step ID) */
+  name?: string;
   /** Git operation type */
   operation: "commit" | "branch" | "pr";
   /** Commit message (for commit operation) */
@@ -90,6 +92,8 @@ export interface GitStepResult {
  * Configuration for CLI command execution
  */
 export interface CliStepConfig {
+  /** Display name for the step (defaults to step ID) */
+  name?: string;
   /** Shell command to execute */
   command: string;
   /** Working directory */
@@ -120,6 +124,8 @@ export interface CliStepResult {
  * Configuration for artifact upload
  */
 export interface ArtifactStepConfig {
+  /** Display name for the step (defaults to step ID) */
+  displayName?: string;
   /** Artifact name */
   name: string;
   /** Artifact type */
@@ -149,6 +155,14 @@ export interface ArtifactStepResult {
 }
 
 /**
+ * Configuration for annotation step
+ */
+export interface AnnotationStepConfig {
+  /** Annotation message */
+  message: string;
+}
+
+/**
  * Base Inngest step tools interface (simplified)
  * The runtime will inject the actual Inngest step implementation
  */
@@ -164,24 +178,24 @@ export interface InngestStepTools {
 export interface WorkflowStep extends InngestStepTools {
   /**
    * Execute a workflow phase with automatic retry logic
-   * @param name - Phase name
+   * @param id - Phase ID
    * @param fn - Phase function to execute
-   * @param options - Phase configuration (retries, retryDelay)
+   * @param options - Phase configuration (description)
    */
   phase<T>(
-    name: string,
+    id: string,
     fn: () => Promise<T>,
     options?: PhaseOptions
   ): Promise<T>;
 
   /**
    * Execute an AI agent
-   * @param name - Step name
-   * @param config - Agent configuration
-   * @param options - Step options (timeout)
+   * @param id - Step ID
+   * @param config - Agent configuration (includes optional name field)
+   * @param options - Step options (timeout, retries, etc.)
    */
   agent(
-    name: string,
+    id: string,
     config: AgentStepConfig,
     options?: StepOptions
   ): Promise<AgentStepResult>;
@@ -200,43 +214,44 @@ export interface WorkflowStep extends InngestStepTools {
 
   /**
    * Execute a git operation
-   * @param name - Step name
-   * @param config - Git configuration
-   * @param options - Step options (timeout)
+   * @param id - Step ID
+   * @param config - Git configuration (includes optional name field)
+   * @param options - Step options (timeout, continueOnError)
    */
   git(
-    name: string,
+    id: string,
     config: GitStepConfig,
     options?: StepOptions
   ): Promise<GitStepResult>;
 
   /**
    * Execute a CLI command
-   * @param name - Step name
-   * @param command - Shell command
-   * @param config - CLI configuration
-   * @param options - Step options (timeout)
+   * @param id - Step ID
+   * @param config - CLI configuration (includes command and optional name field)
+   * @param options - Step options (timeout, retries, continueOnError)
    */
   cli(
-    name: string,
-    command: string,
-    config?: Omit<CliStepConfig, "command">,
+    id: string,
+    config: CliStepConfig,
     options?: StepOptions
   ): Promise<CliStepResult>;
 
   /**
    * Upload an artifact (file, directory, text, screenshot)
-   * @param name - Step name
-   * @param config - Artifact configuration
+   * @param id - Step ID
+   * @param config - Artifact configuration (includes optional displayName field)
+   * @param options - Step options (timeout, continueOnError)
    */
   artifact(
-    name: string,
-    config: ArtifactStepConfig
+    id: string,
+    config: ArtifactStepConfig,
+    options?: StepOptions
   ): Promise<ArtifactStepResult>;
 
   /**
    * Add a progress annotation/note to the workflow timeline
-   * @param message - Annotation message
+   * @param id - Unique step identifier
+   * @param config - Annotation configuration (message)
    */
-  annotation(message: string): Promise<void>;
+  annotation(id: string, config: AnnotationStepConfig): Promise<void>;
 }

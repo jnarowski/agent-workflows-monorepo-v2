@@ -1,6 +1,7 @@
 import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
 import type { GitStepConfig, GitStepResult } from "@repo/workflow-sdk";
+import type { GitStepOptions } from "../../../types/event.types";
 import { commitChanges } from "@/server/domain/git/services/commitChanges";
 import { createAndSwitchBranch } from "@/server/domain/git/services/createAndSwitchBranch";
 import { createPullRequest } from "@/server/domain/git/services/createPullRequest";
@@ -17,17 +18,16 @@ export function createGitStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function git(
-    stepId: string,
-    _name: string,
+    id: string,
     config: GitStepConfig,
-    options?: { timeout?: number }
+    options?: GitStepOptions
   ): Promise<GitStepResult> {
     const timeout = options?.timeout ?? DEFAULT_GIT_TIMEOUT;
 
     // Generate phase-prefixed Inngest step ID
     const inngestStepId = context.currentPhase
-      ? `${context.currentPhase}-${stepId}`
-      : stepId;
+      ? `${context.currentPhase}-${id}`
+      : id;
 
     return await inngestStep.run(inngestStepId, async () => {
       const { projectPath } = context;

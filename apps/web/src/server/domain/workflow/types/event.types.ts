@@ -10,8 +10,8 @@ export interface BaseEventData {
 // Event data map for type-safe event_data
 // All events use the same base structure (title + body) with optional additional fields
 export interface EventDataMap {
-  annotation_added: BaseEventData & {
-    message?: string;
+  annotation_added: {
+    message: string;
   };
   workflow_started: BaseEventData & {
     timestamp?: string;
@@ -69,3 +69,37 @@ export type { WorkflowEvent };
 
 // Re-export WorkflowEventType from shared schemas for convenience
 export type { WorkflowEventType };
+
+// Step Options Interfaces
+// Base options for all steps
+export interface BaseStepOptions {
+  timeout?: number;
+}
+
+// Agent-specific options (extensive configuration)
+export interface AgentStepOptions extends BaseStepOptions {
+  retries?: number;
+  retryDelay?: number;
+  continueOnError?: boolean;
+}
+
+// CLI-specific options
+export interface CliStepOptions extends BaseStepOptions {
+  retries?: number;
+  continueOnError?: boolean;
+}
+
+// Git-specific options
+export interface GitStepOptions extends BaseStepOptions {
+  continueOnError?: boolean;
+}
+
+// Artifact-specific options
+export interface ArtifactStepOptions extends BaseStepOptions {
+  continueOnError?: boolean;
+}
+
+// Phase-specific options
+export interface PhaseOptions {
+  description?: string;
+}

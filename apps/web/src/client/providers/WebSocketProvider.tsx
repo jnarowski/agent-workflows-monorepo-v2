@@ -132,17 +132,21 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
    * Connect to WebSocket server
    */
   const connect = () => {
+    console.log("[WebSocket] 🔌 connect() called", {
+      hasToken: !!token,
+      currentState: readyState,
+      reconnectAttempts: reconnectAttemptsRef.current,
+    });
+
     // Don't connect if no token (user not logged in)
     if (!token) {
-      if (import.meta.env.DEV) {
-        console.log("[WebSocket] No auth token, skipping connection");
-      }
-
+      console.warn("[WebSocket] ⚠️ No auth token, skipping connection");
       return;
     }
 
     // Close existing connection if any
     if (socketRef.current) {
+      console.log("[WebSocket] 🔄 Closing existing connection before reconnect");
       intentionalCloseRef.current = true;
       socketRef.current.close();
       socketRef.current = null;
@@ -163,19 +167,15 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
       // Increment connection attempts
       setConnectionAttempts((prev) => prev + 1);
 
-      if (import.meta.env.DEV) {
-        console.log("[WebSocket] Environment:", {
-          isDev,
-          wsHost,
-          protocol: wsProtocol,
-          override: import.meta.env.VITE_WS_HOST,
-        });
-        console.log(
-          "[WebSocket] Connecting to",
-          wsUrl.replace(token, "***"),
-          `(attempt ${connectionAttempts + 1})`
-        );
-      }
+      console.log("[WebSocket] 🌐 Creating new WebSocket connection:", {
+        isDev,
+        wsHost,
+        protocol: wsProtocol,
+        override: import.meta.env.VITE_WS_HOST,
+        url: wsUrl.replace(token, "***"),
+        totalAttempts: connectionAttempts + 1,
+        reconnectAttempt: reconnectAttemptsRef.current,
+      });
 
       const socket = new WebSocket(wsUrl);
       socketRef.current = socket;
@@ -308,15 +308,13 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
         // Stop heartbeat on close
         stopHeartbeat();
 
-        if (import.meta.env.DEV) {
-          console.log("[WebSocket] Connection closed", {
-            code: event.code,
-            reason: event.reason,
-            wasClean: event.wasClean,
-            intentionalClose: intentionalCloseRef.current,
-            reconnectAttempts: reconnectAttemptsRef.current,
-          });
-        }
+        console.log("[WebSocket] ❌ Connection closed", {
+          code: event.code,
+          reason: event.reason,
+          wasClean: event.wasClean,
+          intentionalClose: intentionalCloseRef.current,
+          reconnectAttempts: reconnectAttemptsRef.current,
+        });
 
         setReadyState(ReadyState.CLOSED);
         setIsReady(false);
@@ -341,37 +339,43 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
           return; // Don't attempt to reconnect
         }
 
+        console.log("[WebSocket] 🔍 Reconnection check:", {
+          intentionalClose: intentionalCloseRef.current,
+          currentAttempts: reconnectAttemptsRef.current,
+          willReconnect: !intentionalCloseRef.current && reconnectAttemptsRef.current < 5,
+        });
+
         // Attempt reconnection if not intentional close
         if (!intentionalCloseRef.current && reconnectAttemptsRef.current < 5) {
+          reconnectAttemptsRef.current++; // Increment BEFORE scheduling timeout
+          const attemptNumber = reconnectAttemptsRef.current;
+
           const delay = calculateReconnectDelay(
-            reconnectAttemptsRef.current,
+            attemptNumber - 1, // Use previous attempt count for delay calculation
             undefined,
             DEFAULT_MAX_RECONNECT_DELAY
           );
 
-          if (import.meta.env.DEV) {
-            console.log(
-              `[WebSocket] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/5)`
-            );
-          }
+          console.log(
+            `[WebSocket] 🔄 Scheduling reconnect attempt ${attemptNumber}/5 in ${delay}ms`
+          );
 
           reconnectTimeoutRef.current = setTimeout(() => {
-            reconnectAttemptsRef.current++;
             wsMetrics.trackReconnection();
 
-            if (import.meta.env.DEV) {
-              console.log(
-                "[WebSocket] Executing reconnect attempt",
-                reconnectAttemptsRef.current
-              );
-            }
+            console.log(
+              `[WebSocket] ▶️ Executing reconnect attempt ${attemptNumber}/5`
+            );
             connect();
           }, delay);
         } else if (
           !intentionalCloseRef.current &&
           reconnectAttemptsRef.current >= 5
         ) {
-          console.error("[WebSocket] Max reconnection attempts reached");
+          console.error(
+            "[WebSocket] ⛔ Max reconnection attempts reached:",
+            reconnectAttemptsRef.current
+          );
 
           const errorData = {
             error: "Connection lost",
@@ -396,9 +400,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
           // Reset intentional close flag after all reconnection attempts exhausted
           intentionalCloseRef.current = false;
         } else if (intentionalCloseRef.current) {
-          if (import.meta.env.DEV) {
-            console.log("[WebSocket] Intentional close, not reconnecting");
-          }
+          console.log("[WebSocket] ⏸️ Intentional close, not reconnecting");
           // Reset intentional close flag for next connection attempt
           intentionalCloseRef.current = false;
         }
@@ -461,9 +463,7 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
    * Manually trigger reconnection (resets attempt counter)
    */
   const reconnect = () => {
-    if (import.meta.env.DEV) {
-      console.log("[WebSocket] Manual reconnect triggered");
-    }
+    console.log("[WebSocket] 🔄 Manual reconnect triggered");
     reconnectAttemptsRef.current = 0;
 
     // Clear any pending reconnect timeout

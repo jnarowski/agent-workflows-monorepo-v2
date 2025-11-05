@@ -3,6 +3,7 @@ import { promisify } from "node:util";
 import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
 import type { CliStepConfig, CliStepResult } from "@repo/workflow-sdk";
+import type { CliStepOptions } from "../../../types/event.types";
 import { executeStep } from "./executeStep";
 
 const execAsync = promisify(exec);
@@ -18,18 +19,18 @@ export function createCliStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function cli(
-    stepId: string,
-    name: string,
-    command: string,
-    config?: Omit<CliStepConfig, "command">,
-    options?: { timeout?: number }
+    id: string,
+    config: CliStepConfig,
+    options?: CliStepOptions
   ): Promise<CliStepResult> {
     const timeout = options?.timeout ?? DEFAULT_CLI_TIMEOUT;
+    const name = config.name ?? id;
+    const command = config.command;
 
-    return executeStep(context, stepId, name, async () => {
+    return executeStep(context, id, name, async () => {
       const { projectPath, logger } = context;
-      const cwd = config?.cwd ?? projectPath;
-      const env = { ...process.env, ...config?.env };
+      const cwd = config.cwd ?? projectPath;
+      const env = { ...process.env, ...config.env };
 
       logger.debug({ command, cwd }, "Executing CLI command");
 
@@ -38,7 +39,7 @@ export function createCliStep(
           execAsync(command, {
             cwd,
             env,
-            shell: config?.shell ?? "/bin/sh",
+            shell: config.shell ?? "/bin/sh",
             maxBuffer: 10 * 1024 * 1024, // 10MB
           }),
           new Promise<never>((_, reject) =>

@@ -1,6 +1,7 @@
 import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
 import type { AgentStepConfig, AgentStepResult } from "@repo/workflow-sdk";
+import type { AgentStepOptions } from "../../../types/event.types";
 import { executeStep } from "./executeStep";
 import { executeAgent } from "@/server/domain/session/services/executeAgent";
 import { createSession } from "@/server/domain/session/services/createSession";
@@ -19,14 +20,14 @@ export function createAgentStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function agent(
-    stepId: string,
-    name: string,
+    id: string,
     config: AgentStepConfig,
-    options?: { timeout?: number }
+    options?: AgentStepOptions
   ): Promise<AgentStepResult> {
     const timeout = options?.timeout ?? DEFAULT_AGENT_TIMEOUT;
+    const name = config.name ?? id;
 
-    return executeStep(context, stepId, name, async () => {
+    return executeStep(context, id, name, async () => {
       const { projectId, userId, logger } = context;
 
       // Create agent session using domain service

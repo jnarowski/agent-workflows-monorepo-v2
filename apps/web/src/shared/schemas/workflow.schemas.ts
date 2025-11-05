@@ -225,6 +225,21 @@ export const workflowEventResponseSchema = z.object({
 });
 
 /**
+ * Phase Definition Schema
+ *
+ * A phase can be either:
+ * - A simple string (id = label)
+ * - An object with separate id and label
+ */
+export const phaseDefinitionSchema = z.union([
+  z.string(),
+  z.object({
+    id: z.string(),
+    label: z.string(),
+  }),
+]);
+
+/**
  * Workflow Definition Response Schema (Nested)
  *
  * Validates the response for a workflow definition when included as a relation.
@@ -236,7 +251,7 @@ export const workflowDefinitionResponseSchema = z.object({
   description: z.string().nullable(),
   type: z.string(),
   path: z.string(),
-  phases: z.array(z.string()),
+  phases: z.array(phaseDefinitionSchema),
   args_schema: z.record(z.string(), z.unknown()).nullable(),
   is_template: z.boolean(),
   created_at: z.string(),

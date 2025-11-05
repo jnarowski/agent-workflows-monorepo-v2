@@ -3,24 +3,20 @@ import type {
   StepStatus,
   WorkflowEventType,
 } from "@/shared/schemas/workflow.schemas";
+import type { PhaseDefinition } from "@repo/workflow-sdk";
 
 // Re-export types only
-export type { WorkflowStatus, StepStatus, WorkflowEventType };
+export type { WorkflowStatus, StepStatus, WorkflowEventType, PhaseDefinition };
 
 export interface WorkflowDefinition {
   id: string;
   name: string;
   description: string | null;
-  phases: Phase[];
+  phases: PhaseDefinition[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   args_schema: Record<string, any> | null;
   created_at: Date;
   updated_at: Date;
-}
-
-export interface Phase {
-  name: string;
-  steps: string[];
 }
 
 /**
@@ -89,14 +85,17 @@ export interface User {
 
 // Base event data structure - all events have at minimum title and body
 export interface BaseEventData {
-  title: string;
-  body: string;
+  title?: string;
+  body?: string;
+  message?: string;
 }
 
 // Event data type map (matching backend EventDataMap)
 // All events use the same base structure (title + body) with optional additional fields
 export interface EventDataMap {
-  annotation_added: BaseEventData;
+  annotation_added: {
+    message: string;
+  };
   workflow_started: BaseEventData;
   workflow_completed: BaseEventData;
   workflow_failed: BaseEventData & {
@@ -175,7 +174,7 @@ export interface WorkflowExecutionListItem {
   created_at: Date;
   workflow_definition: {
     name: string;
-    phases: Phase[];
+    phases: PhaseDefinition[];
   };
   _count: {
     steps: number;

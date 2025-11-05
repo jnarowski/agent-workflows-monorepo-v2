@@ -11,13 +11,13 @@ export function createRunStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function run<T>(
-    stepId: string,
+    id: string,
     fn: () => Promise<T> | T
   ): Promise<T> {
     // Generate phase-prefixed Inngest step ID
     const inngestStepId = context.currentPhase
-      ? `${context.currentPhase}-${stepId}`
-      : stepId;
+      ? `${context.currentPhase}-${id}`
+      : id;
 
     return (await inngestStep.run(inngestStepId, fn)) as unknown as Promise<T>;
   };

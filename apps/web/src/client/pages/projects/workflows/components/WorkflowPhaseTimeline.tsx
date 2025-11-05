@@ -1,6 +1,7 @@
 import { StepStatusValues } from '@/shared/schemas';
 import type { WorkflowExecution } from '../types';
 import { CheckCircle2, XCircle, Circle, Loader2 } from 'lucide-react';
+import { getPhaseId, getPhaseLabel } from '@/shared/utils/phase.utils';
 
 export interface WorkflowPhaseTimelineProps {
   execution: WorkflowExecution;
@@ -87,21 +88,23 @@ export function WorkflowPhaseTimeline({
     <div className="overflow-x-auto pb-4">
       <div className="flex items-center gap-2 min-w-max px-4">
         {phases.map((phase, index) => {
-          const status = getPhaseStatus(phase.name);
+          const phaseId = getPhaseId(phase);
+          const phaseLabel = getPhaseLabel(phase);
+          const status = getPhaseStatus(phaseId);
           const Icon = getPhaseIcon(status);
           const colorClass = getPhaseColor(status);
           const isClickable = onPhaseClick !== undefined;
 
           return (
-            <div key={phase.name} className="flex items-center">
+            <div key={phaseId} className="flex items-center">
               {/* Phase item */}
               <button
-                onClick={() => onPhaseClick?.(phase.name)}
+                onClick={() => onPhaseClick?.(phaseId)}
                 disabled={!isClickable}
                 className={`flex flex-col items-center gap-2 ${
                   isClickable ? 'cursor-pointer' : 'cursor-default'
                 }`}
-                aria-label={`Phase: ${phase.name}, Status: ${status}`}
+                aria-label={`Phase: ${phaseLabel}, Status: ${status}`}
               >
                 {/* Icon */}
                 <div
@@ -121,10 +124,10 @@ export function WorkflowPhaseTimeline({
                         : 'text-foreground'
                     }`}
                   >
-                    {phase.name}
+                    {phaseLabel}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {phase.steps.length} step{phase.steps.length !== 1 ? 's' : ''}
+                    {execution.steps?.filter((s) => s.phase === phaseId).length || 0} steps
                   </div>
                 </div>
               </button>

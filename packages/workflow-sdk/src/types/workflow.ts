@@ -1,6 +1,11 @@
 import type { WorkflowStep } from "./steps";
 
 /**
+ * Phase definition - can be a simple string (id = label) or object with separate id and label
+ */
+export type PhaseDefinition = string | { id: string; label: string };
+
+/**
  * Workflow configuration
  */
 export interface WorkflowConfig {
@@ -13,7 +18,7 @@ export interface WorkflowConfig {
   /** Workflow description */
   description?: string;
   /** Workflow phases (for UI organization) */
-  phases?: string[];
+  phases?: PhaseDefinition[];
   /** Global workflow timeout in milliseconds */
   timeout?: number;
 }
