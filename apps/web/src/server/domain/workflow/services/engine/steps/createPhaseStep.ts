@@ -2,7 +2,6 @@ import type { GetStepTools } from "inngest";
 import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import type { RuntimeContext } from "../../../types/engine.types";
-import type { PhaseOptions } from "@repo/workflow-sdk";
 import { updateWorkflowExecution } from "../../executions/updateWorkflowExecution";
 import { createWorkflowEvent } from "../../events/createWorkflowEvent";
 
@@ -28,8 +27,8 @@ export function createPhaseStep(
 ) {
   return async function phase<T>(
     name: string,
-    fn: () => Promise<T>,
-    _options?: PhaseOptions // Ignored - retries handled by Inngest
+    fn: () => Promise<T>
+    // Note: PhaseOptions ignored - retries handled by Inngest
   ): Promise<T> {
     const { executionId, projectId, logger } = context;
 

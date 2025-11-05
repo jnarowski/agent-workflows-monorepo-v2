@@ -18,4 +18,12 @@ else
     echo "No process found on port 3456"
 fi
 
+echo "Checking for processes on port 8288..."
+lsof -ti:8288 | xargs kill -9 2>/dev/null
+if [ $? -eq 0 ]; then
+    echo "Killed process on port 8288"
+else
+    echo "No process found on port 8288"
+fi
+
 echo "Done!"
