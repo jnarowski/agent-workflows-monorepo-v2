@@ -10,27 +10,25 @@ export interface CreateWorkflowArtifactData {
   file_path: string;
   mime_type: string;
   size_bytes: number;
-  phase?: string | null;
+  phase: string;
 }
 
 /**
  * Create a workflow artifact record
- * Links artifact to a specific workflow execution step
+ * Artifacts are organized by phase (not by step)
  * Includes WebSocket broadcasting for real-time updates
  */
 export async function createWorkflowArtifact(
-  stepId: string,
   data: CreateWorkflowArtifactData,
   logger?: FastifyBaseLogger
 ): Promise<WorkflowArtifact> {
   logger?.debug(
-    { stepId, name: data.name, fileType: data.file_type },
+    { name: data.name, fileType: data.file_type, phase: data.phase },
     'Creating workflow artifact'
   );
 
   const artifact = await prisma.workflowArtifact.create({
     data: {
-      workflow_execution_step_id: stepId,
       name: data.name,
       file_type: data.file_type,
       file_path: data.file_path,
@@ -40,10 +38,10 @@ export async function createWorkflowArtifact(
     },
   });
 
-  logger?.debug({ artifactId: artifact.id }, 'Workflow artifact created');
+  logger?.debug({ artifactId: artifact.id, phase: data.phase }, 'Workflow artifact created');
 
   // TODO: Add WebSocket broadcasting when event bus is available
-  // eventBus.emit('workflow.artifact.created', { artifactId: artifact.id, stepId });
+  // eventBus.emit('workflow.artifact.created', { artifactId: artifact.id, phase: data.phase });
 
   return artifact;
 }

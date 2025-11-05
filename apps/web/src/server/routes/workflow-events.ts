@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { prisma } from "@/shared/prisma";
 import { getWorkflowEvents } from "@/server/domain/workflow/services/events/getWorkflowEvents";
 import {
   createWorkflowEventSchema,
@@ -34,11 +35,17 @@ export async function workflowEventRoutes(fastify: FastifyInstance) {
       const userId = (request.user! as { id: string }).id;
       const body = request.body;
 
+      // Get execution to extract current phase
+      const execution = await prisma.workflowExecution.findUnique({
+        where: { id },
+        select: { current_phase: true },
+      });
+
       const event = await createWorkflowEvent({
         workflow_execution_id: id,
-        workflow_execution_step_id: body.step_id,
         event_type: "annotation_added" as const,
         event_data: { title: "Annotation", body: body.text },
+        phase: execution?.current_phase,
         created_by_user_id: userId,
         logger: fastify.log,
       });

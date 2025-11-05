@@ -4,7 +4,6 @@
 
 export { createPhaseStep } from "./createPhaseStep";
 export { createAgentStep } from "./createAgentStep";
-export { createSlashStep } from "./createSlashStep";
 export { createGitStep } from "./createGitStep";
 export { createCliStep } from "./createCliStep";
 export { createArtifactStep } from "./createArtifactStep";

@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Plus } from "lucide-react";
 import { WorkflowExecutionHeader } from "./components/WorkflowExecutionHeader";
+import { PhaseTimeline } from "./components/timeline/PhaseTimeline";
 import { NewExecutionDialog } from "./components/NewExecutionDialog";
 import { useWorkflowExecution } from "./hooks/useWorkflowExecution";
 import { useWorkflowDefinition } from "./hooks/useWorkflowDefinition";
@@ -129,7 +130,8 @@ export function WorkflowExecutionDetail() {
         <div className="max-w-5xl mx-auto">
           {/* Timeline section */}
           <section>
-            <h2 className="text-xl font-bold mb-4">Execution Timeline</h2>{" "}
+            <h2 className="text-xl font-bold mb-4">Execution Timeline</h2>
+            <PhaseTimeline execution={execution} projectId={projectId!} />
           </section>
         </div>
       </div>

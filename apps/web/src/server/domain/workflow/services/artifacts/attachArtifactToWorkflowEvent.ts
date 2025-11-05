@@ -3,36 +3,28 @@ import type { WorkflowArtifact } from '@prisma/client';
 
 /**
  * Attach an artifact to an event
- * Validates event exists and belongs to same execution
- * Returns null if artifact not found, event not found, or event doesn't belong to same execution
+ * Validates event exists
+ * Returns null if artifact not found or event not found
  */
 export async function attachArtifactToWorkflowEvent(
   artifactId: string,
   eventId: string
 ): Promise<WorkflowArtifact | null> {
-  // Get artifact with execution info
+  // Get artifact
   const artifact = await prisma.workflowArtifact.findUnique({
     where: { id: artifactId },
-    include: {
-      step: true,
-    },
   });
 
   if (!artifact) {
     return null;
   }
 
-  // Get event to validate it exists and belongs to same execution
+  // Get event to validate it exists
   const event = await prisma.workflowEvent.findUnique({
     where: { id: eventId },
   });
 
   if (!event) {
-    return null;
-  }
-
-  // Validate event belongs to same execution
-  if (event.workflow_execution_id !== artifact.step.workflow_execution_id) {
     return null;
   }
 

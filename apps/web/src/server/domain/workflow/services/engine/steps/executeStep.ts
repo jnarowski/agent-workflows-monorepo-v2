@@ -1,43 +1,50 @@
+import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
 import { findOrCreateStep } from "./findOrCreateStep";
 import { updateStepStatus } from "./updateStepStatus";
 import { handleStepFailure } from "./handleStepFailure";
 
 /**
- * Execute a step function with automatic status tracking
+ * Execute a step function with automatic status tracking and Inngest memoization
  *
  * @param context - Runtime context
  * @param stepName - Step name
  * @param fn - Step function to execute
+ * @param inngestStep - Inngest step instance for memoization
  * @returns Step result
  */
 export async function executeStep<T>(
   context: RuntimeContext,
   stepName: string,
-  fn: () => Promise<T>
+  fn: () => Promise<T>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  inngestStep: GetStepTools<any>
 ): Promise<T> {
-  // Find or create step
-  const step = await findOrCreateStep(context, stepName);
+  // Wrap entire step in inngestStep.run for idempotency
+  return (await inngestStep.run(stepName, async () => {
+    // Find or create step in database
+    const step = await findOrCreateStep(context, stepName);
 
-  // Update to running
-  await updateStepStatus(context, step.id, "running");
+    // Update to running
+    await updateStepStatus(context, step.id, "running");
 
-  try {
-    // Execute step function
-    const result = await fn();
+    try {
+      // Execute step function
+      const result = await fn();
 
-    // Update to completed
-    await updateStepStatus(
-      context,
-      step.id,
-      "completed",
-      result as Record<string, unknown>
-    );
+      // Update to completed
+      await updateStepStatus(
+        context,
+        step.id,
+        "completed",
+        result as Record<string, unknown>
+      );
 
-    return result;
-  } catch (error) {
-    // Handle failure
-    await handleStepFailure(context, step.id, error as Error);
-    throw error;
-  }
+      return result;
+    } catch (error) {
+      // Handle failure
+      await handleStepFailure(context, step.id, error as Error);
+      throw error;
+    }
+  })) as unknown as Promise<T>;
 }

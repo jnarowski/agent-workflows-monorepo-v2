@@ -7,7 +7,7 @@ export interface CreateWorkflowEventParams<T extends keyof EventDataMap = keyof 
   workflow_execution_id: string;
   event_type: T;
   event_data: EventDataMap[T];
-  workflow_execution_step_id?: string;
+  phase?: string | null;
   created_by_user_id?: string;
   created_at?: Date; // Optional: allow custom timestamp (for step_started events)
   logger?: FastifyBaseLogger;
@@ -24,7 +24,7 @@ export async function createWorkflowEvent<T extends keyof EventDataMap>(
     workflow_execution_id,
     event_type,
     event_data,
-    workflow_execution_step_id,
+    phase,
     created_by_user_id,
     created_at,
     logger,
@@ -34,7 +34,7 @@ export async function createWorkflowEvent<T extends keyof EventDataMap>(
     {
       workflow_execution_id,
       event_type,
-      workflow_execution_step_id,
+      phase,
     },
     'Creating workflow event'
   );
@@ -45,13 +45,13 @@ export async function createWorkflowEvent<T extends keyof EventDataMap>(
       // @ts-ignore - event type
       event_type,
       event_data: event_data as unknown as Prisma.InputJsonValue,
-      workflow_execution_step_id,
+      phase,
       created_by_user_id,
       ...(created_at && { created_at }),
     },
   });
 
-  logger?.debug({ eventId: event.id }, 'Workflow event created');
+  logger?.debug({ eventId: event.id, phase }, 'Workflow event created');
 
   return event;
 }

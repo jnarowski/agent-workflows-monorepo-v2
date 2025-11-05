@@ -9,29 +9,25 @@ import type { WorkflowArtifact } from '@prisma/client';
  * - Validates file path is within project directory
  * - Saves file to filesystem (relative to project root)
  * - Creates WorkflowArtifact DB record with metadata
- * Returns null if step not found
+ * Returns null if execution not found
  */
 export async function uploadArtifact(
   data: UploadArtifactInput,
   fileBuffer: Buffer
 ): Promise<WorkflowArtifact | null> {
-  // Get the step to access the workflow execution and project
-  const step = await prisma.workflowExecutionStep.findUnique({
-    where: { id: data.workflow_execution_step_id },
+  // Get the execution to access the project
+  const execution = await prisma.workflowExecution.findUnique({
+    where: { id: data.workflow_execution_id },
     include: {
-      workflow_execution: {
-        include: {
-          project: true,
-        },
-      },
+      project: true,
     },
   });
 
-  if (!step) {
+  if (!execution) {
     return null;
   }
 
-  const projectPath = step.workflow_execution.project.path;
+  const projectPath = execution.project.path;
 
   // Resolve absolute path and validate it's within project directory
   const absoluteFilePath = path.resolve(projectPath, data.file_path);
@@ -49,12 +45,12 @@ export async function uploadArtifact(
   // Create artifact record
   const artifact = await prisma.workflowArtifact.create({
     data: {
-      workflow_execution_step_id: data.workflow_execution_step_id,
       name: data.name,
       file_path: data.file_path, // Store relative path
       file_type: data.file_type,
       mime_type: data.mime_type,
       size_bytes: data.size_bytes,
+      phase: data.phase,
     },
   });
 

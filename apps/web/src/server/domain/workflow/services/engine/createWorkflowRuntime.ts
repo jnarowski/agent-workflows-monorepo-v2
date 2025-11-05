@@ -14,7 +14,6 @@ import { createWorkflowEvent } from "@/server/domain/workflow/services";
 import {
   createPhaseStep,
   createAgentStep,
-  createSlashStep,
   createGitStep,
   createCliStep,
   createArtifactStep,
@@ -72,13 +71,14 @@ export function createWorkflowRuntime(
             // Override native step.run to track in database
             run: createRunStep(context, inngestStep),
             // Custom phase-based step methods
-            phase: createPhaseStep(context),
-            agent: createAgentStep(context),
-            slash: createSlashStep(context),
-            git: createGitStep(context),
-            cli: createCliStep(context),
-            artifact: createArtifactStep(context),
-            annotation: createAnnotationStep(context),
+            // ONLY agent and cli use executeStep (which wraps inngestStep.run)
+            // All others wrap inngestStep.run() directly
+            phase: createPhaseStep(context, inngestStep),
+            agent: createAgentStep(context, inngestStep),
+            git: createGitStep(context, inngestStep),
+            cli: createCliStep(context, inngestStep),
+            artifact: createArtifactStep(context, inngestStep),
+            annotation: createAnnotationStep(context, inngestStep),
           }) as WorkflowStep;
 
           try {

@@ -1,5 +1,6 @@
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
+import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
 import type { CliStepConfig, CliStepResult } from "@repo/workflow-sdk";
 import { executeStep } from "./executeStep";
@@ -11,7 +12,11 @@ const DEFAULT_CLI_TIMEOUT = 300000; // 5 minutes
  * Create CLI step factory function
  * Executes shell commands
  */
-export function createCliStep(context: RuntimeContext) {
+export function createCliStep(
+  context: RuntimeContext,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  inngestStep: GetStepTools<any>
+) {
   return async function cli(
     name: string,
     command: string,
@@ -67,6 +72,6 @@ export function createCliStep(context: RuntimeContext) {
           success: false,
         };
       }
-    });
+    }, inngestStep);
   };
 }

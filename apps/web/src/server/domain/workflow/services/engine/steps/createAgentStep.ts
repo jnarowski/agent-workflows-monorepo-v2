@@ -1,3 +1,4 @@
+import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
 import type { AgentStepConfig, AgentStepResult } from "@repo/workflow-sdk";
 import { executeStep } from "./executeStep";
@@ -12,7 +13,11 @@ const DEFAULT_AGENT_TIMEOUT = 1800000; // 30 minutes
  * Create agent step factory function
  * Executes an AI agent with WebSocket streaming
  */
-export function createAgentStep(context: RuntimeContext) {
+export function createAgentStep(
+  context: RuntimeContext,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  inngestStep: GetStepTools<any>
+) {
   return async function agent(
     name: string,
     config: AgentStepConfig,
@@ -79,6 +84,6 @@ export function createAgentStep(context: RuntimeContext) {
 
         throw error;
       }
-    });
+    }, inngestStep);
   };
 }

@@ -169,7 +169,6 @@ test.describe('File Browser Feature Tests', () => {
 
     if (await imageFile.count() === 0) {
       console.log('⚠ No image files found in project, skipping image viewer test');
-      test.skip();
       return;
     }
 

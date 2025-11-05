@@ -46,6 +46,7 @@ export async function updateStepStatus(
       workflow_execution_id: executionId,
       event_type: "step_failed",
       event_data: eventData,
+      phase: step.phase,
       logger,
     });
   }

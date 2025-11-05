@@ -80,8 +80,6 @@ model WorkflowExecutionStep {
 
   workflow_execution WorkflowExecution @relation(fields: [workflow_execution_id], references: [id], onDelete: Cascade)
   session            AgentSession?     @relation(fields: [agent_session_id], references: [id], onDelete: Cascade)
-  artifacts          WorkflowArtifact[]
-  events             WorkflowEvent[]
 
   @@index([workflow_execution_id, status])
   @@index([agent_session_id])
@@ -90,44 +88,41 @@ model WorkflowExecutionStep {
 }
 
 model WorkflowEvent {
-  id                         String            @id @default(cuid())
-  workflow_execution_id      String
-  event_type                 WorkflowEventType
-  event_data                 Json              // Event-specific data (comment text, phase name, step info, etc.)
-  workflow_execution_step_id String?           // Nullable - only for step-related events
-  created_by_user_id         String?           // Nullable - only for user-generated events
-  created_at                 DateTime          @default(now())
-  updated_at                 DateTime          @updatedAt
+  id                    String            @id @default(cuid())
+  workflow_execution_id String
+  event_type            WorkflowEventType
+  event_data            Json              // Event-specific data (comment text, phase name, step info, etc.)
+  phase                 String?           // Phase this event belongs to
+  created_by_user_id    String?           // Nullable - only for user-generated events
+  created_at            DateTime          @default(now())
+  updated_at            DateTime          @updatedAt
 
-  workflow_execution WorkflowExecution      @relation(fields: [workflow_execution_id], references: [id], onDelete: Cascade)
-  step               WorkflowExecutionStep? @relation(fields: [workflow_execution_step_id], references: [id], onDelete: Cascade)
-  created_by_user    User?                  @relation(fields: [created_by_user_id], references: [id], onDelete: Cascade)
+  workflow_execution WorkflowExecution @relation(fields: [workflow_execution_id], references: [id], onDelete: Cascade)
+  created_by_user    User?             @relation(fields: [created_by_user_id], references: [id], onDelete: Cascade)
   artifacts          WorkflowArtifact[]
 
   @@index([workflow_execution_id, created_at])
   @@index([event_type])
-  @@index([workflow_execution_step_id])
+  @@index([phase])
   @@map("workflow_events")
 }
 
 model WorkflowArtifact {
-  id                         String    @id @default(cuid())
-  workflow_execution_step_id String
-  workflow_event_id          String?   // Nullable - can attach artifact to event
-  name                       String
-  file_path                  String    // Relative to project root
-  file_type                  String    // 'image', 'video', 'document', 'code', 'other'
-  mime_type                  String
-  size_bytes                 Int
-  phase                      String?   // Phase this artifact belongs to (nullable for existing artifacts)
-  created_at                 DateTime  @default(now())
-  updated_at                 DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  workflow_event_id String?   // Nullable - can attach artifact to event
+  name              String
+  file_path         String    // Relative to project root
+  file_type         String    // 'image', 'video', 'document', 'code', 'other'
+  mime_type         String
+  size_bytes        Int
+  phase             String?   // Phase this artifact belongs to (nullable for migration)
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
 
-  step  WorkflowExecutionStep @relation(fields: [workflow_execution_step_id], references: [id], onDelete: Cascade)
-  event WorkflowEvent?        @relation(fields: [workflow_event_id], references: [id], onDelete: SetNull)
+  event WorkflowEvent? @relation(fields: [workflow_event_id], references: [id], onDelete: SetNull)
 
-  @@index([workflow_execution_step_id])
   @@index([workflow_event_id])
+  @@index([phase])
   @@map("workflow_artifacts")
 }
 

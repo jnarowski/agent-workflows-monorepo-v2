@@ -40,14 +40,14 @@ export async function workflowArtifactRoutes(fastify: FastifyInstance) {
 
       // Parse form fields
       const fields = data.fields as Record<string, { value: string }>;
-      const stepId = fields.step_id?.value;
+      const phase = fields.phase?.value;
       const name = fields.name?.value || data.filename;
       const fileType = fields.file_type?.value;
 
-      if (!stepId || !fileType) {
+      if (!phase || !fileType) {
         return reply.code(400).send({
           error: {
-            message: "step_id and file_type are required",
+            message: "phase and file_type are required",
             statusCode: 400,
           },
         });
@@ -58,11 +58,12 @@ export async function workflowArtifactRoutes(fastify: FastifyInstance) {
 
       // Generate relative file path
       const executionId = request.params.id;
-      const filePath = `.agent/workflows/executions/${executionId}/artifacts/${stepId}/${data.filename}`;
+      const filePath = `.agent/workflows/executions/${executionId}/artifacts/${phase}/${data.filename}`;
 
       const artifact = await uploadArtifact(
         {
-          workflow_execution_step_id: stepId,
+          workflow_execution_id: executionId,
+          phase,
           name,
           file_path: filePath,
           file_type: fileType as ArtifactType,
@@ -73,7 +74,7 @@ export async function workflowArtifactRoutes(fastify: FastifyInstance) {
       );
 
       if (!artifact) {
-        throw new NotFoundError("Workflow step not found");
+        throw new NotFoundError("Workflow execution not found");
       }
 
       return reply.code(201).send({ data: artifact });

@@ -8,11 +8,6 @@ import {
 } from "@/shared/types/websocket.types";
 import { useWorkflowStore } from "../stores/workflowStore";
 import { toast } from "sonner";
-// @ts-ignore - missing module
-import type { WebSocketUpdate } from "../utils/applyWorkflowUpdate";
-// @ts-ignore - missing module
-import { applyWorkflowUpdate } from "../utils/applyWorkflowUpdate";
-import type { WorkflowExecution } from "../types";
 
 export function useWorkflowWebSocket(projectId: string) {
   const { eventBus, sendMessage, isConnected } = useWebSocket();
@@ -44,20 +39,6 @@ export function useWorkflowWebSocket(projectId: string) {
     const channel = Channels.project(projectId);
     sendMessage(channel, { type: "subscribe", data: {} });
 
-    // Helper function to apply incremental update to cached execution
-    const applyIncrementalUpdate = (
-      executionId: string,
-      update: WebSocketUpdate
-    ) => {
-      queryClient.setQueryData<WorkflowExecution>(
-        ["workflow-execution", executionId],
-        (oldData) => {
-          if (!oldData) return oldData;
-          return applyWorkflowUpdate(oldData, update);
-        }
-      );
-    };
-
     // Workflow created
     const handleCreated = () => {
       // Query invalidation handled by main event handler
@@ -68,10 +49,6 @@ export function useWorkflowWebSocket(projectId: string) {
       event: Extract<WorkflowEvent, { type: "workflow:started" }>
     ) => {
       handleWorkflowStarted({ executionId: event.data.executionId });
-      applyIncrementalUpdate(event.data.executionId, {
-        type: "workflow_status_updated",
-        status: "running",
-      });
     };
 
     // Step started
@@ -84,12 +61,6 @@ export function useWorkflowWebSocket(projectId: string) {
         stepName: event.data.stepName,
         phaseName: event.data.phase,
       });
-      applyIncrementalUpdate(event.data.executionId, {
-        type: "step_started",
-        stepId: event.data.stepId,
-        startedAt: new Date(event.data.timestamp),
-        stepName: event.data.stepName,
-      });
     };
 
     // Step completed
@@ -99,12 +70,6 @@ export function useWorkflowWebSocket(projectId: string) {
       handleStepCompleted({
         executionId: event.data.executionId,
         stepId: event.data.stepId,
-        logs: event.data.logs,
-      });
-      applyIncrementalUpdate(event.data.executionId, {
-        type: "step_completed",
-        stepId: event.data.stepId,
-        completedAt: new Date(event.data.timestamp),
         logs: event.data.logs,
       });
     };
@@ -117,12 +82,6 @@ export function useWorkflowWebSocket(projectId: string) {
         executionId: event.data.executionId,
         stepId: event.data.stepId,
         error: event.data.error,
-      });
-      applyIncrementalUpdate(event.data.executionId, {
-        type: "step_failed",
-        stepId: event.data.stepId,
-        completedAt: new Date(event.data.timestamp),
-        errorMessage: event.data.error,
       });
       toast.error(`Step failed: ${event.data.stepName}`);
     };
@@ -145,11 +104,6 @@ export function useWorkflowWebSocket(projectId: string) {
       event: Extract<WorkflowEvent, { type: "workflow:completed" }>
     ) => {
       handleWorkflowCompleted({ executionId: event.data.executionId });
-      applyIncrementalUpdate(event.data.executionId, {
-        type: "workflow_status_updated",
-        status: "completed",
-        completedAt: new Date(event.data.timestamp),
-      });
       toast.success("Workflow completed successfully");
     };
 
@@ -161,12 +115,6 @@ export function useWorkflowWebSocket(projectId: string) {
         executionId: event.data.executionId,
         error: event.data.error,
       });
-      applyIncrementalUpdate(event.data.executionId, {
-        type: "workflow_status_updated",
-        status: "failed",
-        completedAt: new Date(event.data.timestamp),
-        errorMessage: event.data.error,
-      });
       toast.error(`Workflow failed: ${event.data.error}`);
     };
 
@@ -175,10 +123,6 @@ export function useWorkflowWebSocket(projectId: string) {
       event: Extract<WorkflowEvent, { type: "workflow:paused" }>
     ) => {
       handleWorkflowPaused({ executionId: event.data.executionId });
-      applyIncrementalUpdate(event.data.executionId, {
-        type: "workflow_status_updated",
-        status: "paused",
-      });
     };
 
     // Workflow resumed
@@ -186,10 +130,6 @@ export function useWorkflowWebSocket(projectId: string) {
       event: Extract<WorkflowEvent, { type: "workflow:resumed" }>
     ) => {
       handleWorkflowResumed({ executionId: event.data.executionId });
-      applyIncrementalUpdate(event.data.executionId, {
-        type: "workflow_status_updated",
-        status: "running",
-      });
     };
 
     // Workflow cancelled
@@ -197,11 +137,6 @@ export function useWorkflowWebSocket(projectId: string) {
       event: Extract<WorkflowEvent, { type: "workflow:cancelled" }>
     ) => {
       handleWorkflowCancelled({ executionId: event.data.executionId });
-      applyIncrementalUpdate(event.data.executionId, {
-        type: "workflow_status_updated",
-        status: "cancelled",
-        completedAt: new Date(event.data.timestamp),
-      });
       toast.info("Workflow cancelled");
     };
 
@@ -219,6 +154,7 @@ export function useWorkflowWebSocket(projectId: string) {
           title: "Annotation Added",
           body: event.data.text || event.data.body || "",
         },
+        phase: event.data.phase || null,
         created_by_user_id: event.data.userId || null,
         created_at: new Date(event.data.timestamp),
       };
@@ -226,15 +162,6 @@ export function useWorkflowWebSocket(projectId: string) {
       handleEventCreated({
         executionId: event.data.executionId,
         event: annotationEvent,
-      });
-
-      applyIncrementalUpdate(event.data.executionId, {
-        type: "annotation_added",
-        annotationId: event.data.commentId,
-        text: event.data.text || event.data.body || "",
-        stepId: event.data.stepId || undefined,
-        userId: event.data.userId || null,
-        createdAt: new Date(event.data.timestamp),
       });
     };
 

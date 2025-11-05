@@ -402,6 +402,7 @@ export interface WorkflowAnnotationCreatedData {
   commentId: string;
   text: string;
   body?: string; // Alternative field name for compatibility
+  phase: string | null;
   stepId?: string;
   userId: string | null;
   timestamp: string;

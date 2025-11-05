@@ -1,5 +1,6 @@
 import { readdir, stat, writeFile, mkdir, copyFile } from "node:fs/promises";
 import { join, relative, extname, dirname } from "node:path";
+import type { GetStepTools } from "inngest";
 import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import type { RuntimeContext } from "../../../types/engine.types";
@@ -7,7 +8,6 @@ import type {
   ArtifactStepConfig,
   ArtifactStepResult,
 } from "@repo/workflow-sdk";
-import { executeStep } from "./executeStep";
 import { findWorkflowStepByName } from "../../steps/findWorkflowStepByName";
 import { createWorkflowArtifact } from "../../artifacts/createWorkflowArtifact";
 
@@ -43,12 +43,16 @@ function getMimeType(
  * Uploads files, directories, or text content as workflow artifacts
  * Artifacts are stored in: {projectPath}/.agent/workflows/executions/{executionId}/artifacts
  */
-export function createArtifactStep(context: RuntimeContext) {
+export function createArtifactStep(
+  context: RuntimeContext,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  inngestStep: GetStepTools<any>
+) {
   return async function artifact(
     name: string,
     config: ArtifactStepConfig
   ): Promise<ArtifactStepResult> {
-    return executeStep(context, name, async () => {
+    return await inngestStep.run(`artifact-${name}`, async () => {
       const { executionId, projectId, projectPath, currentPhase, logger } = context;
       const artifactIds: string[] = [];
       let totalSize = 0;
@@ -84,9 +88,12 @@ export function createArtifactStep(context: RuntimeContext) {
           const sizeBytes = Buffer.byteLength(config.content, "utf8");
           const relativePath = relative(projectPath, artifactPath);
 
+          if (!currentPhase) {
+            throw new Error("Phase is required for artifact creation");
+          }
+
           // Create artifact using domain service
           const artifact = await createWorkflowArtifact(
-            step.id,
             {
               name: config.name,
               file_type: "text",
@@ -115,9 +122,12 @@ export function createArtifactStep(context: RuntimeContext) {
           const fileStats = await stat(artifactPath);
           const relativePath = relative(projectPath, artifactPath);
 
+          if (!currentPhase) {
+            throw new Error("Phase is required for artifact creation");
+          }
+
           // Create artifact using domain service
           const artifact = await createWorkflowArtifact(
-            step.id,
             {
               name: config.name,
               file_type: config.type,
@@ -158,9 +168,12 @@ export function createArtifactStep(context: RuntimeContext) {
             const fileStats = await stat(artifactPath);
             const relativeToProject = relative(projectPath, artifactPath);
 
+            if (!currentPhase) {
+              throw new Error("Phase is required for artifact creation");
+            }
+
             // Create artifact using domain service
             const artifact = await createWorkflowArtifact(
-              step.id,
               {
                 name: `${config.name}/${relativeToSource}`,
                 file_type: "file",

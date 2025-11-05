@@ -1,14 +1,13 @@
 import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
-import { executeStep } from "./executeStep";
 
 /**
  * Create generic run step factory function
- * Wraps Inngest's native step.run() to create step records in database
- * This ensures all workflow steps are tracked for progress calculation
+ * Wraps Inngest's native step.run() directly
+ * This is a simple passthrough to inngest.step.run()
  */
 export function createRunStep(
-  context: RuntimeContext,
+  _context: RuntimeContext,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inngestStep: GetStepTools<any>
 ) {
@@ -16,10 +15,7 @@ export function createRunStep(
     stepId: string,
     fn: () => Promise<T> | T
   ): Promise<T> {
-    // Use executeStep to create step record and track status
-    return executeStep(context, stepId, async () => {
-      // Call Inngest's native step.run() for actual execution
-      return (await inngestStep.run(stepId, fn)) as T;
-    });
+    // Simple passthrough to inngest.step.run()
+    return (await inngestStep.run(stepId, fn)) as unknown as Promise<T>;
   };
 }

@@ -1,6 +1,6 @@
+import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
 import type { GitStepConfig, GitStepResult } from "@repo/workflow-sdk";
-import { executeStep } from "./executeStep";
 import { commitChanges } from "@/server/domain/git/services/commitChanges";
 import { createAndSwitchBranch } from "@/server/domain/git/services/createAndSwitchBranch";
 import { createPullRequest } from "@/server/domain/git/services/createPullRequest";
@@ -11,7 +11,11 @@ const DEFAULT_GIT_TIMEOUT = 120000; // 2 minutes
  * Create git step factory function
  * Executes git operations (commit, branch, pr)
  */
-export function createGitStep(context: RuntimeContext) {
+export function createGitStep(
+  context: RuntimeContext,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  inngestStep: GetStepTools<any>
+) {
   return async function git(
     name: string,
     config: GitStepConfig,
@@ -19,7 +23,7 @@ export function createGitStep(context: RuntimeContext) {
   ): Promise<GitStepResult> {
     const timeout = options?.timeout ?? DEFAULT_GIT_TIMEOUT;
 
-    return executeStep(context, name, async () => {
+    return await inngestStep.run(`git-${name}`, async () => {
       const { projectPath } = context;
 
       const operation = await Promise.race([
