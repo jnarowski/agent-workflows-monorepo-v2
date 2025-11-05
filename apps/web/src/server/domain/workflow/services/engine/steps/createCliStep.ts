@@ -5,6 +5,7 @@ import type { RuntimeContext } from "../../../types/engine.types";
 import type { CliStepConfig, CliStepResult } from "@repo/workflow-sdk";
 import type { CliStepOptions } from "../../../types/event.types";
 import { executeStep } from "./executeStep";
+import { withTimeout } from "./utils/withTimeout";
 
 const execAsync = promisify(exec);
 const DEFAULT_CLI_TIMEOUT = 300000; // 5 minutes
@@ -35,21 +36,16 @@ export function createCliStep(
       logger.debug({ command, cwd }, "Executing CLI command");
 
       try {
-        const { stdout, stderr } = await Promise.race([
+        const { stdout, stderr } = await withTimeout(
           execAsync(command, {
             cwd,
             env,
             shell: config.shell ?? "/bin/sh",
             maxBuffer: 10 * 1024 * 1024, // 10MB
           }),
-          new Promise<never>((_, reject) =>
-            setTimeout(
-              () =>
-                reject(new Error(`CLI command timed out after ${timeout}ms`)),
-              timeout
-            )
-          ),
-        ]);
+          timeout,
+          "CLI command"
+        );
 
         return {
           command,

@@ -40,6 +40,8 @@ export interface AgentStepResult {
   sessionId: string;
   /** Success status */
   success: boolean;
+  /** Exit code from agent execution */
+  exitCode: number;
   /** Output or error message */
   message?: string;
   /** Agent output content */
