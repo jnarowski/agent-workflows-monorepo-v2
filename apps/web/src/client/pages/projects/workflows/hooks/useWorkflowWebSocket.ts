@@ -1,255 +1,273 @@
-import { useEffect } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useWebSocket } from "@/client/hooks/useWebSocket";
 import { Channels } from "@/shared/websocket";
 import {
-  WorkflowEventTypes,
-  type WorkflowEvent,
+  WorkflowWebSocketEventTypes,
+  type WorkflowWebSocketEvent,
+  type WorkflowExecutionUpdatedData,
+  type WorkflowStepUpdatedData,
+  type WorkflowEventCreatedData,
+  type WorkflowArtifactCreatedData,
 } from "@/shared/types/websocket.types";
-import { useWorkflowStore } from "../stores/workflowStore";
 import { toast } from "sonner";
+import { debounce } from "@/client/lib/debounce";
+import type {
+  WorkflowExecutionListItem,
+  WorkflowExecutionDetail,
+  WorkflowEvent,
+  WorkflowArtifact,
+} from "../types";
 
 export function useWorkflowWebSocket(projectId: string) {
   const { eventBus, sendMessage, isConnected } = useWebSocket();
   const queryClient = useQueryClient();
 
-  // Get store actions
-  const {
-    handleWorkflowStarted,
-    handleStepStarted,
-    handleStepCompleted,
-    handleStepFailed,
-    handlePhaseCompleted,
-    handleWorkflowCompleted,
-    handleWorkflowFailed,
-    handleWorkflowPaused,
-    handleWorkflowResumed,
-    handleWorkflowCancelled,
-    handleEventCreated,
-    setConnected,
-  } = useWorkflowStore();
+  // Create debounced invalidation function (5s delay, resets on new events)
+  // This provides a safety net if WebSocket drops events or optimistic update is incorrect
+  const debouncedInvalidate = useMemo(
+    () =>
+      debounce((executionId: string) => {
+        queryClient.invalidateQueries({
+          queryKey: ["workflow-execution", executionId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["workflow-executions", projectId],
+        });
+      }, 5000),
+    [queryClient, projectId]
+  );
+
+  // Handler: workflow:execution:updated
+  const handleExecutionUpdated = useCallback(
+    (data: WorkflowExecutionUpdatedData) => {
+      const { execution_id, changes } = data;
+
+      // Convert date strings to Date objects
+      const normalizedChanges: Partial<WorkflowExecutionDetail> = {};
+      if (changes.status !== undefined) normalizedChanges.status = changes.status;
+      if (changes.current_phase !== undefined) normalizedChanges.current_phase = changes.current_phase;
+      if (changes.current_step !== undefined) normalizedChanges.current_step = changes.current_step;
+      if (changes.error_message !== undefined) normalizedChanges.error_message = changes.error_message;
+      if (changes.started_at !== undefined) normalizedChanges.started_at = new Date(changes.started_at);
+      if (changes.completed_at !== undefined) normalizedChanges.completed_at = new Date(changes.completed_at);
+      if (changes.updated_at !== undefined) normalizedChanges.updated_at = new Date(changes.updated_at);
+
+      // Optimistic update: Update detail view (if cached)
+      queryClient.setQueryData<WorkflowExecutionDetail>(
+        ["workflow-execution", execution_id],
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            ...normalizedChanges,
+          };
+        }
+      );
+
+      // Optimistic update: Update list view (if cached)
+      queryClient.setQueriesData<WorkflowExecutionListItem[]>(
+        { queryKey: ["workflow-executions", projectId] },
+        (old) => {
+          if (!old) return old;
+          return old.map((exec) =>
+            exec.id === execution_id
+              ? {
+                  ...exec,
+                  ...normalizedChanges,
+                }
+              : exec
+          );
+        }
+      );
+
+      // Show toast for terminal states
+      if (changes.status === "completed") {
+        toast.success("Workflow completed successfully");
+      } else if (changes.status === "failed") {
+        toast.error(`Workflow failed: ${changes.error_message || "Unknown error"}`);
+      } else if (changes.status === "cancelled") {
+        toast.info("Workflow cancelled");
+      }
+
+      // Schedule background refetch (debounced)
+      debouncedInvalidate(execution_id);
+    },
+    [queryClient, projectId, debouncedInvalidate]
+  );
+
+  // Handler: workflow:execution:step:updated
+  const handleStepUpdated = useCallback(
+    (data: WorkflowStepUpdatedData) => {
+      const { execution_id, step_id, changes } = data;
+
+      // Convert date strings to Date objects
+      const normalizedChanges: Partial<{
+        status: (typeof changes)["status"];
+        logs: string | null;
+        error_message: string | null;
+        started_at: Date;
+        completed_at: Date;
+        updated_at: Date;
+      }> = {};
+      if (changes.status !== undefined) normalizedChanges.status = changes.status;
+      if (changes.logs !== undefined) normalizedChanges.logs = changes.logs;
+      if (changes.error_message !== undefined) normalizedChanges.error_message = changes.error_message;
+      if (changes.started_at !== undefined) normalizedChanges.started_at = new Date(changes.started_at);
+      if (changes.completed_at !== undefined) normalizedChanges.completed_at = new Date(changes.completed_at);
+      if (changes.updated_at !== undefined) normalizedChanges.updated_at = new Date(changes.updated_at);
+
+      // Optimistic update: Update detail view (if cached)
+      queryClient.setQueryData<WorkflowExecutionDetail>(
+        ["workflow-execution", execution_id],
+        (old) => {
+          if (!old || !old.steps) return old;
+          return {
+            ...old,
+            steps: old.steps.map((step) =>
+              step.id === step_id
+                ? {
+                    ...step,
+                    ...normalizedChanges,
+                  }
+                : step
+            ),
+          };
+        }
+      );
+
+      // Show toast for step failures
+      if (changes.status === "failed") {
+        toast.error(`Step failed: ${changes.error_message || "Unknown error"}`);
+      }
+
+      // Schedule background refetch (debounced)
+      debouncedInvalidate(execution_id);
+    },
+    [queryClient, debouncedInvalidate]
+  );
+
+  // Handler: workflow:execution:event:created
+  const handleEventCreated = useCallback(
+    (data: WorkflowEventCreatedData) => {
+      const { execution_id, event } = data;
+
+      // Convert dates to Date objects and ensure proper types
+      const newEvent: WorkflowEvent = {
+        ...event,
+        event_type: event.event_type as WorkflowEvent["event_type"],
+        created_at: new Date(event.created_at),
+        inngest_step_id: event.inngest_step_id ?? null,
+      };
+
+      // Optimistic update: Add event to detail view (if cached)
+      queryClient.setQueryData<WorkflowExecutionDetail>(
+        ["workflow-execution", execution_id],
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            events: old.events ? [...old.events, newEvent] : [newEvent],
+          };
+        }
+      );
+
+      // Schedule background refetch (debounced)
+      debouncedInvalidate(execution_id);
+    },
+    [queryClient, debouncedInvalidate]
+  );
+
+  // Handler: workflow:execution:artifact:created
+  const handleArtifactCreated = useCallback(
+    (data: WorkflowArtifactCreatedData) => {
+      const { execution_id, artifact } = data;
+
+      // Convert dates to Date objects
+      const newArtifact: WorkflowArtifact = {
+        ...artifact,
+        created_at: new Date(artifact.created_at),
+        inngest_step_id: artifact.inngest_step_id ?? null,
+      };
+
+      // Optimistic update: Add artifact to detail view (if cached)
+      queryClient.setQueryData<WorkflowExecutionDetail>(
+        ["workflow-execution", execution_id],
+        (old) => {
+          if (!old) return old;
+
+          // If artifact belongs to a step, update that step's artifacts
+          if (artifact.workflow_execution_step_id && old.steps) {
+            const updatedSteps = old.steps.map((step) =>
+              step.id === artifact.workflow_execution_step_id
+                ? {
+                    ...step,
+                    artifacts: step.artifacts
+                      ? [...step.artifacts, newArtifact]
+                      : [newArtifact],
+                  }
+                : step
+            );
+            return {
+              ...old,
+              steps: updatedSteps,
+              artifacts: old.artifacts ? [...old.artifacts, newArtifact] : [newArtifact],
+            };
+          }
+
+          // Otherwise, just add to top-level artifacts
+          return {
+            ...old,
+            artifacts: old.artifacts ? [...old.artifacts, newArtifact] : [newArtifact],
+          };
+        }
+      );
+
+      // Schedule background refetch (debounced)
+      debouncedInvalidate(execution_id);
+    },
+    [queryClient, debouncedInvalidate]
+  );
+
+  // Main event handler
+  const handleWorkflowEvent = useCallback(
+    (event: WorkflowWebSocketEvent) => {
+      switch (event.type) {
+        case WorkflowWebSocketEventTypes.EXECUTION_UPDATED:
+          handleExecutionUpdated(event.data);
+          break;
+        case WorkflowWebSocketEventTypes.STEP_UPDATED:
+          handleStepUpdated(event.data);
+          break;
+        case WorkflowWebSocketEventTypes.EVENT_CREATED:
+          handleEventCreated(event.data);
+          break;
+        case WorkflowWebSocketEventTypes.ARTIFACT_CREATED:
+          handleArtifactCreated(event.data);
+          break;
+        default: {
+          // Exhaustive check: if we get here, TypeScript will error
+          const _exhaustiveCheck: never = event;
+          console.warn("Unknown workflow event type:", _exhaustiveCheck);
+        }
+      }
+    },
+    [handleExecutionUpdated, handleStepUpdated, handleEventCreated, handleArtifactCreated]
+  );
 
   useEffect(() => {
     if (!projectId || !isConnected) return;
-
-    // Update connection status
-    setConnected(isConnected);
 
     // Subscribe to project channel
     const channel = Channels.project(projectId);
     sendMessage(channel, { type: "subscribe", data: {} });
 
-    // Workflow created
-    const handleCreated = () => {
-      // Query invalidation handled by main event handler
-    };
-
-    // Workflow started
-    const handleStarted = (
-      event: Extract<WorkflowEvent, { type: "workflow:started" }>
-    ) => {
-      handleWorkflowStarted({ executionId: event.data.executionId });
-    };
-
-    // Step started
-    const handleStepStart = (
-      event: Extract<WorkflowEvent, { type: "workflow:step:started" }>
-    ) => {
-      handleStepStarted({
-        executionId: event.data.executionId,
-        stepId: event.data.stepId,
-        stepName: event.data.stepName,
-        phaseName: event.data.phase,
-      });
-    };
-
-    // Step completed
-    const handleStepComplete = (
-      event: Extract<WorkflowEvent, { type: "workflow:step:completed" }>
-    ) => {
-      handleStepCompleted({
-        executionId: event.data.executionId,
-        stepId: event.data.stepId,
-        logs: event.data.logs,
-      });
-    };
-
-    // Step failed
-    const handleStepFail = (
-      event: Extract<WorkflowEvent, { type: "workflow:step:failed" }>
-    ) => {
-      handleStepFailed({
-        executionId: event.data.executionId,
-        stepId: event.data.stepId,
-        error: event.data.error,
-      });
-      toast.error(`Step failed: ${event.data.stepName}`);
-    };
-
-    // Phase completed
-    const handlePhaseComplete = (
-      event: Extract<WorkflowEvent, { type: "workflow:phase:completed" }>
-    ) => {
-      handlePhaseCompleted({
-        executionId: event.data.executionId,
-        phaseName: event.data.phase,
-        nextPhase: null, // TODO: Backend should provide nextPhase
-      });
-      // Phase completion may need to trigger other updates, but for now we can skip
-      // since the domain model rebuilds the timeline from all events
-    };
-
-    // Workflow completed
-    const handleComplete = (
-      event: Extract<WorkflowEvent, { type: "workflow:completed" }>
-    ) => {
-      handleWorkflowCompleted({ executionId: event.data.executionId });
-      toast.success("Workflow completed successfully");
-    };
-
-    // Workflow failed
-    const handleFail = (
-      event: Extract<WorkflowEvent, { type: "workflow:failed" }>
-    ) => {
-      handleWorkflowFailed({
-        executionId: event.data.executionId,
-        error: event.data.error,
-      });
-      toast.error(`Workflow failed: ${event.data.error}`);
-    };
-
-    // Workflow paused
-    const handlePause = (
-      event: Extract<WorkflowEvent, { type: "workflow:paused" }>
-    ) => {
-      handleWorkflowPaused({ executionId: event.data.executionId });
-    };
-
-    // Workflow resumed
-    const handleResume = (
-      event: Extract<WorkflowEvent, { type: "workflow:resumed" }>
-    ) => {
-      handleWorkflowResumed({ executionId: event.data.executionId });
-    };
-
-    // Workflow cancelled
-    const handleCancel = (
-      event: Extract<WorkflowEvent, { type: "workflow:cancelled" }>
-    ) => {
-      handleWorkflowCancelled({ executionId: event.data.executionId });
-      toast.info("Workflow cancelled");
-    };
-
-    // Annotation created
-    const handleAnnotation = (
-      event: Extract<WorkflowEvent, { type: "workflow:annotation:created" }>
-    ) => {
-      // Create WorkflowEvent for the annotation
-      const annotationEvent = {
-        id: event.data.commentId,
-        workflow_execution_id: event.data.executionId,
-        workflow_execution_step_id: event.data.stepId || null,
-        event_type: "annotation_added" as const,
-        event_data: {
-          title: "Annotation Added",
-          body: event.data.text || event.data.body || "",
-        },
-        phase: event.data.phase || null,
-        created_by_user_id: event.data.userId || null,
-        created_at: new Date(event.data.timestamp),
-      };
-
-      handleEventCreated({
-        executionId: event.data.executionId,
-        event: annotationEvent,
-      });
-    };
-
-    // Single event handler that dispatches by event type
-    const handleWorkflowEvent = (event: WorkflowEvent) => {
-      switch (event.type) {
-        case WorkflowEventTypes.CREATED:
-          handleCreated();
-          break;
-        case WorkflowEventTypes.STARTED:
-          handleStarted(
-            event as Extract<WorkflowEvent, { type: "workflow:started" }>
-          );
-          break;
-        case WorkflowEventTypes.STEP_STARTED:
-          handleStepStart(
-            event as Extract<WorkflowEvent, { type: "workflow:step:started" }>
-          );
-          break;
-        case WorkflowEventTypes.STEP_COMPLETED:
-          handleStepComplete(
-            event as Extract<WorkflowEvent, { type: "workflow:step:completed" }>
-          );
-          break;
-        case WorkflowEventTypes.STEP_FAILED:
-          handleStepFail(
-            event as Extract<WorkflowEvent, { type: "workflow:step:failed" }>
-          );
-          break;
-        case WorkflowEventTypes.PHASE_COMPLETED:
-          handlePhaseComplete(
-            event as Extract<
-              WorkflowEvent,
-              { type: "workflow:phase:completed" }
-            >
-          );
-          break;
-        case WorkflowEventTypes.COMPLETED:
-          handleComplete(
-            event as Extract<WorkflowEvent, { type: "workflow:completed" }>
-          );
-          break;
-        case WorkflowEventTypes.FAILED:
-          handleFail(
-            event as Extract<WorkflowEvent, { type: "workflow:failed" }>
-          );
-          break;
-        case WorkflowEventTypes.PAUSED:
-          handlePause(
-            event as Extract<WorkflowEvent, { type: "workflow:paused" }>
-          );
-          break;
-        case WorkflowEventTypes.RESUMED:
-          handleResume(
-            event as Extract<WorkflowEvent, { type: "workflow:resumed" }>
-          );
-          break;
-        case WorkflowEventTypes.CANCELLED:
-          handleCancel(
-            event as Extract<WorkflowEvent, { type: "workflow:cancelled" }>
-          );
-          break;
-        case WorkflowEventTypes.ANNOTATION_CREATED:
-          handleAnnotation(
-            event as Extract<
-              WorkflowEvent,
-              { type: "workflow:annotation:created" }
-            >
-          );
-          break;
-      }
-
-      // Invalidate queries with delay to allow database to catch up
-      // This prevents race condition where refetch returns stale data before DB is updated
-      setTimeout(() => {
-        queryClient.invalidateQueries({
-          queryKey: ["workflow-executions", projectId],
-        });
-      }, 500); // 500ms delay gives DB time to commit
-    };
-
+    // Register event handler
     eventBus.on(channel, handleWorkflowEvent);
 
     // Cleanup
     return () => {
       eventBus.off(channel, handleWorkflowEvent);
     };
-    // Zustand store functions (handle*, setConnected) are stable and omitted per convention
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId, isConnected, eventBus, sendMessage, queryClient]);
+  }, [projectId, isConnected, eventBus, sendMessage, handleWorkflowEvent]);
 }

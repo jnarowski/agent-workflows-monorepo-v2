@@ -19,13 +19,14 @@ export function createAgentStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function agent(
+    stepId: string,
     name: string,
     config: AgentStepConfig,
     options?: { timeout?: number }
   ): Promise<AgentStepResult> {
     const timeout = options?.timeout ?? DEFAULT_AGENT_TIMEOUT;
 
-    return executeStep(context, name, async () => {
+    return executeStep(context, stepId, name, async () => {
       const { projectId, userId, logger } = context;
 
       // Create agent session using domain service

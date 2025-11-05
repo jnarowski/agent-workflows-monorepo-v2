@@ -17,13 +17,19 @@ export function createGitStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function git(
-    name: string,
+    stepId: string,
+    _name: string,
     config: GitStepConfig,
     options?: { timeout?: number }
   ): Promise<GitStepResult> {
     const timeout = options?.timeout ?? DEFAULT_GIT_TIMEOUT;
 
-    return await inngestStep.run(`git-${name}`, async () => {
+    // Generate phase-prefixed Inngest step ID
+    const inngestStepId = context.currentPhase
+      ? `${context.currentPhase}-${stepId}`
+      : stepId;
+
+    return await inngestStep.run(inngestStepId, async () => {
       const { projectPath } = context;
 
       const operation = await Promise.race([

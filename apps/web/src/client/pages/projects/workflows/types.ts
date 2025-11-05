@@ -67,8 +67,9 @@ export interface WorkflowExecution {
 export interface WorkflowExecutionStep {
   id: string;
   workflow_execution_id: string;
-  name: string; // Fixed: was step_name, now matches Prisma
-  phase: string; // Fixed: was phase_name, now matches Prisma
+  inngest_step_id: string; // Phase-prefixed step ID for Inngest memoization
+  name: string; // Display name
+  phase: string;
   status: StepStatus;
   logs: string | null;
   error_message: string | null;
@@ -128,6 +129,7 @@ export interface WorkflowEvent {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   event_data: any; // JSON field, type-safe access via EventDataMap
   phase: string | null; // Phase column from Prisma
+  inngest_step_id: string | null; // Optional reference to step that triggered event
   created_by_user_id: string | null;
   created_at: Date;
   created_by_user?: User | null;
@@ -136,6 +138,7 @@ export interface WorkflowEvent {
 
 export interface WorkflowArtifact {
   id: string;
+  workflow_execution_id: string;
   workflow_execution_step_id: string | null;
   workflow_event_id: string | null;
   name: string;
@@ -144,6 +147,7 @@ export interface WorkflowArtifact {
   mime_type: string;
   size_bytes: number;
   phase: string | null;
+  inngest_step_id: string | null; // Optional reference to step that created artifact
   created_at: Date;
 }
 
@@ -152,4 +156,61 @@ export interface WorkflowFilter {
   status?: WorkflowStatus;
   definitionId?: string;
   search?: string;
+}
+
+/**
+ * WorkflowExecutionListItem - Optimized interface for list views
+ *
+ * Minimal data required for displaying executions in list/board views.
+ * This matches the optimized backend query that selects only necessary fields.
+ * ~500 bytes per execution vs ~10KB for full nested data (95% reduction)
+ */
+export interface WorkflowExecutionListItem {
+  id: string;
+  name: string;
+  status: WorkflowStatus;
+  current_phase: string | null;
+  workflow_definition_id: string;
+  started_at: Date | null;
+  created_at: Date;
+  workflow_definition: {
+    name: string;
+    phases: Phase[];
+  };
+  _count: {
+    steps: number;
+  };
+}
+
+/**
+ * WorkflowExecutionDetail - Full interface for detail views
+ *
+ * Complete data including nested steps, events, and artifacts.
+ * Used only in detail view where full data is needed.
+ * This is the existing WorkflowExecution interface (renamed for clarity)
+ */
+export interface WorkflowExecutionDetail {
+  id: string;
+  workflow_definition_id: string;
+  workflow_definition?: WorkflowDefinition;
+  project_id: string;
+  name: string;
+  status: WorkflowStatus;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  args: Record<string, any> | null;
+  current_step: string | null;
+  current_phase: string | null;
+  error_message: string | null;
+  started_at: Date | null;
+  completed_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+  created_by: string;
+  steps?: WorkflowExecutionStep[];
+  events?: WorkflowEvent[];
+  artifacts?: WorkflowArtifact[];
+  _count?: {
+    steps: number;
+    events: number;
+  };
 }

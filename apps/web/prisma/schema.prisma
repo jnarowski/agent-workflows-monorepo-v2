@@ -56,6 +56,7 @@ model WorkflowExecution {
   workflow_definition WorkflowDefinition      @relation(fields: [workflow_definition_id], references: [id], onDelete: Cascade)
   steps               WorkflowExecutionStep[]
   events              WorkflowEvent[]
+  artifacts           WorkflowArtifact[]
 
   @@index([project_id, status])
   @@index([user_id, status])
@@ -68,8 +69,8 @@ model WorkflowExecution {
 model WorkflowExecutionStep {
   id                    String     @id @default(cuid())
   workflow_execution_id String
-  step_id               String     // Step identifier from workflow definition
-  name                  String     // Step name
+  inngest_step_id       String     // Auto-generated: "${phase}-${userStepId}" for Inngest memoization
+  name                  String     // Display name
   phase                 String     // Phase this step belongs to
   status                StepStatus @default(pending)
   log_directory_path    String?    // Path to logs directory on filesystem
@@ -95,6 +96,7 @@ model WorkflowEvent {
   event_type            WorkflowEventType
   event_data            Json              // Event-specific data (comment text, phase name, step info, etc.)
   phase                 String?           // Phase this event belongs to
+  inngest_step_id       String?           // Optional reference to step that triggered this event
   created_by_user_id    String?           // Nullable - only for user-generated events
   created_at            DateTime          @default(now())
   updated_at            DateTime          @updatedAt
@@ -110,19 +112,24 @@ model WorkflowEvent {
 }
 
 model WorkflowArtifact {
-  id                String    @id @default(cuid())
-  workflow_event_id String?   // Nullable - can attach artifact to event
-  name              String
-  file_path         String    // Relative to project root
-  file_type         String    // 'image', 'video', 'document', 'code', 'other'
-  mime_type         String
-  size_bytes        Int
-  phase             String?   // Phase this artifact belongs to (nullable for migration)
-  created_at        DateTime  @default(now())
-  updated_at        DateTime  @updatedAt
+  id                    String    @id @default(cuid())
+  workflow_execution_id String    // Direct reference to execution
+  workflow_event_id     String?   // Nullable - can attach artifact to event
+  name                  String
+  file_path             String    // Relative to project root
+  file_type             String    // 'image', 'video', 'document', 'code', 'other'
+  mime_type             String
+  size_bytes            Int
+  phase                 String?   // Phase this artifact belongs to
+  inngest_step_id       String?   // Optional reference to step that created this artifact
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
 
-  event WorkflowEvent? @relation(fields: [workflow_event_id], references: [id], onDelete: SetNull)
+  workflow_execution WorkflowExecution @relation(fields: [workflow_execution_id], references: [id], onDelete: Cascade)
+  event              WorkflowEvent?    @relation(fields: [workflow_event_id], references: [id], onDelete: SetNull)
 
+  @@index([workflow_execution_id])
+  @@index([workflow_execution_id, phase])
   @@index([workflow_event_id])
   @@index([phase])
   @@map("workflow_artifacts")

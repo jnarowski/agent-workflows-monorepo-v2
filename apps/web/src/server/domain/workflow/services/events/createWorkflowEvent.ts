@@ -2,12 +2,14 @@ import type { FastifyBaseLogger } from 'fastify';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/shared/prisma';
 import type { WorkflowEvent, EventDataMap } from '@/server/domain/workflow/types';
+import { emitWorkflowEvent } from './emitWorkflowEvent';
 
 export interface CreateWorkflowEventParams<T extends keyof EventDataMap = keyof EventDataMap> {
   workflow_execution_id: string;
   event_type: T;
   event_data: EventDataMap[T];
   phase?: string | null;
+  inngest_step_id?: string;
   created_by_user_id?: string;
   created_at?: Date; // Optional: allow custom timestamp (for step_started events)
   logger?: FastifyBaseLogger;
@@ -25,6 +27,7 @@ export async function createWorkflowEvent<T extends keyof EventDataMap>(
     event_type,
     event_data,
     phase,
+    inngest_step_id,
     created_by_user_id,
     created_at,
     logger,
@@ -35,6 +38,7 @@ export async function createWorkflowEvent<T extends keyof EventDataMap>(
       workflow_execution_id,
       event_type,
       phase,
+      inngest_step_id,
     },
     'Creating workflow event'
   );
@@ -46,12 +50,39 @@ export async function createWorkflowEvent<T extends keyof EventDataMap>(
       event_type,
       event_data: event_data as unknown as Prisma.InputJsonValue,
       phase,
+      inngest_step_id,
       created_by_user_id,
       ...(created_at && { created_at }),
     },
   });
 
   logger?.debug({ eventId: event.id, phase }, 'Workflow event created');
+
+  // Get project_id for WebSocket emission
+  const execution = await prisma.workflowExecution.findUnique({
+    where: { id: workflow_execution_id },
+    select: { project_id: true },
+  });
+
+  // Emit event:created WebSocket event
+  if (execution) {
+    emitWorkflowEvent(execution.project_id, {
+      type: 'workflow:execution:event:created',
+      data: {
+        execution_id: workflow_execution_id,
+        event: {
+          id: event.id,
+          workflow_execution_id: event.workflow_execution_id,
+          event_type: event.event_type,
+          event_data: event.event_data as unknown,
+          phase: event.phase,
+          inngest_step_id: event.inngest_step_id,
+          created_by_user_id: event.created_by_user_id,
+          created_at: event.created_at,
+        },
+      },
+    });
+  }
 
   return event;
 }

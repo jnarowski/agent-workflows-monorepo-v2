@@ -292,173 +292,125 @@ export type ShellEvent =
 // ============================================================================
 
 /**
- * Workflow event type constants
- * Used for project:* channels (workflow execution lifecycle)
+ * Workflow WebSocket event type constants
  *
- * Note: Uses room-based broadcasting - all events scoped to project rooms
- * Clients filter by executionId in the payload
+ * Hierarchical event naming with colon delimiters (Socket.io convention)
+ * - workflow:execution:updated - Status, phase, error changes
+ * - workflow:execution:step:updated - Step status, logs, error changes
+ * - workflow:execution:event:created - WorkflowEvent created (annotations, etc.)
+ * - workflow:execution:artifact:created - WorkflowArtifact uploaded/attached
+ *
+ * All events broadcast to project:${projectId} room only
+ * Client-side filtering handled efficiently by React Query cache
  */
-export const WorkflowEventTypes = {
-  CREATED: "workflow:created",
-  STARTED: "workflow:started",
-  STEP_STARTED: "workflow:step:started",
-  STEP_COMPLETED: "workflow:step:completed",
-  STEP_FAILED: "workflow:step:failed",
-  PHASE_COMPLETED: "workflow:phase:completed",
-  COMPLETED: "workflow:completed",
-  FAILED: "workflow:failed",
-  PAUSED: "workflow:paused",
-  RESUMED: "workflow:resumed",
-  CANCELLED: "workflow:cancelled",
-  ANNOTATION_CREATED: "workflow:annotation:created",
+export const WorkflowWebSocketEventTypes = {
+  EXECUTION_UPDATED: "workflow:execution:updated",
+  STEP_UPDATED: "workflow:execution:step:updated",
+  EVENT_CREATED: "workflow:execution:event:created",
+  ARTIFACT_CREATED: "workflow:execution:artifact:created",
 } as const;
 
 /**
- * Data interfaces for workflow events
+ * Data interfaces for workflow WebSocket events
  */
-export interface WorkflowCreatedData {
-  executionId: string;
-  projectId: string;
-  definitionId: string;
-  timestamp: string;
-}
 
-export interface WorkflowStartedData {
-  executionId: string;
-  projectId: string;
-  timestamp: string;
-}
+import type { WorkflowStatus, StepStatus } from '../schemas/workflow.schemas';
 
-export interface WorkflowStepStartedData {
-  executionId: string;
-  projectId: string;
-  stepId: string;
-  stepName: string;
-  phase: string;
-  timestamp: string;
-}
-
-export interface WorkflowStepCompletedData {
-  executionId: string;
-  projectId: string;
-  stepId: string;
-  stepName: string;
-  phase: string;
-  logs: string;
-  timestamp: string;
-}
-
-export interface WorkflowStepFailedData {
-  executionId: string;
-  projectId: string;
-  stepId: string;
-  stepName: string;
-  phase: string;
-  error: string;
-  timestamp: string;
-}
-
-export interface WorkflowPhaseCompletedData {
-  executionId: string;
-  projectId: string;
-  phase: string;
-  timestamp: string;
-}
-
-export interface WorkflowCompletedData {
-  executionId: string;
-  projectId: string;
-  timestamp: string;
-}
-
-export interface WorkflowFailedData {
-  executionId: string;
-  projectId: string;
-  error: string;
-  timestamp: string;
-}
-
-export interface WorkflowPausedData {
-  executionId: string;
-  projectId: string;
-  timestamp: string;
-}
-
-export interface WorkflowResumedData {
-  executionId: string;
-  projectId: string;
-  timestamp: string;
-}
-
-export interface WorkflowCancelledData {
-  executionId: string;
-  projectId: string;
-  timestamp: string;
-}
-
-export interface WorkflowAnnotationCreatedData {
-  executionId: string;
-  projectId: string;
-  commentId: string;
-  text: string;
-  body?: string; // Alternative field name for compatibility
-  phase: string | null;
-  stepId?: string;
-  userId: string | null;
-  timestamp: string;
+/**
+ * Execution updated event - partial updates to WorkflowExecution
+ * Contains only changed fields to minimize payload size
+ */
+export interface WorkflowExecutionUpdatedData {
+  execution_id: string;
+  project_id: string;
+  changes: Partial<{
+    status: WorkflowStatus;
+    current_phase: string | null;
+    current_step: string | null;
+    error_message: string | null;
+    started_at: Date | string;
+    completed_at: Date | string;
+    updated_at: Date | string;
+  }>;
 }
 
 /**
- * Discriminated union for all workflow events
+ * Step updated event - partial updates to WorkflowExecutionStep
+ * Contains only changed fields
  */
-export type WorkflowEvent =
+export interface WorkflowStepUpdatedData {
+  execution_id: string;
+  step_id: string;
+  changes: Partial<{
+    status: StepStatus;
+    logs: string | null;
+    error_message: string | null;
+    started_at: Date | string;
+    completed_at: Date | string;
+    updated_at: Date | string;
+  }>;
+}
+
+/**
+ * Event created - full WorkflowEvent object
+ * Sent when annotation or other event is created
+ */
+export interface WorkflowEventCreatedData {
+  execution_id: string;
+  event: {
+    id: string;
+    workflow_execution_id: string;
+    event_type: string;
+    event_data: unknown;
+    phase: string | null;
+    inngest_step_id: string | null;
+    created_by_user_id: string | null;
+    created_at: Date | string;
+  };
+}
+
+/**
+ * Artifact created - full WorkflowArtifact object
+ * Sent when artifact uploaded or attached to event
+ */
+export interface WorkflowArtifactCreatedData {
+  execution_id: string;
+  artifact: {
+    id: string;
+    workflow_execution_id: string;
+    workflow_execution_step_id: string | null;
+    workflow_event_id: string | null;
+    name: string;
+    file_path: string;
+    file_type: string;
+    mime_type: string;
+    size_bytes: number;
+    phase: string | null;
+    inngest_step_id: string | null;
+    created_at: Date | string;
+  };
+}
+
+/**
+ * Discriminated union for all workflow WebSocket events
+ * Enables exhaustive type checking with TypeScript's never type
+ */
+export type WorkflowWebSocketEvent =
   | {
-      type: typeof WorkflowEventTypes.CREATED;
-      data: WorkflowCreatedData;
+      type: typeof WorkflowWebSocketEventTypes.EXECUTION_UPDATED;
+      data: WorkflowExecutionUpdatedData;
     }
   | {
-      type: typeof WorkflowEventTypes.STARTED;
-      data: WorkflowStartedData;
+      type: typeof WorkflowWebSocketEventTypes.STEP_UPDATED;
+      data: WorkflowStepUpdatedData;
     }
   | {
-      type: typeof WorkflowEventTypes.STEP_STARTED;
-      data: WorkflowStepStartedData;
+      type: typeof WorkflowWebSocketEventTypes.EVENT_CREATED;
+      data: WorkflowEventCreatedData;
     }
   | {
-      type: typeof WorkflowEventTypes.STEP_COMPLETED;
-      data: WorkflowStepCompletedData;
-    }
-  | {
-      type: typeof WorkflowEventTypes.STEP_FAILED;
-      data: WorkflowStepFailedData;
-    }
-  | {
-      type: typeof WorkflowEventTypes.PHASE_COMPLETED;
-      data: WorkflowPhaseCompletedData;
-    }
-  | {
-      type: typeof WorkflowEventTypes.COMPLETED;
-      data: WorkflowCompletedData;
-    }
-  | {
-      type: typeof WorkflowEventTypes.FAILED;
-      data: WorkflowFailedData;
-    }
-  | {
-      type: typeof WorkflowEventTypes.PAUSED;
-      data: WorkflowPausedData;
-    }
-  | {
-      type: typeof WorkflowEventTypes.RESUMED;
-      data: WorkflowResumedData;
-    }
-  | {
-      type: typeof WorkflowEventTypes.CANCELLED;
-      data: WorkflowCancelledData;
-    }
-  | {
-      type: typeof WorkflowEventTypes.ANNOTATION_CREATED;
-      data: WorkflowAnnotationCreatedData;
+      type: typeof WorkflowWebSocketEventTypes.ARTIFACT_CREATED;
+      data: WorkflowArtifactCreatedData;
     };
 
 // ============================================================================
@@ -469,7 +421,7 @@ export type WorkflowEvent =
  * Union of all possible channel events
  * Useful for generic event handling
  */
-export type AnyChannelEvent = SessionEvent | GlobalEvent | ShellEvent | WorkflowEvent;
+export type AnyChannelEvent = SessionEvent | GlobalEvent | ShellEvent | WorkflowWebSocketEvent;
 
 /**
  * WebSocket message format sent over the wire

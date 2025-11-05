@@ -8,9 +8,8 @@ import type {
 import type { RuntimeContext } from "../../types/engine.types";
 import type { FastifyBaseLogger } from "fastify";
 import { prisma } from "@/shared/prisma";
-import { Channels } from "@/shared/websocket/channels";
-import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import { createWorkflowEvent } from "@/server/domain/workflow/services";
+import { emitWorkflowEvent } from "../events/emitWorkflowEvent";
 import {
   createPhaseStep,
   createAgentStep,
@@ -72,8 +71,9 @@ export function createWorkflowRuntime(
             run: createRunStep(context, inngestStep),
             // Custom phase-based step methods
             // ONLY agent and cli use executeStep (which wraps inngestStep.run)
+            // phase does NOT wrap in step.run (to avoid nesting warning)
             // All others wrap inngestStep.run() directly
-            phase: createPhaseStep(context, inngestStep),
+            phase: createPhaseStep(context),
             agent: createAgentStep(context, inngestStep),
             git: createGitStep(context, inngestStep),
             cli: createCliStep(context, inngestStep),
@@ -82,10 +82,14 @@ export function createWorkflowRuntime(
           }) as WorkflowStep;
 
           try {
-            // Emit workflow:started event
+            // Update execution status and emit event
+            const startedAt = new Date();
             await prisma.workflowExecution.update({
               where: { id: executionId },
-              data: { status: "running" },
+              data: {
+                status: "running",
+                started_at: startedAt,
+              },
             });
 
             await createWorkflowEvent({
@@ -93,16 +97,20 @@ export function createWorkflowRuntime(
               // @ts-ignore - event data
               event_type: "workflow_started",
               // @ts-ignore - event data
-              event_data: { timestamp: new Date().toISOString() },
+              event_data: { timestamp: startedAt.toISOString() },
               logger,
             });
 
-            broadcast(Channels.project(projectId), {
-              type: "workflow:started",
+            // Emit execution:updated WebSocket event
+            emitWorkflowEvent(projectId, {
+              type: "workflow:execution:updated",
               data: {
-                executionId,
-                projectId,
-                timestamp: new Date().toISOString(),
+                execution_id: executionId,
+                project_id: projectId,
+                changes: {
+                  status: "running",
+                  started_at: startedAt,
+                },
               },
             });
 
@@ -115,11 +123,12 @@ export function createWorkflowRuntime(
             });
 
             // Emit workflow:completed event
+            const completedAt = new Date();
             await prisma.workflowExecution.update({
               where: { id: executionId },
               data: {
                 status: "completed",
-                completed_at: new Date(),
+                completed_at: completedAt,
               },
             });
 
@@ -127,16 +136,20 @@ export function createWorkflowRuntime(
               workflow_execution_id: executionId,
               event_type: "workflow_completed",
               // @ts-ignore - event data
-              event_data: { timestamp: new Date().toISOString() },
+              event_data: { timestamp: completedAt.toISOString() },
               logger,
             });
 
-            broadcast(Channels.project(projectId), {
-              type: "workflow:completed",
+            // Emit execution:updated WebSocket event
+            emitWorkflowEvent(projectId, {
+              type: "workflow:execution:updated",
               data: {
-                executionId,
-                projectId,
-                timestamp: new Date().toISOString(),
+                execution_id: executionId,
+                project_id: projectId,
+                changes: {
+                  status: "completed",
+                  completed_at: completedAt,
+                },
               },
             });
 
@@ -148,11 +161,12 @@ export function createWorkflowRuntime(
               error instanceof Error ? error : new Error(String(error));
 
             // Emit workflow:failed event
+            const failedAt = new Date();
             await prisma.workflowExecution.update({
               where: { id: executionId },
               data: {
                 status: "failed",
-                completed_at: new Date(),
+                completed_at: failedAt,
                 error_message: err.message,
               },
             });
@@ -163,18 +177,22 @@ export function createWorkflowRuntime(
               // @ts-ignore - event data
               event_data: {
                 error: err.message,
-                timestamp: new Date().toISOString(),
+                timestamp: failedAt.toISOString(),
               },
               logger,
             });
 
-            broadcast(Channels.project(projectId), {
-              type: "workflow:failed",
+            // Emit execution:updated WebSocket event
+            emitWorkflowEvent(projectId, {
+              type: "workflow:execution:updated",
               data: {
-                executionId,
-                projectId,
-                error: err.message,
-                timestamp: new Date().toISOString(),
+                execution_id: executionId,
+                project_id: projectId,
+                changes: {
+                  status: "failed",
+                  completed_at: failedAt,
+                  error_message: err.message,
+                },
               },
             });
 

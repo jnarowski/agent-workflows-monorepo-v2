@@ -279,13 +279,15 @@ export const workflowExecutionResponseSchema = z.object({
  */
 export const artifactResponseSchema = z.object({
   id: z.string(),
-  workflow_execution_step_id: z.string(),
+  workflow_execution_id: z.string(),
+  workflow_execution_step_id: z.string().nullable(),
   workflow_event_id: z.string().nullable(),
   name: z.string(),
   file_path: z.string(),
   file_type: z.string(),
   mime_type: z.string(),
   size_bytes: z.number(),
+  phase: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
 });

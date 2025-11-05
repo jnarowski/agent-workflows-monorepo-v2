@@ -9,6 +9,7 @@ import { createWorkflowStep } from './createWorkflowStep';
  */
 export async function findOrCreateWorkflowStep(
   executionId: string,
+  inngestStepId: string,
   stepName: string,
   phase?: string,
   logger?: FastifyBaseLogger
@@ -19,10 +20,10 @@ export async function findOrCreateWorkflowStep(
   // Create if not found
   if (!step) {
     logger?.debug(
-      { executionId, stepName, phase },
+      { executionId, inngestStepId, stepName, phase },
       'Step not found, creating new step'
     );
-    step = await createWorkflowStep(executionId, stepName, phase, logger);
+    step = await createWorkflowStep(executionId, inngestStepId, stepName, phase, logger);
   }
 
   return step;

@@ -27,6 +27,7 @@ CREATE TABLE "workflow_executions" (
     "current_step_index" INTEGER NOT NULL DEFAULT 0,
     "status" TEXT NOT NULL DEFAULT 'pending',
     "error_message" TEXT,
+    "inngest_run_id" TEXT,
     "started_at" DATETIME,
     "completed_at" DATETIME,
     "paused_at" DATETIME,
@@ -42,7 +43,7 @@ CREATE TABLE "workflow_executions" (
 CREATE TABLE "workflow_execution_steps" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "workflow_execution_id" TEXT NOT NULL,
-    "step_id" TEXT NOT NULL,
+    "inngest_step_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "phase" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'pending',
@@ -64,6 +65,7 @@ CREATE TABLE "workflow_events" (
     "event_type" TEXT NOT NULL,
     "event_data" JSONB NOT NULL,
     "phase" TEXT,
+    "inngest_step_id" TEXT,
     "created_by_user_id" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
@@ -74,6 +76,7 @@ CREATE TABLE "workflow_events" (
 -- CreateTable
 CREATE TABLE "workflow_artifacts" (
     "id" TEXT NOT NULL PRIMARY KEY,
+    "workflow_execution_id" TEXT NOT NULL,
     "workflow_event_id" TEXT,
     "name" TEXT NOT NULL,
     "file_path" TEXT NOT NULL,
@@ -81,8 +84,10 @@ CREATE TABLE "workflow_artifacts" (
     "mime_type" TEXT NOT NULL,
     "size_bytes" INTEGER NOT NULL,
     "phase" TEXT,
+    "inngest_step_id" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
+    CONSTRAINT "workflow_artifacts_workflow_execution_id_fkey" FOREIGN KEY ("workflow_execution_id") REFERENCES "workflow_executions" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "workflow_artifacts_workflow_event_id_fkey" FOREIGN KEY ("workflow_event_id") REFERENCES "workflow_events" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
@@ -151,6 +156,9 @@ CREATE INDEX "workflow_executions_workflow_definition_id_idx" ON "workflow_execu
 CREATE INDEX "workflow_executions_status_idx" ON "workflow_executions"("status");
 
 -- CreateIndex
+CREATE INDEX "workflow_executions_inngest_run_id_idx" ON "workflow_executions"("inngest_run_id");
+
+-- CreateIndex
 CREATE INDEX "workflow_execution_steps_workflow_execution_id_status_idx" ON "workflow_execution_steps"("workflow_execution_id", "status");
 
 -- CreateIndex
@@ -167,6 +175,12 @@ CREATE INDEX "workflow_events_event_type_idx" ON "workflow_events"("event_type")
 
 -- CreateIndex
 CREATE INDEX "workflow_events_phase_idx" ON "workflow_events"("phase");
+
+-- CreateIndex
+CREATE INDEX "workflow_artifacts_workflow_execution_id_idx" ON "workflow_artifacts"("workflow_execution_id");
+
+-- CreateIndex
+CREATE INDEX "workflow_artifacts_workflow_execution_id_phase_idx" ON "workflow_artifacts"("workflow_execution_id", "phase");
 
 -- CreateIndex
 CREATE INDEX "workflow_artifacts_workflow_event_id_idx" ON "workflow_artifacts"("workflow_event_id");

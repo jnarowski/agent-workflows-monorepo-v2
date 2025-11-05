@@ -45,6 +45,7 @@ export async function uploadArtifact(
   // Create artifact record
   const artifact = await prisma.workflowArtifact.create({
     data: {
+      workflow_execution_id: data.workflow_execution_id,
       name: data.name,
       file_path: data.file_path, // Store relative path
       file_type: data.file_type,

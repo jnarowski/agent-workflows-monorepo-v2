@@ -1,6 +1,5 @@
-import { Channels } from "@/shared/websocket/channels";
-import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import { createWorkflowEvent } from "@/server/domain/workflow/services";
+import { emitWorkflowEvent } from "../../events/emitWorkflowEvent";
 import type { RuntimeContext } from "../../../types/engine.types";
 import { updateWorkflowStep } from "../../steps/updateWorkflowStep";
 
@@ -17,7 +16,7 @@ export async function updateStepStatus(
   context: RuntimeContext,
   stepId: string,
   status: "pending" | "running" | "completed" | "failed",
-  result?: Record<string, unknown>,
+  _result?: Record<string, unknown>,
   error?: string
 ): Promise<void> {
   const { executionId, projectId, logger } = context;
@@ -51,27 +50,24 @@ export async function updateStepStatus(
     });
   }
 
-  // Broadcast WebSocket event
-  const wsEventType =
-    status === "running"
-      ? "workflow:step:started"
-      : status === "completed"
-        ? "workflow:step:completed"
-        : status === "failed"
-          ? "workflow:step:failed"
-          : "workflow:step:updated";
+  // Emit step:updated WebSocket event
+  const changes: Record<string, unknown> = { status };
+  if (status === "running" && step.started_at) {
+    changes.started_at = step.started_at;
+  }
+  if ((status === "completed" || status === "failed") && step.completed_at) {
+    changes.completed_at = step.completed_at;
+  }
+  if (status === "failed" && error) {
+    changes.error_message = error;
+  }
 
-  broadcast(Channels.project(projectId), {
-    type: wsEventType,
+  emitWorkflowEvent(projectId, {
+    type: "workflow:execution:step:updated",
     data: {
-      executionId,
-      stepId,
-      stepName: step.name,
-      phase: step.phase,
-      status,
-      result,
-      error,
-      timestamp: new Date().toISOString(),
+      execution_id: executionId,
+      step_id: stepId,
+      changes,
     },
   });
 

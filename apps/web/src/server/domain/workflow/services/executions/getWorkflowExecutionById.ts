@@ -25,24 +25,10 @@ export async function getWorkflowExecutionById(id: string): Promise<WorkflowExec
     return null;
   }
 
-  // Fetch all artifacts for this execution (via event attachments OR via path pattern)
-  // Since artifacts can be attached to events OR standalone, we need to fetch both
+  // Fetch all artifacts for this execution using direct relationship
   const allArtifacts = await prisma.workflowArtifact.findMany({
     where: {
-      OR: [
-        // Artifacts attached to events in this execution
-        {
-          event: {
-            workflow_execution_id: id,
-          },
-        },
-        // Standalone artifacts by file path pattern (contains execution ID)
-        {
-          file_path: {
-            contains: `executions/${id}/`,
-          },
-        },
-      ],
+      workflow_execution_id: id,
     },
     orderBy: { created_at: 'asc' },
   });

@@ -18,6 +18,7 @@ export function createCliStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function cli(
+    stepId: string,
     name: string,
     command: string,
     config?: Omit<CliStepConfig, "command">,
@@ -25,7 +26,7 @@ export function createCliStep(
   ): Promise<CliStepResult> {
     const timeout = options?.timeout ?? DEFAULT_CLI_TIMEOUT;
 
-    return executeStep(context, name, async () => {
+    return executeStep(context, stepId, name, async () => {
       const { projectPath, logger } = context;
       const cwd = config?.cwd ?? projectPath;
       const env = { ...process.env, ...config?.env };

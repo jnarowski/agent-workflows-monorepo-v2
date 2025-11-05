@@ -8,19 +8,20 @@ import type { FastifyBaseLogger } from 'fastify';
  */
 export async function createWorkflowStep(
   executionId: string,
+  inngestStepId: string,
   stepName: string,
   phase?: string,
   logger?: FastifyBaseLogger
 ): Promise<WorkflowExecutionStep> {
   logger?.debug(
-    { executionId, stepName, phase },
+    { executionId, inngestStepId, stepName, phase },
     'Creating workflow step'
   );
 
   const step = await prisma.workflowExecutionStep.create({
     data: {
       workflow_execution_id: executionId,
-      step_id: stepName,
+      inngest_step_id: inngestStepId,
       name: stepName,
       status: 'pending',
       phase: phase || '',

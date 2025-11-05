@@ -14,15 +14,16 @@ export function createAnnotationStep(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inngestStep: GetStepTools<any>
 ) {
-  return async function annotation(message: string): Promise<void> {
+  return async function annotation(stepId: string, message: string): Promise<void> {
     const { executionId, projectId, currentPhase, logger } = context;
 
-    // Generate deterministic step ID from message content
-    // Use first 32 chars of base64-encoded message for uniqueness
-    const stepId = `annotation-${Buffer.from(message).toString("base64").slice(0, 32)}`;
+    // Generate phase-prefixed Inngest step ID
+    const inngestStepId = currentPhase
+      ? `${currentPhase}-${stepId}`
+      : stepId;
 
     // Wrap in Inngest step.run for memoization
-    return await inngestStep.run(stepId, async () => {
+    return await inngestStep.run(inngestStepId, async () => {
       // Create annotation event using domain service
       const event = await createWorkflowEvent({
         workflow_execution_id: executionId,

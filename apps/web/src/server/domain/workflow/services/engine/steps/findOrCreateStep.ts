@@ -7,11 +7,13 @@ import { findOrCreateWorkflowStep } from "../../steps/findOrCreateWorkflowStep";
  * Steps are created dynamically as workflow executes
  *
  * @param context - Runtime context
- * @param stepName - Step name
+ * @param inngestStepId - Inngest step ID for memoization
+ * @param stepName - Step display name
  * @returns WorkflowExecutionStep record
  */
 export async function findOrCreateStep(
   context: RuntimeContext,
+  inngestStepId: string,
   stepName: string
 ): Promise<WorkflowExecutionStep> {
   const { executionId, currentPhase, logger } = context;
@@ -19,6 +21,7 @@ export async function findOrCreateStep(
   // Use domain service for find-or-create logic
   const step = await findOrCreateWorkflowStep(
     executionId,
+    inngestStepId,
     stepName,
     currentPhase ?? undefined,
     logger

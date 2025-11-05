@@ -5,12 +5,14 @@ import type { FastifyBaseLogger } from 'fastify';
 export type ArtifactFileType = 'text' | 'file' | 'image';
 
 export interface CreateWorkflowArtifactData {
+  workflow_execution_id: string;
   name: string;
   file_type: ArtifactFileType;
   file_path: string;
   mime_type: string;
   size_bytes: number;
   phase: string;
+  inngest_step_id?: string;
 }
 
 /**
@@ -23,18 +25,20 @@ export async function createWorkflowArtifact(
   logger?: FastifyBaseLogger
 ): Promise<WorkflowArtifact> {
   logger?.debug(
-    { name: data.name, fileType: data.file_type, phase: data.phase },
+    { name: data.name, fileType: data.file_type, phase: data.phase, inngestStepId: data.inngest_step_id },
     'Creating workflow artifact'
   );
 
   const artifact = await prisma.workflowArtifact.create({
     data: {
+      workflow_execution_id: data.workflow_execution_id,
       name: data.name,
       file_type: data.file_type,
       file_path: data.file_path,
       mime_type: data.mime_type,
       size_bytes: data.size_bytes,
       phase: data.phase,
+      inngest_step_id: data.inngest_step_id,
     },
   });
 
