@@ -6,7 +6,7 @@ import type {
   ArtifactStepConfig,
   ArtifactStepResult,
 } from "@repo/workflow-sdk";
-import { findWorkflowStepByName } from "../../steps/findWorkflowStepByName";
+import { findOrCreateStep } from "./findOrCreateStep";
 import { createWorkflowArtifact } from "../../artifacts/createWorkflowArtifact";
 import { emitWorkflowEvent } from "../../events/emitWorkflowEvent";
 
@@ -61,12 +61,8 @@ export function createArtifactStep(
       const artifactIds: string[] = [];
       let totalSize = 0;
 
-      // Get step ID for linking using domain service
-      const step = await findWorkflowStepByName(executionId, name, undefined, logger);
-
-      if (!step) {
-        throw new Error(`Step not found: ${name}`);
-      }
+      // Find or create step record for linking artifacts
+      const step = await findOrCreateStep(context, inngestStepId, name);
 
       // Create artifacts directory: {projectPath}/.agent/workflows/executions/{executionId}/artifacts
       const artifactsDir = join(
