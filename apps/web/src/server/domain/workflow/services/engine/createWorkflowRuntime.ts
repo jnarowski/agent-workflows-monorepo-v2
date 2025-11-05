@@ -48,7 +48,11 @@ export function createWorkflowRuntime(
         {
           id: config.id,
           name: config.name ?? config.id,
-          ...(config.timeout && { timeout: config.timeout }),
+          ...(config.timeout && {
+            timeouts: {
+              finish: `${Math.floor(config.timeout / 1000)}s` as `${number}s`
+            }
+          }),
         },
         { event: `workflow/${config.id}` },
         async ({ event, step: inngestStep }) => {

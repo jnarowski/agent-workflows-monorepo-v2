@@ -163,13 +163,13 @@ export function applyStepStarted(
   event: {
     stepId: string;
     stepName: string;
-    phaseName: string;
+    phaseId: string;
   }
 ): WorkflowExecution {
   const updatedExec = {
     ...execution,
     current_step: event.stepName,
-    current_phase: event.phaseName,
+    current_phase: event.phaseId,
     updated_at: new Date(),
   };
 

@@ -164,11 +164,11 @@ describe('applyStepStarted', () => {
     const result = applyStepStarted(execution, {
       stepId: 'step-1',
       stepName: 'Step 1',
-      phaseName: 'Phase 1',
+      phaseId: 'phase-1',
     });
 
     expect(result.current_step).toBe('Step 1');
-    expect(result.current_phase).toBe('Phase 1');
+    expect(result.current_phase).toBe('phase-1');
     expect(result.steps![0].status).toBe(StepStatusValues.RUNNING);
     expect(result.steps![0].started_at).toBeInstanceOf(Date);
     expect(result.updated_at).toBeInstanceOf(Date);
@@ -179,11 +179,11 @@ describe('applyStepStarted', () => {
     const result = applyStepStarted(execution, {
       stepId: 'step-1',
       stepName: 'Step 1',
-      phaseName: 'Phase 1',
+      phaseId: 'phase-1',
     });
 
     expect(result.current_step).toBe('Step 1');
-    expect(result.current_phase).toBe('Phase 1');
+    expect(result.current_phase).toBe('phase-1');
     expect(result.updated_at).toBeInstanceOf(Date);
   });
 });

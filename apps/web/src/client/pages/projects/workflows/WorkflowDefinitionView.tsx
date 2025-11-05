@@ -111,7 +111,8 @@ export function WorkflowDefinitionView() {
           {executionsByPhase['Not Started'] && (
             <div className="flex-1 min-w-80 h-full">
               <WorkflowPhaseKanbanColumn
-                phase="Not Started"
+                phaseId="not-started"
+                phaseLabel="Not Started"
                 executions={executionsByPhase['Not Started']}
                 onExecutionClick={handleExecutionClick}
               />
@@ -125,7 +126,8 @@ export function WorkflowDefinitionView() {
             return (
               <div key={phaseId} className="flex-1 min-w-80 h-full">
                 <WorkflowPhaseKanbanColumn
-                  phase={phaseLabel}
+                  phaseId={phaseId}
+                  phaseLabel={phaseLabel}
                   executions={executionsByPhase[phaseId] || []}
                   onExecutionClick={handleExecutionClick}
                 />

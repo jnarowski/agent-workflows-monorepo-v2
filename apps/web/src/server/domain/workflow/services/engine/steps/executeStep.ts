@@ -3,6 +3,7 @@ import type { RuntimeContext } from "../../../types/engine.types";
 import { findOrCreateStep } from "./findOrCreateStep";
 import { updateStepStatus } from "./updateStepStatus";
 import { handleStepFailure } from "./handleStepFailure";
+import { generateInngestStepId } from "./utils/generateInngestStepId";
 
 /**
  * Execute a step function with automatic status tracking and Inngest memoization
@@ -23,9 +24,7 @@ export async function executeStep<T>(
   inngestStep: GetStepTools<any>
 ): Promise<T> {
   // Generate phase-prefixed Inngest step ID
-  const inngestStepId = context.currentPhase
-    ? `${context.currentPhase}-${stepId}`
-    : stepId;
+  const inngestStepId = generateInngestStepId(context, stepId);
 
   // Wrap entire step in inngestStep.run for idempotency
   return (await inngestStep.run(inngestStepId, async () => {

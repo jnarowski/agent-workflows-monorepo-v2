@@ -3,6 +3,7 @@ import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import type { RuntimeContext } from "../../../types/engine.types";
 import { createWorkflowEvent } from "../../events/createWorkflowEvent";
+import { generateInngestStepId } from "./utils/generateInngestStepId";
 
 export interface AnnotationStepConfig {
   message: string;
@@ -23,9 +24,7 @@ export function createAnnotationStep(
     const message = config.message;
 
     // Generate phase-prefixed Inngest step ID
-    const inngestStepId = currentPhase
-      ? `${currentPhase}-${id}`
-      : id;
+    const inngestStepId = generateInngestStepId(context, id);
 
     // Wrap in Inngest step.run for memoization
     return await inngestStep.run(inngestStepId, async () => {

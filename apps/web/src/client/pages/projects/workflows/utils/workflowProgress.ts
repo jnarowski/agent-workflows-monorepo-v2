@@ -88,13 +88,15 @@ export function calculateDuration(execution: WorkflowExecution): string {
 
 /**
  * Get the current phase progress (steps completed in current phase)
+ * @param execution - The workflow execution
+ * @param phaseId - The phase ID (not label) to get progress for
  */
 export function getPhaseProgress(
   execution: WorkflowExecution,
-  phaseName: string
+  phaseId: string
 ): { completed: number; total: number; percentage: number } {
   const phaseSteps =
-    execution.steps?.filter((step) => step.phase === phaseName) || [];
+    execution.steps?.filter((step) => step.phase === phaseId) || [];
 
   const completed = phaseSteps.filter((step) =>
     isStepTerminal(step.status)

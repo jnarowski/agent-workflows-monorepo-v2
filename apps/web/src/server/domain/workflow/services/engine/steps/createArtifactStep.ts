@@ -8,7 +8,8 @@ import type {
 } from "@repo/workflow-sdk";
 import { findOrCreateStep } from "./findOrCreateStep";
 import { createWorkflowArtifact } from "../../artifacts/createWorkflowArtifact";
-import { emitWorkflowEvent } from "../../events/emitWorkflowEvent";
+import { generateInngestStepId } from "./utils/generateInngestStepId";
+import { emitArtifactCreatedEvent } from "./utils/emitArtifactCreatedEvent";
 
 /**
  * Get MIME type from file extension
@@ -54,9 +55,7 @@ export function createArtifactStep(
     const name = config.displayName ?? id;
 
     // Generate phase-prefixed Inngest step ID
-    const inngestStepId = context.currentPhase
-      ? `${context.currentPhase}-${id}`
-      : id;
+    const inngestStepId = generateInngestStepId(context, id);
 
     return await inngestStep.run(inngestStepId, async () => {
       const { executionId, projectId, projectPath, currentPhase, logger } = context;
@@ -111,26 +110,7 @@ export function createArtifactStep(
           totalSize += sizeBytes;
 
           // Emit artifact:created event for this artifact
-          emitWorkflowEvent(projectId, {
-            type: "workflow:execution:artifact:created",
-            data: {
-              execution_id: executionId,
-              artifact: {
-                id: artifact.id,
-                workflow_execution_id: artifact.workflow_execution_id,
-                workflow_execution_step_id: null,
-                workflow_event_id: artifact.workflow_event_id,
-                name: artifact.name,
-                file_path: artifact.file_path,
-                file_type: artifact.file_type,
-                mime_type: artifact.mime_type,
-                size_bytes: artifact.size_bytes,
-                phase: artifact.phase,
-                inngest_step_id: artifact.inngest_step_id,
-                created_at: artifact.created_at,
-              },
-            },
-          });
+          emitArtifactCreatedEvent(projectId, executionId, artifact);
           break;
         }
 
@@ -168,26 +148,7 @@ export function createArtifactStep(
           totalSize += fileStats.size;
 
           // Emit artifact:created event for this artifact
-          emitWorkflowEvent(projectId, {
-            type: "workflow:execution:artifact:created",
-            data: {
-              execution_id: executionId,
-              artifact: {
-                id: artifact.id,
-                workflow_execution_id: artifact.workflow_execution_id,
-                workflow_execution_step_id: null,
-                workflow_event_id: artifact.workflow_event_id,
-                name: artifact.name,
-                file_path: artifact.file_path,
-                file_type: artifact.file_type,
-                mime_type: artifact.mime_type,
-                size_bytes: artifact.size_bytes,
-                phase: artifact.phase,
-                inngest_step_id: artifact.inngest_step_id,
-                created_at: artifact.created_at,
-              },
-            },
-          });
+          emitArtifactCreatedEvent(projectId, executionId, artifact);
           break;
         }
 
@@ -237,26 +198,7 @@ export function createArtifactStep(
             totalSize += fileStats.size;
 
             // Emit artifact:created event for this artifact
-            emitWorkflowEvent(projectId, {
-              type: "workflow:execution:artifact:created",
-              data: {
-                execution_id: executionId,
-                artifact: {
-                  id: artifact.id,
-                  workflow_execution_id: artifact.workflow_execution_id,
-                  workflow_execution_step_id: null,
-                  workflow_event_id: artifact.workflow_event_id,
-                  name: artifact.name,
-                  file_path: artifact.file_path,
-                  file_type: artifact.file_type,
-                  mime_type: artifact.mime_type,
-                  size_bytes: artifact.size_bytes,
-                  phase: artifact.phase,
-                  inngest_step_id: artifact.inngest_step_id,
-                  created_at: artifact.created_at,
-                },
-              },
-            });
+            emitArtifactCreatedEvent(projectId, executionId, artifact);
           }
           break;
         }

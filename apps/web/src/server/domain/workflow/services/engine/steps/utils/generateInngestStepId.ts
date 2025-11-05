@@ -1,4 +1,4 @@
-import type { RuntimeContext } from "../../../types";
+import type { RuntimeContext } from "../../../../types/engine.types";
 
 /**
  * Generate Inngest step ID with optional phase prefix

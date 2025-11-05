@@ -5,6 +5,8 @@ import type { GitStepOptions } from "../../../types/event.types";
 import { commitChanges } from "@/server/domain/git/services/commitChanges";
 import { createAndSwitchBranch } from "@/server/domain/git/services/createAndSwitchBranch";
 import { createPullRequest } from "@/server/domain/git/services/createPullRequest";
+import { generateInngestStepId } from "./utils/generateInngestStepId";
+import { withTimeout } from "./utils/withTimeout";
 
 const DEFAULT_GIT_TIMEOUT = 120000; // 2 minutes
 
@@ -25,23 +27,16 @@ export function createGitStep(
     const timeout = options?.timeout ?? DEFAULT_GIT_TIMEOUT;
 
     // Generate phase-prefixed Inngest step ID
-    const inngestStepId = context.currentPhase
-      ? `${context.currentPhase}-${id}`
-      : id;
+    const inngestStepId = generateInngestStepId(context, id);
 
     return await inngestStep.run(inngestStepId, async () => {
       const { projectPath } = context;
 
-      const operation = await Promise.race([
+      const operation = await withTimeout(
         executeGitOperation(projectPath, config),
-        new Promise<never>((_, reject) =>
-          setTimeout(
-            () =>
-              reject(new Error(`Git operation timed out after ${timeout}ms`)),
-            timeout
-          )
-        ),
-      ]);
+        timeout,
+        "Git operation"
+      );
 
       return operation;
     });

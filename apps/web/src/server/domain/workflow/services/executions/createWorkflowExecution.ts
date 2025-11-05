@@ -1,5 +1,5 @@
 import { prisma } from '@/shared/prisma';
-import type { CreateWorkflowExecutionInput } from '../types';
+import type { CreateWorkflowExecutionInput } from '../../types';
 import type { WorkflowExecution } from '@prisma/client';
 
 /**

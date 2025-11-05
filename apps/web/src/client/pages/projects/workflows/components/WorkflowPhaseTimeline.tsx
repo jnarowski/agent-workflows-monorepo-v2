@@ -5,7 +5,7 @@ import { getPhaseId, getPhaseLabel } from '@/shared/utils/phase.utils';
 
 export interface WorkflowPhaseTimelineProps {
   execution: WorkflowExecution;
-  onPhaseClick?: (phaseName: string) => void;
+  onPhaseClick?: (phaseId: string) => void;
 }
 
 export function WorkflowPhaseTimeline({
@@ -19,10 +19,10 @@ export function WorkflowPhaseTimeline({
   }
 
   const getPhaseStatus = (
-    phaseName: string
+    phaseId: string
   ): 'pending' | 'running' | 'completed' | 'failed' => {
     const phaseSteps =
-      execution.steps?.filter((step) => step.phase === phaseName) || [];
+      execution.steps?.filter((step) => step.phase === phaseId) || [];
 
     if (phaseSteps.length === 0) return 'pending';
 
@@ -41,7 +41,7 @@ export function WorkflowPhaseTimeline({
     const hasRunningStep = phaseSteps.some(
       (step) => step.status === StepStatusValues.RUNNING
     );
-    if (hasRunningStep || execution.current_phase === phaseName)
+    if (hasRunningStep || execution.current_phase === phaseId)
       return 'running';
 
     return 'pending';
