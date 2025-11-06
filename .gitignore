@@ -53,6 +53,6 @@ yarn-error.log*
 # Agent logs
 .agent/agents/logs/**
 .agent/logs/**
-.agent/workflows/executions/**
+.agent/workflows/runs/**
 packages/agent-workflows
 .playwright-mcp/**
