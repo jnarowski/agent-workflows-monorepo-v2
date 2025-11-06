@@ -173,7 +173,7 @@ export async function workflowArtifactRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { id } = request.params;
 
-      const artifact = await detachArtifactFromWorkflowEvent(id);
+      const artifact = await detachArtifactFromWorkflowEvent({ artifactId: id });
 
       if (!artifact) {
         throw new NotFoundError("Artifact not found");

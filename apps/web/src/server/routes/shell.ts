@@ -4,6 +4,8 @@ import {
   createShellSession,
   getShellSession,
   destroyShellSession,
+  writeToShell,
+  resizeShell,
 } from '@/server/domain/shell/services/index';
 import {
   shellMessageSchema,
@@ -216,7 +218,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
           }
 
           // Write input to PTY
-          session.ptyProcess.write(message.data);
+          writeToShell({ ptyProcess: session.ptyProcess, data: message.data });
         }
 
         // Handle terminal resize
@@ -254,7 +256,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
           }
 
           // Resize PTY
-          session.ptyProcess.resize(message.cols, message.rows);
+          resizeShell({ ptyProcess: session.ptyProcess, cols: message.cols, rows: message.rows });
           fastify.log.info(
             { sessionId, cols: message.cols, rows: message.rows },
             'Terminal resized'

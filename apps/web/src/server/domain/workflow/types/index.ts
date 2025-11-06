@@ -10,6 +10,8 @@ export * from "./ExecuteWorkflowOptions";
 export * from "./PauseWorkflowOptions";
 export * from "./ResumeWorkflowOptions";
 export * from "./CancelWorkflowOptions";
+export * from "./UpdateWorkflowRunOptions";
+export * from "./DetachArtifactFromWorkflowEventOptions";
 
 /**
  * Configuration for workflow engine

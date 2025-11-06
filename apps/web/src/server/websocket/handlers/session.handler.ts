@@ -135,7 +135,6 @@ export async function handleSessionSendMessage(
         });
       }
     },
-    logger: fastify.log,
   });
 
   fastify.log.info(

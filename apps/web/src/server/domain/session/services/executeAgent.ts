@@ -1,5 +1,4 @@
 import { execute, type PermissionMode } from "@repo/agent-cli-sdk";
-import type { FastifyBaseLogger } from "fastify";
 import { activeSessions } from "@/server/websocket/infrastructure/active-sessions";
 import type { ChildProcess } from "node:child_process";
 
@@ -14,7 +13,6 @@ export interface AgentExecuteConfig {
   images?: { path: string }[];
   onEvent?: (data: { raw: string; event: unknown; message: unknown | null }) => void;
   onStart?: (process: ChildProcess) => void;
-  logger?: FastifyBaseLogger;
 }
 
 export interface AgentExecuteResult {
@@ -42,18 +40,7 @@ export async function executeAgent(
     model,
     images,
     onEvent,
-    logger,
   } = config;
-
-  logger?.info(
-    {
-      agent,
-      sessionId,
-      model,
-      messageLength: prompt.length,
-    },
-    "[WebSocket] Sending message to agent-cli-sdk"
-  );
 
   try {
     // Execute via agent-cli-sdk
@@ -70,23 +57,10 @@ export async function executeAgent(
     // @ts-ignore - onStart optional callback
       onStart: (process) => {
         // Store process reference immediately when execution starts
-        logger?.info(
-          { sessionId, pid: process.pid },
-          "Process started, storing reference for session"
-        );
         activeSessions.setProcess(sessionId, process);
       },
       onEvent,
     });
-
-    logger?.info(
-      {
-        sessionId,
-        success: result.success,
-        exitCode: result.exitCode,
-      },
-      "[WebSocket] Message execution completed"
-    );
 
     // Clear process reference after completion
     activeSessions.clearProcess(sessionId);
@@ -94,7 +68,6 @@ export async function executeAgent(
     // If session was cancelled, treat as success to avoid error handling
     const sessionData = activeSessions.get(sessionId);
     if (sessionData?.cancelled) {
-      logger?.info({ sessionId }, "Session was cancelled, treating as success");
       return {
         ...result,
         success: true,
@@ -104,7 +77,6 @@ export async function executeAgent(
 
     return result;
   } catch (err: unknown) {
-    logger?.error({ err, sessionId, agent }, "Agent CLI SDK error");
 
     // Clear process reference on error
     activeSessions.clearProcess(sessionId);

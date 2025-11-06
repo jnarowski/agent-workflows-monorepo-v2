@@ -63,6 +63,8 @@ export function createAgentStep(
         });
 
         try {
+          logger.info({ sessionId: session.id, agent: config.agent }, "Executing agent");
+
           // Execute agent with timeout
           const result = await withTimeout(
             executeAgent({
@@ -70,7 +72,6 @@ export function createAgentStep(
               agent: config.agent as "claude" | "codex",
               prompt: config.prompt,
               workingDir: config.projectPath ?? context.projectPath,
-              logger,
             }),
             timeout,
             "Agent execution"

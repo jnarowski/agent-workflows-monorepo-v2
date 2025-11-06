@@ -6,6 +6,7 @@ import type {
 } from "@/shared/types/project.types";
 import type { SessionResponse } from "@/shared/types/agent-session.types";
 import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch";
+import type { GetAllProjectsOptions } from "../types/GetAllProjectsOptions";
 
 /**
  * Transform Prisma session to API session format
@@ -75,10 +76,9 @@ function transformProjectWithSessions(
  * @param options.sessionLimit - Maximum number of sessions per project (default: 20)
  * @returns Array of all projects ordered by creation date (newest first)
  */
-export async function getAllProjects({ includeSessions = false, sessionLimit = 20 }: {
-  includeSessions?: boolean;
-  sessionLimit?: number;
-} = {}): Promise<Project[] | ProjectWithSessions[]> {
+export async function getAllProjects(
+  { includeSessions = false, sessionLimit = 20 }: GetAllProjectsOptions = {}
+): Promise<Project[] | ProjectWithSessions[]> {
 
   const projects = await prisma.project.findMany({
     orderBy: {
