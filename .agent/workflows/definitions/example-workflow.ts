@@ -6,21 +6,22 @@ import { defineWorkflow } from "../../../packages/workflow-sdk/dist";
  */
 export default defineWorkflow(
   {
-    id: "example-text-workflow",
-    trigger: "workflow/example-text",
-    name: "Example Text Workflow",
-    description: "Simple workflow that outputs text for testing",
+    id: "implmenent-review-workflow",
+    trigger: "workflow/implmenent-review",
+    name: "Implmenent Review",
+    description:
+      "Accepts a plan, implements it and reviews it until it is accepted",
     phases: [
-      { id: "initialize", label: "Initialize" },
-      { id: "process", label: "Process" },
+      { id: "implement", label: "Implement" },
+      { id: "review", label: "Review" },
       { id: "complete", label: "Complete" },
     ],
   },
   async ({ event, step }) => {
     // Phase 1: Initialize
 
-    await step.phase("initialize", async () => {
-      await step.annotation("init-annotation", {
+    await step.phase("implement", async () => {
+      await step.annotation("implement-annotation", {
         message: "Starting example workflow - initialization phase",
       });
       await step.sleep("sleep-for-5-seconds", 10000);

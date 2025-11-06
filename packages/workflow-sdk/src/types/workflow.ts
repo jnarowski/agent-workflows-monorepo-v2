@@ -6,9 +6,20 @@ import type { WorkflowStep } from "./steps";
 export type PhaseDefinition = string | { id: string; label: string };
 
 /**
+ * Extract phase IDs from phase definitions array
+ * Handles both string arrays and object arrays with id property
+ */
+export type ExtractPhaseIds<T extends readonly PhaseDefinition[]> =
+  T[number] extends string
+    ? T[number]
+    : T[number] extends { id: infer Id }
+      ? Id
+      : never;
+
+/**
  * Workflow configuration
  */
-export interface WorkflowConfig {
+export interface WorkflowConfig<TPhases extends readonly PhaseDefinition[] | undefined = undefined> {
   /** Unique workflow identifier */
   id: string;
   /** Inngest event trigger name (e.g., "workflow/implement-feature") */
@@ -18,7 +29,7 @@ export interface WorkflowConfig {
   /** Workflow description */
   description?: string;
   /** Workflow phases (for UI organization) */
-  phases?: PhaseDefinition[];
+  phases?: TPhases;
   /** Global workflow timeout in milliseconds */
   timeout?: number;
 }
@@ -26,14 +37,18 @@ export interface WorkflowConfig {
 /**
  * Workflow execution context passed to workflow function
  */
-export interface WorkflowContext {
+export interface WorkflowContext<TPhases extends readonly PhaseDefinition[] | undefined = undefined> {
   /** Inngest event data */
   event: {
     name: string;
     data: WorkflowEventData;
   };
   /** Extended step interface with custom methods */
-  step: WorkflowStep;
+  step: WorkflowStep<
+    TPhases extends readonly PhaseDefinition[]
+      ? ExtractPhaseIds<TPhases>
+      : string
+  >;
 }
 
 /**
@@ -55,4 +70,6 @@ export interface WorkflowEventData {
 /**
  * Workflow function signature
  */
-export type WorkflowFunction = (context: WorkflowContext) => Promise<unknown>;
+export type WorkflowFunction<TPhases extends readonly PhaseDefinition[] | undefined = undefined> = (
+  context: WorkflowContext<TPhases>
+) => Promise<unknown>;

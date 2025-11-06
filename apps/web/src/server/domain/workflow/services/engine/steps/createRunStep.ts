@@ -4,6 +4,8 @@ import { generateInngestStepId } from "./utils/generateInngestStepId";
 import { findOrCreateStep } from "./findOrCreateStep";
 import { updateStepStatus } from "./updateStepStatus";
 import { handleStepFailure } from "./handleStepFailure";
+import { toId } from "./utils/toId";
+import { toName } from "./utils/toName";
 
 /**
  * Create generic run step factory function
@@ -15,15 +17,18 @@ export function createRunStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function run<T>(
-    id: string,
+    idOrName: string,
     fn: () => Promise<T> | T
   ): Promise<T> {
+    const id = toId(idOrName);
+    const name = toName(idOrName);
+
     // Generate phase-prefixed Inngest step ID
     const inngestStepId = generateInngestStepId(context, id);
 
     return (await inngestStep.run(inngestStepId, async () => {
       // Find or create step in database
-      const step = await findOrCreateStep(context, inngestStepId, id);
+      const step = await findOrCreateStep(context, inngestStepId, name);
 
       // Update to running
       await updateStepStatus(context, step.id, "running");

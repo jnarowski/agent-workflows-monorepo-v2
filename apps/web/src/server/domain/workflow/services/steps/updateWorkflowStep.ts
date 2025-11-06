@@ -6,10 +6,11 @@ export type StepStatus = 'pending' | 'running' | 'completed' | 'failed';
 
 export interface UpdateWorkflowStepParams {
   stepId: string;
-  status: StepStatus;
+  status?: StepStatus;
   errorMessage?: string;
   startedAt?: Date;
   completedAt?: Date;
+  agentSessionId?: string;
   logger?: FastifyBaseLogger;
 }
 
@@ -21,7 +22,7 @@ export interface UpdateWorkflowStepParams {
 export async function updateWorkflowStep(
   params: UpdateWorkflowStepParams
 ): Promise<WorkflowExecutionStep> {
-  const { stepId, status, errorMessage, startedAt, completedAt, logger } = params;
+  const { stepId, status, errorMessage, startedAt, completedAt, agentSessionId, logger } = params;
 
   logger?.debug(
     { stepId, status, hasError: !!errorMessage },
@@ -31,10 +32,11 @@ export async function updateWorkflowStep(
   const step = await prisma.workflowExecutionStep.update({
     where: { id: stepId },
     data: {
-      status,
+      ...(status !== undefined && { status }),
       ...(errorMessage !== undefined && { error_message: errorMessage }),
       ...(startedAt !== undefined && { started_at: startedAt }),
       ...(completedAt !== undefined && { completed_at: completedAt }),
+      ...(agentSessionId !== undefined && { agent_session_id: agentSessionId }),
     },
   });
 

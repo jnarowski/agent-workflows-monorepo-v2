@@ -8,10 +8,10 @@ import type { WorkflowRuntime } from "../runtime/adapter";
 /**
  * Workflow definition with type marker for runtime detection
  */
-export interface WorkflowDefinition {
+export interface WorkflowDefinition<TPhases extends readonly import("../types/workflow").PhaseDefinition[] | undefined = undefined> {
   __type: "workflow";
-  config: WorkflowConfig;
-  fn: WorkflowFunction;
+  config: WorkflowConfig<TPhases>;
+  fn: WorkflowFunction<TPhases>;
   /**
    * Create an Inngest function using the provided runtime adapter
    * This is called by the web app to hydrate the workflow with real implementations
@@ -21,6 +21,9 @@ export interface WorkflowDefinition {
 
 /**
  * Define a type-safe workflow with custom step methods
+ *
+ * Uses const type parameters to automatically infer phase IDs from config.
+ * No need for 'as const' - TypeScript will preserve literal types automatically.
  *
  * @param config - Workflow configuration
  * @param fn - Workflow function to execute
@@ -33,10 +36,14 @@ export interface WorkflowDefinition {
  * export default defineWorkflow({
  *   id: 'implement-feature',
  *   trigger: 'workflow/implement-feature',
- *   phases: ['plan', 'implement', 'review', 'test']
+ *   phases: [
+ *     { id: 'plan', label: 'Plan' },
+ *     { id: 'implement', label: 'Implement' },
+ *     { id: 'review', label: 'Review' }
+ *   ]
  * }, async ({ event, step }) => {
+ *   // TypeScript enforces valid phase IDs - autocomplete works!
  *   await step.phase('plan', async () => {
- *     await step.annotation('Planning phase started');
  *     await step.agent('analyze', {
  *       agent: 'claude',
  *       prompt: 'Analyze the requirements'
@@ -47,20 +54,16 @@ export interface WorkflowDefinition {
  *     await step.slash('/implement-spec', ['feature-name']);
  *   });
  *
- *   await step.phase('review', async () => {
- *     await step.git('create-pr', {
- *       operation: 'pr',
- *       title: 'Feature implementation',
- *       body: 'Implemented feature'
- *     });
+ *   await step.phase('typo', async () => {
+ *     // ❌ TypeScript error: 'typo' is not a valid phase ID
  *   });
  * });
  * ```
  */
-export function defineWorkflow(
-  config: WorkflowConfig,
-  fn: WorkflowFunction
-): WorkflowDefinition {
+export function defineWorkflow<const TPhases extends readonly import("../types/workflow").PhaseDefinition[] | undefined>(
+  config: WorkflowConfig<TPhases>,
+  fn: WorkflowFunction<TPhases>
+): WorkflowDefinition<TPhases> {
   return {
     __type: "workflow",
     config,

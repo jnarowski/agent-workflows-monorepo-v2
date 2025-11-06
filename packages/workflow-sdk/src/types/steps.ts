@@ -18,8 +18,6 @@ export interface PhaseOptions {
  * Configuration for agent execution step
  */
 export interface AgentStepConfig {
-  /** Display name for the step (defaults to step ID) */
-  name?: string;
   /** Agent type: claude, codex, gemini */
   agent: "claude" | "codex" | "gemini";
   /** Prompt or instruction for the agent */
@@ -126,8 +124,6 @@ export interface CliStepResult {
  * Configuration for artifact upload
  */
 export interface ArtifactStepConfig {
-  /** Display name for the step (defaults to step ID) */
-  displayName?: string;
   /** Artifact name */
   name: string;
   /** Artifact type */
@@ -177,15 +173,15 @@ export interface InngestStepTools {
 /**
  * Extended step interface with custom workflow step methods
  */
-export interface WorkflowStep extends InngestStepTools {
+export interface WorkflowStep<TPhaseId extends string = string> extends InngestStepTools {
   /**
    * Execute a workflow phase with automatic retry logic
-   * @param id - Phase ID
+   * @param id - Phase ID (typesafe when phases are defined in config)
    * @param fn - Phase function to execute
    * @param options - Phase configuration (description)
    */
   phase<T>(
-    id: string,
+    id: TPhaseId,
     fn: () => Promise<T>,
     options?: PhaseOptions
   ): Promise<T>;
@@ -240,8 +236,8 @@ export interface WorkflowStep extends InngestStepTools {
 
   /**
    * Upload an artifact (file, directory, text, screenshot)
-   * @param id - Step ID
-   * @param config - Artifact configuration (includes optional displayName field)
+   * @param id - Step ID or display name (auto-converted to kebab-case ID)
+   * @param config - Artifact configuration
    * @param options - Step options (timeout, continueOnError)
    */
   artifact(

@@ -6,6 +6,8 @@ import type { CliStepConfig, CliStepResult } from "@repo/workflow-sdk";
 import type { CliStepOptions } from "../../../types/event.types";
 import { executeStep } from "./executeStep";
 import { withTimeout } from "./utils/withTimeout";
+import { toId } from "./utils/toId";
+import { toName } from "./utils/toName";
 
 const execAsync = promisify(exec);
 const DEFAULT_CLI_TIMEOUT = 300000; // 5 minutes
@@ -20,12 +22,13 @@ export function createCliStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function cli(
-    id: string,
+    idOrName: string,
     config: CliStepConfig,
     options?: CliStepOptions
   ): Promise<CliStepResult> {
     const timeout = options?.timeout ?? DEFAULT_CLI_TIMEOUT;
-    const name = config.name ?? id;
+    const id = toId(idOrName);
+    const name = toName(idOrName);
     const command = config.command;
 
     return executeStep(context, id, name, async () => {

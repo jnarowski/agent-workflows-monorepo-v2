@@ -4,6 +4,8 @@ import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import type { RuntimeContext } from "../../../types/engine.types";
 import { createWorkflowEvent } from "../../events/createWorkflowEvent";
 import { generateInngestStepId } from "./utils/generateInngestStepId";
+import { toId } from "./utils/toId";
+import { toName } from "./utils/toName";
 
 export interface AnnotationStepConfig {
   message: string;
@@ -19,7 +21,9 @@ export function createAnnotationStep(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inngestStep: GetStepTools<any>
 ) {
-  return async function annotation(id: string, config: AnnotationStepConfig): Promise<void> {
+  return async function annotation(idOrName: string, config: AnnotationStepConfig): Promise<void> {
+    const id = toId(idOrName);
+    const name = toName(idOrName);
     const { executionId, projectId, currentPhase, logger } = context;
     const message = config.message;
 
@@ -51,7 +55,7 @@ export function createAnnotationStep(
       });
 
       logger.debug(
-        { executionId, message, phase: currentPhase },
+        { executionId, name, message, phase: currentPhase },
         "Annotation added"
       );
     }) as unknown as Promise<void>;

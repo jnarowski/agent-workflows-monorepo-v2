@@ -1,8 +1,11 @@
 import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import type { RuntimeContext } from "../../../types/engine.types";
+import type { PhaseDefinition } from "@repo/workflow-sdk";
 import { updateWorkflowExecution } from "../../executions/updateWorkflowExecution";
 import { findOrCreateWorkflowEvent } from "../../events/findOrCreateWorkflowEvent";
+import { toId } from "./utils/toId";
+import { toName } from "./utils/toName";
 
 /**
  * Create phase step factory function
@@ -14,32 +17,48 @@ import { findOrCreateWorkflowEvent } from "../../events/findOrCreateWorkflowEven
  * - Broadcasts WebSocket events
  * - All nested steps tagged with phase name
  * - Relies on Inngest function-level retries
+ * - Validates phase ID against config (dev only)
  *
  * @param context - Runtime context (will be mutated to set currentPhase)
  * @returns Phase step function
  */
-export function createPhaseStep(context: RuntimeContext) {
+export function createPhaseStep<TPhases extends readonly PhaseDefinition[] | undefined>(
+  context: RuntimeContext<TPhases>
+) {
   return async function phase<T>(
-    id: string,
+    idOrName: string,
     fn: () => Promise<T>
   ): Promise<T> {
-    const name = id;
-    const { executionId, projectId, logger } = context;
+    const id = toId(idOrName);
+    const name = toName(idOrName);
+    const { executionId, projectId, logger, config } = context;
+
+    // Validate phase ID in development
+    if (process.env.NODE_ENV !== "production" && config.phases) {
+      const validPhases = config.phases.map((p: string | { id: string }) =>
+        typeof p === "string" ? p : p.id
+      );
+      if (!validPhases.includes(id)) {
+        throw new Error(
+          `Invalid phase ID "${id}". Valid phases: ${validPhases.join(", ")}`
+        );
+      }
+    }
 
     // Generate consistent step ID for phase lifecycle events (for deduplication on replay)
-    const phaseStepId = `phase-${name}-lifecycle`;
+    const phaseStepId = `phase-${id}-lifecycle`;
 
     logger.info({ executionId, phase: name }, "Phase started");
 
     // Update current_phase in execution using domain service
     await updateWorkflowExecution(
       executionId,
-      { current_phase: name },
+      { current_phase: id },
       logger
     );
 
     // Set current phase in context (for nested step tagging)
-    context.currentPhase = name;
+    context.currentPhase = id;
 
     // Create phase_started event with step ID for idempotency
     await findOrCreateWorkflowEvent({
@@ -48,9 +67,9 @@ export function createPhaseStep(context: RuntimeContext) {
       event_data: {
         title: `Phase Started: ${name}`,
         body: `Starting phase "${name}"`,
-        phase: name,
+        phase: id,
       },
-      phase: name,
+      phase: id,
       inngest_step_id: phaseStepId,
       logger,
     });
@@ -60,7 +79,7 @@ export function createPhaseStep(context: RuntimeContext) {
       type: "workflow:phase:started",
       data: {
         executionId,
-        phase: name,
+        phase: id,
         timestamp: new Date().toISOString(),
       },
     });
@@ -76,9 +95,9 @@ export function createPhaseStep(context: RuntimeContext) {
         event_data: {
           title: `Phase Completed: ${name}`,
           body: `Phase "${name}" completed successfully`,
-          phase: name,
+          phase: id,
         },
-        phase: name,
+        phase: id,
         inngest_step_id: phaseStepId,
         logger,
       });
@@ -88,7 +107,7 @@ export function createPhaseStep(context: RuntimeContext) {
         type: "workflow:phase:completed",
         data: {
           executionId,
-          phase: name,
+          phase: id,
           timestamp: new Date().toISOString(),
         },
       });
@@ -111,11 +130,11 @@ export function createPhaseStep(context: RuntimeContext) {
         event_data: {
           title: `Phase Failed: ${name}`,
           body: `Phase "${name}" failed. Error: ${err.message}`,
-          phase: name,
+          phase: id,
           attempts: 1,
           error: err.message,
         },
-        phase: name,
+        phase: id,
         inngest_step_id: phaseStepId,
         logger,
       });
@@ -124,7 +143,7 @@ export function createPhaseStep(context: RuntimeContext) {
         type: "workflow:phase:failed",
         data: {
           executionId,
-          phase: name,
+          phase: id,
           error: err.message,
           timestamp: new Date().toISOString(),
         },

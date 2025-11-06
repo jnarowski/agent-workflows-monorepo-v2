@@ -10,7 +10,6 @@ export interface WorkflowPhaseKanbanColumnProps {
 }
 
 export function WorkflowPhaseKanbanColumn({
-  phaseId: _phaseId,
   phaseLabel,
   executions,
   onExecutionClick,

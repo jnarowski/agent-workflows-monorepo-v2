@@ -7,6 +7,7 @@ import { createAndSwitchBranch } from "@/server/domain/git/services/createAndSwi
 import { createPullRequest } from "@/server/domain/git/services/createPullRequest";
 import { generateInngestStepId } from "./utils/generateInngestStepId";
 import { withTimeout } from "./utils/withTimeout";
+import { toId } from "./utils/toId";
 
 const DEFAULT_GIT_TIMEOUT = 120000; // 2 minutes
 
@@ -20,10 +21,11 @@ export function createGitStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function git(
-    id: string,
+    idOrName: string,
     config: GitStepConfig,
     options?: GitStepOptions
   ): Promise<GitStepResult> {
+    const id = toId(idOrName);
     const timeout = options?.timeout ?? DEFAULT_GIT_TIMEOUT;
 
     // Generate phase-prefixed Inngest step ID

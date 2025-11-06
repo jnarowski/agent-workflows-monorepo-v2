@@ -33,9 +33,9 @@ export function createWorkflowRuntime(
   logger: FastifyBaseLogger
 ): WorkflowRuntime {
   return {
-    createInngestFunction(
-      config: WorkflowConfig,
-      fn: WorkflowFunction
+    createInngestFunction<TPhases extends readonly import("@repo/workflow-sdk").PhaseDefinition[] | undefined>(
+      config: WorkflowConfig<TPhases>,
+      fn: WorkflowFunction<TPhases>
     ): InngestFunction<
       // @ts-ignore - retries type
       { id: string; name?: string; retries?: number },
@@ -60,13 +60,14 @@ export function createWorkflowRuntime(
           const { executionId, projectId, userId, projectPath } = event.data;
 
           // Create runtime context
-          const context: RuntimeContext = {
+          const context: RuntimeContext<TPhases> = {
             executionId,
             projectId,
             userId,
             currentPhase: null,
             logger,
             projectPath,
+            config,
           };
 
           // Create extended step object with custom methods

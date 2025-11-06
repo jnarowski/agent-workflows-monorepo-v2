@@ -2,11 +2,18 @@ import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
 import type { AgentStepConfig, AgentStepResult } from "@repo/workflow-sdk";
 import type { AgentStepOptions } from "../../../types/event.types";
-import { executeStep } from "./executeStep";
 import { executeAgent } from "@/server/domain/session/services/executeAgent";
 import { createSession } from "@/server/domain/session/services/createSession";
 import { updateSession } from "@/server/domain/session/services/updateSession";
+import { storeCliSessionId } from "@/server/domain/session/services/storeCliSessionId";
+import { updateWorkflowStep } from "../../steps/updateWorkflowStep";
 import { withTimeout } from "./utils/withTimeout";
+import { toId } from "./utils/toId";
+import { toName } from "./utils/toName";
+import { generateInngestStepId } from "./utils/generateInngestStepId";
+import { findOrCreateStep } from "./findOrCreateStep";
+import { updateStepStatus } from "./updateStepStatus";
+import { handleStepFailure } from "./handleStepFailure";
 import { randomUUID } from "node:crypto";
 
 const DEFAULT_AGENT_TIMEOUT = 1800000; // 30 minutes
@@ -21,59 +28,87 @@ export function createAgentStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function agent(
-    id: string,
+    idOrName: string,
     config: AgentStepConfig,
     options?: AgentStepOptions
   ): Promise<AgentStepResult> {
+    const id = toId(idOrName);
+    const name = toName(idOrName);
     const timeout = options?.timeout ?? DEFAULT_AGENT_TIMEOUT;
-    const name = config.name ?? id;
 
-    return executeStep(context, id, name, async () => {
+    // Generate phase-prefixed Inngest step ID
+    const inngestStepId = generateInngestStepId(context, id);
+
+    return (await inngestStep.run(inngestStepId, async () => {
       const { projectId, userId, logger } = context;
 
-      // Create agent session using domain service
-      const sessionId = randomUUID();
-      const session = await createSession(
-        projectId,
-        userId,
-        sessionId,
-        config.agent,
-        name,
-        {} // Empty metadata for workflow sessions
-      );
+      // Find or create step in database
+      const step = await findOrCreateStep(context, inngestStepId, name);
+
+      // Update to running
+      await updateStepStatus(context, step.id, "running");
 
       try {
-        // Execute agent with timeout
-        const result = await withTimeout(
-          executeAgent({
-            sessionId: session.id,
-            agent: config.agent as "claude" | "codex",
-            prompt: config.prompt,
-            workingDir: config.projectPath ?? context.projectPath,
-            logger,
-          }),
-          timeout,
-          "Agent execution"
+        // Create agent session using domain service
+        const sessionId = randomUUID();
+        const session = await createSession(
+          projectId,
+          userId,
+          sessionId,
+          config.agent,
+          name,
+          {} // Empty metadata for workflow sessions
         );
 
-        return {
-          sessionId: session.id,
-          success: result.success,
-          exitCode: result.exitCode,
-        };
-      } catch (error) {
-        // Mark session as failed using domain service
-        await updateSession(
-          session.id,
-          {
+        try {
+          // Execute agent with timeout
+          const result = await withTimeout(
+            executeAgent({
+              sessionId: session.id,
+              agent: config.agent as "claude" | "codex",
+              prompt: config.prompt,
+              workingDir: config.projectPath ?? context.projectPath,
+              logger,
+            }),
+            timeout,
+            "Agent execution"
+          );
+
+          // Store CLI session ID (e.g., Claude's session ID) in agent_session
+          await storeCliSessionId(session.id, result.sessionId, logger);
+
+          // Update step with CLI session ID (if available), otherwise use db session ID
+          const agentSessionId = result.sessionId || session.id;
+          await updateWorkflowStep({
+            stepId: step.id,
+            agentSessionId,
+            logger,
+          });
+
+          // Update to completed
+          await updateStepStatus(
+            context,
+            step.id,
+            "completed",
+            result as unknown as Record<string, unknown>
+          );
+
+          return result;
+        } catch (error) {
+          // Mark session as failed using domain service
+          await updateSession(session.id, {
             state: "error",
             error_message:
               error instanceof Error ? error.message : String(error),
-          }
-        );
+          });
 
+          throw error;
+        }
+      } catch (error) {
+        // Handle failure
+        await handleStepFailure(context, step.id, error as Error);
         throw error;
       }
-    }, inngestStep);
+    })) as unknown as Promise<AgentStepResult>;
   };
 }

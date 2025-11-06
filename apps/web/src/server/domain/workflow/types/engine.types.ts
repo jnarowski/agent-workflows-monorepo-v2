@@ -1,9 +1,12 @@
 import type { FastifyBaseLogger } from "fastify";
+import type { WorkflowConfig, PhaseDefinition } from "@repo/workflow-sdk";
 
 /**
  * Runtime context passed to all workflow step implementations
  */
-export interface RuntimeContext {
+export interface RuntimeContext<
+  TPhases extends readonly PhaseDefinition[] | undefined = readonly PhaseDefinition[] | undefined
+> {
   /** Workflow execution ID */
   executionId: string;
   /** Project ID */
@@ -16,4 +19,6 @@ export interface RuntimeContext {
   logger: FastifyBaseLogger;
   /** Project filesystem path */
   projectPath: string;
+  /** Workflow configuration (for phase validation) */
+  config: WorkflowConfig<TPhases>;
 }

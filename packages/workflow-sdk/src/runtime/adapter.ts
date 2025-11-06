@@ -1,4 +1,4 @@
-import type { WorkflowConfig, WorkflowFunction } from "../types/workflow";
+import type { WorkflowConfig, WorkflowFunction, PhaseDefinition } from "../types/workflow";
 
 /**
  * Runtime adapter interface implemented by the web app
@@ -11,8 +11,8 @@ export interface WorkflowRuntime {
    * @param fn - Workflow function
    * @returns Configured Inngest function ready for registration
    */
-  createInngestFunction(
-    config: WorkflowConfig,
-    fn: WorkflowFunction
+  createInngestFunction<TPhases extends readonly PhaseDefinition[] | undefined>(
+    config: WorkflowConfig<TPhases>,
+    fn: WorkflowFunction<TPhases>
   ): any;
 }

@@ -10,6 +10,8 @@ import { findOrCreateStep } from "./findOrCreateStep";
 import { createWorkflowArtifact } from "../../artifacts/createWorkflowArtifact";
 import { generateInngestStepId } from "./utils/generateInngestStepId";
 import { emitArtifactCreatedEvent } from "./utils/emitArtifactCreatedEvent";
+import { toId } from "./utils/toId";
+import { toName } from "./utils/toName";
 
 /**
  * Get MIME type from file extension
@@ -49,10 +51,11 @@ export function createArtifactStep(
   inngestStep: GetStepTools<any>
 ) {
   return async function artifact(
-    id: string,
+    idOrName: string,
     config: ArtifactStepConfig
   ): Promise<ArtifactStepResult> {
-    const name = config.displayName ?? id;
+    const id = toId(idOrName);
+    const name = toName(idOrName);
 
     // Generate phase-prefixed Inngest step ID
     const inngestStepId = generateInngestStepId(context, id);
