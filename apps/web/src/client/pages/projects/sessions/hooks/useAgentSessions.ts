@@ -43,3 +43,71 @@ export function useUpdateSession() {
     },
   });
 }
+
+export function useArchiveSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const result = await api.post<{ data: SessionResponse }>(
+        `/api/sessions/${id}/archive`
+      );
+      return result.data;
+    },
+    onSuccess: (archivedSession) => {
+      // Update cache for the project's sessions
+      queryClient.setQueryData<SessionResponse[]>(
+        sessionKeys.byProject(archivedSession.projectId),
+        (old) => {
+          if (!old) return [archivedSession];
+          return old.map((session) =>
+            session.id === archivedSession.id ? archivedSession : session
+          );
+        }
+      );
+
+      // Invalidate projects with sessions query (used by sidebar)
+      queryClient.invalidateQueries({ queryKey: projectKeys.withSessions() });
+
+      toast.success("Session archived successfully");
+    },
+    onError: (error) => {
+      const message = error instanceof Error ? error.message : "Failed to archive session";
+      toast.error(message);
+    },
+  });
+}
+
+export function useUnarchiveSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const result = await api.post<{ data: SessionResponse }>(
+        `/api/sessions/${id}/unarchive`
+      );
+      return result.data;
+    },
+    onSuccess: (unarchivedSession) => {
+      // Update cache for the project's sessions
+      queryClient.setQueryData<SessionResponse[]>(
+        sessionKeys.byProject(unarchivedSession.projectId),
+        (old) => {
+          if (!old) return [unarchivedSession];
+          return old.map((session) =>
+            session.id === unarchivedSession.id ? unarchivedSession : session
+          );
+        }
+      );
+
+      // Invalidate projects with sessions query (used by sidebar)
+      queryClient.invalidateQueries({ queryKey: projectKeys.withSessions() });
+
+      toast.success("Session unarchived successfully");
+    },
+    onError: (error) => {
+      const message = error instanceof Error ? error.message : "Failed to unarchive session";
+      toast.error(message);
+    },
+  });
+}

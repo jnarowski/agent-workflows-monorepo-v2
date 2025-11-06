@@ -7,6 +7,8 @@ import {
   createSession,
   syncProjectSessions,
   updateSessionName,
+  archiveSession,
+  unarchiveSession,
 } from "@/server/domain/session/services";
 import {
   createSessionSchema,
@@ -26,6 +28,7 @@ export async function sessionRoutes(fastify: FastifyInstance) {
    */
   fastify.get<{
     Params: { id: string };
+    Querystring: { includeArchived?: string };
   }>(
     "/api/projects/:id/sessions",
     {
@@ -42,9 +45,12 @@ export async function sessionRoutes(fastify: FastifyInstance) {
         return reply.code(401).send(buildErrorResponse(401, "Unauthorized"));
       }
 
+      const includeArchived = request.query.includeArchived === 'true';
+
       const sessions = await getSessionsByProject(
         request.params.id,
-        userId
+        userId,
+        includeArchived
       );
 
       return reply.send({ data: sessions });
@@ -296,6 +302,74 @@ export async function sessionRoutes(fastify: FastifyInstance) {
 
         return reply.code(500).send(buildErrorResponse(500, err.message || "Internal server error"));
       }
+    }
+  );
+
+  /**
+   * POST /api/sessions/:sessionId/archive
+   * Archive a session
+   */
+  fastify.post<{
+    Params: { sessionId: string };
+  }>(
+    "/api/sessions/:sessionId/archive",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: sessionIdSchema,
+      },
+    },
+    async (request, reply) => {
+      const userId = request.user?.id;
+      if (!userId) {
+        return reply.code(401).send(buildErrorResponse(401, "Unauthorized"));
+      }
+
+      const { sessionId } = request.params;
+
+      fastify.log.info({ sessionId, userId }, 'Archiving session');
+
+      const session = await archiveSession(sessionId, userId);
+
+      if (!session) {
+        return reply.code(404).send(buildErrorResponse(404, "Session not found"));
+      }
+
+      return reply.send({ data: session });
+    }
+  );
+
+  /**
+   * POST /api/sessions/:sessionId/unarchive
+   * Unarchive a session
+   */
+  fastify.post<{
+    Params: { sessionId: string };
+  }>(
+    "/api/sessions/:sessionId/unarchive",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: sessionIdSchema,
+      },
+    },
+    async (request, reply) => {
+      const userId = request.user?.id;
+      if (!userId) {
+        return reply.code(401).send(buildErrorResponse(401, "Unauthorized"));
+      }
+
+      const { sessionId } = request.params;
+
+      fastify.log.info({ sessionId, userId }, 'Unarchiving session');
+
+      const session = await unarchiveSession(sessionId, userId);
+
+      if (!session) {
+        return reply.code(404).send(buildErrorResponse(404, "Session not found"));
+      }
+
+      return reply.send({ data: session });
     }
   );
 }

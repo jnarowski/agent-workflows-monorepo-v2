@@ -72,6 +72,8 @@ export const sessionResponseSchema = z.object({
   metadata: agentSessionMetadataSchema,
   state: z.enum(['idle', 'working', 'error']),
   error_message: z.string().optional(),
+  is_archived: z.boolean(),
+  archived_at: z.date().nullable(),
   created_at: z.date(),
   updated_at: z.date(),
 });

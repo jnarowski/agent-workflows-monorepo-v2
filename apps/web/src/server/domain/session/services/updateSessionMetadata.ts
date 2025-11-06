@@ -44,6 +44,8 @@ export async function updateSessionMetadata(
       metadata: updatedMetadata,
       state: updatedSession.state as 'idle' | 'working' | 'error',
       error_message: updatedSession.error_message ?? undefined,
+      is_archived: updatedSession.is_archived,
+      archived_at: updatedSession.archived_at,
       created_at: updatedSession.created_at,
       updated_at: updatedSession.updated_at,
     };

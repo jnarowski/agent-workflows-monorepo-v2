@@ -42,6 +42,8 @@ export interface SessionResponse {
   metadata: AgentSessionMetadata;
   state: SessionState; // Current execution state
   error_message?: string; // Error details when state is 'error'
+  is_archived: boolean;
+  archived_at: Date | null;
   created_at: Date;
   updated_at: Date;
 }

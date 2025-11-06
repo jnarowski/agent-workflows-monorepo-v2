@@ -23,6 +23,8 @@ function transformSession(prismaSession: any): SessionResponse {
     metadata: prismaSession.metadata,
     state: prismaSession.state as 'idle' | 'working' | 'error',
     error_message: prismaSession.error_message ?? undefined,
+    is_archived: prismaSession.is_archived,
+    archived_at: prismaSession.archived_at,
     created_at: prismaSession.created_at,
     updated_at: prismaSession.updated_at,
   };
@@ -102,6 +104,8 @@ export async function getAllProjects(options?: {
             metadata: true,
             state: true,
             error_message: true,
+            is_archived: true,
+            archived_at: true,
             created_at: true,
             updated_at: true,
           },

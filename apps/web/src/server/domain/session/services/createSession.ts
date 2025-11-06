@@ -69,6 +69,8 @@ export async function createSession(
     metadata: metadata,
     state: session.state as 'idle' | 'working' | 'error',
     error_message: session.error_message ?? undefined,
+    is_archived: session.is_archived,
+    archived_at: session.archived_at,
     created_at: session.created_at,
     updated_at: session.updated_at,
   };

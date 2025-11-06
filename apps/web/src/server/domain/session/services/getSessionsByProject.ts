@@ -5,16 +5,19 @@ import type { AgentSessionMetadata, SessionResponse } from '@/shared/types/agent
  * Get all sessions for a project
  * @param projectId - Project ID
  * @param userId - User ID (for authorization)
+ * @param includeArchived - Whether to include archived sessions (default: false)
  * @returns Array of sessions ordered by last message date
  */
 export async function getSessionsByProject(
   projectId: string,
-  userId: string
+  userId: string,
+  includeArchived = false
 ): Promise<SessionResponse[]> {
   const sessions = await prisma.agentSession.findMany({
     where: {
       projectId,
       userId,
+      ...(includeArchived ? {} : { is_archived: false }),
     },
     // Don't order by updated_at as sync operations set all sessions to same timestamp
     // We'll sort by metadata.lastMessageAt in application code instead
@@ -32,6 +35,8 @@ export async function getSessionsByProject(
     metadata: session.metadata as unknown as AgentSessionMetadata,
     state: session.state as 'idle' | 'working' | 'error',
     error_message: session.error_message ?? undefined,
+    is_archived: session.is_archived,
+    archived_at: session.archived_at,
     created_at: session.created_at,
     updated_at: session.updated_at,
   }));

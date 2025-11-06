@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreHorizontal, Pencil, FileJson } from "lucide-react";
+import { MoreHorizontal, Pencil, FileJson, Archive, ArchiveRestore } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,7 +8,7 @@ import {
 } from "@/client/components/ui/dropdown-menu";
 import { SessionDialog } from "./SessionDialog";
 import { SessionFileViewer } from "./SessionFileViewer";
-import { useUpdateSession } from "../hooks/useAgentSessions";
+import { useUpdateSession, useArchiveSession, useUnarchiveSession } from "../hooks/useAgentSessions";
 import { cn } from "@/client/utils/cn";
 import type { SessionResponse } from "@/shared/types";
 
@@ -33,6 +33,8 @@ export function SessionDropdownMenu({
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const updateSessionMutation = useUpdateSession();
+  const archiveSessionMutation = useArchiveSession();
+  const unarchiveSessionMutation = useUnarchiveSession();
 
   const handleMenuOpenChange = (open: boolean) => {
     setIsMenuOpen(open);
@@ -51,6 +53,20 @@ export function SessionDropdownMenu({
     e.stopPropagation();
     handleMenuOpenChange(false);
     setFileViewerOpen(true);
+  };
+
+  const handleArchive = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleMenuOpenChange(false);
+    archiveSessionMutation.mutate(session.id);
+  };
+
+  const handleUnarchive = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleMenuOpenChange(false);
+    unarchiveSessionMutation.mutate(session.id);
   };
 
   const handleUpdateSession = async (sessionId: string, name: string) => {
@@ -85,6 +101,17 @@ export function SessionDropdownMenu({
             <DropdownMenuItem onClick={handleViewFile}>
               <FileJson className="h-4 w-4" />
               <span>View Session File</span>
+            </DropdownMenuItem>
+          )}
+          {session.is_archived ? (
+            <DropdownMenuItem onClick={handleUnarchive}>
+              <ArchiveRestore className="h-4 w-4" />
+              <span>Unarchive</span>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onClick={handleArchive}>
+              <Archive className="h-4 w-4" />
+              <span>Archive</span>
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>

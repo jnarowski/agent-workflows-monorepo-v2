@@ -6,6 +6,8 @@ export { updateSessionName } from './updateSessionName';
 export { updateSessionMetadata } from './updateSessionMetadata';
 export { updateSession } from './updateSession';
 export { updateSessionState } from './updateSessionState';
+export { archiveSession } from './archiveSession';
+export { unarchiveSession } from './unarchiveSession';
 
 // Session sync operations
 export { syncProjectSessions } from './syncProjectSessions';

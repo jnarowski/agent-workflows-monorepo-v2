@@ -229,6 +229,8 @@ model AgentSession {
   metadata       Json // { totalTokens, messageCount, lastMessageAt, firstMessagePreview }
   state          SessionState            @default(idle)
   error_message  String? // Error details when state is error
+  is_archived    Boolean                 @default(false)
+  archived_at    DateTime?
   created_at     DateTime                @default(now())
   updated_at     DateTime                @updatedAt
 

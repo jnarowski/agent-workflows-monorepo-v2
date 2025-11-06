@@ -12,16 +12,16 @@ export default defineWorkflow(
     description:
       "Accepts a plan, implements it and reviews it until it is accepted",
     phases: [
-      { id: "implement", label: "Implement" },
-      { id: "review", label: "Review" },
+      { id: "initialize", label: "Initialize" },
+      { id: "process", label: "Process" },
       { id: "complete", label: "Complete" },
     ],
   },
   async ({ event, step }) => {
     // Phase 1: Initialize
 
-    await step.phase("implement", async () => {
-      await step.annotation("implement-annotation", {
+    await step.phase("initialize", async () => {
+      await step.annotation("init-annotation", {
         message: "Starting example workflow - initialization phase",
       });
       await step.sleep("sleep-for-5-seconds", 10000);
