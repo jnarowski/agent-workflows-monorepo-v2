@@ -1,8 +1,8 @@
 import fs from 'fs/promises';
 import path from 'path';
-import type { FastifyBaseLogger } from 'fastify';
 import type { FileTreeItem } from '@/shared/types/file.types';
 import { getProjectById } from '@/server/domain/project/services/getProjectById';
+import type { GetFileTreeOptions } from '../types/GetFileTreeOptions';
 
 const MAX_DEPTH = 10;
 const EXCLUDED_DIRS = new Set([
@@ -55,13 +55,11 @@ function sortFileTree(items: FileTreeItem[]): FileTreeItem[] {
  * Recursively scan a directory
  * @param dirPath - Directory path to scan
  * @param depth - Current depth (for limiting recursion)
- * @param logger - Optional Fastify logger
  * @returns Array of file tree items
  */
 async function scanDirectory(
   dirPath: string,
-  depth: number = 0,
-  logger?: FastifyBaseLogger
+  depth: number = 0
 ): Promise<FileTreeItem[]> {
   // Limit recursion depth
   if (depth > MAX_DEPTH) {
@@ -101,19 +99,17 @@ async function scanDirectory(
 
         // Recursively scan subdirectories
         if (entry.isDirectory()) {
-          item.children = await scanDirectory(fullPath, depth + 1, logger);
+          item.children = await scanDirectory(fullPath, depth + 1);
         }
 
         items.push(item);
-      } catch (error) {
+      } catch {
         // Skip files/dirs with permission errors
-        logger?.warn({ err: error, path: fullPath }, `Skipping ${fullPath} due to error`);
         continue;
       }
     }
-  } catch (error) {
+  } catch {
     // Handle permission errors gracefully
-    logger?.warn({ err: error, path: dirPath }, `Cannot read directory ${dirPath}`);
   }
 
   return items;
@@ -121,13 +117,12 @@ async function scanDirectory(
 
 /**
  * Get file tree for a project
- * @param projectId - Project ID
- * @param logger - Optional Fastify logger
+ * @param options - Get file tree options
  * @returns File tree structure
  */
-export async function getFileTree(projectId: string, logger?: FastifyBaseLogger): Promise<FileTreeItem[]> {
+export async function getFileTree({ projectId }: GetFileTreeOptions): Promise<FileTreeItem[]> {
   // Look up project from database
-  const project = await getProjectById(projectId);
+  const project = await getProjectById({ id: projectId });
 
   if (!project) {
     throw new Error('Project not found');
@@ -141,7 +136,7 @@ export async function getFileTree(projectId: string, logger?: FastifyBaseLogger)
   }
 
   // Scan the directory
-  const files = await scanDirectory(project.path, 0, logger);
+  const files = await scanDirectory(project.path, 0);
 
   // Sort: directories first, then alphabetically
   return sortFileTree(files);

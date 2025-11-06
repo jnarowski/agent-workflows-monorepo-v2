@@ -1,13 +1,14 @@
-import simpleGit from 'simple-git';
+import simpleGit from 'simple-git'
+import type { CommitChangesOptions } from '../types/CommitChangesOptions'
 
 /**
  * Commit changes with a message
  */
-export async function commitChanges(
-  projectPath: string,
-  message: string,
-  files: string[]
-): Promise<string> {
+export async function commitChanges({
+  projectPath,
+  message,
+  files
+}: CommitChangesOptions): Promise<string> {
   const git = simpleGit(projectPath);
 
   // Stage files first

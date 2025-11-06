@@ -1,15 +1,16 @@
-import simpleGit from 'simple-git';
-import { formatDistanceToNow } from 'date-fns';
-import type { GitCommit } from '@/shared/types/git.types';
+import simpleGit from 'simple-git'
+import { formatDistanceToNow } from 'date-fns'
+import type { GitCommit } from '@/shared/types/git.types'
+import type { GetCommitHistoryOptions } from '../types/GetCommitHistoryOptions'
 
 /**
  * Get commit history with pagination
  */
-export async function getCommitHistory(
-  projectPath: string,
-  limit: number = 100,
-  offset: number = 0
-): Promise<GitCommit[]> {
+export async function getCommitHistory({
+  projectPath,
+  limit = 100,
+  offset = 0
+}: GetCommitHistoryOptions): Promise<GitCommit[]> {
   const git = simpleGit(projectPath);
   const log = await git.log({
     maxCount: limit,

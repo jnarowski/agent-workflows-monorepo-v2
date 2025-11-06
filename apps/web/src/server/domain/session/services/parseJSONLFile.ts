@@ -2,15 +2,14 @@
 import fs from 'fs/promises';
 import type { AgentSessionMetadata } from '@/shared/types/agent-session.types';
 import { isSystemMessage, stripXmlTags } from '@/shared/utils/message.utils';
+import type { ParseJSONLFileOptions } from '../types/ParseJSONLFileOptions';
 
 /**
  * Parse a JSONL file to extract session metadata
- * @param filePath - Path to JSONL file
- * @returns Session metadata extracted from file
  */
-export async function parseJSONLFile(
-  filePath: string
-): Promise<AgentSessionMetadata> {
+export async function parseJSONLFile({
+  filePath
+}: ParseJSONLFileOptions): Promise<AgentSessionMetadata> {
   try {
     const content = await fs.readFile(filePath, 'utf-8');
     const lines = content.trim().split('\n').filter(Boolean);

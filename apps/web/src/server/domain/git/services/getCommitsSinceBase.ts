@@ -1,14 +1,15 @@
-import simpleGit from 'simple-git';
-import { formatDistanceToNow } from 'date-fns';
-import type { GitCommit } from '@/shared/types/git.types';
+import simpleGit from 'simple-git'
+import { formatDistanceToNow } from 'date-fns'
+import type { GitCommit } from '@/shared/types/git.types'
+import type { GetCommitsSinceBaseOptions } from '../types/GetCommitsSinceBaseOptions'
 
 /**
  * Get commits since a base branch (for PR creation)
  */
-export async function getCommitsSinceBase(
-  projectPath: string,
-  baseBranch: string = 'main'
-): Promise<GitCommit[]> {
+export async function getCommitsSinceBase({
+  projectPath,
+  baseBranch = 'main'
+}: GetCommitsSinceBaseOptions): Promise<GitCommit[]> {
   const git = simpleGit(projectPath);
   const log = await git.log([`${baseBranch}..HEAD`]);
 

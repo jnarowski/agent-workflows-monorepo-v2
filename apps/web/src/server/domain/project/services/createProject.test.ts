@@ -35,7 +35,7 @@ describe("createProject", () => {
     };
 
     // Act: Create project
-    const project = await createProject(input);
+    const project = await createProject({ data: input });
 
     // Assert
     expect(project).toBeDefined();
@@ -48,7 +48,7 @@ describe("createProject", () => {
     expect(project.created_at).toBeInstanceOf(Date);
     expect(project.updated_at).toBeInstanceOf(Date);
 
-    expect(mockGetCurrentBranch).toHaveBeenCalledWith("/tmp/test-project");
+    expect(mockGetCurrentBranch).toHaveBeenCalledWith({ projectPath: "/tmp/test-project" });
     expect(mockGetCurrentBranch).toHaveBeenCalledTimes(1);
 
     const dbProject = await prisma.project.findUnique({
@@ -69,16 +69,22 @@ describe("createProject", () => {
       // Act
       const [project1, project2, project3] = await Promise.all([
         createProject({
-          name: "Project 1",
-          path: "/tmp/project-1",
+          data: {
+            name: "Project 1",
+            path: "/tmp/project-1",
+          }
         }),
         createProject({
-          name: "Project 2",
-          path: "/tmp/project-2",
+          data: {
+            name: "Project 2",
+            path: "/tmp/project-2",
+          }
         }),
         createProject({
-          name: "Project 3",
-          path: "/tmp/project-3",
+          data: {
+            name: "Project 3",
+            path: "/tmp/project-3",
+          }
         }),
       ]);
 
@@ -110,8 +116,10 @@ describe("createProject", () => {
 
       // Act
       const project = await createProject({
-        name: "Test Project",
-        path: "/tmp/test-project",
+        data: {
+          name: "Test Project",
+          path: "/tmp/test-project",
+        }
       });
 
       // Assert
@@ -140,7 +148,7 @@ describe("createProject", () => {
     };
 
     // Act
-    const project = await createProject(input);
+    const project = await createProject({ data: input });
 
     // Assert
     expect(project).toBeDefined();
@@ -148,7 +156,7 @@ describe("createProject", () => {
     expect(project.path).toBe("/tmp/non-git-project");
     expect(project.current_branch).toBeUndefined();
 
-    expect(mockGetCurrentBranch).toHaveBeenCalledWith("/tmp/non-git-project");
+    expect(mockGetCurrentBranch).toHaveBeenCalledWith({ projectPath: "/tmp/non-git-project" });
     });
 
     it("propagates error when getCurrentBranch fails", async () => {
@@ -164,7 +172,7 @@ describe("createProject", () => {
       };
 
       // Act & Assert
-      await expect(createProject(input)).rejects.toThrow("Git command failed");
+      await expect(createProject({ data: input })).rejects.toThrow("Git command failed");
 
       // Note: In production, consider catching this error and setting
       // current_branch to null instead of failing the entire operation
@@ -180,15 +188,19 @@ describe("createProject", () => {
     mockGetCurrentBranch.mockResolvedValue("main");
 
     await createProject({
-      name: "First Project",
-      path: "/tmp/duplicate-path",
+      data: {
+        name: "First Project",
+        path: "/tmp/duplicate-path",
+      }
     });
 
     // Act & Assert
     await expect(
       createProject({
-        name: "Second Project",
-        path: "/tmp/duplicate-path",
+        data: {
+          name: "Second Project",
+          path: "/tmp/duplicate-path",
+        }
       })
     ).rejects.toThrow();
 
@@ -212,7 +224,7 @@ describe("createProject", () => {
     };
 
     // Act
-    const project = await createProject(input);
+    const project = await createProject({ data: input });
 
     // Assert: Prisma doesn't validate empty strings at DB level
     expect(project).toBeDefined();
@@ -233,7 +245,7 @@ describe("createProject", () => {
     };
 
     // Act
-    const project = await createProject(input);
+    const project = await createProject({ data: input });
 
     // Assert: Prisma doesn't validate empty strings at DB level
     expect(project).toBeDefined();

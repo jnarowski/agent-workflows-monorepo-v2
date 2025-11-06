@@ -24,7 +24,7 @@ describe("checkWorkflowSdk", () => {
     vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(packageJson));
 
     // When: checkWorkflowSdk()
-    const result = await checkWorkflowSdk(mockProjectPath);
+    const result = await checkWorkflowSdk({ projectPath: mockProjectPath });
 
     // Then: SDK is detected with correct version
     expect(result).toEqual({
@@ -50,7 +50,7 @@ describe("checkWorkflowSdk", () => {
     vi.mocked(fs.readFile).mockResolvedValue(JSON.stringify(packageJson));
 
     // When: checkWorkflowSdk()
-    const result = await checkWorkflowSdk(mockProjectPath);
+    const result = await checkWorkflowSdk({ projectPath: mockProjectPath });
 
     // Then: SDK is not installed
     expect(result).toEqual({
@@ -69,7 +69,7 @@ describe("checkWorkflowSdk", () => {
     );
 
     // When: checkWorkflowSdk()
-    const result = await checkWorkflowSdk(mockProjectPath);
+    const result = await checkWorkflowSdk({ projectPath: mockProjectPath });
 
     // Then: package.json doesn't exist
     expect(result).toEqual({

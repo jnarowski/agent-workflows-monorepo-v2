@@ -5,6 +5,7 @@ import path from 'path';
 import type { SyncSessionsResponse } from '@/shared/types/agent-session.types';
 import { encodeProjectPath, getClaudeProjectsDir } from '@/server/utils/path';
 import { parseJSONLFile } from './parseJSONLFile';
+import type { SyncProjectSessionsOptions } from '../types/SyncProjectSessionsOptions';
 
 /**
  * Check if a file is a valid session file
@@ -19,14 +20,11 @@ function isValidSessionFile(filename: string): boolean {
 /**
  * Sync project sessions from filesystem to database
  * Scans ~/.claude/projects/{encodedPath}/ for JSONL files
- * @param projectId - Project ID
- * @param userId - User ID to associate with synced sessions
- * @returns Sync statistics
  */
-export async function syncProjectSessions(
-  projectId: string,
-  userId: string
-): Promise<SyncSessionsResponse> {
+export async function syncProjectSessions({
+  projectId,
+  userId
+}: SyncProjectSessionsOptions): Promise<SyncSessionsResponse> {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
   });
@@ -97,7 +95,7 @@ export async function syncProjectSessions(
 
       try {
         // Parse JSONL file to extract metadata
-        const metadata = await parseJSONLFile(filePath);
+        const metadata = await parseJSONLFile({ filePath });
 
         if (existingClaudeSessionsMap.has(sessionId)) {
           // Session already exists - skip to preserve created_at timestamp and avoid reordering

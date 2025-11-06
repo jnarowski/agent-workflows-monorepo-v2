@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { access, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import type { InstallWorkflowSdkOptions } from "@/server/domain/project/types/InstallWorkflowSdkOptions";
 
 /**
  * Detect which package manager to use based on lock files
@@ -104,10 +105,10 @@ async function ensurePackageJson(projectPath: string): Promise<void> {
  * - Installs @repo/workflow-sdk as devDependency
  * - Runs workflow-sdk init --yes
  *
- * @param projectPath - Absolute path to project directory
+ * @param options - Options object with projectPath
  * @returns Success status and output messages
  */
-export async function installWorkflowSdk(projectPath: string): Promise<{
+export async function installWorkflowSdk({ projectPath }: InstallWorkflowSdkOptions): Promise<{
   success: boolean;
   message: string;
   output?: string;

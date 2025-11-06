@@ -2,7 +2,7 @@
 import { prisma } from "@/shared/prisma";
 import type { Project } from "@/shared/types/project.types";
 import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch";
-import type { CreateProjectInput } from "@/server/domain/project/types";
+import type { CreateProjectOptions } from "@/server/domain/project/types";
 
 /**
  * Transform Prisma project to API project format
@@ -27,18 +27,18 @@ function transformProject(
 
 /**
  * Create a new project
- * @param data - Project creation data
+ * @param options - Project creation options
  * @returns Created project
  */
-export async function createProject(
-  data: CreateProjectInput
-): Promise<Project> {
+export async function createProject({
+  data
+}: CreateProjectOptions): Promise<Project> {
   const project = await prisma.project.create({
     data: {
       name: data.name,
       path: data.path,
     },
   });
-  const currentBranch = await getCurrentBranch(project.path);
+  const currentBranch = await getCurrentBranch({ projectPath: project.path });
   return transformProject(project, currentBranch);
 }

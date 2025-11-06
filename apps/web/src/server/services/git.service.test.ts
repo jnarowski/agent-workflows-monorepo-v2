@@ -181,7 +181,7 @@ describe("Git Service", () => {
         >
       ).mockResolvedValue();
 
-      const result = await createAndSwitchBranch("/test/path", "feature/new");
+      const result = await createAndSwitchBranch({ projectPath: "/test/path", branchName: "feature/new" });
 
       expect(mockGit.checkoutLocalBranch).toHaveBeenCalledWith("feature/new");
       expect(result).toEqual({ name: "feature/new", current: true });
@@ -203,11 +203,11 @@ describe("Git Service", () => {
         >
       ).mockResolvedValue();
 
-      const result = await createAndSwitchBranch(
-        "/test/path",
-        "feature/new",
-        "develop"
-      );
+      const result = await createAndSwitchBranch({
+        projectPath: "/test/path",
+        branchName: "feature/new",
+        from: "develop"
+      });
 
       expect(mockGit.checkout).toHaveBeenCalledWith("develop");
       expect(mockGit.checkoutLocalBranch).toHaveBeenCalledWith("feature/new");
@@ -216,10 +216,10 @@ describe("Git Service", () => {
 
     it("should reject invalid branch names", async () => {
       await expect(
-        createAndSwitchBranch("/test/path", "invalid name")
+        createAndSwitchBranch({ projectPath: "/test/path", branchName: "invalid name" })
       ).rejects.toThrow("Invalid branch name");
       await expect(
-        createAndSwitchBranch("/test/path", "invalid@name")
+        createAndSwitchBranch({ projectPath: "/test/path", branchName: "invalid@name" })
       ).rejects.toThrow("Invalid branch name");
     });
   });
@@ -230,7 +230,7 @@ describe("Git Service", () => {
         mockGit.checkout as MockedFunction<(branch: string) => Promise<void>>
       ).mockResolvedValue();
 
-      const result = await switchBranch("/test/path", "develop");
+      const result = await switchBranch({ projectPath: "/test/path", branchName: "develop" });
 
       expect(mockGit.checkout).toHaveBeenCalledWith("develop");
       expect(result).toEqual({ name: "develop", current: true });
@@ -241,7 +241,7 @@ describe("Git Service", () => {
         mockGit.checkout as MockedFunction<(branch: string) => Promise<void>>
       ).mockRejectedValue(new Error("Branch does not exist"));
 
-      await expect(switchBranch("/test/path", "nonexistent")).rejects.toThrow(
+      await expect(switchBranch({ projectPath: "/test/path", branchName: "nonexistent" })).rejects.toThrow(
         "Branch does not exist"
       );
     });
@@ -253,7 +253,7 @@ describe("Git Service", () => {
         mockGit.add as MockedFunction<(files: string[]) => Promise<void>>
       ).mockResolvedValue();
 
-      await stageFiles("/test/path", ["file1.txt", "file2.txt"]);
+      await stageFiles({ projectPath: "/test/path", files: ["file1.txt", "file2.txt"] });
 
       expect(mockGit.add).toHaveBeenCalledWith(["file1.txt", "file2.txt"]);
     });
@@ -263,7 +263,7 @@ describe("Git Service", () => {
         mockGit.add as MockedFunction<(files: string[]) => Promise<void>>
       ).mockRejectedValue(new Error("Stage error"));
 
-      await expect(stageFiles("/test/path", ["file1.txt"])).rejects.toThrow(
+      await expect(stageFiles({ projectPath: "/test/path", files: ["file1.txt"] })).rejects.toThrow(
         "Stage error"
       );
     });
@@ -275,7 +275,7 @@ describe("Git Service", () => {
         mockGit.reset as MockedFunction<(args: string[]) => Promise<void>>
       ).mockResolvedValue();
 
-      await unstageFiles("/test/path", ["file1.txt", "file2.txt"]);
+      await unstageFiles({ projectPath: "/test/path", files: ["file1.txt", "file2.txt"] });
 
       expect(mockGit.reset).toHaveBeenCalledWith([
         "HEAD",
@@ -289,7 +289,7 @@ describe("Git Service", () => {
         mockGit.reset as MockedFunction<(args: string[]) => Promise<void>>
       ).mockRejectedValue(new Error("Unstage error"));
 
-      await expect(unstageFiles("/test/path", ["file1.txt"])).rejects.toThrow(
+      await expect(unstageFiles({ projectPath: "/test/path", files: ["file1.txt"] })).rejects.toThrow(
         "Unstage error"
       );
     });
@@ -307,9 +307,11 @@ describe("Git Service", () => {
         >
       ).mockResolvedValue(mockCommitResult);
 
-      const result = await commitChanges("/test/path", "Test commit", [
-        "file1.txt",
-      ]);
+      const result = await commitChanges({
+        projectPath: "/test/path",
+        message: "Test commit",
+        files: ["file1.txt"]
+      });
 
       expect(mockGit.add).toHaveBeenCalledWith(["file1.txt"]);
       expect(mockGit.commit).toHaveBeenCalledWith("Test commit");
@@ -324,7 +326,7 @@ describe("Git Service", () => {
       ).mockRejectedValue(new Error("Commit error"));
 
       await expect(
-        commitChanges("/test/path", "Test", ["file1.txt"])
+        commitChanges({ projectPath: "/test/path", message: "Test", files: ["file1.txt"] })
       ).rejects.toThrow("Commit error");
     });
   });
@@ -337,7 +339,7 @@ describe("Git Service", () => {
         >
       ).mockResolvedValue();
 
-      await pushToRemote("/test/path", "main");
+      await pushToRemote({ projectPath: "/test/path", branch: "main" });
 
       expect(mockGit.push).toHaveBeenCalledWith("origin", "main", [
         "--set-upstream",
@@ -351,7 +353,7 @@ describe("Git Service", () => {
         >
       ).mockResolvedValue();
 
-      await pushToRemote("/test/path", "main", "upstream");
+      await pushToRemote({ projectPath: "/test/path", branch: "main", remote: "upstream" });
 
       expect(mockGit.push).toHaveBeenCalledWith("upstream", "main", [
         "--set-upstream",
@@ -365,7 +367,7 @@ describe("Git Service", () => {
         >
       ).mockRejectedValue(new Error("Push rejected"));
 
-      await expect(pushToRemote("/test/path", "main")).rejects.toThrow(
+      await expect(pushToRemote({ projectPath: "/test/path", branch: "main" })).rejects.toThrow(
         "Push rejected"
       );
     });
@@ -377,7 +379,7 @@ describe("Git Service", () => {
         mockGit.fetch as MockedFunction<(remote: string) => Promise<void>>
       ).mockResolvedValue();
 
-      await fetchFromRemote("/test/path");
+      await fetchFromRemote({ projectPath: "/test/path" });
 
       expect(mockGit.fetch).toHaveBeenCalledWith("origin");
     });
@@ -387,7 +389,7 @@ describe("Git Service", () => {
         mockGit.fetch as MockedFunction<(remote: string) => Promise<void>>
       ).mockResolvedValue();
 
-      await fetchFromRemote("/test/path", "upstream");
+      await fetchFromRemote({ projectPath: "/test/path", remote: "upstream" });
 
       expect(mockGit.fetch).toHaveBeenCalledWith("upstream");
     });
@@ -397,7 +399,7 @@ describe("Git Service", () => {
         mockGit.fetch as MockedFunction<(remote: string) => Promise<void>>
       ).mockRejectedValue(new Error("Fetch error"));
 
-      await expect(fetchFromRemote("/test/path")).rejects.toThrow(
+      await expect(fetchFromRemote({ projectPath: "/test/path" })).rejects.toThrow(
         "Fetch error"
       );
     });
@@ -410,7 +412,7 @@ describe("Git Service", () => {
         mockGit.diff as MockedFunction<(args: string[]) => Promise<string>>
       ).mockResolvedValue(mockDiff);
 
-      const result = await getFileDiff("/test/path", "file1.txt");
+      const result = await getFileDiff({ projectPath: "/test/path", filepath: "file1.txt" });
 
       expect(mockGit.diff).toHaveBeenCalledWith(["--text", "--", "file1.txt"]);
       expect(result).toBe(mockDiff);
@@ -421,7 +423,7 @@ describe("Git Service", () => {
         mockGit.diff as MockedFunction<(args: string[]) => Promise<string>>
       ).mockRejectedValue(new Error("Diff error"));
 
-      await expect(getFileDiff("/test/path", "file1.txt")).rejects.toThrow(
+      await expect(getFileDiff({ projectPath: "/test/path", filepath: "file1.txt" })).rejects.toThrow(
         "Diff error"
       );
     });
@@ -446,7 +448,7 @@ describe("Git Service", () => {
         >
       ).mockResolvedValue(mockLog);
 
-      const result = await getCommitHistory("/test/path");
+      const result = await getCommitHistory({ projectPath: "/test/path" });
 
       expect(mockGit.log).toHaveBeenCalledWith({
         maxCount: 100,
@@ -467,7 +469,7 @@ describe("Git Service", () => {
         >
       ).mockResolvedValue(mockLog);
 
-      await getCommitHistory("/test/path", 50, 10);
+      await getCommitHistory({ projectPath: "/test/path", limit: 50, offset: 10 });
 
       expect(mockGit.log).toHaveBeenCalledWith({
         maxCount: 50,

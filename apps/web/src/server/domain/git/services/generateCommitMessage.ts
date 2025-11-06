@@ -1,13 +1,14 @@
-import simpleGit from 'simple-git';
-import { generateText } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
-import { config } from '@/server/config/Configuration';
+import simpleGit from 'simple-git'
+import { generateText } from 'ai'
+import { anthropic } from '@ai-sdk/anthropic'
+import { config } from '@/server/config/Configuration'
+import type { GenerateCommitMessageOptions } from '../types/GenerateCommitMessageOptions'
 
 /**
  * Generate an AI-powered commit message based on staged file diffs
  * Requires ANTHROPIC_API_KEY environment variable to be set
  */
-export async function generateCommitMessage(projectPath: string, files: string[]): Promise<string> {
+export async function generateCommitMessage({ projectPath, files }: GenerateCommitMessageOptions): Promise<string> {
   const apiKey = config.get('apiKeys').anthropicApiKey;
 
   if (!apiKey) {

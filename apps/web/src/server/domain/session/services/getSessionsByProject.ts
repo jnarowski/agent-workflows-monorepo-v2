@@ -1,18 +1,13 @@
 import { prisma } from '@/shared/prisma';
 import type { AgentSessionMetadata, SessionResponse } from '@/shared/types/agent-session.types';
+import type { GetSessionsByProjectOptions } from '../types/GetSessionsByProjectOptions';
 
 /**
  * Get all sessions for a project
- * @param projectId - Project ID
- * @param userId - User ID (for authorization)
- * @param includeArchived - Whether to include archived sessions (default: false)
- * @returns Array of sessions ordered by last message date
  */
-export async function getSessionsByProject(
-  projectId: string,
-  userId: string,
-  includeArchived = false
-): Promise<SessionResponse[]> {
+export async function getSessionsByProject({
+  filters: { projectId, userId, includeArchived = false }
+}: GetSessionsByProjectOptions): Promise<SessionResponse[]> {
   const sessions = await prisma.agentSession.findMany({
     where: {
       projectId,

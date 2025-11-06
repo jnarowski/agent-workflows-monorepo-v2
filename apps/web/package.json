@@ -12,9 +12,6 @@
     ".agent-workflows.config.example"
   ],
   "preferGlobal": true,
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "scripts": {
     "build": "tsc -b && vite build && pnpm build:cli",
     "build:cli": "node scripts/build-cli.js && node scripts/copy-prisma-schema.js",

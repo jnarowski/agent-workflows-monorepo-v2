@@ -1,15 +1,14 @@
-import type { FastifyBaseLogger } from 'fastify';
+import type { CleanupUserSessionOptions } from '../types/CleanupUserSessionsOptions';
 import { getUserSessions } from './getShellSession';
 import { destroyShellSession } from './destroyShellSession';
 
 /**
  * Cleanup all sessions for a specific user
- * @param userId - User ID
- * @param logger - Optional Fastify logger
+ * @throws Error if any session cleanup fails
  */
-export function cleanupUserSessions(userId: string, logger?: FastifyBaseLogger): void {
-  const sessionIds = getUserSessions(userId);
+export function cleanupUserSessions({ userId }: CleanupUserSessionOptions): void {
+  const sessionIds = getUserSessions({ userId });
   for (const sessionId of sessionIds) {
-    destroyShellSession(sessionId, logger);
+    destroyShellSession({ sessionId });
   }
 }

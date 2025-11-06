@@ -24,7 +24,7 @@ export async function slashCommandsRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const commands = await getProjectSlashCommands(request.params.id);
+        const commands = await getProjectSlashCommands({ projectId: request.params.id });
         return reply.send({ data: commands });
       } catch (error) {
         const errorMessage = (error as Error).message;

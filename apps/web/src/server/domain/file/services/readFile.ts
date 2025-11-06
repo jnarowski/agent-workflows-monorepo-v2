@@ -1,18 +1,16 @@
 import fs from 'fs/promises';
 import path from 'path';
-import type { FastifyBaseLogger } from 'fastify';
 import { getProjectById } from '@/server/domain/project/services/getProjectById';
+import type { ReadFileOptions } from '../types/ReadFileOptions';
 
 /**
  * Read file content
- * @param projectId - Project ID
- * @param filePath - File path relative to or absolute
- * @param logger - Optional Fastify logger
+ * @param options - Read file options
  * @returns File content as string
  */
-export async function readFile(projectId: string, filePath: string, logger?: FastifyBaseLogger): Promise<string> {
+export async function readFile({ projectId, filePath }: ReadFileOptions): Promise<string> {
   // Look up project from database
-  const project = await getProjectById(projectId);
+  const project = await getProjectById({ id: projectId });
 
   if (!project) {
     throw new Error('Project not found');
@@ -44,8 +42,7 @@ export async function readFile(projectId: string, filePath: string, logger?: Fas
   try {
     const content = await fs.readFile(absolutePath, 'utf-8');
     return content;
-  } catch (error) {
-    logger?.error({ err: error, path: absolutePath }, 'Error reading file');
+  } catch {
     throw new Error('Failed to read file content');
   }
 }

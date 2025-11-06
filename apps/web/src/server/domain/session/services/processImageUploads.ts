@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { activeSessions } from '@/server/websocket/infrastructure/active-sessions';
+import type { ProcessImageUploadsOptions } from '@/server/domain/session/types/ProcessImageUploadsOptions';
 
 export interface ImageProcessingResult {
   imagePaths: string[];
@@ -13,11 +14,7 @@ export interface ImageProcessingResult {
  * Handles both base64-encoded images and file path references.
  * Creates a temporary directory in the project and saves all images there.
  */
-export async function processImageUploads(
-  images: string[] | undefined,
-  projectPath: string,
-  sessionId: string
-): Promise<ImageProcessingResult> {
+export async function processImageUploads({ images, projectPath, sessionId }: ProcessImageUploadsOptions): Promise<ImageProcessingResult> {
   const imagePaths: string[] = [];
 
   if (!images || images.length === 0) {

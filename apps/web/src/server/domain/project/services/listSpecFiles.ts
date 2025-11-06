@@ -1,12 +1,13 @@
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
+import type { ListSpecFilesOptions } from "@/server/domain/project/types/ListSpecFilesOptions";
 
 /**
  * List all spec files from .agent/specs/todo/ directory
- * @param projectPath - Absolute path to project directory
+ * @param options - Options object with projectPath
  * @returns Array of relative paths to spec files
  */
-export async function listSpecFiles(projectPath: string): Promise<string[]> {
+export async function listSpecFiles({ projectPath }: ListSpecFilesOptions): Promise<string[]> {
   const specsDir = join(projectPath, ".agent", "specs", "todo");
 
   try {

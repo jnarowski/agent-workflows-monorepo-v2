@@ -51,11 +51,11 @@ export function createPhaseStep<TPhases extends readonly PhaseDefinition[] | und
     logger.info({ runId, phase: name }, "Phase started");
 
     // Update current_phase in execution using domain service
-    await updateWorkflowRun(
+    await updateWorkflowRun({
       runId,
-      { current_phase: id },
-      logger
-    );
+      data: { current_phase: id },
+      logger,
+    });
 
     // Set current phase in context (for nested step tagging)
     context.currentPhase = id;

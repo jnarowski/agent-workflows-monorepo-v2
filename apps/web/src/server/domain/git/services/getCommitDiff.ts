@@ -1,10 +1,11 @@
-import simpleGit from 'simple-git';
-import type { GitCommitDiff } from '@/shared/types/git.types';
+import simpleGit from 'simple-git'
+import type { GitCommitDiff } from '@/shared/types/git.types'
+import type { GetCommitDiffOptions } from '../types/GetCommitDiffOptions'
 
 /**
  * Get detailed diff for a specific commit
  */
-export async function getCommitDiff(projectPath: string, commitHash: string): Promise<GitCommitDiff> {
+export async function getCommitDiff({ projectPath, commitHash }: GetCommitDiffOptions): Promise<GitCommitDiff> {
   const git = simpleGit(projectPath);
 
   // Get commit details

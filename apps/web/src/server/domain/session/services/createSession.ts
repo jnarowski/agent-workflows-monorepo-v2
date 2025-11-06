@@ -2,26 +2,23 @@ import { prisma } from '@/shared/prisma';
 import type { AgentSessionMetadata, SessionResponse } from '@/shared/types/agent-session.types';
 import type { AgentType } from '@/shared/types/agent.types';
 import { getSessionFilePath } from '@/server/utils/path';
+import type { CreateSessionOptions } from '../types/CreateSessionOptions';
 
 /**
  * Create a new session
  * Creates database record (JSONL file will be created by agent-cli-sdk)
- * @param projectId - Project ID
- * @param userId - User ID
- * @param sessionId - Pre-generated session UUID
- * @param agent - Agent type (defaults to 'claude')
- * @param name - Optional session name
- * @param metadataOverride - Optional metadata override (defaults to initialized metadata)
- * @returns Created session
  */
-export async function createSession(
-  projectId: string,
-  userId: string,
-  sessionId: string,
-  agent: AgentType = 'claude',
-  name?: string,
-  metadataOverride?: Record<string, unknown>
-): Promise<SessionResponse> {
+export async function createSession({
+  data
+}: CreateSessionOptions): Promise<SessionResponse> {
+  const {
+    projectId,
+    userId,
+    sessionId,
+    agent = 'claude' as AgentType,
+    name,
+    metadataOverride
+  } = data;
   // Get project to determine session file path
   const project = await prisma.project.findUnique({
     where: { id: projectId },

@@ -59,7 +59,7 @@ export async function handleSessionSendMessage(
   );
 
   // Verify user owns session
-  const session = await validateSessionOwnership(sessionId, userId);
+  const session = await validateSessionOwnership({ sessionId, userId });
   const projectPath = session.project.path;
 
   // Get or create session data for temp image tracking
@@ -69,14 +69,14 @@ export async function handleSessionSendMessage(
   });
 
   // Process image uploads (domain function)
-  const { imagePaths } = await processImageUploads(
-    data.images,
-    sessionData.projectPath,
+  const { imagePaths } = await processImageUploads({
+    images: data.images,
+    projectPath: sessionData.projectPath,
     sessionId
-  );
+  });
 
   // Validate agent is supported
-  const validation = await validateAgentSupported(session.agent);
+  const validation = await validateAgentSupported({ agent: session.agent });
   if (!validation.supported) {
     broadcast(Channels.session(sessionId), {
       type: SessionEventTypes.ERROR,
@@ -86,12 +86,12 @@ export async function handleSessionSendMessage(
         code: "UNSUPPORTED_AGENT",
       },
     });
-    await cleanupSessionImages(sessionId, fastify.log);
+    await cleanupSessionImages({ sessionId });
     return;
   }
 
   // Parse execution configuration
-  const config = await parseExecutionConfig(data.config);
+  const config = await parseExecutionConfig({ config: data.config });
 
   // Determine session ID to use (CLI session ID or database ID)
   const cliSessionId = session.cli_session_id || sessionId;
@@ -102,7 +102,11 @@ export async function handleSessionSendMessage(
   );
 
   // Set session state to working
-  await updateSessionState(sessionId, "working");
+  await updateSessionState({
+    id: sessionId,
+    data: { state: "working" },
+    shouldBroadcast: false,
+  });
 
   // Execute agent command
   fastify.log.info(
@@ -131,7 +135,6 @@ export async function handleSessionSendMessage(
         });
       }
     },
-    logger: fastify.log,
   });
 
   fastify.log.info(
@@ -145,8 +148,8 @@ export async function handleSessionSendMessage(
       { sessionId, error: result.error },
       "[WebSocket] Execution failed, skipping post-processing"
     );
-    await handleExecutionFailure(sessionId, result, true, fastify.log);
-    await cleanupSessionImages(sessionId, fastify.log);
+    await handleExecutionFailure({ sessionId, result, shouldBroadcast: true });
+    await cleanupSessionImages({ sessionId });
     return;
   }
 
@@ -169,10 +172,14 @@ export async function handleSessionSendMessage(
   );
 
   // Set session state to idle (successful completion)
-  await updateSessionState(sessionId, "idle");
+  await updateSessionState({
+    id: sessionId,
+    data: { state: "idle" },
+    shouldBroadcast: false,
+  });
 
   // Cleanup and complete
-  await cleanupSessionImages(sessionId, fastify.log);
+  await cleanupSessionImages({ sessionId });
   broadcast(Channels.session(sessionId), {
     type: SessionEventTypes.MESSAGE_COMPLETE,
     data: {
@@ -197,7 +204,7 @@ export async function handleSessionCancel(
 
   try {
     // Delegate all business logic to domain service
-    const result = await cancelSession(sessionId, userId, true, fastify.log);
+    const result = await cancelSession({ sessionId, userId, shouldBroadcast: true });
 
     if (!result.success) {
       // Error already broadcasted by domain service
@@ -237,7 +244,7 @@ export async function handleSessionSubscribe(
   fastify: FastifyInstance
 ): Promise<void> {
   // Validate session ownership
-  await validateSessionOwnership(sessionId, userId);
+  await validateSessionOwnership({ sessionId, userId });
 
   // Subscribe socket to session channel
   const channel = Channels.session(sessionId);
@@ -365,7 +372,10 @@ async function performPostProcessingTasks(
   );
 
   // Store CLI session ID
-  await storeCliSessionId(sessionId, result.sessionId, fastify.log);
+  await storeCliSessionId({
+    sessionId,
+    cliSessionId: result.sessionId,
+  });
 
   // Generate session name if needed
   if (!existingSessionName) {
@@ -463,7 +473,7 @@ function extractAndLogUsage(
   result: AgentExecuteResult,
   logger: import("fastify").FastifyBaseLogger
 ): void {
-  const usage = extractUsageFromEvents(result.events);
+  const usage = extractUsageFromEvents({ events: result.events });
 
   if (usage) {
     logger.info({ usage, sessionId }, "Extracted usage data");

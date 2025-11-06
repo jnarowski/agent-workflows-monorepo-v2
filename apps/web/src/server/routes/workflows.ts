@@ -68,7 +68,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
 
       // Start run via Inngest
       try {
-        await executeWorkflow(run.id, fastify, fastify.log);
+        await executeWorkflow({ runId: run.id, fastify, logger: fastify.log });
 
         fastify.log.info(
           { runId: run.id, userId },
@@ -151,7 +151,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
         "Fetching workflow run"
       );
 
-      const run = await getWorkflowRunById(id);
+      const run = await getWorkflowRunById({ id });
 
       if (!run) {
         throw new NotFoundError("Workflow run not found");
@@ -191,7 +191,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
         "Pausing workflow run"
       );
 
-      const run = await getWorkflowRunById(id);
+      const run = await getWorkflowRunById({ id });
 
       if (!run) {
         throw new NotFoundError("Workflow run not found");
@@ -209,7 +209,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const updated = await pauseWorkflow(id, userId, fastify.log);
+      const updated = await pauseWorkflow({ runId: id, userId, logger: fastify.log });
 
       return reply.send({ data: updated });
     }
@@ -238,7 +238,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
         "Resuming workflow run"
       );
 
-      const run = await getWorkflowRunById(id);
+      const run = await getWorkflowRunById({ id });
 
       if (!run) {
         throw new NotFoundError("Workflow run not found");
@@ -256,7 +256,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const updated = await resumeWorkflow(id, userId, fastify.log);
+      const updated = await resumeWorkflow({ runId: id, userId, logger: fastify.log });
 
       return reply.send({ data: updated });
     }
@@ -285,7 +285,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
         "Cancelling workflow run"
       );
 
-      const run = await getWorkflowRunById(id);
+      const run = await getWorkflowRunById({ id });
 
       if (!run) {
         throw new NotFoundError("Workflow run not found");
@@ -297,7 +297,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
           .send({ error: { message: "Access denied", statusCode: 403 } });
       }
 
-      const updated = await cancelWorkflow(id, userId, undefined, fastify.log);
+      const updated = await cancelWorkflow({ runId: id, userId, reason: undefined, logger: fastify.log });
 
       return reply.send({ data: updated });
     }
@@ -436,7 +436,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
 
       let specContent: string;
       try {
-        specContent = await readFile(projectId, specPath, fastify.log);
+        specContent = await readFile({ projectId, filePath: specPath });
       } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
         fastify.log.error(

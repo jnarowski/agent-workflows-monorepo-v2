@@ -1,10 +1,8 @@
-import type * as pty from 'node-pty';
+import type { WriteToShellOptions } from '../types/WriteToShellOptions';
 
 /**
  * Write data to a shell session
- * @param ptyProcess - PTY process to write to
- * @param data - Data to write
  */
-export function writeToShell(ptyProcess: pty.IPty, data: string): void {
+export function writeToShell({ ptyProcess, data }: WriteToShellOptions): void {
   ptyProcess.write(data);
 }

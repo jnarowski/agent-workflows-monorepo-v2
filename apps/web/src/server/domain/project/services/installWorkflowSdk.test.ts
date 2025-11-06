@@ -59,7 +59,7 @@ describe("installWorkflowSdk", () => {
       .mockReturnValueOnce(initProcess); // pnpm workflow-sdk init --yes
 
     // When: installWorkflowSdk()
-    const result = await installWorkflowSdk(mockProjectPath);
+    const result = await installWorkflowSdk({ projectPath: mockProjectPath });
 
     // Then: Creates package.json, installs SDK, runs init
     expect(fs.writeFile).toHaveBeenCalledWith(
@@ -108,7 +108,7 @@ describe("installWorkflowSdk", () => {
       .mockReturnValueOnce(initProcess);
 
     // When: installWorkflowSdk()
-    const result = await installWorkflowSdk(mockProjectPath);
+    const result = await installWorkflowSdk({ projectPath: mockProjectPath });
 
     // Then: Returns success=true with warning message
     expect(result.success).toBe(true);
@@ -133,7 +133,7 @@ describe("installWorkflowSdk", () => {
     vi.mocked(child_process.spawn).mockReturnValueOnce(installProcess);
 
     // When: installWorkflowSdk()
-    const result = await installWorkflowSdk(mockProjectPath);
+    const result = await installWorkflowSdk({ projectPath: mockProjectPath });
 
     // Then: Returns success=false with error message
     expect(result.success).toBe(false);

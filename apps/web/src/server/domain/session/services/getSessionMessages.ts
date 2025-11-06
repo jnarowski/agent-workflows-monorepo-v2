@@ -1,15 +1,16 @@
 import { prisma } from '@/shared/prisma';
 import { loadMessages } from '@repo/agent-cli-sdk';
 import type { UnifiedMessage } from '@repo/agent-cli-sdk';
+import type { GetSessionMessagesOptions } from '../types/GetSessionMessagesOptions';
 
 /**
  * Get messages for a specific session
  * Uses SDK to load and parse messages
- * @param sessionId - Session ID
- * @param userId - User ID (for authorization)
- * @returns Array of typed UnifiedMessage objects
  */
-export async function getSessionMessages(sessionId: string, userId: string): Promise<UnifiedMessage[]> {
+export async function getSessionMessages({
+  sessionId,
+  userId
+}: GetSessionMessagesOptions): Promise<UnifiedMessage[]> {
   // Verify session exists and user has access
   const session = await prisma.agentSession.findUnique({
     where: { id: sessionId },

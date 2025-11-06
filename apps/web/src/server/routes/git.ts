@@ -19,7 +19,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path } = request.body;
 
-      const status = await gitService.getGitStatus(path);
+      const status = await gitService.getGitStatus({ projectPath: path });
       return reply.send(buildSuccessResponse(status));
     }
   );
@@ -38,7 +38,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path } = request.body;
 
-      const branches = await gitService.getBranches(path);
+      const branches = await gitService.getBranches({ projectPath: path });
       return reply.send(buildSuccessResponse(branches));
     }
   );
@@ -57,7 +57,11 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, name, from } = request.body;
 
-      const branch = await gitService.createAndSwitchBranch(path, name, from);
+      const branch = await gitService.createAndSwitchBranch({
+        projectPath: path,
+        branchName: name,
+        from,
+      });
       return reply.code(201).send(buildSuccessResponse(branch));
     }
   );
@@ -76,7 +80,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, name } = request.body;
 
-      const branch = await gitService.switchBranch(path, name);
+      const branch = await gitService.switchBranch({ projectPath: path, branchName: name });
       return reply.send(buildSuccessResponse(branch));
     }
   );
@@ -95,7 +99,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, files } = request.body;
 
-      await gitService.stageFiles(path, files);
+      await gitService.stageFiles({ projectPath: path, files });
       return reply.send(buildSuccessResponse({ success: true }));
     }
   );
@@ -114,7 +118,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, files } = request.body;
 
-      await gitService.unstageFiles(path, files);
+      await gitService.unstageFiles({ projectPath: path, files });
       return reply.send(buildSuccessResponse({ success: true }));
     }
   );
@@ -133,7 +137,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, message, files } = request.body;
 
-      const hash = await gitService.commitChanges(path, message, files);
+      const hash = await gitService.commitChanges({ projectPath: path, message, files });
       return reply.code(201).send(buildSuccessResponse({ hash }));
     }
   );
@@ -152,7 +156,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, branch, remote } = request.body;
 
-      await gitService.pushToRemote(path, branch, remote);
+      await gitService.pushToRemote({ projectPath: path, branch, remote: remote || 'origin' });
       return reply.send(buildSuccessResponse({ success: true }));
     }
   );
@@ -171,7 +175,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, remote } = request.body;
 
-      await gitService.fetchFromRemote(path, remote);
+      await gitService.fetchFromRemote({ projectPath: path, remote: remote || 'origin' });
       return reply.send(buildSuccessResponse({ success: true }));
     }
   );
@@ -190,7 +194,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, remote, branch } = request.body;
 
-      await gitService.pullFromRemote(path, remote, branch);
+      await gitService.pullFromRemote({ projectPath: path, remote, branch });
       return reply.send(buildSuccessResponse({ success: true }));
     }
   );
@@ -209,7 +213,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, filepath } = request.body;
 
-      const diff = await gitService.getFileDiff(path, filepath);
+      const diff = await gitService.getFileDiff({ projectPath: path, filepath });
       return reply.send(buildSuccessResponse({ diff }));
     }
   );
@@ -228,7 +232,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, limit, offset } = request.body;
 
-      const commits = await gitService.getCommitHistory(path, limit, offset);
+      const commits = await gitService.getCommitHistory({ projectPath: path, limit, offset });
       return reply.send(buildSuccessResponse(commits));
     }
   );
@@ -247,7 +251,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, commitHash } = request.body;
 
-      const commitDiff = await gitService.getCommitDiff(path, commitHash);
+      const commitDiff = await gitService.getCommitDiff({ projectPath: path, commitHash });
       return reply.send(buildSuccessResponse(commitDiff));
     }
   );
@@ -266,7 +270,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, baseBranch } = request.body;
 
-      const commits = await gitService.getCommitsSinceBase(path, baseBranch);
+      const commits = await gitService.getCommitsSinceBase({ projectPath: path, baseBranch });
 
       // Construct PR title from most recent commit
       const title = commits.length > 0 ? commits[0].message : 'New Pull Request';
@@ -294,12 +298,12 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, title, description, baseBranch } = request.body;
 
-      const prResult = await gitService.createPullRequest(
-        path,
+      const prResult = await gitService.createPullRequest({
+        projectPath: path,
         title,
         description,
-        baseBranch
-      );
+        baseBranch,
+      });
 
       return reply.send(buildSuccessResponse(prResult));
     }
@@ -319,7 +323,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, files } = request.body;
 
-      const message = await gitService.generateCommitMessage(path, files);
+      const message = await gitService.generateCommitMessage({ projectPath: path, files });
 
       return reply.send(buildSuccessResponse({ message }));
     }
@@ -339,7 +343,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, sourceBranch, noFf } = request.body;
 
-      const result = await gitService.mergeBranch(path, sourceBranch, { noFf });
+      const result = await gitService.mergeBranch({ projectPath: path, sourceBranch, options: { noFf } });
       return reply.send(buildSuccessResponse(result));
     }
   );
@@ -358,7 +362,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, message } = request.body;
 
-      await gitService.stashSave(path, message);
+      await gitService.stashSave({ projectPath: path, message });
       return reply.send(buildSuccessResponse({ success: true }));
     }
   );
@@ -377,7 +381,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, index } = request.body;
 
-      await gitService.stashPop(path, index);
+      await gitService.stashPop({ projectPath: path, index });
       return reply.send(buildSuccessResponse({ success: true }));
     }
   );
@@ -396,7 +400,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path } = request.body;
 
-      const stashes = await gitService.stashList(path);
+      const stashes = await gitService.stashList({ projectPath: path });
       return reply.send(buildSuccessResponse(stashes));
     }
   );
@@ -415,7 +419,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, index } = request.body;
 
-      await gitService.stashApply(path, index);
+      await gitService.stashApply({ projectPath: path, index });
       return reply.send(buildSuccessResponse({ success: true }));
     }
   );
@@ -434,7 +438,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, commitHash, mode } = request.body;
 
-      await gitService.resetToCommit(path, commitHash, mode);
+      await gitService.resetToCommit({ projectPath: path, commitHash, mode });
       return reply.send(buildSuccessResponse({ success: true }));
     }
   );
@@ -453,7 +457,7 @@ export async function gitRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { path, files } = request.body;
 
-      await gitService.discardChanges(path, files);
+      await gitService.discardChanges({ projectPath: path, files });
       return reply.send(buildSuccessResponse({ success: true }));
     }
   );

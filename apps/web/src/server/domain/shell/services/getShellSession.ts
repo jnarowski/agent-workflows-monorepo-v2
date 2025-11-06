@@ -1,14 +1,15 @@
 import type { ShellSession } from '../types/index';
+import type { GetShellSessionOptions } from '../types/GetShellSessionOptions';
+import type { GetUserSessionsOptions } from '../types/GetUserSessionsOptions';
 
 // Module-level sessions Map - shared across all shell service functions
 const sessions = new Map<string, ShellSession>();
 
 /**
  * Get an existing shell session
- * @param sessionId - Session ID
  * @returns Shell session or undefined if not found
  */
-export function getShellSession(sessionId: string): ShellSession | undefined {
+export function getShellSession({ sessionId }: GetShellSessionOptions): ShellSession | undefined {
   return sessions.get(sessionId);
 }
 
@@ -23,9 +24,8 @@ export function setShellSession(sessionId: string, session: ShellSession): void 
 
 /**
  * Remove a shell session from the map
- * @param sessionId - Session ID
  */
-export function removeShellSession(sessionId: string): void {
+export function removeShellSession({ sessionId }: GetShellSessionOptions): void {
   sessions.delete(sessionId);
 }
 
@@ -39,7 +39,7 @@ export function getSessionCount(): number {
 /**
  * Get all active session IDs for a user
  */
-export function getUserSessions(userId: string): string[] {
+export function getUserSessions({ userId }: GetUserSessionsOptions): string[] {
   const userSessions: string[] = [];
   for (const [sessionId, session] of sessions.entries()) {
     if (session.userId === userId) {

@@ -56,9 +56,13 @@ async function executeGitOperation(
       if (!config.message) {
         throw new Error("Commit message is required for commit operation");
       }
-      // commitChanges expects (projectPath, message, files[])
+      // commitChanges expects object with projectPath, message, files[]
       // files defaults to ['.'] to stage all changes
-      const commitSha = await commitChanges(projectPath, config.message, ["."]);
+      const commitSha = await commitChanges({
+        projectPath,
+        message: config.message,
+        files: ["."],
+      });
       return {
         operation: "commit",
         commitSha,
@@ -70,12 +74,12 @@ async function executeGitOperation(
       if (!config.branch) {
         throw new Error("Branch name is required for branch operation");
       }
-      // createAndSwitchBranch expects (projectPath, branchName, from?)
-      await createAndSwitchBranch(
+      // createAndSwitchBranch expects object with projectPath, branchName, from?
+      await createAndSwitchBranch({
         projectPath,
-        config.branch,
-        config.baseBranch
-      );
+        branchName: config.branch,
+        from: config.baseBranch,
+      });
       return {
         operation: "branch",
         branch: config.branch,
@@ -87,13 +91,13 @@ async function executeGitOperation(
       if (!config.title) {
         throw new Error("PR title is required for pr operation");
       }
-      // createPullRequest expects (projectPath, title, description, baseBranch)
-      const result = await createPullRequest(
+      // createPullRequest expects object with projectPath, title, description, baseBranch
+      const result = await createPullRequest({
         projectPath,
-        config.title,
-        config.body ?? "",
-        config.baseBranch ?? "main"
-      );
+        title: config.title,
+        description: config.body ?? "",
+        baseBranch: config.baseBranch ?? "main",
+      });
       return {
         operation: "pr",
         prUrl: result.prUrl,
@@ -107,18 +111,22 @@ async function executeGitOperation(
       }
 
       // Get current branch
-      const currentBranch = await getCurrentBranch(projectPath);
+      const currentBranch = await getCurrentBranch({ projectPath });
 
       // Check if already on target branch
       if (currentBranch === config.branch) {
         // Already on target branch - just commit if needed
-        const status = await getGitStatus(projectPath);
+        const status = await getGitStatus({ projectPath });
         const hasUncommittedChanges = status.files.length > 0;
 
         let commitSha: string | undefined;
         if (hasUncommittedChanges) {
           const commitMessage = config.commitMessage ?? "WIP: Auto-commit";
-          commitSha = await commitChanges(projectPath, commitMessage, ["."]);
+          commitSha = await commitChanges({
+            projectPath,
+            message: commitMessage,
+            files: ["."],
+          });
         }
 
         return {
@@ -132,7 +140,7 @@ async function executeGitOperation(
       }
 
       // Not on target branch - check for uncommitted changes
-      const status = await getGitStatus(projectPath);
+      const status = await getGitStatus({ projectPath });
       const hasUncommittedChanges = status.files.length > 0;
 
       let commitSha: string | undefined;
@@ -140,15 +148,19 @@ async function executeGitOperation(
       // If uncommitted changes exist, commit them
       if (hasUncommittedChanges) {
         const commitMessage = config.commitMessage ?? "WIP: Auto-commit before branching";
-        commitSha = await commitChanges(projectPath, commitMessage, ["."]);
+        commitSha = await commitChanges({
+          projectPath,
+          message: commitMessage,
+          files: ["."],
+        });
       }
 
       // Create and switch to new branch
-      await createAndSwitchBranch(
+      await createAndSwitchBranch({
         projectPath,
-        config.branch,
-        config.baseBranch
-      );
+        branchName: config.branch,
+        from: config.baseBranch,
+      });
 
       return {
         operation: "commit-and-branch",

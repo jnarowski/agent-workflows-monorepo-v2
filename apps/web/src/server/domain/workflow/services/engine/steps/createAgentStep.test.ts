@@ -102,14 +102,16 @@ describe("createAgentStep", () => {
     expect(result.exitCode).toBe(0);
     expect(result.sessionId).toBe("session-123");
 
-    expect(mockCreateSession).toHaveBeenCalledWith(
-      "project-456",
-      "user-789",
-      expect.any(String), // sessionId (UUID)
-      "claude",
-      "Code Review", // toName("code-review") -> "Code Review"
-      {}
-    );
+    expect(mockCreateSession).toHaveBeenCalledWith({
+      data: {
+        projectId: "project-456",
+        userId: "user-789",
+        sessionId: expect.any(String), // sessionId (UUID)
+        agent: "claude",
+        name: "Code Review", // toName("code-review") -> "Code Review"
+        metadataOverride: {}
+      }
+    });
 
     expect(mockExecuteAgent).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -200,9 +202,12 @@ describe("createAgentStep", () => {
       })
     ).rejects.toThrow("Agent crashed");
 
-    expect(mockUpdateSession).toHaveBeenCalledWith("session-123", {
-      state: "error",
-      error_message: "Agent crashed",
+    expect(mockUpdateSession).toHaveBeenCalledWith({
+      id: "session-123",
+      data: {
+        state: "error",
+        error_message: "Agent crashed",
+      }
     });
   });
 });

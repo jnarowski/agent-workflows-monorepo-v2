@@ -6,6 +6,7 @@ import type {
 } from "@/shared/types/project.types";
 import type { SessionResponse } from "@/shared/types/agent-session.types";
 import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch";
+import type { GetAllProjectsOptions } from "../types/GetAllProjectsOptions";
 
 /**
  * Transform Prisma session to API session format
@@ -75,11 +76,9 @@ function transformProjectWithSessions(
  * @param options.sessionLimit - Maximum number of sessions per project (default: 20)
  * @returns Array of all projects ordered by creation date (newest first)
  */
-export async function getAllProjects(options?: {
-  includeSessions?: boolean;
-  sessionLimit?: number;
-}): Promise<Project[] | ProjectWithSessions[]> {
-  const { includeSessions = false, sessionLimit = 20 } = options || {};
+export async function getAllProjects(
+  { includeSessions = false, sessionLimit = 20 }: GetAllProjectsOptions = {}
+): Promise<Project[] | ProjectWithSessions[]> {
 
   const projects = await prisma.project.findMany({
     orderBy: {
@@ -117,7 +116,7 @@ export async function getAllProjects(options?: {
   // Fetch current branch for each project
   const projectsWithBranches = await Promise.all(
     projects.map(async (project) => {
-      const currentBranch = await getCurrentBranch(project.path);
+      const currentBranch = await getCurrentBranch({ projectPath: project.path });
       return { project, currentBranch };
     })
   );

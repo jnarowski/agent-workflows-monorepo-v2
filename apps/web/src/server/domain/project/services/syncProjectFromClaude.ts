@@ -5,6 +5,7 @@ import readline from "readline";
 import { syncProjectSessions } from "@/server/domain/session/services";
 import { getClaudeProjectsDir } from "@/server/utils/path";
 import type { SyncProjectsResponse } from "@/shared/types/project-sync.types";
+import type { SyncFromClaudeProjectsOptions } from "@/server/domain/project/types/SyncFromClaudeProjectsOptions";
 
 /**
  * Decode filesystem-encoded project path back to real path
@@ -136,12 +137,10 @@ async function extractProjectDirectory(projectName: string): Promise<string> {
 /**
  * Sync projects from Claude CLI ~/.claude/projects/ directory
  * Only imports projects with more than 3 sessions
- * @param userId - User ID for session sync
+ * @param options - Options object with userId
  * @returns Sync statistics
  */
-export async function syncFromClaudeProjects(
-  userId: string
-): Promise<SyncProjectsResponse> {
+export async function syncFromClaudeProjects({ userId }: SyncFromClaudeProjectsOptions): Promise<SyncProjectsResponse> {
   let projectsImported = 0;
   let projectsUpdated = 0;
   let totalSessionsSynced = 0;
@@ -176,7 +175,7 @@ export async function syncFromClaudeProjects(
     const projectName = projectDir.name;
 
     // Skip projects without enough sessions (must have >3 sessions)
-    const enoughSessions = await hasEnoughSessions(projectName);
+    const enoughSessions = await hasEnoughSessions({ projectName });
     if (!enoughSessions) {
       continue;
     }
@@ -191,10 +190,10 @@ export async function syncFromClaudeProjects(
     const { createOrUpdateProject } = await import("@/server/domain/project/services");
 
     // Create or update project
-    const project = await createOrUpdateProject(
-      displayName,
-      actualPath
-    );
+    const project = await createOrUpdateProject({
+      name: displayName,
+      path: actualPath
+    });
 
     // Determine if project was created or updated
     const isNewProject =
@@ -207,10 +206,10 @@ export async function syncFromClaudeProjects(
     }
 
     // Sync sessions for this project
-    const sessionsSyncResult = await syncProjectSessions(
-      project.id,
-      userId
-    );
+    const sessionsSyncResult = await syncProjectSessions({
+      projectId: project.id,
+      userId,
+    });
 
     totalSessionsSynced += sessionsSyncResult.synced;
   }

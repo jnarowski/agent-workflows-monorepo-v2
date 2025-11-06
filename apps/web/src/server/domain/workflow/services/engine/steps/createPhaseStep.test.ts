@@ -75,11 +75,11 @@ describe("createPhaseStep", () => {
 
     // Assert
     expect(result).toBe("build complete");
-    expect(mockUpdateWorkflowRun).toHaveBeenCalledWith(
-      execution.id,
-      { current_phase: "build" },
-      expect.anything()
-    );
+    expect(mockUpdateWorkflowRun).toHaveBeenCalledWith({
+      runId: execution.id,
+      data: { current_phase: "build" },
+      logger: expect.anything(),
+    });
 
     // Verify phase_started and phase_completed events created
     const events = await prisma.workflowEvent.findMany({
@@ -285,11 +285,11 @@ describe("createPhaseStep", () => {
     expect(result).toBe("tests passed");
 
     // Verify updateWorkflowRun called with kebab-case ID
-    expect(mockUpdateWorkflowRun).toHaveBeenCalledWith(
-      execution.id,
-      { current_phase: "run-tests" },
-      expect.anything()
-    );
+    expect(mockUpdateWorkflowRun).toHaveBeenCalledWith({
+      runId: execution.id,
+      data: { current_phase: "run-tests" },
+      logger: expect.anything(),
+    });
 
     // Verify events created with kebab-case phase ID
     const events = await prisma.workflowEvent.findMany({
@@ -368,11 +368,11 @@ describe("createPhaseStep", () => {
 
     // Assert
     expect(result).toBe("deployed");
-    expect(mockUpdateWorkflowRun).toHaveBeenCalledWith(
-      execution.id,
-      { current_phase: "deploy" },
-      expect.anything()
-    );
+    expect(mockUpdateWorkflowRun).toHaveBeenCalledWith({
+      runId: execution.id,
+      data: { current_phase: "deploy" },
+      logger: expect.anything(),
+    });
 
     const events = await prisma.workflowEvent.findMany({
       where: {
