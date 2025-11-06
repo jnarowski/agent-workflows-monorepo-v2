@@ -1,5 +1,9 @@
 import { prisma } from '@/shared/prisma';
 import type { FastifyInstance } from 'fastify';
+import Ajv from 'ajv';
+
+// Create Ajv instance for JSON Schema validation
+const ajv = new Ajv();
 
 /**
  * Execute a workflow by triggering the Inngest workflow engine.
@@ -25,6 +29,66 @@ export async function executeWorkflow(
 
   if (!execution.workflow_definition) {
     throw new Error(`Workflow definition not found for execution ${executionId}`);
+  }
+
+  // Validate args against argsSchema if defined
+  if (execution.workflow_definition.args_schema) {
+    try {
+      const validate = ajv.compile(execution.workflow_definition.args_schema as object);
+      const valid = validate(execution.args);
+
+      if (!valid) {
+        const errorMessage = `Invalid workflow args: ${JSON.stringify(validate.errors)}`;
+        logger?.error(
+          {
+            executionId,
+            workflowDefinitionId: execution.workflow_definition.id,
+            validationErrors: validate.errors,
+          },
+          'Workflow args validation failed'
+        );
+
+        // Update execution status to failed
+        await prisma.workflowExecution.update({
+          where: { id: executionId },
+          data: {
+            status: 'failed',
+            error_message: errorMessage,
+            completed_at: new Date(),
+          },
+        });
+
+        throw new Error(errorMessage);
+      }
+
+      logger?.info(
+        { executionId, workflowDefinitionId: execution.workflow_definition.id },
+        'Workflow args validated successfully'
+      );
+    } catch (error) {
+      // If validation fails or throws, mark execution as failed
+      if (error instanceof Error && error.message.startsWith('Invalid workflow args:')) {
+        throw error; // Re-throw validation errors
+      }
+
+      // Handle unexpected validation errors
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger?.error(
+        { err, executionId },
+        'Unexpected error during workflow args validation'
+      );
+
+      await prisma.workflowExecution.update({
+        where: { id: executionId },
+        data: {
+          status: 'failed',
+          error_message: `Validation error: ${err.message}`,
+          completed_at: new Date(),
+        },
+      });
+
+      throw err;
+    }
   }
 
   // Update execution status to pending (queued for processing)

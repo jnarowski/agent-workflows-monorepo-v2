@@ -8,7 +8,9 @@ import type { WorkflowRuntime } from "../runtime/adapter";
 /**
  * Workflow definition with type marker for runtime detection
  */
-export interface WorkflowDefinition<TPhases extends readonly import("../types/workflow").PhaseDefinition[] | undefined = undefined> {
+export interface WorkflowDefinition<
+  TPhases extends readonly import("../types/workflow").PhaseDefinition[] | undefined = undefined
+> {
   __type: "workflow";
   config: WorkflowConfig<TPhases>;
   fn: WorkflowFunction<TPhases>;
@@ -23,7 +25,7 @@ export interface WorkflowDefinition<TPhases extends readonly import("../types/wo
  * Define a type-safe workflow with custom step methods
  *
  * Uses const type parameters to automatically infer phase IDs from config.
- * No need for 'as const' - TypeScript will preserve literal types automatically.
+ * argsSchema enables runtime validation of workflow arguments via JSON Schema.
  *
  * @param config - Workflow configuration
  * @param fn - Workflow function to execute
@@ -33,6 +35,13 @@ export interface WorkflowDefinition<TPhases extends readonly import("../types/wo
  * ```typescript
  * import { defineWorkflow } from '@repo/workflow-sdk';
  *
+ * // Define argument types
+ * interface FeatureArgs {
+ *   featureName: string;
+ *   priority: 'high' | 'medium' | 'low';
+ *   estimatedHours?: number;
+ * }
+ *
  * export default defineWorkflow({
  *   id: 'implement-feature',
  *   trigger: 'workflow/implement-feature',
@@ -40,27 +49,33 @@ export interface WorkflowDefinition<TPhases extends readonly import("../types/wo
  *     { id: 'plan', label: 'Plan' },
  *     { id: 'implement', label: 'Implement' },
  *     { id: 'review', label: 'Review' }
- *   ]
+ *   ],
+ *   argsSchema: {
+ *     type: 'object',
+ *     properties: {
+ *       featureName: { type: 'string' },
+ *       priority: { type: 'string', enum: ['high', 'medium', 'low'] },
+ *       estimatedHours: { type: 'number' }
+ *     },
+ *     required: ['featureName', 'priority']
+ *   }
  * }, async ({ event, step }) => {
- *   // TypeScript enforces valid phase IDs - autocomplete works!
+ *   // Cast to your interface for type safety
+ *   const args = event.data.args as FeatureArgs;
+ *   const { featureName, priority } = args;
+ *
  *   await step.phase('plan', async () => {
  *     await step.agent('analyze', {
  *       agent: 'claude',
- *       prompt: 'Analyze the requirements'
+ *       prompt: `Analyze ${featureName} (priority: ${priority})`
  *     });
- *   });
- *
- *   await step.phase('implement', async () => {
- *     await step.slash('/implement-spec', ['feature-name']);
- *   });
- *
- *   await step.phase('typo', async () => {
- *     // ❌ TypeScript error: 'typo' is not a valid phase ID
  *   });
  * });
  * ```
  */
-export function defineWorkflow<const TPhases extends readonly import("../types/workflow").PhaseDefinition[] | undefined>(
+export function defineWorkflow<
+  const TPhases extends readonly import("../types/workflow").PhaseDefinition[] | undefined
+>(
   config: WorkflowConfig<TPhases>,
   fn: WorkflowFunction<TPhases>
 ): WorkflowDefinition<TPhases> {

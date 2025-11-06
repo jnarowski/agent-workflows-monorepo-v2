@@ -167,6 +167,44 @@ export interface AnnotationStepConfig {
 }
 
 /**
+ * Configuration for AI text/structured generation step
+ */
+export interface AiStepConfig<TSchema = unknown> {
+  /** Prompt for the AI model */
+  prompt: string;
+  /** AI provider: anthropic or openai */
+  provider?: "anthropic" | "openai";
+  /** Model ID (defaults: anthropic → claude-sonnet-4-5-20250929, openai → gpt-4) */
+  model?: string;
+  /** System prompt for context/instructions */
+  systemPrompt?: string;
+  /** Temperature (0-2, default: 0.7) */
+  temperature?: number;
+  /** Max tokens to generate */
+  maxTokens?: number;
+  /** Zod schema for structured output (uses generateObject when provided) */
+  schema?: TSchema;
+}
+
+/**
+ * Result from AI generation step
+ */
+export interface AiStepResult<T = { text: string }> {
+  /** Generated data (text or structured object) */
+  data: T;
+  /** Token usage statistics */
+  usage?: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+  /** Success status */
+  success: boolean;
+  /** Error message if failed */
+  error?: string;
+}
+
+/**
  * Base Inngest step tools interface (simplified)
  * The runtime will inject the actual Inngest step implementation
  */
@@ -268,4 +306,16 @@ export interface WorkflowStep<TPhaseId extends string = string> extends InngestS
    * @param config - Annotation configuration (message)
    */
   annotation(id: string, config: AnnotationStepConfig): Promise<void>;
+
+  /**
+   * Generate AI text or structured output
+   * @param id - Step ID
+   * @param config - AI configuration (prompt, provider, schema, etc.)
+   * @param options - Step options (timeout)
+   */
+  ai<T = { text: string }>(
+    id: string,
+    config: AiStepConfig,
+    options?: StepOptions
+  ): Promise<AiStepResult<T>>;
 }

@@ -228,6 +228,9 @@ importers:
       ai:
         specifier: ^5.0.81
         version: 5.0.81(zod@4.1.12)
+      ajv:
+        specifier: ^8.17.1
+        version: 8.17.1
       animated-backgrounds:
         specifier: ^2.0.0
         version: 2.0.0
@@ -649,9 +652,6 @@ importers:
       inngest:
         specifier: ^3.0.0
         version: 3.44.5(@opentelemetry/core@2.2.0(@opentelemetry/api@1.9.0))(express@4.21.2)(fastify@5.6.1)(typescript@5.9.3)(zod@4.1.12)
-      tsx:
-        specifier: ^4.19.2
-        version: 4.20.6
       typescript:
         specifier: ^5.9.0
         version: 5.9.3
@@ -10796,7 +10796,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vitest: 4.0.3(@types/debug@4.1.12)(@types/node@24.9.0)(@vitest/ui@4.0.3)(happy-dom@20.0.8)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)
+      vitest: 4.0.3(@types/debug@4.1.12)(@types/node@22.15.3)(@vitest/ui@4.0.3)(happy-dom@20.0.8)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)
 
   '@vitest/utils@2.1.9':
     dependencies:

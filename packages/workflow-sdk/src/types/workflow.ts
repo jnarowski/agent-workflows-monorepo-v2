@@ -19,7 +19,9 @@ export type ExtractPhaseIds<T extends readonly PhaseDefinition[]> =
 /**
  * Workflow configuration
  */
-export interface WorkflowConfig<TPhases extends readonly PhaseDefinition[] | undefined = undefined> {
+export interface WorkflowConfig<
+  TPhases extends readonly PhaseDefinition[] | undefined = undefined
+> {
   /** Unique workflow identifier */
   id: string;
   /** Inngest event trigger name (e.g., "workflow/implement-feature") */
@@ -32,12 +34,19 @@ export interface WorkflowConfig<TPhases extends readonly PhaseDefinition[] | und
   phases?: TPhases;
   /** Global workflow timeout in milliseconds */
   timeout?: number;
+  /**
+   * JSON Schema for workflow arguments - enables runtime validation
+   * Note: For type safety, define args interfaces separately and use type guards
+   */
+  argsSchema?: Record<string, unknown>;
 }
 
 /**
  * Workflow execution context passed to workflow function
  */
-export interface WorkflowContext<TPhases extends readonly PhaseDefinition[] | undefined = undefined> {
+export interface WorkflowContext<
+  TPhases extends readonly PhaseDefinition[] | undefined = undefined
+> {
   /** Inngest event data */
   event: {
     name: string;
@@ -63,13 +72,18 @@ export interface WorkflowEventData {
   userId: string;
   /** Project filesystem path */
   projectPath: string;
-  /** Workflow arguments */
+  /**
+   * Workflow arguments
+   * Note: Type this manually based on your argsSchema, or use type guards for runtime type safety
+   */
   args: Record<string, unknown>;
 }
 
 /**
  * Workflow function signature
  */
-export type WorkflowFunction<TPhases extends readonly PhaseDefinition[] | undefined = undefined> = (
+export type WorkflowFunction<
+  TPhases extends readonly PhaseDefinition[] | undefined = undefined
+> = (
   context: WorkflowContext<TPhases>
 ) => Promise<unknown>;

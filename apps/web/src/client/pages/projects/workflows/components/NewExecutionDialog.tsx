@@ -21,6 +21,7 @@ import {
 } from '@/client/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/client/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/client/components/ui/tabs';
+import { Combobox } from '@/client/components/ui/combobox';
 import { useCreateWorkflow } from '../hooks/useWorkflowMutations';
 import { api } from '@/client/utils/api-client';
 import type { WorkflowDefinition } from '../types';
@@ -49,7 +50,6 @@ export function NewExecutionDialog({
   const [specFile, setSpecFile] = useState<string>('');
   const [specContent, setSpecContent] = useState('');
   const [branchFrom, setBranchFrom] = useState('');
-  const [branchSearchQuery, setBranchSearchQuery] = useState('');
   const [gitMode, setGitMode] = useState<'branch' | 'worktree'>('branch');
   const [branchName, setBranchName] = useState('');
   const [worktreeName, setWorktreeName] = useState('');
@@ -79,16 +79,15 @@ export function NewExecutionDialog({
     enabled: open,
   });
 
-  // Filter branches based on search query
-  const filteredBranches = useMemo(() => {
+  // Transform branches to combobox options
+  const branchOptions = useMemo(() => {
     if (!branches) return [];
-    if (!branchSearchQuery) return branches;
-
-    const query = branchSearchQuery.toLowerCase();
-    return branches.filter((branch) =>
-      branch.name.toLowerCase().includes(query)
-    );
-  }, [branches, branchSearchQuery]);
+    return branches.map((branch) => ({
+      value: branch.name,
+      label: branch.name,
+      badge: branch.current ? '(current)' : undefined,
+    }));
+  }, [branches]);
 
   // Auto-generate branch/worktree name from execution name
   useEffect(() => {
@@ -172,7 +171,6 @@ export function NewExecutionDialog({
       setSpecFile('');
       setSpecContent('');
       setBranchFrom('');
-      setBranchSearchQuery('');
       setBranchName('');
       setWorktreeName('');
       setError(null);
@@ -188,7 +186,6 @@ export function NewExecutionDialog({
     setSpecFile('');
     setSpecContent('');
     setBranchFrom('');
-    setBranchSearchQuery('');
     setBranchName('');
     setWorktreeName('');
     setError(null);
@@ -273,35 +270,39 @@ export function NewExecutionDialog({
         {/* Branch From (optional) */}
         <div className="space-y-2">
           <Label htmlFor="branch-from">Branch From (optional)</Label>
-          <Select value={branchFrom} onValueChange={setBranchFrom} disabled={createWorkflow.isPending}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select branch (defaults to current)..." />
-            </SelectTrigger>
-            <SelectContent>
-              <div className="flex items-center border-b px-3 pb-2">
-                <Input
-                  placeholder="Search branches..."
-                  value={branchSearchQuery}
-                  onChange={(e) => setBranchSearchQuery(e.target.value)}
-                  className="h-8 w-full border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                />
-              </div>
-              <div className="max-h-[200px] overflow-y-auto">
-                {filteredBranches.length > 0 ? (
-                  filteredBranches.map((branch) => (
-                    <SelectItem key={branch.name} value={branch.name}>
-                      {branch.name}
-                      {branch.current && ' (current)'}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <div className="py-6 text-center text-sm text-muted-foreground">
-                    {branchSearchQuery ? 'No branches found' : 'No branches available'}
-                  </div>
+          <Combobox
+            value={branchFrom}
+            onValueChange={setBranchFrom}
+            options={branchOptions}
+            placeholder="Select branch (defaults to current)..."
+            searchPlaceholder="Search branches..."
+            emptyMessage="No branches found"
+            disabled={createWorkflow.isPending}
+            renderOption={(option, selected) => (
+              <div className="flex items-center gap-2 flex-1">
+                {selected && (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="size-4 shrink-0"
+                  >
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                )}
+                <span className="flex-1">{option.label}</span>
+                {option.badge && (
+                  <span className="text-xs text-muted-foreground">{option.badge}</span>
                 )}
               </div>
-            </SelectContent>
-          </Select>
+            )}
+          />
           <p className="text-xs text-muted-foreground">
             Defaults to current branch if not specified
           </p>

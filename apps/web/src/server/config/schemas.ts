@@ -48,6 +48,7 @@ const DatabaseConfigSchema = z.object({
  */
 const ApiKeysConfigSchema = z.object({
   anthropicApiKey: z.string().optional(),
+  openaiApiKey: z.string().optional(),
 });
 
 /**

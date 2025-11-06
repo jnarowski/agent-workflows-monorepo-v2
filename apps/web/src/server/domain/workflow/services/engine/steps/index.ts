@@ -9,6 +9,7 @@ export { createCliStep } from "./createCliStep";
 export { createArtifactStep } from "./createArtifactStep";
 export { createAnnotationStep } from "./createAnnotationStep";
 export { createRunStep } from "./createRunStep";
+export { createAiStep } from "./createAiStep";
 export { executeStep } from "./executeStep";
 export { findOrCreateStep } from "./findOrCreateStep";
 export { updateStepStatus } from "./updateStepStatus";

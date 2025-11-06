@@ -11,7 +11,9 @@ export interface WorkflowRuntime {
    * @param fn - Workflow function
    * @returns Configured Inngest function ready for registration
    */
-  createInngestFunction<TPhases extends readonly PhaseDefinition[] | undefined>(
+  createInngestFunction<
+    TPhases extends readonly PhaseDefinition[] | undefined
+  >(
     config: WorkflowConfig<TPhases>,
     fn: WorkflowFunction<TPhases>
   ): any;

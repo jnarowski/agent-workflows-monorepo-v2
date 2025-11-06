@@ -38,6 +38,8 @@ export type {
   ArtifactStepConfig,
   ArtifactStepResult,
   AnnotationStepConfig,
+  AiStepConfig,
+  AiStepResult,
   WorkflowConfig,
   WorkflowContext,
   WorkflowEventData,

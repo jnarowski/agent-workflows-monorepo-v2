@@ -43,6 +43,7 @@ class Configuration {
       },
       apiKeys: {
         anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+        openaiApiKey: process.env.OPENAI_API_KEY,
       },
     };
 

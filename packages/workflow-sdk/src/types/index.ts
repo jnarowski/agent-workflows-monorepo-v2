@@ -15,6 +15,8 @@ export type {
   ArtifactStepConfig,
   ArtifactStepResult,
   AnnotationStepConfig,
+  AiStepConfig,
+  AiStepResult,
 } from "./steps";
 
 export type {

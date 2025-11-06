@@ -103,6 +103,7 @@
     "@xterm/xterm": "^5.5.0",
     "@xyflow/react": "^12.9.0",
     "ai": "^5.0.81",
+    "ajv": "^8.17.1",
     "animated-backgrounds": "^2.0.0",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
