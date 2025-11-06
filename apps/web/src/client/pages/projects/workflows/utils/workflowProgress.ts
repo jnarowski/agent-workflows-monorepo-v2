@@ -1,15 +1,15 @@
-import type { WorkflowExecution } from "../types";
+import type { WorkflowRun } from "../types";
 import { StepStatusValues } from "@/shared/schemas/workflow.schemas";
 import { isStepTerminal } from "./workflowStatus";
 
 /**
- * Estimate time remaining for a workflow execution
+ * Estimate time remaining for a workflow run
  * Based on average step duration and remaining steps
  */
-export function estimateTimeRemaining(execution: WorkflowExecution): string {
-  const steps = execution.steps || [];
+export function estimateTimeRemaining(run: WorkflowRun): string {
+  const steps = run.steps || [];
 
-  if (steps.length === 0 || !execution.started_at) {
+  if (steps.length === 0 || !run.started_at) {
     return "Unknown";
   }
 
@@ -71,16 +71,16 @@ export function formatDuration(ms: number): string {
 }
 
 /**
- * Calculate the duration of a workflow execution
+ * Calculate the duration of a workflow run
  */
-export function calculateDuration(execution: WorkflowExecution): string {
-  if (!execution.started_at) {
+export function calculateDuration(run: WorkflowRun): string {
+  if (!run.started_at) {
     return "Not started";
   }
 
-  const startTime = new Date(execution.started_at).getTime();
-  const endTime = execution.completed_at
-    ? new Date(execution.completed_at).getTime()
+  const startTime = new Date(run.started_at).getTime();
+  const endTime = run.completed_at
+    ? new Date(run.completed_at).getTime()
     : Date.now();
 
   return formatDuration(endTime - startTime);
@@ -88,15 +88,15 @@ export function calculateDuration(execution: WorkflowExecution): string {
 
 /**
  * Get the current phase progress (steps completed in current phase)
- * @param execution - The workflow execution
+ * @param run - The workflow run
  * @param phaseId - The phase ID (not label) to get progress for
  */
 export function getPhaseProgress(
-  execution: WorkflowExecution,
+  run: WorkflowRun,
   phaseId: string
 ): { completed: number; total: number; percentage: number } {
   const phaseSteps =
-    execution.steps?.filter((step) => step.phase === phaseId) || [];
+    run.steps?.filter((step) => step.phase === phaseId) || [];
 
   const completed = phaseSteps.filter((step) =>
     isStepTerminal(step.status)

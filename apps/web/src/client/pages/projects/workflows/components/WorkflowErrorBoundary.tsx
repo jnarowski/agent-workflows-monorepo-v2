@@ -22,13 +22,13 @@ interface State {
 /**
  * Error Boundary for Workflow pages
  *
- * Catches React errors in workflow execution components and displays
+ * Catches React errors in workflow run components and displays
  * a user-friendly fallback UI with retry mechanism.
  *
  * Usage:
  * ```tsx
  * <WorkflowErrorBoundary>
- *   <WorkflowExecutionDetail />
+ *   <WorkflowRunDetail />
  * </WorkflowErrorBoundary>
  * ```
  */

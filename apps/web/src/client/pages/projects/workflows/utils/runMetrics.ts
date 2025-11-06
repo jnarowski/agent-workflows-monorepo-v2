@@ -1,4 +1,4 @@
-import type { WorkflowExecution } from "../types";
+import type { WorkflowRun } from "../types";
 import { getPhaseId } from "@/shared/utils/phase.utils";
 
 /**
@@ -16,27 +16,27 @@ export interface ExecutionMetrics {
 }
 
 /**
- * Calculate all execution metrics for display
+ * Calculate all run metrics for display
  *
- * @param execution - Workflow execution with definition and counts
+ * @param run - Workflow run with definition and counts
  * @returns Metrics object with phase progress, counts, and percentages
  *
  * @example
- * const { currentPhaseNumber, totalPhases } = getExecutionMetrics(execution);
+ * const { currentPhaseNumber, totalPhases } = getExecutionMetrics(run);
  * // Shows: "1 / 3 phases"
  */
 export function getExecutionMetrics(
-  execution: WorkflowExecution
+  run: WorkflowRun
 ): ExecutionMetrics {
   // Get phases from workflow definition
-  const phases = execution.workflow_definition?.phases || [];
+  const phases = run.workflow_definition?.phases || [];
   const totalPhases = phases.length;
 
   // Calculate current phase number (1-indexed)
   let currentPhaseNumber = 0;
-  if (execution.current_phase) {
+  if (run.current_phase) {
     const currentPhaseIndex = phases.findIndex(
-      (phase) => getPhaseId(phase) === execution.current_phase
+      (phase) => getPhaseId(phase) === run.current_phase
     );
     if (currentPhaseIndex !== -1) {
       currentPhaseNumber = currentPhaseIndex + 1;
@@ -51,7 +51,7 @@ export function getExecutionMetrics(
 
   // Count total actions (steps + events)
   const totalActions =
-    (execution._count?.steps || 0) + (execution._count?.events || 0);
+    (run._count?.steps || 0) + (run._count?.events || 0);
 
   return {
     currentPhaseNumber,

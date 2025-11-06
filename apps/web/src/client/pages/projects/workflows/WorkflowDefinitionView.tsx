@@ -5,7 +5,7 @@ import { ArrowLeft, Plus } from 'lucide-react';
 import { WorkflowPhaseKanbanColumn } from './components/WorkflowPhaseKanbanColumn';
 import { NewExecutionDialog } from './components/NewExecutionDialog';
 import { useWorkflowDefinition } from './hooks/useWorkflowDefinition';
-import { useWorkflowExecutions } from './hooks/useWorkflowExecutions';
+import { useWorkflowRuns } from './hooks/useWorkflowRuns';
 import { useWorkflowWebSocket } from './hooks/useWorkflowWebSocket';
 import { getPhaseId, getPhaseLabel } from '@/shared/utils/phase.utils';
 
@@ -26,8 +26,8 @@ export function WorkflowDefinitionView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [definitionError, definitionLoading, definition, projectId]);
 
-  // Fetch all executions for this workflow definition
-  const { data: allExecutions, isLoading: executionsLoading } = useWorkflowExecutions(
+  // Fetch all runs for this workflow definition
+  const { data: allExecutions, isLoading: runsLoading } = useWorkflowRuns(
     projectId!,
     { definitionId }
   );
@@ -37,7 +37,7 @@ export function WorkflowDefinitionView() {
   // Dialog state
   const [showNewExecutionDialog, setShowNewExecutionDialog] = useState(false);
 
-  const isLoading = definitionLoading || executionsLoading || !definition;
+  const isLoading = definitionLoading || runsLoading || !definition;
 
   if (isLoading) {
     return (
@@ -50,8 +50,8 @@ export function WorkflowDefinitionView() {
   // Get phases from workflow definition
   const phases = definition?.phases || [];
 
-  // Group executions by current phase
-  const executionsByPhase = (allExecutions || []).reduce(
+  // Group runs by current phase
+  const runsByPhase = (allExecutions || []).reduce(
     (acc, exec) => {
       const phase = exec.current_phase || 'Not Started';
       if (!acc[phase]) {
@@ -64,8 +64,8 @@ export function WorkflowDefinitionView() {
   );
 
   const handleExecutionClick = (clickedExecution: any) => {
-    // Navigate to execution detail view
-    navigate(`/projects/${projectId}/workflows/${definitionId}/executions/${clickedExecution.id}`);
+    // Navigate to run detail view
+    navigate(`/projects/${projectId}/workflows/${definitionId}/runs/${clickedExecution.id}`);
   };
 
   return (
@@ -86,7 +86,7 @@ export function WorkflowDefinitionView() {
                 {definition?.name}
               </h1>
               <span className="text-sm text-muted-foreground">
-                {(allExecutions || []).length} execution{(allExecutions || []).length !== 1 ? 's' : ''}
+                {(allExecutions || []).length} run{(allExecutions || []).length !== 1 ? 's' : ''}
               </span>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
@@ -108,12 +108,12 @@ export function WorkflowDefinitionView() {
       <div className="flex-1 overflow-x-auto overflow-y-hidden p-4">
         <div className="flex gap-4 h-full min-w-full">
           {/* Add "Not Started" column first */}
-          {executionsByPhase['Not Started'] && (
+          {runsByPhase['Not Started'] && (
             <div className="flex-1 min-w-80 h-full">
               <WorkflowPhaseKanbanColumn
                 phaseId="not-started"
                 phaseLabel="Not Started"
-                executions={executionsByPhase['Not Started']}
+                runs={runsByPhase['Not Started']}
                 onExecutionClick={handleExecutionClick}
               />
             </div>
@@ -128,7 +128,7 @@ export function WorkflowDefinitionView() {
                 <WorkflowPhaseKanbanColumn
                   phaseId={phaseId}
                   phaseLabel={phaseLabel}
-                  executions={executionsByPhase[phaseId] || []}
+                  runs={runsByPhase[phaseId] || []}
                   onExecutionClick={handleExecutionClick}
                 />
               </div>

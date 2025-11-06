@@ -53,7 +53,7 @@ export function ProjectOnboardingSuggestions({ projectId }: ProjectOnboardingSug
                 <span className="text-muted-foreground text-xs">
                   {isInstalled
                     ? `v${workflowSdkCheck.version} installed`
-                    : 'Required for workflow execution'}
+                    : 'Required for workflow run'}
                 </span>
               </div>
             </div>

@@ -32,7 +32,7 @@ export interface AgentSessionModalProps {
 
 /**
  * Modal that displays an agent session conversation.
- * Used in workflow execution steps to view session details without navigation.
+ * Used in workflow run steps to view session details without navigation.
  */
 export function AgentSessionModal({
   open,

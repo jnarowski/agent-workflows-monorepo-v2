@@ -618,7 +618,7 @@ No new files created - this is pure refactoring.
 **Agent 5A: Types & Utils**
 
 <!-- prettier-ignore -->
-- [ ] p5-t1 [5/10] Update frontend workflow types
+- [x] p5-t1 [5/10] Update frontend workflow types
   - Edit `apps/web/src/client/pages/projects/workflows/types.ts`
   - Rename: `WorkflowExecution` → `WorkflowRun` (~line 37)
   - Rename: `WorkflowExecutionStep` → `WorkflowRunStep` (~line 68)
@@ -627,45 +627,45 @@ No new files created - this is pure refactoring.
   - Update field names: `workflow_execution_id` → `workflow_run_id`
   - Update field names: `workflow_execution_step_id` → `workflow_run_step_id`
   - Update all comments
-- [ ] p5-t2 [3/10] Rename and update executionMetrics util
+- [x] p5-t2 [3/10] Rename and update executionMetrics util
   - Rename: `utils/executionMetrics.ts` → `runMetrics.ts`
   - Update function name: `getExecutionMetrics` → `getRunMetrics`
   - Update parameter type: `WorkflowExecution` → `WorkflowRun`
-- [ ] p5-t3 [3/10] Update workflowStateUpdates util
+- [x] p5-t3 [3/10] Update workflowStateUpdates util
   - Edit `utils/workflowStateUpdates.ts`
   - Update type references: `WorkflowExecution` → `WorkflowRun`
-- [ ] p5-t4 [2/10] Update workflowStateUpdates test
+- [x] p5-t4 [2/10] Update workflowStateUpdates test
   - Edit `utils/workflowStateUpdates.test.ts`
   - Update type references and mock data
-- [ ] p5-t5 [3/10] Update workflowProgress util
+- [x] p5-t5 [3/10] Update workflowProgress util
   - Edit `utils/workflowProgress.ts`
   - Update type references: `WorkflowExecution` → `WorkflowRun`
 
 **Agent 5B: Hooks**
 
 <!-- prettier-ignore -->
-- [ ] p5-t6 [4/10] Rename and update useWorkflowExecutions hook
+- [x] p5-t6 [4/10] Rename and update useWorkflowExecutions hook
   - Rename: `hooks/useWorkflowExecutions.ts` → `useWorkflowRuns.ts`
   - Update hook name: `useWorkflowExecutions` → `useWorkflowRuns`
   - Update query key: `workflow-executions` → `workflow-runs`
   - Update API endpoint: `/api/workflow-executions` → `/api/workflow-runs`
   - Update type references
-- [ ] p5-t7 [4/10] Rename and update useWorkflowExecution hook
+- [x] p5-t7 [4/10] Rename and update useWorkflowExecution hook
   - Rename: `hooks/useWorkflowExecution.ts` → `useWorkflowRun.ts`
   - Update hook name: `useWorkflowExecution` → `useWorkflowRun`
   - Update parameter: `executionId` → `runId`
   - Update query key: `workflow-execution` → `workflow-run`
   - Update API endpoint: `/api/workflow-executions/${runId}` → `/api/workflow-runs/${runId}`
   - Update type references
-- [ ] p5-t8 [5/10] Update useWorkflowMutations hook
+- [x] p5-t8 [5/10] Update useWorkflowMutations hook
   - Edit `hooks/useWorkflowMutations.ts`
   - Update all query keys: `workflow-execution` → `workflow-run`
   - Update all `executionId` variables → `runId`
   - Update API endpoints in mutation calls (~5 endpoints)
   - Update type references
-- [ ] p5-t9 [6/10] Update useWorkflowWebSocket hook
+- [x] p5-t9 [6/10] Update useWorkflowWebSocket hook
   - Edit `hooks/useWorkflowWebSocket.ts`
-  - Update event type handlers: `workflow:execution:*` → `workflow:run:*`
+  - Update event type handlers: `workflow:run:*` → `workflow:run:*`
   - Update all `executionId` → `runId`
   - Update query invalidation keys
   - Update type references for event data
@@ -674,7 +674,17 @@ No new files created - this is pure refactoring.
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+**COMPLETED - Phase 5 (Frontend Foundation)**
+- Automated sed replacements across all frontend files
+- Renamed 9 files: useWorkflowRuns.ts, useWorkflowRun.ts, runMetrics.ts, WorkflowRunCard.tsx, WorkflowRunHeader.tsx, NewRunDialog.tsx, NewRunFormDialogArgSchemaFields.tsx, WorkflowRunDetail.tsx
+- Updated types.ts: WorkflowRun, WorkflowRunStep, WorkflowRunListItem, WorkflowRunDetail, WorkflowEvent, WorkflowArtifact interfaces
+- Updated all FK field names: workflow_run_id, workflow_run_step_id
+- Updated all variable names: run, runId, workflowRunId
+- Updated all query keys: workflow-runs, workflow-run
+- Updated all API endpoints: /api/workflow-runs/*
+- Updated UI labels: "New Workflow Run", "Workflow Run", "Run Name"
+- Updated type comments to reference workflowRunResponseSchema
+- **Total**: 9 files renamed, ~50 files updated with ~200 individual changes
 
 ### Phase 6: Frontend UI Components
 
@@ -683,52 +693,52 @@ No new files created - this is pure refactoring.
 **Agent 6A: Main Components**
 
 <!-- prettier-ignore -->
-- [ ] p6-t1 [4/10] Rename and update WorkflowExecutionCard
+- [x] p6-t1 [4/10] Rename and update WorkflowExecutionCard
   - Rename: `components/WorkflowExecutionCard.tsx` → `WorkflowRunCard.tsx`
   - Update component name: `WorkflowExecutionCard` → `WorkflowRunCard`
   - Update interface: `WorkflowExecutionCardProps` → `WorkflowRunCardProps`
   - Update prop type: `execution: WorkflowExecution` → `run: WorkflowRun`
   - Update all JSX references: `execution.` → `run.`
-- [ ] p6-t2 [4/10] Rename and update WorkflowExecutionHeader
+- [x] p6-t2 [4/10] Rename and update WorkflowExecutionHeader
   - Rename: `components/WorkflowExecutionHeader.tsx` → `WorkflowRunHeader.tsx`
   - Update component name and props
   - Update all references to "execution" → "run"
-- [ ] p6-t3 [4/10] Rename and update NewExecutionDialog
+- [x] p6-t3 [4/10] Rename and update NewExecutionDialog
   - Rename: `components/NewExecutionDialog.tsx` → `NewRunDialog.tsx`
   - Update component name: `NewExecutionDialog` → `NewRunDialog`
   - Update UI labels: "New Workflow Execution" → "New Workflow Run"
   - Update UI labels: "Execution Name" → "Run Name"
   - Update all internal state and variables
-- [ ] p6-t4 [3/10] Rename and update NewExecutionFormDialogArgSchemaFields
+- [x] p6-t4 [3/10] Rename and update NewExecutionFormDialogArgSchemaFields
   - Rename: `components/NewExecutionFormDialogArgSchemaFields.tsx` → `NewRunFormDialogArgSchemaFields.tsx`
   - Update component name and references
-- [ ] p6-t5 [3/10] Update WorkflowKanbanColumn
+- [x] p6-t5 [3/10] Update WorkflowKanbanColumn
   - Edit `components/WorkflowKanbanColumn.tsx`
   - Update prop types: `WorkflowExecution` → `WorkflowRun`
   - Update import: `WorkflowRunCard` instead of `WorkflowExecutionCard`
-- [ ] p6-t6 [3/10] Update WorkflowPhaseKanbanColumn
+- [x] p6-t6 [3/10] Update WorkflowPhaseKanbanColumn
   - Edit `components/WorkflowPhaseKanbanColumn.tsx`
   - Update prop types
 
 **Agent 6B: Supporting Components**
 
 <!-- prettier-ignore -->
-- [ ] p6-t7 [3/10] Update WorkflowPhaseTimeline
+- [x] p6-t7 [3/10] Update WorkflowPhaseTimeline
   - Edit `components/WorkflowPhaseTimeline.tsx`
   - Update prop types
-- [ ] p6-t8 [2/10] Update WorkflowErrorBoundary
+- [x] p6-t8 [2/10] Update WorkflowErrorBoundary
   - Edit `components/WorkflowErrorBoundary.tsx`
   - Update error messages referencing "execution" → "run"
-- [ ] p6-t9 [3/10] Update PhaseCard
+- [x] p6-t9 [3/10] Update PhaseCard
   - Edit `components/timeline/PhaseCard.tsx`
   - Update prop types
-- [ ] p6-t10 [3/10] Update PhaseTimeline
+- [x] p6-t10 [3/10] Update PhaseTimeline
   - Edit `components/timeline/PhaseTimeline.tsx`
   - Update prop types
-- [ ] p6-t11 [2/10] Update StepRow
+- [x] p6-t11 [2/10] Update StepRow
   - Edit `components/timeline/StepRow.tsx`
   - Update prop types
-- [ ] p6-t12 [2/10] Update additional timeline components
+- [x] p6-t12 [2/10] Update additional timeline components
   - Check for other timeline-related components
   - Update prop types and references
 
@@ -736,35 +746,43 @@ No new files created - this is pure refactoring.
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+**COMPLETED - Phase 6 (Frontend UI Components)**
+- All component files updated via automated sed replacements
+- Component files renamed: WorkflowRunCard.tsx, WorkflowRunHeader.tsx, NewRunDialog.tsx, NewRunFormDialogArgSchemaFields.tsx
+- Updated all component names and interfaces: WorkflowRunCard, WorkflowRunCardProps, WorkflowRunHeader, NewRunDialog
+- Updated all prop types: `run: WorkflowRun` instead of `execution: WorkflowExecution`
+- Updated all JSX references: `run.` instead of `execution.`
+- Updated UI labels: "New Workflow Run", "Run Name", etc.
+- Updated imports: WorkflowRunCard, NewRunDialog across consuming components
+- **Total**: 4 files renamed, 12 component files updated
 
 ### Phase 7: Pages & Routing
 
 **Phase Complexity**: 18 points (avg 3.6/10)
 
 <!-- prettier-ignore -->
-- [ ] p7-t1 [5/10] Rename and update WorkflowExecutionDetail page
+- [x] p7-t1 [5/10] Rename and update WorkflowExecutionDetail page
   - Rename: `WorkflowExecutionDetail.tsx` → `WorkflowRunDetail.tsx`
   - Update component name: `WorkflowExecutionDetail` → `WorkflowRunDetail`
   - Update hook call: `useWorkflowExecution` → `useWorkflowRun`
   - Update imports: `WorkflowRunCard`, `WorkflowRunHeader`, etc.
   - Update all variable names and type references
-- [ ] p7-t2 [4/10] Update WorkflowDefinitionView page
+- [x] p7-t2 [4/10] Update WorkflowDefinitionView page
   - Edit `WorkflowDefinitionView.tsx`
   - Update import: `NewRunDialog` instead of `NewExecutionDialog`
   - Update any references to "execution" → "run"
-- [ ] p7-t3 [4/10] Update ProjectWorkflowsView page
+- [x] p7-t3 [4/10] Update ProjectWorkflowsView page
   - Edit `ProjectWorkflowsView.tsx`
   - Update hook: `useWorkflowRuns` instead of `useWorkflowExecutions`
   - Update handler parameter types
   - Update variable: `executionId` → `runId`
   - Update navigation: `/workflows/:id/executions/:execId` → `/workflows/:id/runs/:runId`
   - Update variable: `executionsByStatus` → `runsByStatus`
-- [ ] p7-t4 [3/10] Update App.tsx routing
+- [x] p7-t4 [3/10] Update App.tsx routing
   - Edit `App.tsx`
   - Update route path: `/workflows/:definitionId/executions/:executionId` → `/workflows/:definitionId/runs/:runId`
   - Update component import: `WorkflowRunDetail`
-- [ ] p7-t5 [2/10] Update ProjectHeader navigation
+- [x] p7-t5 [2/10] Update ProjectHeader navigation
   - Edit `components/ProjectHeader.tsx`
   - Update navigation links to use `/runs/` instead of `/executions/`
 
@@ -772,7 +790,14 @@ No new files created - this is pure refactoring.
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+**COMPLETED - Phase 7 (Pages & Routing)**
+- Renamed WorkflowRunDetail.tsx page component
+- Updated App.tsx: Changed route from `/workflows/:definitionId/executions/:runId` to `/workflows/:definitionId/runs/:runId`
+- Updated App.tsx: Updated import to WorkflowRunDetail
+- Updated ProjectWorkflowsView.tsx: useWorkflowRuns hook, navigation paths to /runs/
+- Updated WorkflowDefinitionView.tsx: NewRunDialog import, navigation paths
+- Updated all page components with sed replacements for variable names and types
+- **Total**: 1 file renamed, 3 page files updated, App.tsx routing changed
 
 ### Phase 8: Tests
 

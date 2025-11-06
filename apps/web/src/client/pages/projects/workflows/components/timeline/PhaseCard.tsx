@@ -4,7 +4,7 @@ import { StepRow } from "./StepRow";
 import { ArtifactRow } from "./ArtifactRow";
 import { EventRow } from "./EventRow";
 import type {
-  WorkflowExecutionStep,
+  WorkflowRunStep,
   WorkflowEvent,
   WorkflowArtifact,
 } from "../../types";
@@ -12,7 +12,7 @@ import type {
 interface PhaseCardProps {
   phaseId: string;
   phaseName: string;
-  steps: WorkflowExecutionStep[];
+  steps: WorkflowRunStep[];
   events: WorkflowEvent[];
   artifacts: WorkflowArtifact[];
   currentPhase: string | null;
@@ -119,7 +119,7 @@ export function PhaseCard({
   // Combine and sort timeline items by created_at ASC (oldest first)
   const timelineItems = useMemo(() => {
     const items: Array<
-      | { type: "step"; data: WorkflowExecutionStep }
+      | { type: "step"; data: WorkflowRunStep }
       | { type: "artifact"; data: WorkflowArtifact }
       | { type: "event"; data: WorkflowEvent }
     > = [];

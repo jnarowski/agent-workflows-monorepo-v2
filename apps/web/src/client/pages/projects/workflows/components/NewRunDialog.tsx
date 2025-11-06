@@ -99,7 +99,7 @@ export function NewExecutionDialog({
       setIsGeneratingNames(true);
       try {
         const response = await api.post<{
-          data: { executionName: string; branchName: string } | null;
+          data: { runName: string; branchName: string } | null;
         }>("/api/workflows/generate-names-from-spec", {
           projectId,
           specFile,
@@ -107,7 +107,7 @@ export function NewExecutionDialog({
 
         const names = response.data;
         if (names) {
-          setName(names.executionName);
+          setName(names.runName);
           setBranchName(names.branchName);
           setWorktreeName(names.branchName);
         }
@@ -121,7 +121,7 @@ export function NewExecutionDialog({
     generateNames();
   }, [specFile, projectId]);
 
-  // Auto-generate branch/worktree name from execution name
+  // Auto-generate branch/worktree name from run name
   useEffect(() => {
     if (name && gitMode !== "current") {
       const slug = name
@@ -163,7 +163,7 @@ export function NewExecutionDialog({
     }
 
     try {
-      const execution = await createWorkflow.mutateAsync({
+      const run = await createWorkflow.mutateAsync({
         projectId,
         definitionId,
         name: name.trim(),
@@ -175,9 +175,9 @@ export function NewExecutionDialog({
         // When gitMode is 'current', both branch_name and worktree_name are undefined
       });
 
-      // Navigate to new execution
+      // Navigate to new run
       navigate(
-        `/projects/${projectId}/workflows/${definitionId}/executions/${execution.id}`
+        `/projects/${projectId}/workflows/${definitionId}/runs/${run.id}`
       );
 
       // Reset form and close dialog
@@ -192,7 +192,7 @@ export function NewExecutionDialog({
       onOpenChange(false);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to create execution"
+        err instanceof Error ? err.message : "Failed to create run"
       );
     }
   };
@@ -216,11 +216,11 @@ export function NewExecutionDialog({
       contentProps={{ className: "sm:max-w-[650px]", noPadding: true }}
     >
       <DialogHeader className="px-6 pt-6 pb-4 border-b">
-        <DialogTitle className="text-2xl">New Workflow Execution</DialogTitle>
+        <DialogTitle className="text-2xl">New Workflow Run</DialogTitle>
         <DialogDescription className="text-base">
           {definition
-            ? `Create a new execution of "${definition.name}"`
-            : "Create a new workflow execution"}
+            ? `Create a new run of "${definition.name}"`
+            : "Create a new workflow run"}
         </DialogDescription>
       </DialogHeader>
 
@@ -244,10 +244,10 @@ export function NewExecutionDialog({
 
         {/* Name input */}
         <div>
-          <Label htmlFor="execution-name">Execution Name</Label>
+          <Label htmlFor="run-name">Run Name</Label>
           <div className="relative">
             <Input
-              id="execution-name"
+              id="run-name"
               placeholder="e.g., Feature Implementation - API v2"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -312,7 +312,7 @@ export function NewExecutionDialog({
                     <Label htmlFor="branch-name">Branch Name</Label>
                     <Input
                       id="branch-name"
-                      placeholder="Auto-generated from execution name"
+                      placeholder="Auto-generated from run name"
                       value={branchName}
                       onChange={(e) => setBranchName(e.target.value)}
                       disabled={createWorkflow.isPending}
@@ -385,7 +385,7 @@ export function NewExecutionDialog({
                     <Label htmlFor="worktree-name">Worktree Name</Label>
                     <Input
                       id="worktree-name"
-                      placeholder="Auto-generated from execution name"
+                      placeholder="Auto-generated from run name"
                       value={worktreeName}
                       onChange={(e) => setWorktreeName(e.target.value)}
                       disabled={createWorkflow.isPending}
@@ -459,7 +459,7 @@ export function NewExecutionDialog({
         {definition?.args_schema?.properties &&
           Object.keys(definition.args_schema.properties).length > 0 && (
             <div>
-              <Label htmlFor="execution-args" className="text-base pb-2 pt-3">
+              <Label htmlFor="run-args" className="text-base pb-2 pt-3">
                 Arguments
               </Label>
               <NewExecutionFormDialogArgSchemaFields

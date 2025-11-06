@@ -1,22 +1,22 @@
-import type { WorkflowExecution } from '../types';
+import type { WorkflowRun } from '../types';
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
 import { formatRelativeTime } from '../utils/workflowFormatting';
-import { getExecutionMetrics } from '../utils/executionMetrics';
+import { getExecutionMetrics } from '../utils/runMetrics';
 
-export interface WorkflowExecutionCardProps {
-  execution: WorkflowExecution;
+export interface WorkflowRunCardProps {
+  run: WorkflowRun;
   onClick: () => void;
 }
 
-export function WorkflowExecutionCard({
-  execution,
+export function WorkflowRunCard({
+  run,
   onClick,
-}: WorkflowExecutionCardProps) {
-  const timeDisplay = execution.started_at
-    ? formatRelativeTime(execution.started_at)
-    : formatRelativeTime(execution.created_at);
+}: WorkflowRunCardProps) {
+  const timeDisplay = run.started_at
+    ? formatRelativeTime(run.started_at)
+    : formatRelativeTime(run.created_at);
 
-  const { currentPhaseNumber, totalPhases, totalActions } = getExecutionMetrics(execution);
+  const { currentPhaseNumber, totalPhases, totalActions } = getExecutionMetrics(run);
 
   return (
     <div
@@ -24,7 +24,7 @@ export function WorkflowExecutionCard({
       onClick={onClick}
       role="button"
       tabIndex={0}
-      aria-label={`Workflow execution ${execution.name}, status ${execution.status}, phase ${currentPhaseNumber} of ${totalPhases}`}
+      aria-label={`Workflow run ${run.name}, status ${run.status}, phase ${currentPhaseNumber} of ${totalPhases}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -36,15 +36,15 @@ export function WorkflowExecutionCard({
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <h3 className="font-medium text-sm text-foreground truncate">
-            {execution.name}
+            {run.name}
           </h3>
-          {execution.workflow_definition && (
+          {run.workflow_definition && (
             <p className="text-xs text-muted-foreground truncate">
-              {execution.workflow_definition.name}
+              {run.workflow_definition.name}
             </p>
           )}
         </div>
-        <WorkflowStatusBadge status={execution.status} size="sm" />
+        <WorkflowStatusBadge status={run.status} size="sm" />
       </div>
 
       {/* Phase progress */}
@@ -68,10 +68,10 @@ export function WorkflowExecutionCard({
       )}
 
       {/* Current step */}
-      {execution.current_step && (
+      {run.current_step && (
         <div className="mb-3 rounded-md bg-muted/50 p-2 text-xs">
           <span className="font-medium text-muted-foreground">Current: </span>
-          <span className="text-foreground">{execution.current_step}</span>
+          <span className="text-foreground">{run.current_step}</span>
         </div>
       )}
 

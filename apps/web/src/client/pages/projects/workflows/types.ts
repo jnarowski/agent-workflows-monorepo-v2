@@ -20,7 +20,7 @@ export interface WorkflowDefinition {
 }
 
 /**
- * Frontend-specific WorkflowExecution interface
+ * Frontend-specific WorkflowRun interface
  *
  * **Note**: This interface intentionally diverges from the backend response schema
  * (`workflowExecutionResponseSchema`) to meet frontend UI requirements:
@@ -34,7 +34,7 @@ export interface WorkflowDefinition {
  * This follows the hybrid approach: shared schemas validate API responses,
  * frontend defines interfaces optimized for UI needs.
  */
-export interface WorkflowExecution {
+export interface WorkflowRun {
   id: string;
   workflow_definition_id: string;
   workflow_definition?: WorkflowDefinition;
@@ -56,7 +56,7 @@ export interface WorkflowExecution {
   created_at: Date;
   updated_at: Date;
   created_by: string;
-  steps?: WorkflowExecutionStep[];
+  steps?: WorkflowRunStep[];
   events?: WorkflowEvent[];
   artifacts?: WorkflowArtifact[];
   _count?: {
@@ -65,9 +65,9 @@ export interface WorkflowExecution {
   };
 }
 
-export interface WorkflowExecutionStep {
+export interface WorkflowRunStep {
   id: string;
-  workflow_execution_id: string;
+  workflow_run_id: string;
   inngest_step_id: string; // Phase-prefixed step ID for Inngest memoization
   name: string; // Display name
   phase: string;
@@ -128,7 +128,7 @@ export interface EventDataMap {
 // WorkflowEvent interface (replaces WorkflowComment)
 export interface WorkflowEvent {
   id: string;
-  workflow_execution_id: string;
+  workflow_run_id: string;
   event_type: WorkflowEventType;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   event_data: any; // JSON field, type-safe access via EventDataMap
@@ -142,8 +142,8 @@ export interface WorkflowEvent {
 
 export interface WorkflowArtifact {
   id: string;
-  workflow_execution_id: string;
-  workflow_execution_step_id: string | null;
+  workflow_run_id: string;
+  workflow_run_step_id: string | null;
   workflow_event_id: string | null;
   name: string;
   file_path: string;
@@ -163,13 +163,13 @@ export interface WorkflowFilter {
 }
 
 /**
- * WorkflowExecutionListItem - Optimized interface for list views
+ * WorkflowRunListItem - Optimized interface for list views
  *
- * Minimal data required for displaying executions in list/board views.
+ * Minimal data required for displaying workflow runs in list/board views.
  * This matches the optimized backend query that selects only necessary fields.
- * ~500 bytes per execution vs ~10KB for full nested data (95% reduction)
+ * ~500 bytes per run vs ~10KB for full nested data (95% reduction)
  */
-export interface WorkflowExecutionListItem {
+export interface WorkflowRunListItem {
   id: string;
   name: string;
   status: WorkflowStatus;
@@ -187,13 +187,13 @@ export interface WorkflowExecutionListItem {
 }
 
 /**
- * WorkflowExecutionDetail - Full interface for detail views
+ * WorkflowRunDetail - Full interface for detail views
  *
  * Complete data including nested steps, events, and artifacts.
  * Used only in detail view where full data is needed.
- * This is the existing WorkflowExecution interface (renamed for clarity)
+ * This is the full WorkflowRun interface with all nested data
  */
-export interface WorkflowExecutionDetail {
+export interface WorkflowRunDetail {
   id: string;
   workflow_definition_id: string;
   workflow_definition?: WorkflowDefinition;
@@ -215,7 +215,7 @@ export interface WorkflowExecutionDetail {
   created_at: Date;
   updated_at: Date;
   created_by: string;
-  steps?: WorkflowExecutionStep[];
+  steps?: WorkflowRunStep[];
   events?: WorkflowEvent[];
   artifacts?: WorkflowArtifact[];
   _count?: {

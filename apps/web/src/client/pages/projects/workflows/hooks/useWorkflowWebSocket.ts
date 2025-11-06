@@ -5,7 +5,7 @@ import { Channels } from "@/shared/websocket";
 import {
   WorkflowWebSocketEventTypes,
   type WorkflowWebSocketEvent,
-  type WorkflowExecutionUpdatedData,
+  type WorkflowRunUpdatedData,
   type WorkflowStepUpdatedData,
   type WorkflowEventCreatedData,
   type WorkflowArtifactCreatedData,
@@ -13,8 +13,8 @@ import {
 import { toast } from "sonner";
 import { debounce } from "@/client/lib/debounce";
 import type {
-  WorkflowExecutionListItem,
-  WorkflowExecutionDetail,
+  WorkflowRunListItem,
+  WorkflowRunDetail,
   WorkflowEvent,
   WorkflowArtifact,
 } from "../types";
@@ -27,24 +27,24 @@ export function useWorkflowWebSocket(projectId: string) {
   // This provides a safety net if WebSocket drops events or optimistic update is incorrect
   const debouncedInvalidate = useMemo(
     () =>
-      debounce((executionId: string) => {
+      debounce((runId: string) => {
         queryClient.invalidateQueries({
-          queryKey: ["workflow-execution", executionId],
+          queryKey: ["workflow-run", runId],
         });
         queryClient.invalidateQueries({
-          queryKey: ["workflow-executions", projectId],
+          queryKey: ["workflow-runs", projectId],
         });
       }, 5000),
     [queryClient, projectId]
   );
 
-  // Handler: workflow:execution:updated
+  // Handler: workflow:run:updated
   const handleExecutionUpdated = useCallback(
-    (data: WorkflowExecutionUpdatedData) => {
-      const { execution_id, changes } = data;
+    (data: WorkflowRunUpdatedData) => {
+      const { run_id, changes } = data;
 
       // Convert date strings to Date objects
-      const normalizedChanges: Partial<WorkflowExecutionDetail> = {};
+      const normalizedChanges: Partial<WorkflowRunDetail> = {};
       if (changes.status !== undefined) normalizedChanges.status = changes.status;
       if (changes.current_phase !== undefined) normalizedChanges.current_phase = changes.current_phase;
       if (changes.current_step !== undefined) normalizedChanges.current_step = changes.current_step;
@@ -54,8 +54,8 @@ export function useWorkflowWebSocket(projectId: string) {
       if (changes.updated_at !== undefined) normalizedChanges.updated_at = new Date(changes.updated_at);
 
       // Optimistic update: Update detail view (if cached)
-      queryClient.setQueryData<WorkflowExecutionDetail>(
-        ["workflow-execution", execution_id],
+      queryClient.setQueryData<WorkflowRunDetail>(
+        ["workflow-run", run_id],
         (old) => {
           if (!old) return old;
           return {
@@ -66,12 +66,12 @@ export function useWorkflowWebSocket(projectId: string) {
       );
 
       // Optimistic update: Update list view (if cached)
-      queryClient.setQueriesData<WorkflowExecutionListItem[]>(
-        { queryKey: ["workflow-executions", projectId] },
+      queryClient.setQueriesData<WorkflowRunListItem[]>(
+        { queryKey: ["workflow-runs", projectId] },
         (old) => {
           if (!old) return old;
           return old.map((exec) =>
-            exec.id === execution_id
+            exec.id === run_id
               ? {
                   ...exec,
                   ...normalizedChanges,
@@ -91,15 +91,15 @@ export function useWorkflowWebSocket(projectId: string) {
       }
 
       // Schedule background refetch (debounced)
-      debouncedInvalidate(execution_id);
+      debouncedInvalidate(run_id);
     },
     [queryClient, projectId, debouncedInvalidate]
   );
 
-  // Handler: workflow:execution:step:updated
+  // Handler: workflow:run:step:updated
   const handleStepUpdated = useCallback(
     (data: WorkflowStepUpdatedData) => {
-      const { execution_id, step_id, changes } = data;
+      const { run_id, step_id, changes } = data;
 
       // Convert date strings to Date objects
       const normalizedChanges: Partial<{
@@ -118,8 +118,8 @@ export function useWorkflowWebSocket(projectId: string) {
       if (changes.updated_at !== undefined) normalizedChanges.updated_at = new Date(changes.updated_at);
 
       // Optimistic update: Update detail view (if cached)
-      queryClient.setQueryData<WorkflowExecutionDetail>(
-        ["workflow-execution", execution_id],
+      queryClient.setQueryData<WorkflowRunDetail>(
+        ["workflow-run", run_id],
         (old) => {
           if (!old || !old.steps) return old;
           return {
@@ -142,15 +142,15 @@ export function useWorkflowWebSocket(projectId: string) {
       }
 
       // Schedule background refetch (debounced)
-      debouncedInvalidate(execution_id);
+      debouncedInvalidate(run_id);
     },
     [queryClient, debouncedInvalidate]
   );
 
-  // Handler: workflow:execution:event:created
+  // Handler: workflow:run:event:created
   const handleEventCreated = useCallback(
     (data: WorkflowEventCreatedData) => {
-      const { execution_id, event } = data;
+      const { run_id, event } = data;
 
       // Convert dates to Date objects and ensure proper types
       const newEvent: WorkflowEvent = {
@@ -161,8 +161,8 @@ export function useWorkflowWebSocket(projectId: string) {
       };
 
       // Optimistic update: Add event to detail view (if cached)
-      queryClient.setQueryData<WorkflowExecutionDetail>(
-        ["workflow-execution", execution_id],
+      queryClient.setQueryData<WorkflowRunDetail>(
+        ["workflow-run", run_id],
         (old) => {
           if (!old) return old;
           return {
@@ -173,15 +173,15 @@ export function useWorkflowWebSocket(projectId: string) {
       );
 
       // Schedule background refetch (debounced)
-      debouncedInvalidate(execution_id);
+      debouncedInvalidate(run_id);
     },
     [queryClient, debouncedInvalidate]
   );
 
-  // Handler: workflow:execution:artifact:created
+  // Handler: workflow:run:artifact:created
   const handleArtifactCreated = useCallback(
     (data: WorkflowArtifactCreatedData) => {
-      const { execution_id, artifact } = data;
+      const { run_id, artifact } = data;
 
       // Convert dates to Date objects
       const newArtifact: WorkflowArtifact = {
@@ -191,15 +191,15 @@ export function useWorkflowWebSocket(projectId: string) {
       };
 
       // Optimistic update: Add artifact to detail view (if cached)
-      queryClient.setQueryData<WorkflowExecutionDetail>(
-        ["workflow-execution", execution_id],
+      queryClient.setQueryData<WorkflowRunDetail>(
+        ["workflow-run", run_id],
         (old) => {
           if (!old) return old;
 
           // If artifact belongs to a step, update that step's artifacts
-          if (artifact.workflow_execution_step_id && old.steps) {
+          if (artifact.workflow_run_step_id && old.steps) {
             const updatedSteps = old.steps.map((step) =>
-              step.id === artifact.workflow_execution_step_id
+              step.id === artifact.workflow_run_step_id
                 ? {
                     ...step,
                     artifacts: step.artifacts
@@ -224,7 +224,7 @@ export function useWorkflowWebSocket(projectId: string) {
       );
 
       // Schedule background refetch (debounced)
-      debouncedInvalidate(execution_id);
+      debouncedInvalidate(run_id);
     },
     [queryClient, debouncedInvalidate]
   );

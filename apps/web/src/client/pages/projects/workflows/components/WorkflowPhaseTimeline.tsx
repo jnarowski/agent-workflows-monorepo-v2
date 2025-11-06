@@ -1,18 +1,18 @@
 import { StepStatusValues } from '@/shared/schemas';
-import type { WorkflowExecution } from '../types';
+import type { WorkflowRun } from '../types';
 import { CheckCircle2, XCircle, Circle, Loader2 } from 'lucide-react';
 import { getPhaseId, getPhaseLabel } from '@/shared/utils/phase.utils';
 
 export interface WorkflowPhaseTimelineProps {
-  execution: WorkflowExecution;
+  run: WorkflowRun;
   onPhaseClick?: (phaseId: string) => void;
 }
 
 export function WorkflowPhaseTimeline({
-  execution,
+  run,
   onPhaseClick,
 }: WorkflowPhaseTimelineProps) {
-  const phases = execution.workflow_definition?.phases || [];
+  const phases = run.workflow_definition?.phases || [];
 
   if (phases.length === 0) {
     return null;
@@ -22,7 +22,7 @@ export function WorkflowPhaseTimeline({
     phaseId: string
   ): 'pending' | 'running' | 'completed' | 'failed' => {
     const phaseSteps =
-      execution.steps?.filter((step) => step.phase === phaseId) || [];
+      run.steps?.filter((step) => step.phase === phaseId) || [];
 
     if (phaseSteps.length === 0) return 'pending';
 
@@ -41,7 +41,7 @@ export function WorkflowPhaseTimeline({
     const hasRunningStep = phaseSteps.some(
       (step) => step.status === StepStatusValues.RUNNING
     );
-    if (hasRunningStep || execution.current_phase === phaseId)
+    if (hasRunningStep || run.current_phase === phaseId)
       return 'running';
 
     return 'pending';
@@ -127,7 +127,7 @@ export function WorkflowPhaseTimeline({
                     {phaseLabel}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {execution.steps?.filter((s) => s.phase === phaseId).length || 0} steps
+                    {run.steps?.filter((s) => s.phase === phaseId).length || 0} steps
                   </div>
                 </div>
               </button>
