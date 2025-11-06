@@ -5,11 +5,12 @@ import { Plus, Search } from "lucide-react";
 import { WorkflowStatusValues } from "@/shared/schemas/workflow.schemas";
 import type { WorkflowStatus } from "@/shared/schemas/workflow.schemas";
 import { WorkflowKanbanColumn } from "./components/WorkflowKanbanColumn";
-import { WorkflowDefinitionsList } from "./components/WorkflowDefinitionsList";
 import { NewRunDialog } from "./components/NewRunDialog";
 import { useWorkflowRuns } from "./hooks/useWorkflowRuns";
 import { useWorkflowDefinitions } from "./hooks/useWorkflowDefinitions";
 import { useWorkflowWebSocket } from "./hooks/useWorkflowWebSocket";
+import { Combobox } from "@/client/components/ui/combobox";
+import type { ComboboxOption } from "@/client/components/ui/combobox";
 
 export interface ProjectWorkflowsViewProps {
   projectId?: string;
@@ -22,15 +23,11 @@ export function ProjectWorkflowsView({
   const projectId = propProjectId || paramProjectId!;
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [definitionFilter, setDefinitionFilter] = useState<
-    string | undefined
-  >();
   const [showNewRunDialog, setShowNewRunDialog] = useState(false);
 
   // Hooks
   const { data: runs, isLoading } = useWorkflowRuns(projectId, {
     search,
-    definitionId: definitionFilter,
   });
   const { data: definitions } = useWorkflowDefinitions();
   useWorkflowWebSocket(projectId);
@@ -47,6 +44,21 @@ export function ProjectWorkflowsView({
     navigate(
       `/projects/${projectId}/workflows/${definitionId}/runs/${runId}`
     );
+  };
+
+  // Prepare combobox options for workflow definitions
+  const workflowOptions: ComboboxOption[] =
+    definitions?.map((def) => ({
+      value: def.id,
+      label: def.name,
+      description: def.description || undefined,
+      badge: `${def.phases?.length || 0} phases`,
+    })) || [];
+
+  const handleWorkflowSelect = (value: string) => {
+    if (value) {
+      navigate(`/projects/${projectId}/workflows/${value}`);
+    }
   };
 
   // Group runs by status
@@ -86,7 +98,7 @@ export function ProjectWorkflowsView({
 
         {/* Filters */}
         <div className="mt-4 flex items-center gap-2">
-          <div className="relative flex-1">
+          <div className="relative w-1/2">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
@@ -96,27 +108,14 @@ export function ProjectWorkflowsView({
               className="w-full rounded-md border bg-background py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-          <select
-            value={definitionFilter || ""}
-            onChange={(e) => setDefinitionFilter(e.target.value || undefined)}
-            className="rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            <option value="">All Templates</option>
-            {definitions?.map((def) => (
-              <option key={def.id} value={def.id}>
-                {def.name}
-              </option>
-            ))}
-          </select>
+          <Combobox
+            options={workflowOptions}
+            onValueChange={handleWorkflowSelect}
+            placeholder="Select Workflow"
+            searchPlaceholder="Search workflows..."
+          />
         </div>
       </div>
-
-      {/* Workflow Definitions List */}
-      <WorkflowDefinitionsList
-        projectId={projectId}
-        definitions={definitions || []}
-        runs={runs || []}
-      />
 
       {/* Kanban Board */}
       <div className="flex-1 overflow-x-auto p-4">
