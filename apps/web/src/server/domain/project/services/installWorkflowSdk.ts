@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { access, readFile, writeFile } from "node:fs/promises";
+import { access, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 /**
@@ -11,12 +11,16 @@ async function detectPackageManager(
   try {
     await access(join(projectPath, "pnpm-lock.yaml"));
     return "pnpm";
-  } catch {}
+  } catch {
+    // File doesn't exist, try next
+  }
 
   try {
     await access(join(projectPath, "yarn.lock"));
     return "yarn";
-  } catch {}
+  } catch {
+    // File doesn't exist, use default
+  }
 
   return "npm"; // Default to npm
 }

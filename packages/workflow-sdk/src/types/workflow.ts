@@ -21,7 +21,8 @@ export type ExtractPhaseIds<T extends readonly PhaseDefinition[]> =
  * Workflow configuration
  */
 export interface WorkflowConfig<
-  TPhases extends readonly PhaseDefinition[] | undefined = undefined
+  TPhases extends readonly PhaseDefinition[] | undefined = undefined,
+  TArgsSchema extends Record<string, unknown> = Record<string, unknown>
 > {
   /** Unique workflow identifier */
   id: string;
@@ -38,19 +39,20 @@ export interface WorkflowConfig<
   /**
    * JSON Schema for workflow arguments (runtime validation)
    */
-  argsSchema?: JSONSchema7;
+  argsSchema?: TArgsSchema;
 }
 
 /**
  * Workflow execution context passed to workflow function
  */
 export interface WorkflowContext<
-  TPhases extends readonly PhaseDefinition[] | undefined = undefined
+  TPhases extends readonly PhaseDefinition[] | undefined = undefined,
+  TArgs = Record<string, unknown>
 > {
   /** Inngest event data */
   event: {
     name: string;
-    data: WorkflowEventData;
+    data: WorkflowEventData<TArgs>;
   };
   /** Extended step interface with custom methods */
   step: WorkflowStep<
@@ -63,7 +65,7 @@ export interface WorkflowContext<
 /**
  * Event data structure for workflow triggers
  */
-export interface WorkflowEventData {
+export interface WorkflowEventData<TArgs = Record<string, unknown>> {
   /** Workflow execution ID */
   executionId: string;
   /** Project ID */
@@ -75,14 +77,15 @@ export interface WorkflowEventData {
   /**
    * Workflow arguments
    */
-  args: Record<string, unknown>;
+  args: TArgs;
 }
 
 /**
  * Workflow function signature
  */
 export type WorkflowFunction<
-  TPhases extends readonly PhaseDefinition[] | undefined = undefined
+  TPhases extends readonly PhaseDefinition[] | undefined = undefined,
+  TArgs = Record<string, unknown>
 > = (
-  context: WorkflowContext<TPhases>
+  context: WorkflowContext<TPhases, TArgs>
 ) => Promise<unknown>;

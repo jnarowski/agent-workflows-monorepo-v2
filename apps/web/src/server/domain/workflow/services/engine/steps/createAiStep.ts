@@ -76,11 +76,11 @@ export function createAiStep(
             // Structured output with schema
             logger.debug("Using generateObject with schema");
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const result = await withTimeout(
               generateObject({
                 model,
-                schema: config.schema as any,
+                // @ts-expect-error - Schema type from workflow-sdk is compatible but TypeScript can't infer it
+                schema: config.schema,
                 prompt: config.prompt,
                 ...(config.systemPrompt && { system: config.systemPrompt }),
                 ...(temperature !== undefined && { temperature }),

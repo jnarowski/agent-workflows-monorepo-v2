@@ -1,9 +1,10 @@
-import type { ValidateRequired } from "../types/schema";
+import type { ValidateRequired, DeepReadonly } from "../types/schema";
 
 /**
  * Define a typed schema with compile-time validation
  *
  * Uses const generic parameter to capture literal types automatically.
+ * Deep readonly modifiers preserve literal types without requiring 'as const'.
  * Returns schema unchanged (identity function) - no runtime overhead.
  *
  * @example
@@ -20,6 +21,6 @@ import type { ValidateRequired } from "../types/schema";
  */
 export function defineSchema<const TSchema extends Record<string, unknown>>(
   schema: ValidateRequired<TSchema>
-): TSchema {
-  return schema as TSchema;
+): DeepReadonly<TSchema> {
+  return schema as unknown as DeepReadonly<TSchema>;
 }

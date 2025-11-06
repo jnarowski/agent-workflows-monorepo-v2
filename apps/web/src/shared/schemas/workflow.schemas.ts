@@ -147,12 +147,12 @@ export const createWorkflowExecutionSchema = z
     path: ["spec_file", "spec_content"],
   })
   .refine((data) => {
-    // XOR: branch_name OR worktree_name (exactly one must be provided)
+    // At most one of branch_name or worktree_name can be provided
     const hasBranchName = !!data.branch_name;
     const hasWorktreeName = !!data.worktree_name;
-    return hasBranchName !== hasWorktreeName; // XOR: true when exactly one is true
+    return !(hasBranchName && hasWorktreeName); // False when both are provided
   }, {
-    message: "Either branch_name or worktree_name must be provided, but not both",
+    message: "Cannot provide both branch_name and worktree_name",
     path: ["branch_name", "worktree_name"],
   });
 

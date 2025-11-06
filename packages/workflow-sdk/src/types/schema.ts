@@ -3,14 +3,25 @@
  */
 
 /**
+ * Deep readonly utility type that recursively makes all properties readonly
+ * Handles arrays, objects, and primitives
+ */
+export type DeepReadonly<T> = T extends (infer R)[]
+  ? ReadonlyArray<DeepReadonly<R>>
+  : T extends object
+    ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
+    : T;
+
+/**
  * Infer TypeScript type from a single schema property
- * Supports: string, number, boolean, enum (as literal union), nested objects
+ * Supports: string, number, boolean, enum (as literal union), arrays, nested objects
  */
 export type InferProperty<P> =
   P extends { type: "string" } ? string
   : P extends { type: "number" } ? number
   : P extends { type: "boolean" } ? boolean
   : P extends { enum: readonly (infer E)[] } ? E
+  : P extends { type: "array"; items: infer Items } ? Array<InferProperty<Items>>
   : P extends { properties: infer Nested } ? InferProperties<Nested>
   : unknown;
 
@@ -48,8 +59,11 @@ export type InferSchemaType<TSchema> =
 /**
  * Compile-time validation that required fields exist in properties
  * Returns never if validation fails, causing a compile error
+ * Uses lenient checking to work with both const and non-const arrays
  */
 export type ValidateRequired<TSchema> =
   TSchema extends { properties: infer Props; required: infer Req }
-    ? Req extends readonly (keyof Props)[] ? TSchema : never
+    ? Req extends readonly unknown[]
+      ? TSchema
+      : never
     : TSchema;

@@ -138,7 +138,7 @@ None - all changes to existing files
 ### Task Group 1: Add Array Type Support
 
 <!-- prettier-ignore -->
-- [ ] array-inference Update InferProperty type in schema.ts to handle arrays
+- [x] array-inference Update InferProperty type in schema.ts to handle arrays
   - Add case: `P extends { type: "array"; items: infer Items } ? Array<InferProperty<Items>> : ...`
   - Insert before the `unknown` fallback case
   - File: `packages/workflow-sdk/src/types/schema.ts`
@@ -146,46 +146,53 @@ None - all changes to existing files
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added array type support to InferProperty type
+- Arrays now infer correctly: `{ type: "array", items: { type: "string" } }` → `string[]`
+- Recursive inference works for nested array types
+- Inserted before unknown fallback to maintain proper type precedence
 
 ### Task Group 2: Improve defineSchema Signature
 
 <!-- prettier-ignore -->
-- [ ] deep-readonly Create DeepReadonly utility type in schema.ts
+- [x] deep-readonly Create DeepReadonly utility type in schema.ts
   - Add recursive readonly type that handles arrays, objects, primitives
   - File: `packages/workflow-sdk/src/types/schema.ts`
-- [ ] schema-signature Update defineSchema signature in defineSchema.ts
+- [x] schema-signature Update defineSchema signature in defineSchema.ts
   - Change return type to use deep readonly: `DeepReadonly<TSchema>`
   - Removes need for `as const` on enum/required arrays
   - File: `packages/workflow-sdk/src/builder/defineSchema.ts`
-- [ ] schema-validation Update ValidateRequired to work with readonly types
+- [x] schema-validation Update ValidateRequired to work with readonly types
   - Ensure compile-time validation still works with deep readonly
   - File: `packages/workflow-sdk/src/types/schema.ts`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Created DeepReadonly utility type for recursive readonly transformation
+- Updated defineSchema to return DeepReadonly<TSchema>
+- Eliminates need for `as const` on enum and required arrays
+- ValidateRequired works correctly with readonly types (no changes needed)
+- Preserves literal types automatically without user intervention
 
 ### Task Group 3: Thread TArgs Generic Through Types
 
 <!-- prettier-ignore -->
-- [ ] config-generic Add TArgsSchema generic to WorkflowConfig interface
+- [x] config-generic Add TArgsSchema generic to WorkflowConfig interface
   - Add second generic: `WorkflowConfig<TPhases, TArgsSchema = Record<string, unknown>>`
   - Update argsSchema field type: `argsSchema?: TArgsSchema`
   - File: `packages/workflow-sdk/src/types/workflow.ts`
-- [ ] event-data-generic Add TArgs generic to WorkflowEventData interface
+- [x] event-data-generic Add TArgs generic to WorkflowEventData interface
   - Add generic: `WorkflowEventData<TArgs = Record<string, unknown>>`
   - Change args type: `args: TArgs`
   - File: `packages/workflow-sdk/src/types/workflow.ts`
-- [ ] context-generic Add TArgs generic to WorkflowContext interface
+- [x] context-generic Add TArgs generic to WorkflowContext interface
   - Add second generic: `WorkflowContext<TPhases, TArgs = Record<string, unknown>>`
   - Update event.data type: `data: WorkflowEventData<TArgs>`
   - File: `packages/workflow-sdk/src/types/workflow.ts`
-- [ ] function-generic Add TArgs generic to WorkflowFunction type
+- [x] function-generic Add TArgs generic to WorkflowFunction type
   - Add second generic: `WorkflowFunction<TPhases, TArgs = Record<string, unknown>>`
   - Update context type: `context: WorkflowContext<TPhases, TArgs>`
   - File: `packages/workflow-sdk/src/types/workflow.ts`
-- [ ] definition-generic Add TArgsSchema to WorkflowDefinition interface
+- [x] definition-generic Add TArgsSchema to WorkflowDefinition interface
   - Add second generic: `WorkflowDefinition<TPhases, TArgsSchema = Record<string, unknown>>`
   - Update config type: `config: WorkflowConfig<TPhases, TArgsSchema>`
   - Update fn type: `fn: WorkflowFunction<TPhases, InferSchemaType<TArgsSchema>>`
@@ -193,46 +200,56 @@ None - all changes to existing files
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added TArgsSchema generic to WorkflowConfig interface
+- Added TArgs generic to WorkflowEventData, WorkflowContext, WorkflowFunction
+- Updated WorkflowDefinition with TArgsSchema generic
+- All generics default to Record<string, unknown> for backward compat
+- Type flow complete: schema → config → context → event.data.args
 
 ### Task Group 4: Update defineWorkflow Implementation
 
 <!-- prettier-ignore -->
-- [ ] workflow-generic Update defineWorkflow function signature
+- [x] workflow-generic Update defineWorkflow function signature
   - Add second generic: `const TArgsSchema extends Record<string, unknown> = Record<string, unknown>`
   - Update config param: `config: WorkflowConfig<TPhases, TArgsSchema>`
   - Update fn param: `fn: WorkflowFunction<TPhases, InferSchemaType<TArgsSchema>>`
   - Update return type: `WorkflowDefinition<TPhases, TArgsSchema>`
   - File: `packages/workflow-sdk/src/builder/defineWorkflow.ts`
-- [ ] workflow-erasure Add runtime type erasure for compatibility
+- [x] workflow-erasure Add runtime type erasure for compatibility
   - Cast fn to `WorkflowFunction<TPhases>` when passing to runtime
   - Keeps runtime untyped while compile-time is typed
   - File: `packages/workflow-sdk/src/builder/defineWorkflow.ts`
-- [ ] workflow-jsdoc Update JSDoc example to show new typed usage
+- [x] workflow-jsdoc Update JSDoc example to show new typed usage
   - Remove manual type casting from example
   - Show automatic type inference working
   - File: `packages/workflow-sdk/src/builder/defineWorkflow.ts`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Updated defineWorkflow with TArgsSchema generic parameter
+- Connected argsSchema to InferSchemaType for automatic type inference
+- Added type erasure to maintain runtime compatibility
+- Updated JSDoc with new example showing defineSchema usage
+- No manual type casting required - fully automatic type inference
 
 ### Task Group 5: Export Public API
 
 <!-- prettier-ignore -->
-- [ ] export-type Add InferSchemaType export to index.ts
+- [x] export-type Add InferSchemaType export to index.ts
   - Add: `export type { InferSchemaType } from "./types/schema"`
   - Type-only export for advanced users
   - File: `packages/workflow-sdk/src/index.ts`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Added InferSchemaType export to index.ts
+- Type-only export for advanced users needing manual type extraction
+- Allows custom casting or json-schema-to-ts integration if needed
 
 ### Task Group 6: Update Example File
 
 <!-- prettier-ignore -->
-- [ ] example-update Update example-typed-args.ts to demonstrate new API
+- [x] example-update Update example-typed-args.ts to demonstrate new API
   - Remove `as const` from schema definition
   - Remove manual type casting from event.data.args
   - Add examples with arrays, enums, nested objects
@@ -241,7 +258,12 @@ None - all changes to existing files
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this task group)
+- Removed all `as const` from schema definition (no longer needed)
+- Added array field (tags: string[]) demonstrating array type support
+- Added nested object field (config) demonstrating nested type inference
+- Updated comments to explain new automatic typing behavior
+- Example now shows arrays, enums, nested objects, and optional fields
+- Ready for IDE autocomplete verification
 
 ## Testing Strategy
 

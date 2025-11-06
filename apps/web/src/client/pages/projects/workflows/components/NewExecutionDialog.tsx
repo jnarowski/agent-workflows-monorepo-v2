@@ -50,7 +50,7 @@ export function NewExecutionDialog({
   const [specFile, setSpecFile] = useState<string>('');
   const [specContent, setSpecContent] = useState('');
   const [branchFrom, setBranchFrom] = useState('');
-  const [gitMode, setGitMode] = useState<'branch' | 'worktree'>('branch');
+  const [gitMode, setGitMode] = useState<'branch' | 'worktree' | 'current'>('branch');
   const [branchName, setBranchName] = useState('');
   const [worktreeName, setWorktreeName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -91,7 +91,7 @@ export function NewExecutionDialog({
 
   // Auto-generate branch/worktree name from execution name
   useEffect(() => {
-    if (name) {
+    if (name && gitMode !== 'current') {
       const slug = name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
@@ -124,7 +124,7 @@ export function NewExecutionDialog({
       return;
     }
 
-    // Validate git mode
+    // Validate git mode (skip validation for 'current' mode)
     if (gitMode === 'branch' && !branchName.trim()) {
       setError('Branch name is required');
       return;
@@ -158,6 +158,7 @@ export function NewExecutionDialog({
         branch_from: branchFrom || undefined,
         branch_name: gitMode === 'branch' ? branchName : undefined,
         worktree_name: gitMode === 'worktree' ? worktreeName : undefined,
+        // When gitMode is 'current', both branch_name and worktree_name are undefined
       });
 
       // Navigate to new execution
@@ -196,9 +197,9 @@ export function NewExecutionDialog({
     <BaseDialog
       open={open}
       onOpenChange={onOpenChange}
-      contentProps={{ className: 'sm:max-w-[525px]' }}
+      contentProps={{ className: 'sm:max-w-[650px]', noPadding: true }}
     >
-      <DialogHeader>
+      <DialogHeader className="px-6 pt-6 pb-4 border-b">
         <DialogTitle>New Workflow Execution</DialogTitle>
         <DialogDescription>
           {definition
@@ -207,7 +208,7 @@ export function NewExecutionDialog({
         </DialogDescription>
       </DialogHeader>
 
-      <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+      <div className="space-y-4 px-6 py-4 max-h-[60vh] overflow-y-auto">
         {/* Name input */}
         <div className="space-y-2">
           <Label htmlFor="execution-name">Execution Name</Label>
@@ -267,85 +268,154 @@ export function NewExecutionDialog({
           </Tabs>
         </div>
 
-        {/* Branch From (optional) */}
-        <div className="space-y-2">
-          <Label htmlFor="branch-from">Branch From (optional)</Label>
-          <Combobox
-            value={branchFrom}
-            onValueChange={setBranchFrom}
-            options={branchOptions}
-            placeholder="Select branch (defaults to current)..."
-            searchPlaceholder="Search branches..."
-            emptyMessage="No branches found"
-            disabled={createWorkflow.isPending}
-            renderOption={(option, selected) => (
-              <div className="flex items-center gap-2 flex-1">
-                {selected && (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="size-4 shrink-0"
-                  >
-                    <path d="M20 6 9 17l-5-5" />
-                  </svg>
-                )}
-                <span className="flex-1">{option.label}</span>
-                {option.badge && (
-                  <span className="text-xs text-muted-foreground">{option.badge}</span>
-                )}
-              </div>
-            )}
-          />
-          <p className="text-xs text-muted-foreground">
-            Defaults to current branch if not specified
-          </p>
-        </div>
-
-        {/* Git mode: branch or worktree */}
-        <div className="space-y-2">
+        {/* Git mode: branch or worktree or current */}
+        <div className="space-y-3">
           <Label>Git Mode</Label>
-          <RadioGroup value={gitMode} onValueChange={(v) => setGitMode(v as 'branch' | 'worktree')}>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="branch" id="mode-branch" />
-              <Label htmlFor="mode-branch" className="font-normal cursor-pointer">
-                Branch
-              </Label>
+          <RadioGroup value={gitMode} onValueChange={(v) => setGitMode(v as 'branch' | 'worktree' | 'current')}>
+            {/* Branch option */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="branch" id="mode-branch" />
+                <Label htmlFor="mode-branch" className="font-normal cursor-pointer">
+                  Branch
+                </Label>
+              </div>
+              {gitMode === 'branch' && (
+                <div className="ml-6 space-y-3 border-l-2 border-muted pl-4">
+                  {/* Branch From (optional) */}
+                  <div className="space-y-2">
+                    <Label htmlFor="branch-from">Branch From (optional)</Label>
+                    <Combobox
+                      value={branchFrom}
+                      onValueChange={setBranchFrom}
+                      options={branchOptions}
+                      placeholder="Select branch (defaults to current)..."
+                      searchPlaceholder="Search branches..."
+                      emptyMessage="No branches found"
+                      disabled={createWorkflow.isPending}
+                      renderOption={(option, selected) => (
+                        <div className="flex items-center gap-2 flex-1">
+                          {selected && (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="size-4 shrink-0"
+                            >
+                              <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                          )}
+                          <span className="flex-1">{option.label}</span>
+                          {option.badge && (
+                            <span className="text-xs text-muted-foreground">{option.badge}</span>
+                          )}
+                        </div>
+                      )}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Defaults to current branch if not specified
+                    </p>
+                  </div>
+                  {/* Branch Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="branch-name">Branch Name</Label>
+                    <Input
+                      id="branch-name"
+                      placeholder="Auto-generated from execution name"
+                      value={branchName}
+                      onChange={(e) => setBranchName(e.target.value)}
+                      disabled={createWorkflow.isPending}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Auto-generated, but you can edit
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Worktree option */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="worktree" id="mode-worktree" />
+                <Label htmlFor="mode-worktree" className="font-normal cursor-pointer">
+                  Worktree
+                </Label>
+              </div>
+              {gitMode === 'worktree' && (
+                <div className="ml-6 space-y-3 border-l-2 border-muted pl-4">
+                  {/* Branch From (optional) */}
+                  <div className="space-y-2">
+                    <Label htmlFor="worktree-branch-from">Branch From (optional)</Label>
+                    <Combobox
+                      value={branchFrom}
+                      onValueChange={setBranchFrom}
+                      options={branchOptions}
+                      placeholder="Select branch (defaults to current)..."
+                      searchPlaceholder="Search branches..."
+                      emptyMessage="No branches found"
+                      disabled={createWorkflow.isPending}
+                      renderOption={(option, selected) => (
+                        <div className="flex items-center gap-2 flex-1">
+                          {selected && (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="size-4 shrink-0"
+                            >
+                              <path d="M20 6 9 17l-5-5" />
+                            </svg>
+                          )}
+                          <span className="flex-1">{option.label}</span>
+                          {option.badge && (
+                            <span className="text-xs text-muted-foreground">{option.badge}</span>
+                          )}
+                        </div>
+                      )}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Defaults to current branch if not specified
+                    </p>
+                  </div>
+                  {/* Worktree Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="worktree-name">Worktree Name</Label>
+                    <Input
+                      id="worktree-name"
+                      placeholder="Auto-generated from execution name"
+                      value={worktreeName}
+                      onChange={(e) => setWorktreeName(e.target.value)}
+                      disabled={createWorkflow.isPending}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Auto-generated, but you can edit
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Current Branch option */}
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="worktree" id="mode-worktree" />
-              <Label htmlFor="mode-worktree" className="font-normal cursor-pointer">
-                Worktree
+              <RadioGroupItem value="current" id="mode-current" />
+              <Label htmlFor="mode-current" className="font-normal cursor-pointer">
+                Current Branch
               </Label>
             </div>
           </RadioGroup>
-        </div>
-
-        {/* Branch/Worktree Name (auto-generated from execution name) */}
-        <div className="space-y-2">
-          <Label htmlFor="git-name">
-            {gitMode === 'branch' ? 'Branch Name' : 'Worktree Name'}
-          </Label>
-          <Input
-            id="git-name"
-            placeholder={`Auto-generated from execution name`}
-            value={gitMode === 'branch' ? branchName : worktreeName}
-            onChange={(e) =>
-              gitMode === 'branch'
-                ? setBranchName(e.target.value)
-                : setWorktreeName(e.target.value)
-            }
-            disabled={createWorkflow.isPending}
-          />
-          <p className="text-xs text-muted-foreground">
-            Auto-generated, but you can edit
-          </p>
         </div>
 
         {/* Args input */}
@@ -382,7 +452,7 @@ export function NewExecutionDialog({
         )}
       </div>
 
-      <DialogFooter>
+      <DialogFooter className="px-6 pb-6 pt-4">
         <Button
           variant="outline"
           onClick={handleCancel}

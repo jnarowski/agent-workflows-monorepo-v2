@@ -35,7 +35,7 @@ export async function checkWorkflowSdk(
       installed: !!version,
       version: version || undefined,
     };
-  } catch (error) {
+  } catch {
     // If package.json doesn't exist or can't be read
     return {
       hasPackageJson: false,
