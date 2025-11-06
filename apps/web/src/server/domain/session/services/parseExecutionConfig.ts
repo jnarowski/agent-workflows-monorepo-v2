@@ -1,4 +1,5 @@
 import type { ExecutionConfig } from "../types";
+import type { ParseExecutionConfigOptions } from "@/server/domain/session/types/ParseExecutionConfigOptions";
 
 /**
  * Parse execution configuration from WebSocket message data
@@ -6,12 +7,10 @@ import type { ExecutionConfig } from "../types";
  * Safely extracts and validates execution configuration options from
  * unknown data, providing type-safe defaults.
  *
- * @param config - Unknown configuration object from WebSocket message
+ * @param options - Options object with config
  * @returns Type-safe execution configuration
  */
-export async function parseExecutionConfig(
-  config: unknown
-): Promise<ExecutionConfig> {
+export async function parseExecutionConfig({ config }: ParseExecutionConfigOptions): Promise<ExecutionConfig> {
   const configObj = config as Record<string, unknown> | undefined;
 
   return {

@@ -78,9 +78,7 @@ describe('ProjectSyncService', () => {
       );
       await fs.mkdir(projectDir, { recursive: true });
 
-      const hasEnough = await hasEnoughSessions(
-        projectName
-      );
+      const hasEnough = await hasEnoughSessions({ projectName });
 
       expect(hasEnough).toBe(false);
     });
@@ -99,9 +97,7 @@ describe('ProjectSyncService', () => {
       const sessionFile = path.join(projectDir, 'session-1.jsonl');
       await fs.writeFile(sessionFile, JSON.stringify({ type: 'user', message: {} }));
 
-      const hasEnough = await hasEnoughSessions(
-        projectName
-      );
+      const hasEnough = await hasEnoughSessions({ projectName });
 
       expect(hasEnough).toBe(false);
     });
@@ -122,9 +118,7 @@ describe('ProjectSyncService', () => {
         await fs.writeFile(sessionFile, JSON.stringify({ type: 'user', message: {} }));
       }
 
-      const hasEnough = await hasEnoughSessions(
-        projectName
-      );
+      const hasEnough = await hasEnoughSessions({ projectName });
 
       expect(hasEnough).toBe(false);
     });
@@ -145,9 +139,7 @@ describe('ProjectSyncService', () => {
         await fs.writeFile(sessionFile, JSON.stringify({ type: 'user', message: {} }));
       }
 
-      const hasEnough = await hasEnoughSessions(
-        projectName
-      );
+      const hasEnough = await hasEnoughSessions({ projectName });
 
       expect(hasEnough).toBe(true);
     });
@@ -168,9 +160,7 @@ describe('ProjectSyncService', () => {
         await fs.writeFile(sessionFile, JSON.stringify({ type: 'user', message: {} }));
       }
 
-      const hasEnough = await hasEnoughSessions(
-        projectName
-      );
+      const hasEnough = await hasEnoughSessions({ projectName });
 
       expect(hasEnough).toBe(true);
     });
@@ -194,9 +184,7 @@ describe('ProjectSyncService', () => {
       await fs.writeFile(path.join(projectDir, 'data.json'), '{}');
       await fs.writeFile(path.join(projectDir, 'notes.txt'), 'notes');
 
-      const hasEnough = await hasEnoughSessions(
-        projectName
-      );
+      const hasEnough = await hasEnoughSessions({ projectName });
 
       // Should be false because only 2 .jsonl files (not >3)
       expect(hasEnough).toBe(false);
@@ -205,9 +193,7 @@ describe('ProjectSyncService', () => {
     it('should handle directory access errors gracefully', async () => {
       const projectName = '-Users-nonexistent-project';
 
-      const hasEnough = await hasEnoughSessions(
-        projectName
-      );
+      const hasEnough = await hasEnoughSessions({ projectName });
 
       expect(hasEnough).toBe(false);
     });
@@ -233,9 +219,7 @@ describe('ProjectSyncService', () => {
       await fs.writeFile(path.join(projectDir, 'agent-xyz.jsonl'), '{}');
       await fs.writeFile(path.join(projectDir, 'agent-test.jsonl'), '{}');
 
-      const hasEnough = await hasEnoughSessions(
-        projectName
-      );
+      const hasEnough = await hasEnoughSessions({ projectName });
 
       // Should be false because only 2 valid files (not >3)
       // agent- files should not be counted
@@ -258,9 +242,7 @@ describe('ProjectSyncService', () => {
       await fs.writeFile(path.join(projectDir, 'agent.jsonl'), '{}'); // doesn't start with "agent-"
       await fs.writeFile(path.join(projectDir, 'session-123.jsonl'), '{}');
 
-      const hasEnough = await hasEnoughSessions(
-        projectName
-      );
+      const hasEnough = await hasEnoughSessions({ projectName });
 
       // Should be true because 4 valid files (>3)
       expect(hasEnough).toBe(true);
@@ -285,10 +267,7 @@ describe('ProjectSyncService', () => {
         await fs.writeFile(path.join(projectDir, `agent-${i}.jsonl`), '{}');
       }
 
-      const hasEnough = await hasEnoughSessions(
-        projectName,
-        3
-      );
+      const hasEnough = await hasEnoughSessions({ projectName, minSessions: 3 });
 
       // Should be false because only 2 valid files (needs >3)
       expect(hasEnough).toBe(false);

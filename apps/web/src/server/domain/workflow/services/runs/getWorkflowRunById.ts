@@ -1,12 +1,13 @@
 import { prisma } from '@/shared/prisma';
 import type { WorkflowRun } from '@prisma/client';
+import type { GetWorkflowRunByIdOptions } from '@/server/domain/workflow/types/GetWorkflowRunByIdOptions';
 
 /**
  * Gets a single workflow run by ID with all relations
  * Includes: steps (with agent sessions), events, workflow_definition, artifacts
  * Note: Artifacts are now organized by phase, not by step
  */
-export async function getWorkflowRunById(id: string): Promise<WorkflowRun | null> {
+export async function getWorkflowRunById({ id }: GetWorkflowRunByIdOptions): Promise<WorkflowRun | null> {
   const run = await prisma.workflowRun.findUnique({
     where: { id },
     include: {

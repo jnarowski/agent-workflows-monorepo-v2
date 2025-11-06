@@ -1,18 +1,15 @@
 import { prisma } from "@/shared/prisma";
 import type { WorkflowRun } from "@prisma/client";
-import type { FastifyBaseLogger } from "fastify";
 import { createWorkflowEvent } from "../events/createWorkflowEvent";
 import { emitWorkflowEvent } from "../events/emitWorkflowEvent";
+import type { ResumeWorkflowOptions } from "@/server/domain/workflow/types/ResumeWorkflowOptions";
 
 /**
  * STUB: Resume a paused workflow execution (future implementation)
  * Currently just updates status to 'running'
  * Logs warning that resume not implemented
  */
-export async function resumeWorkflow(
-  runId: string,
-  userId?: string,
-  logger?: FastifyBaseLogger
+export async function resumeWorkflow({ runId, userId, logger }: ResumeWorkflowOptions
 ): Promise<WorkflowRun> {
   logger?.warn({ runId }, "Resume workflow not implemented - stubbed");
 

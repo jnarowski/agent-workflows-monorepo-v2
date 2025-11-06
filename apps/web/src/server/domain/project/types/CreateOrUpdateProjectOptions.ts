@@ -1,12 +1,10 @@
 import { z } from 'zod'
 
 // Zod schema (runtime validation)
-// Uses CREATE pattern: { data: {...} }
+// Flat parameters pattern for operations
 export const createOrUpdateProjectOptionsSchema = z.object({
-  data: z.object({
-    name: z.string().min(1, 'Name required'),
-    path: z.string().min(1, 'Path required')
-  })
+  name: z.string().min(1, 'Project name required'),
+  path: z.string().min(1, 'Project path required')
 })
 
 // TypeScript type (compile-time) - single source of truth

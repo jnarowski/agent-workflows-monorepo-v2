@@ -120,3 +120,7 @@ export * from './ValidateAgentSupportedOptions';
 export * from './SyncProjectSessionsOptions';
 export * from './GenerateSessionNameOptions';
 export * from './ExtractUsageFromEventsOptions';
+export * from './CleanupSessionImagesOptions';
+export * from './HandleExecutionFailureOptions';
+export * from './ProcessImageUploadsOptions';
+export * from './ParseExecutionConfigOptions';

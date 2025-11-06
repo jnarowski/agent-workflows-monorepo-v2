@@ -69,11 +69,11 @@ export async function handleSessionSendMessage(
   });
 
   // Process image uploads (domain function)
-  const { imagePaths } = await processImageUploads(
-    data.images,
-    sessionData.projectPath,
+  const { imagePaths } = await processImageUploads({
+    images: data.images,
+    projectPath: sessionData.projectPath,
     sessionId
-  );
+  });
 
   // Validate agent is supported
   const validation = await validateAgentSupported({ agent: session.agent });
@@ -86,12 +86,12 @@ export async function handleSessionSendMessage(
         code: "UNSUPPORTED_AGENT",
       },
     });
-    await cleanupSessionImages(sessionId);
+    await cleanupSessionImages({ sessionId });
     return;
   }
 
   // Parse execution configuration
-  const config = await parseExecutionConfig(data.config);
+  const config = await parseExecutionConfig({ config: data.config });
 
   // Determine session ID to use (CLI session ID or database ID)
   const cliSessionId = session.cli_session_id || sessionId;
@@ -149,8 +149,8 @@ export async function handleSessionSendMessage(
       { sessionId, error: result.error },
       "[WebSocket] Execution failed, skipping post-processing"
     );
-    await handleExecutionFailure(sessionId, result, true);
-    await cleanupSessionImages(sessionId);
+    await handleExecutionFailure({ sessionId, result, shouldBroadcast: true });
+    await cleanupSessionImages({ sessionId });
     return;
   }
 
@@ -180,7 +180,7 @@ export async function handleSessionSendMessage(
   });
 
   // Cleanup and complete
-  await cleanupSessionImages(sessionId);
+  await cleanupSessionImages({ sessionId });
   broadcast(Channels.session(sessionId), {
     type: SessionEventTypes.MESSAGE_COMPLETE,
     data: {

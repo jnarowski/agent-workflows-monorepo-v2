@@ -10,7 +10,7 @@ import type { ReadFileOptions } from '../types/ReadFileOptions';
  */
 export async function readFile({ projectId, filePath }: ReadFileOptions): Promise<string> {
   // Look up project from database
-  const project = await getProjectById(projectId);
+  const project = await getProjectById({ id: projectId });
 
   if (!project) {
     throw new Error('Project not found');

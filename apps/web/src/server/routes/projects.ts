@@ -100,7 +100,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
           return reply.code(401).send(buildErrorResponse(401, "Unauthorized"));
         }
 
-        const syncResults = await syncFromClaudeProjects(userId);
+        const syncResults = await syncFromClaudeProjects({ userId });
 
         return reply.send({ data: syncResults });
       } catch (error) {
@@ -131,7 +131,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const project = await getProjectById(request.params.id);
+      const project = await getProjectById({ id: request.params.id });
 
       if (!project) {
         return reply
@@ -164,7 +164,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const project = await getProjectById(request.params.id);
+      const project = await getProjectById({ id: request.params.id });
 
       if (!project) {
         return reply
@@ -172,7 +172,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
           .send(buildErrorResponse(404, "Project not found"));
       }
 
-      const specFiles = await listSpecFiles(project.path);
+      const specFiles = await listSpecFiles({ projectPath: project.path });
 
       return reply.send({ data: specFiles });
     }
@@ -204,7 +204,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const project = await getProjectById(request.params.id);
+      const project = await getProjectById({ id: request.params.id });
 
       if (!project) {
         return reply
@@ -238,7 +238,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       // Check if project with same path already exists
-      const exists = await projectExistsByPath(request.body.path);
+      const exists = await projectExistsByPath({ path: request.body.path });
       if (exists) {
         return reply
           .code(409)
@@ -321,7 +321,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const project = await deleteProject(request.params.id);
+      const project = await deleteProject({ id: request.params.id });
 
       if (!project) {
         return reply
@@ -616,7 +616,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const project = await getProjectById(request.params.id);
+      const project = await getProjectById({ id: request.params.id });
 
       if (!project) {
         return reply
@@ -624,7 +624,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
           .send(buildErrorResponse(404, "Project not found"));
       }
 
-      const checkResult = await checkWorkflowSdk(project.path);
+      const checkResult = await checkWorkflowSdk({ projectPath: project.path });
 
       return reply.send({ data: checkResult });
     }
@@ -649,7 +649,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const project = await getProjectById(request.params.id);
+      const project = await getProjectById({ id: request.params.id });
 
       if (!project) {
         return reply
@@ -662,7 +662,7 @@ export async function projectRoutes(fastify: FastifyInstance) {
         "Installing workflow-sdk"
       );
 
-      const installResult = await installWorkflowSdk(project.path);
+      const installResult = await installWorkflowSdk({ projectPath: project.path });
 
       if (!installResult.success) {
         fastify.log.error(

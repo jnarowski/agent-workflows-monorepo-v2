@@ -10,7 +10,7 @@ import type { WriteFileOptions } from '../types/WriteFileOptions';
  */
 export async function writeFile({ projectId, filePath, content }: WriteFileOptions): Promise<void> {
   // Look up project from database
-  const project = await getProjectById(projectId);
+  const project = await getProjectById({ id: projectId });
 
   if (!project) {
     throw new Error('Project not found');

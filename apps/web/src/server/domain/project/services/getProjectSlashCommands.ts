@@ -3,6 +3,7 @@ import path from 'path';
 import matter from 'gray-matter';
 import type { SlashCommand } from '@/shared/types/slash-command.types';
 import { getProjectById } from '@/server/domain/project/services';
+import type { GetProjectSlashCommandsOptions } from '@/server/domain/project/types/GetProjectSlashCommandsOptions';
 
 /**
  * Slash Command Service
@@ -121,12 +122,10 @@ async function scanCommandsDirectory(
  * Get all custom slash commands for a project
  * Scans the .claude/commands/ directory in the project root
  */
-export async function getProjectSlashCommands(
-  projectId: string
-): Promise<SlashCommand[]> {
+export async function getProjectSlashCommands({ projectId }: GetProjectSlashCommandsOptions): Promise<SlashCommand[]> {
   try {
     // Look up project from database
-    const project = await getProjectById(projectId);
+    const project = await getProjectById({ id: projectId });
 
     if (!project) {
       throw new Error('Project not found');

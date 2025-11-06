@@ -2,6 +2,7 @@
 import { prisma } from "@/shared/prisma";
 import type { Project } from "@/shared/types/project.types";
 import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch";
+import type { GetProjectByPathOptions } from "@/server/domain/project/types/GetProjectByPathOptions";
 
 /**
  * Transform Prisma project to API project format
@@ -26,10 +27,10 @@ function transformProject(
 
 /**
  * Get a project by its path
- * @param path - Project path (case-sensitive match)
+ * @param options - Options object with path
  * @returns Project or null if not found
  */
-export async function getProjectByPath(path: string): Promise<Project | null> {
+export async function getProjectByPath({ path }: GetProjectByPathOptions): Promise<Project | null> {
   const project = await prisma.project.findFirst({
     where: { path },
   });

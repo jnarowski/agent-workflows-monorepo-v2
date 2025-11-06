@@ -1,18 +1,14 @@
 import { prisma } from "@/shared/prisma";
 import type { WorkflowRun } from "@prisma/client";
-import type { FastifyBaseLogger } from "fastify";
 import { createWorkflowEvent } from "../events/createWorkflowEvent";
 import { emitWorkflowEvent } from "../events/emitWorkflowEvent";
+import type { PauseWorkflowOptions } from "@/server/domain/workflow/types/PauseWorkflowOptions";
 
 /**
  * Pauses a running workflow execution
  * Updates status to 'paused' and sets paused_at timestamp
  */
-export async function pauseWorkflow(
-  runId: string,
-  userId?: string,
-  logger?: FastifyBaseLogger
-): Promise<WorkflowRun> {
+export async function pauseWorkflow({ runId, userId, logger }: PauseWorkflowOptions): Promise<WorkflowRun> {
   const pausedAt = new Date();
   const execution = await prisma.workflowRun.update({
     where: { id: runId },

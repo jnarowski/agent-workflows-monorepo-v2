@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/shared/prisma";
 import type { Project } from "@/shared/types/project.types";
 import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch";
+import type { DeleteProjectOptions } from "@/server/domain/project/types/DeleteProjectOptions";
 
 /**
  * Transform Prisma project to API project format
@@ -27,10 +28,10 @@ function transformProject(
 
 /**
  * Delete a project
- * @param id - Project ID
+ * @param options - Options object with id
  * @returns Deleted project or null if not found
  */
-export async function deleteProject(id: string): Promise<Project | null> {
+export async function deleteProject({ id }: DeleteProjectOptions): Promise<Project | null> {
   try {
     const project = await prisma.project.delete({
       where: { id },

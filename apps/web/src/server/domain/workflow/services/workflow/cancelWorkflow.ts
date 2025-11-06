@@ -1,18 +1,14 @@
 import { prisma } from "@/shared/prisma";
 import type { WorkflowRun } from "@prisma/client";
-import type { FastifyBaseLogger } from "fastify";
 import { createWorkflowEvent } from "../events/createWorkflowEvent";
 import { emitWorkflowEvent } from "../events/emitWorkflowEvent";
+import type { CancelWorkflowOptions } from "@/server/domain/workflow/types/CancelWorkflowOptions";
 
 /**
  * Cancels a workflow execution
  * Updates status to 'cancelled' and sets cancelled_at timestamp
  */
-export async function cancelWorkflow(
-  runId: string,
-  userId?: string,
-  reason?: string,
-  logger?: FastifyBaseLogger
+export async function cancelWorkflow({ runId, userId, reason, logger }: CancelWorkflowOptions
 ): Promise<WorkflowRun> {
   const cancelledAt = new Date();
   const execution = await prisma.workflowRun.update({

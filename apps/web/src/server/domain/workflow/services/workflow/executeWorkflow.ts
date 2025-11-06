@@ -1,6 +1,6 @@
 import { prisma } from '@/shared/prisma';
-import type { FastifyInstance } from 'fastify';
 import Ajv from 'ajv';
+import type { ExecuteWorkflowOptions } from '@/server/domain/workflow/types/ExecuteWorkflowOptions';
 
 // Create Ajv instance for JSON Schema validation
 const ajv = new Ajv();
@@ -9,11 +9,7 @@ const ajv = new Ajv();
  * Execute a workflow by triggering the Inngest workflow engine.
  * The engine will process steps asynchronously in the background.
  */
-export async function executeWorkflow(
-  runId: string,
-  fastifyOrWorkflowClient: FastifyInstance | { workflowClient?: { send: (event: { name: string; data: unknown }) => Promise<void> } },
-  logger?: { info: (obj: unknown, msg: string) => void; error: (obj: unknown, msg: string) => void }
-): Promise<void> {
+export async function executeWorkflow({ runId, fastify: fastifyOrWorkflowClient, logger }: ExecuteWorkflowOptions): Promise<void> {
   // Get execution details
   const execution = await prisma.workflowRun.findUnique({
     where: { id: runId },

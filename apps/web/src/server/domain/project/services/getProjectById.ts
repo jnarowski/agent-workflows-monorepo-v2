@@ -2,6 +2,7 @@
 import { prisma } from "@/shared/prisma";
 import type { Project } from "@/shared/types/project.types";
 import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch";
+import type { GetProjectByIdOptions } from "@/server/domain/project/types/GetProjectByIdOptions";
 
 /**
  * Transform Prisma project to API project format
@@ -26,10 +27,10 @@ function transformProject(
 
 /**
  * Get a single project by ID
- * @param id - Project ID
+ * @param options - Options object with id
  * @returns Project or null if not found
  */
-export async function getProjectById(id: string): Promise<Project | null> {
+export async function getProjectById({ id }: GetProjectByIdOptions): Promise<Project | null> {
   const project = await prisma.project.findUnique({
     where: { id },
   });

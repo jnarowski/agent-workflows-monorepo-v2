@@ -122,7 +122,7 @@ async function scanDirectory(
  */
 export async function getFileTree({ projectId }: GetFileTreeOptions): Promise<FileTreeItem[]> {
   // Look up project from database
-  const project = await getProjectById(projectId);
+  const project = await getProjectById({ id: projectId });
 
   if (!project) {
     throw new Error('Project not found');

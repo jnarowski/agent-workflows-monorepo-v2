@@ -36,7 +36,7 @@ export async function createShellSession({
   rows
 }: CreateShellSessionOptions): Promise<{ sessionId: string; ptyProcess: pty.IPty }> {
   // Get project to determine working directory
-  const project = await getProjectById(projectId);
+  const project = await getProjectById({ id: projectId });
   if (!project) {
     throw new Error(`Project not found: ${projectId}`);
   }

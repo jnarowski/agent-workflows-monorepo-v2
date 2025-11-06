@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import type { CheckWorkflowSdkOptions } from "@/server/domain/project/types/CheckWorkflowSdkOptions";
 
 /**
  * Result of workflow-sdk check
@@ -12,12 +13,10 @@ export interface WorkflowSdkCheckResult {
 
 /**
  * Check if workflow-sdk is installed in a project
- * @param projectPath - Absolute path to project directory
+ * @param options - Options object with projectPath
  * @returns Check result with installation status
  */
-export async function checkWorkflowSdk(
-  projectPath: string
-): Promise<WorkflowSdkCheckResult> {
+export async function checkWorkflowSdk({ projectPath }: CheckWorkflowSdkOptions): Promise<WorkflowSdkCheckResult> {
   try {
     // Check for package.json
     const packageJsonPath = join(projectPath, "package.json");

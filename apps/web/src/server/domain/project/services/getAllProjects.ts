@@ -75,11 +75,10 @@ function transformProjectWithSessions(
  * @param options.sessionLimit - Maximum number of sessions per project (default: 20)
  * @returns Array of all projects ordered by creation date (newest first)
  */
-export async function getAllProjects(options?: {
+export async function getAllProjects({ includeSessions = false, sessionLimit = 20 }: {
   includeSessions?: boolean;
   sessionLimit?: number;
-}): Promise<Project[] | ProjectWithSessions[]> {
-  const { includeSessions = false, sessionLimit = 20 } = options || {};
+} = {}): Promise<Project[] | ProjectWithSessions[]> {
 
   const projects = await prisma.project.findMany({
     orderBy: {

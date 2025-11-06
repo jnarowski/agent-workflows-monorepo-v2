@@ -2,6 +2,7 @@
 import { prisma } from "@/shared/prisma";
 import type { Project } from "@/shared/types/project.types";
 import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch";
+import type { CreateOrUpdateProjectOptions } from "@/server/domain/project/types/CreateOrUpdateProjectOptions";
 
 /**
  * Transform Prisma project to API project format
@@ -27,14 +28,10 @@ function transformProject(
 /**
  * Create a new project or update an existing one by path
  * Uses upsert to ensure atomic operation and prevent race conditions
- * @param name - Project display name
- * @param path - Project filesystem path
+ * @param options - Options object with name and path
  * @returns Created or updated project
  */
-export async function createOrUpdateProject(
-  name: string,
-  path: string
-): Promise<Project> {
+export async function createOrUpdateProject({ name, path }: CreateOrUpdateProjectOptions): Promise<Project> {
   const project = await prisma.project.upsert({
     where: { path },
     update: {

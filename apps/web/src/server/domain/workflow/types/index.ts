@@ -4,6 +4,13 @@ export * from "./artifact.types";
 export * from "./event.types";
 export * from "./engine.types";
 
+// Service options types
+export * from "./GetWorkflowRunByIdOptions";
+export * from "./ExecuteWorkflowOptions";
+export * from "./PauseWorkflowOptions";
+export * from "./ResumeWorkflowOptions";
+export * from "./CancelWorkflowOptions";
+
 /**
  * Configuration for workflow engine
  */

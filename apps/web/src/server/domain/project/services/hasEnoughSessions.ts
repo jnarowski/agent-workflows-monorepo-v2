@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import { getClaudeProjectsDir } from "@/server/utils/path";
+import type { HasEnoughSessionsOptions } from "@/server/domain/project/types/HasEnoughSessionsOptions";
 
 /**
  * Check if a file is a valid session file
@@ -14,14 +15,10 @@ function isValidSessionFile(filename: string): boolean {
 
 /**
  * Check if a project directory has more than minSessions sessions
- * @param projectName - Encoded project name from filesystem
- * @param minSessions - Minimum session count (default 3)
+ * @param options - Options object with projectName and minSessions
  * @returns True if project has more than minSessions
  */
-export async function hasEnoughSessions(
-  projectName: string,
-  minSessions: number = 3
-): Promise<boolean> {
+export async function hasEnoughSessions({ projectName, minSessions = 3 }: HasEnoughSessionsOptions): Promise<boolean> {
   const projectDir = path.join(getClaudeProjectsDir(), projectName);
 
   try {
