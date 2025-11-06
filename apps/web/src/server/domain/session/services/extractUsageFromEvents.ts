@@ -1,3 +1,5 @@
+import type { ExtractUsageFromEventsOptions } from '../types/ExtractUsageFromEventsOptions';
+
 export interface UsageData {
   input_tokens: number;
   output_tokens: number;
@@ -9,9 +11,9 @@ export interface UsageData {
  * Extract usage data from agent CLI SDK result events
  * Pure function - no database access
  */
-export function extractUsageFromEvents(
-  events: unknown
-): UsageData | null {
+export function extractUsageFromEvents({
+  events
+}: ExtractUsageFromEventsOptions): UsageData | null {
   if (!Array.isArray(events) || events.length === 0) {
     return null;
   }

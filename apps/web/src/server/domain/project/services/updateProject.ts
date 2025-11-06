@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/shared/prisma";
 import type { Project } from "@/shared/types/project.types";
 import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch";
-import type { UpdateProjectInput } from "@/server/domain/project/types";
+import type { UpdateProjectOptions } from "@/server/domain/project/types";
 
 /**
  * Transform Prisma project to API project format
@@ -28,20 +28,19 @@ function transformProject(
 
 /**
  * Update an existing project
- * @param id - Project ID
- * @param data - Project update data
+ * @param options - Project update options
  * @returns Updated project or null if not found
  */
-export async function updateProject(
-  id: string,
-  data: UpdateProjectInput
-): Promise<Project | null> {
+export async function updateProject({
+  id,
+  data
+}: UpdateProjectOptions): Promise<Project | null> {
   try {
     const project = await prisma.project.update({
       where: { id },
       data,
     });
-    const currentBranch = await getCurrentBranch(project.path);
+    const currentBranch = await getCurrentBranch({ projectPath: project.path });
     return transformProject(project, currentBranch);
   } catch (error) {
     // Return null if project not found

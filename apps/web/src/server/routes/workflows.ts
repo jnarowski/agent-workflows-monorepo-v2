@@ -436,7 +436,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
 
       let specContent: string;
       try {
-        specContent = await readFile(projectId, specPath, fastify.log);
+        specContent = await readFile({ projectId, filePath: specPath });
       } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
         fastify.log.error(

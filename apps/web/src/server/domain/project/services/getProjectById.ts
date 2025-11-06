@@ -38,6 +38,6 @@ export async function getProjectById(id: string): Promise<Project | null> {
     return null;
   }
 
-  const currentBranch = await getCurrentBranch(project.path);
+  const currentBranch = await getCurrentBranch({ projectPath: project.path });
   return transformProject(project, currentBranch);
 }

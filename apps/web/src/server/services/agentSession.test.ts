@@ -104,7 +104,7 @@ describe("AgentSessionService", () => {
       ];
       await fs.writeFile(sessionFile, messages.join("\n"));
 
-      const metadata = await parseJSONLFile(sessionFile);
+      const metadata = await parseJSONLFile({ filePath: sessionFile });
 
       expect(metadata.messageCount).toBe(3);
       expect(metadata.totalTokens).toBe(33); // 10 + 15 + 5 + 3
@@ -128,7 +128,7 @@ describe("AgentSessionService", () => {
       ];
       await fs.writeFile(sessionFile, messages.join("\n"));
 
-      const metadata = await parseJSONLFile(sessionFile);
+      const metadata = await parseJSONLFile({ filePath: sessionFile });
 
       expect(metadata.messageCount).toBe(1);
       expect(metadata.firstMessagePreview).toBe("First part Second part");
@@ -145,7 +145,7 @@ describe("AgentSessionService", () => {
       ];
       await fs.writeFile(sessionFile, entries.join("\n"));
 
-      const metadata = await parseJSONLFile(sessionFile);
+      const metadata = await parseJSONLFile({ filePath: sessionFile });
 
       expect(metadata.messageCount).toBe(2); // Only user and assistant messages
     });
@@ -160,7 +160,7 @@ describe("AgentSessionService", () => {
       ];
       await fs.writeFile(sessionFile, lines.join("\n"));
 
-      const metadata = await parseJSONLFile(sessionFile);
+      const metadata = await parseJSONLFile({ filePath: sessionFile });
 
       expect(metadata.messageCount).toBe(2); // Should count only valid messages
     });
@@ -169,7 +169,7 @@ describe("AgentSessionService", () => {
       const sessionFile = path.join(testDir, "empty.jsonl");
       await fs.writeFile(sessionFile, "");
 
-      const metadata = await parseJSONLFile(sessionFile);
+      const metadata = await parseJSONLFile({ filePath: sessionFile });
 
       expect(metadata.messageCount).toBe(0);
       expect(metadata.totalTokens).toBe(0);
@@ -192,7 +192,7 @@ describe("AgentSessionService", () => {
       ];
       await fs.writeFile(sessionFile, messages.join("\n"));
 
-      await expect(parseJSONLFile(sessionFile)).rejects.toThrow(
+      await expect(parseJSONLFile({ filePath: sessionFile })).rejects.toThrow(
         "Session has 2 messages but no user message"
       );
     });
@@ -216,7 +216,7 @@ describe("AgentSessionService", () => {
       ];
       await fs.writeFile(sessionFile, messages.join("\n"));
 
-      const metadata = await parseJSONLFile(sessionFile);
+      const metadata = await parseJSONLFile({ filePath: sessionFile });
 
       expect(metadata.firstMessagePreview).toHaveLength(100);
       expect(metadata.firstMessagePreview).toBe("a".repeat(100));
@@ -477,7 +477,7 @@ describe("AgentSessionService", () => {
       vi.mocked(prisma.project.findUnique).mockResolvedValue(null);
 
       await expect(
-        syncProjectSessions("nonexistent-id", testUserId)
+        syncProjectSessions({ projectId: "nonexistent-id", userId: testUserId })
       ).rejects.toThrow("Project not found: nonexistent-id");
     });
 

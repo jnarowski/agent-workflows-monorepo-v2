@@ -36,6 +36,6 @@ export async function getProjectByPath(path: string): Promise<Project | null> {
   if (!project) {
     return null;
   }
-  const currentBranch = await getCurrentBranch(project.path);
+  const currentBranch = await getCurrentBranch({ projectPath: project.path });
   return transformProject(project, currentBranch);
 }

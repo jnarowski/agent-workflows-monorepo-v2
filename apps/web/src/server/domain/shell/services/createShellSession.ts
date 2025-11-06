@@ -2,6 +2,7 @@ import * as pty from 'node-pty';
 import * as os from 'os';
 import { getProjectById } from '@/server/domain/project/services/getProjectById';
 import { setShellSession } from './getShellSession';
+import type { CreateShellSessionOptions } from '../types/CreateShellSessionOptions';
 
 /**
  * Detect platform and return appropriate shell configuration
@@ -26,18 +27,14 @@ function getShellConfig(): { shell: string; args: string[] } {
 
 /**
  * Create a new shell session
- * @param projectId - Project ID to spawn shell in
- * @param userId - User ID creating the session
- * @param cols - Terminal columns
- * @param rows - Terminal rows
  * @returns Session ID and PTY process
  */
-export async function createShellSession(
-  projectId: string,
-  userId: string,
-  cols: number,
-  rows: number
-): Promise<{ sessionId: string; ptyProcess: pty.IPty }> {
+export async function createShellSession({
+  projectId,
+  userId,
+  cols,
+  rows
+}: CreateShellSessionOptions): Promise<{ sessionId: string; ptyProcess: pty.IPty }> {
   // Get project to determine working directory
   const project = await getProjectById(projectId);
   if (!project) {

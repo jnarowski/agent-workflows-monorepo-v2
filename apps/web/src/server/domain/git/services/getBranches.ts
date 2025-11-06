@@ -1,10 +1,11 @@
-import simpleGit from 'simple-git';
-import type { GitBranch } from '@/shared/types/git.types';
+import simpleGit from 'simple-git'
+import type { GitBranch } from '@/shared/types/git.types'
+import type { GetBranchesOptions } from '../types/GetBranchesOptions'
 
 /**
  * Get all branches in the repository
  */
-export async function getBranches(projectPath: string): Promise<GitBranch[]> {
+export async function getBranches({ projectPath }: GetBranchesOptions): Promise<GitBranch[]> {
   const git = simpleGit(projectPath);
   const branchSummary = await git.branch();
 

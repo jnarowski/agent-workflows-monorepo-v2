@@ -1,14 +1,15 @@
-import simpleGit from 'simple-git';
-import type { GitMergeResult } from '@/shared/types/git.types';
+import simpleGit from 'simple-git'
+import type { GitMergeResult } from '@/shared/types/git.types'
+import type { MergeBranchOptions } from '../types/MergeBranchOptions'
 
 /**
  * Merge a branch into the current branch
  */
-export async function mergeBranch(
-  projectPath: string,
-  sourceBranch: string,
-  options?: { noFf?: boolean }
-): Promise<GitMergeResult> {
+export async function mergeBranch({
+  projectPath,
+  sourceBranch,
+  options
+}: MergeBranchOptions): Promise<GitMergeResult> {
   try {
     const git = simpleGit(projectPath);
     const mergeOptions = [];

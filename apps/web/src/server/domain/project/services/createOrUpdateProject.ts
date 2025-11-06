@@ -46,6 +46,6 @@ export async function createOrUpdateProject(
       path,
     },
   });
-  const currentBranch = await getCurrentBranch(project.path);
+  const currentBranch = await getCurrentBranch({ projectPath: project.path });
   return transformProject(project, currentBranch);
 }

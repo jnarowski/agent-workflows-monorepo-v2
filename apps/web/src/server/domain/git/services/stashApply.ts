@@ -1,9 +1,10 @@
-import simpleGit from 'simple-git';
+import simpleGit from 'simple-git'
+import type { StashApplyOptions } from '../types/StashApplyOptions'
 
 /**
  * Apply a stash without removing it
  */
-export async function stashApply(projectPath: string, index?: number): Promise<void> {
+export async function stashApply({ projectPath, index }: StashApplyOptions): Promise<void> {
   const git = simpleGit(projectPath);
   const args = ['apply'];
   if (index !== undefined) {

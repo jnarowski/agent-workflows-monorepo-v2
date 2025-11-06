@@ -47,11 +47,15 @@ export async function sessionRoutes(fastify: FastifyInstance) {
 
       const includeArchived = request.query.includeArchived === 'true';
 
-      const sessions = await getSessionsByProject(
-        request.params.id,
-        userId,
-        includeArchived
-      );
+      request.log.info({ projectId: request.params.id, userId, includeArchived }, 'Getting sessions by project');
+
+      const sessions = await getSessionsByProject({
+        filters: {
+          projectId: request.params.id,
+          userId,
+          includeArchived,
+        },
+      });
 
       return reply.send({ data: sessions });
     }
@@ -75,10 +79,12 @@ export async function sessionRoutes(fastify: FastifyInstance) {
       }
 
       try {
-        const messages = await getSessionMessages(
-          request.params.sessionId,
+        request.log.info({ sessionId: request.params.sessionId, userId }, 'Getting session messages');
+
+        const messages = await getSessionMessages({
+          sessionId: request.params.sessionId,
           userId
-        );
+        });
 
         return reply.send({ data: messages });
       } catch (error: unknown) {
@@ -133,21 +139,23 @@ export async function sessionRoutes(fastify: FastifyInstance) {
         return reply.code(401).send(buildErrorResponse(401, "Unauthorized"));
       }
 
-      fastify.log.info({
+      request.log.info({
         projectId: request.params.id,
         userId,
         sessionId: request.body.sessionId,
         agent: request.body.agent || 'claude',
       }, 'Creating session');
 
-      const session = await createSession(
-        request.params.id,
-        userId,
-        request.body.sessionId,
-        request.body.agent
-      );
+      const session = await createSession({
+        data: {
+          projectId: request.params.id,
+          userId,
+          sessionId: request.body.sessionId,
+          agent: request.body.agent,
+        },
+      });
 
-      fastify.log.info({ sessionId: session.id, agent: session.agent }, 'Session created successfully');
+      request.log.info({ sessionId: session.id, agent: session.agent }, 'Session created successfully');
 
       return reply.code(201).send({ data: session });
     }
@@ -174,10 +182,12 @@ export async function sessionRoutes(fastify: FastifyInstance) {
       }
 
       try {
-        const result = await syncProjectSessions(
-          request.params.id,
+        request.log.info({ projectId: request.params.id, userId }, 'Syncing project sessions');
+
+        const result = await syncProjectSessions({
+          projectId: request.params.id,
           userId
-        );
+        });
 
         return reply.send({ data: result });
       } catch (error: unknown) {
@@ -216,9 +226,13 @@ export async function sessionRoutes(fastify: FastifyInstance) {
       const { sessionId } = request.params;
       const { name } = request.body;
 
-      fastify.log.info({ sessionId, userId, name }, 'Updating session name');
+      request.log.info({ sessionId, userId, name }, 'Updating session name');
 
-      const session = await updateSessionName(sessionId, userId, name);
+      const session = await updateSessionName({
+        id: sessionId,
+        data: { name },
+        userId,
+      });
 
       if (!session) {
         return reply.code(404).send(buildErrorResponse(404, "Session not found"));
@@ -327,9 +341,12 @@ export async function sessionRoutes(fastify: FastifyInstance) {
 
       const { sessionId } = request.params;
 
-      fastify.log.info({ sessionId, userId }, 'Archiving session');
+      request.log.info({ sessionId, userId }, 'Archiving session');
 
-      const session = await archiveSession(sessionId, userId);
+      const session = await archiveSession({
+        sessionId,
+        userId
+      });
 
       if (!session) {
         return reply.code(404).send(buildErrorResponse(404, "Session not found"));
@@ -361,9 +378,12 @@ export async function sessionRoutes(fastify: FastifyInstance) {
 
       const { sessionId } = request.params;
 
-      fastify.log.info({ sessionId, userId }, 'Unarchiving session');
+      request.log.info({ sessionId, userId }, 'Unarchiving session');
 
-      const session = await unarchiveSession(sessionId, userId);
+      const session = await unarchiveSession({
+        sessionId,
+        userId
+      });
 
       if (!session) {
         return reply.code(404).send(buildErrorResponse(404, "Session not found"));

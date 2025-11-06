@@ -51,14 +51,16 @@ export function createAgentStep(
       try {
         // Create agent session using domain service
         const sessionId = randomUUID();
-        const session = await createSession(
-          projectId,
-          userId,
-          sessionId,
-          config.agent,
-          name,
-          {} // Empty metadata for workflow sessions
-        );
+        const session = await createSession({
+          data: {
+            projectId,
+            userId,
+            sessionId,
+            agent: config.agent,
+            name,
+            metadataOverride: {}, // Empty metadata for workflow sessions
+          },
+        });
 
         try {
           // Execute agent with timeout
@@ -75,7 +77,10 @@ export function createAgentStep(
           );
 
           // Store CLI session ID (e.g., Claude's session ID) in agent_session
-          await storeCliSessionId(session.id, result.sessionId, logger);
+          await storeCliSessionId({
+            sessionId: session.id,
+            cliSessionId: result.sessionId,
+          });
 
           // Update step with CLI session ID (if available), otherwise use db session ID
           const agentSessionId = result.sessionId || session.id;
@@ -96,10 +101,13 @@ export function createAgentStep(
           return result;
         } catch (error) {
           // Mark session as failed using domain service
-          await updateSession(session.id, {
-            state: "error",
-            error_message:
-              error instanceof Error ? error.message : String(error),
+          await updateSession({
+            id: session.id,
+            data: {
+              state: "error",
+              error_message:
+                error instanceof Error ? error.message : String(error),
+            },
           });
 
           throw error;

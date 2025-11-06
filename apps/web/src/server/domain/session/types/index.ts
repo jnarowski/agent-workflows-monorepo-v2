@@ -70,10 +70,6 @@ export interface SessionWithProject {
   };
 }
 
-export interface GenerateSessionNameOptions {
-  userPrompt: string;
-}
-
 /**
  * Execution configuration for agent commands
  */
@@ -100,3 +96,27 @@ export type SessionUpdateData = Partial<{
   created_at: Date;
   updated_at: Date;
 }>;
+
+// Service Options Types (NEW - Refactored Service API)
+// CRUD Operations (use { data } wrapper)
+export * from './CreateSessionOptions';
+export * from './UpdateSessionOptions';
+export * from './UpdateSessionNameOptions';
+export * from './UpdateSessionMetadataOptions';
+export * from './UpdateSessionStateOptions';
+
+// Query Operations (use { filters } wrapper)
+export * from './GetSessionsByProjectOptions';
+
+// Action Operations (flat parameters)
+export * from './CancelSessionOptions';
+export * from './GetSessionMessagesOptions';
+export * from './StoreCliSessionIdOptions';
+export * from './ArchiveSessionOptions';
+export * from './UnarchiveSessionOptions';
+export * from './ParseJSONLFileOptions';
+export * from './ValidateSessionOwnershipOptions';
+export * from './ValidateAgentSupportedOptions';
+export * from './SyncProjectSessionsOptions';
+export * from './GenerateSessionNameOptions';
+export * from './ExtractUsageFromEventsOptions';

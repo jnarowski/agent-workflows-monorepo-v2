@@ -117,7 +117,7 @@ export async function getAllProjects(options?: {
   // Fetch current branch for each project
   const projectsWithBranches = await Promise.all(
     projects.map(async (project) => {
-      const currentBranch = await getCurrentBranch(project.path);
+      const currentBranch = await getCurrentBranch({ projectPath: project.path });
       return { project, currentBranch };
     })
   );

@@ -1,25 +1,26 @@
-import simpleGit from 'simple-git';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import type { PrResult } from '@/shared/types/git.types';
-import { checkGhCliAvailable } from './checkGhCliAvailable';
+import simpleGit from 'simple-git'
+import { exec } from 'child_process'
+import { promisify } from 'util'
+import type { PrResult } from '@/shared/types/git.types'
+import type { CreatePullRequestOptions } from '../types/CreatePullRequestOptions'
+import { checkGhCliAvailable } from './checkGhCliAvailable'
 
-const execAsync = promisify(exec);
+const execAsync = promisify(exec)
 
 /**
  * Create a pull request (tries gh CLI, falls back to web URL)
  */
-export async function createPullRequest(
-  projectPath: string,
-  title: string,
-  description: string,
-  baseBranch: string = 'main'
-): Promise<PrResult> {
+export async function createPullRequest({
+  projectPath,
+  title,
+  description,
+  baseBranch = 'main'
+}: CreatePullRequestOptions): Promise<PrResult> {
   try {
     const git = simpleGit(projectPath);
 
     // Check gh CLI availability
-    const ghAvailable = await checkGhCliAvailable(projectPath);
+    const ghAvailable = await checkGhCliAvailable({ projectPath });
 
     if (ghAvailable) {
       // Try using gh CLI

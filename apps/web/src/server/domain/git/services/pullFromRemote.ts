@@ -1,13 +1,14 @@
-import simpleGit from 'simple-git';
+import simpleGit from 'simple-git'
+import type { PullFromRemoteOptions } from '../types/PullFromRemoteOptions'
 
 /**
  * Pull changes from remote repository
  */
-export async function pullFromRemote(
-  projectPath: string,
-  remote?: string,
-  branch?: string
-): Promise<void> {
+export async function pullFromRemote({
+  projectPath,
+  remote,
+  branch
+}: PullFromRemoteOptions): Promise<void> {
   const git = simpleGit(projectPath);
   await git.pull(remote, branch);
 }

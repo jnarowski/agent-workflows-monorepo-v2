@@ -207,10 +207,10 @@ export async function syncFromClaudeProjects(
     }
 
     // Sync sessions for this project
-    const sessionsSyncResult = await syncProjectSessions(
-      project.id,
-      userId
-    );
+    const sessionsSyncResult = await syncProjectSessions({
+      projectId: project.id,
+      userId,
+    });
 
     totalSessionsSynced += sessionsSyncResult.synced;
   }

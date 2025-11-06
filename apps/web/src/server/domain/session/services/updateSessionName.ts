@@ -1,19 +1,16 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/shared/prisma';
 import type { AgentSessionMetadata, SessionResponse } from '@/shared/types/agent-session.types';
+import type { UpdateSessionNameOptions } from '../types/UpdateSessionNameOptions';
 
 /**
  * Update session name
- * @param sessionId - Session ID
- * @param userId - User ID (for authorization)
- * @param name - New session name
- * @returns Updated session or null if not found
  */
-export async function updateSessionName(
-  sessionId: string,
-  userId: string,
-  name: string
-): Promise<SessionResponse | null> {
+export async function updateSessionName({
+  id: sessionId,
+  data: { name },
+  userId
+}: UpdateSessionNameOptions): Promise<SessionResponse | null> {
   try {
     // Verify session exists and user has access
     const session = await prisma.agentSession.findFirst({

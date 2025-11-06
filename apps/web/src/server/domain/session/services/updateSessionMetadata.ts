@@ -1,18 +1,16 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/shared/prisma';
 import type { AgentSessionMetadata, SessionResponse } from '@/shared/types/agent-session.types';
+import type { UpdateSessionMetadataOptions } from '../types/UpdateSessionMetadataOptions';
 
 /**
  * Update session metadata
  * Called after messages are added to update token counts, etc.
- * @param sessionId - Session ID
- * @param metadata - Partial metadata to update
- * @returns Updated session
  */
-export async function updateSessionMetadata(
-  sessionId: string,
-  metadata: Partial<AgentSessionMetadata>
-): Promise<SessionResponse | null> {
+export async function updateSessionMetadata({
+  id: sessionId,
+  data: { metadata }
+}: UpdateSessionMetadataOptions): Promise<SessionResponse | null> {
   try {
     const session = await prisma.agentSession.findUnique({
       where: { id: sessionId },

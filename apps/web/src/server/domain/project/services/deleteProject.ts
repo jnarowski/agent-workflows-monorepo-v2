@@ -35,7 +35,7 @@ export async function deleteProject(id: string): Promise<Project | null> {
     const project = await prisma.project.delete({
       where: { id },
     });
-    const currentBranch = await getCurrentBranch(project.path);
+    const currentBranch = await getCurrentBranch({ projectPath: project.path });
     return transformProject(project, currentBranch);
   } catch (error) {
     // Return null if project not found

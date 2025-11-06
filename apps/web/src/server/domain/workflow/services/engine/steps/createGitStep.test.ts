@@ -80,11 +80,11 @@ describe("createGitStep", () => {
     expect(result.operation).toBe("commit");
     expect(result.commitSha).toBe("abc123");
     expect(result.success).toBe(true);
-    expect(mockCommitChanges).toHaveBeenCalledWith(
-      "/tmp/test",
-      "feat: add new feature",
-      ["."]
-    );
+    expect(mockCommitChanges).toHaveBeenCalledWith({
+      projectPath: "/tmp/test",
+      message: "feat: add new feature",
+      files: ["."]
+    });
   });
 
   it("executes branch operation with branch name", async () => {
@@ -152,11 +152,11 @@ describe("createGitStep", () => {
     expect(result.operation).toBe("branch");
     expect(result.branch).toBe("feature/new-feature");
     expect(result.success).toBe(true);
-    expect(mockCreateAndSwitchBranch).toHaveBeenCalledWith(
-      "/tmp/test",
-      "feature/new-feature",
-      undefined
-    );
+    expect(mockCreateAndSwitchBranch).toHaveBeenCalledWith({
+      projectPath: "/tmp/test",
+      branchName: "feature/new-feature",
+      from: undefined
+    });
   });
 
   it("executes pr operation with title and body", async () => {
@@ -228,12 +228,12 @@ describe("createGitStep", () => {
     expect(result.operation).toBe("pr");
     expect(result.prUrl).toBe("https://github.com/org/repo/pull/123");
     expect(result.success).toBe(true);
-    expect(mockCreatePullRequest).toHaveBeenCalledWith(
-      "/tmp/test",
-      "Add new feature",
-      "This PR adds a new feature",
-      "main",
-    );
+    expect(mockCreatePullRequest).toHaveBeenCalledWith({
+      projectPath: "/tmp/test",
+      title: "Add new feature",
+      description: "This PR adds a new feature",
+      baseBranch: "main",
+    });
   });
 
   it("accepts sentence case and converts to kebab-case ID", async () => {

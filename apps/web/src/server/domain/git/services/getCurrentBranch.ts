@@ -1,10 +1,11 @@
-import simpleGit from 'simple-git';
+import simpleGit from 'simple-git'
+import type { GetCurrentBranchOptions } from '../types/GetCurrentBranchOptions'
 
 /**
  * Get the current git branch for a project directory
  * Returns the branch name or null if not a git repository
  */
-export async function getCurrentBranch(projectPath: string): Promise<string | null> {
+export async function getCurrentBranch({ projectPath }: GetCurrentBranchOptions): Promise<string | null> {
   try {
     const git = simpleGit(projectPath);
 

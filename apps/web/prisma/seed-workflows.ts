@@ -488,10 +488,9 @@ async function main() {
   let stepCount = 0;
 
   // Helper to create steps for a run
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createSteps = async (
-    run: any,
-    definition: any,
+    run: { id: string },
+    definition: { id: string },
     stepsToCreate: Array<{
       name: string;
       phase: string;

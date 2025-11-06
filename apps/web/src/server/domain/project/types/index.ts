@@ -8,11 +8,13 @@ export type {
 } from "@/shared/types/project.types";
 
 // Internal service types (input types for service functions)
+// DEPRECATED: Use CreateProjectOptions instead
 export interface CreateProjectInput {
   name: string;
   path: string;
 }
 
+// DEPRECATED: Use UpdateProjectOptions instead
 export interface UpdateProjectInput {
   name?: string;
   path?: string;
@@ -20,8 +22,15 @@ export interface UpdateProjectInput {
   is_starred?: boolean;
 }
 
-// Options for getAllProjects
-export interface GetAllProjectsOptions {
-  includeSessions?: boolean;
-  sessionLimit?: number;
-}
+// Export new options types with Zod schemas
+export * from './GetProjectByIdOptions'
+export * from './GetProjectByPathOptions'
+export * from './GetAllProjectsOptions'
+export * from './CreateProjectOptions'
+export * from './UpdateProjectOptions'
+export * from './DeleteProjectOptions'
+export * from './CreateOrUpdateProjectOptions'
+export * from './ProjectExistsByPathOptions'
+export * from './HasEnoughSessionsOptions'
+export * from './SyncProjectFromClaudeOptions'
+export * from './GetProjectSlashCommandsOptions'

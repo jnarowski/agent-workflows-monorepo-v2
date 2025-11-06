@@ -1,15 +1,14 @@
+import type { ValidateAgentSupportedOptions } from '../types/ValidateAgentSupportedOptions';
+
 /**
  * Validate that an agent type is supported
  *
  * Checks if the agent type is one of the supported agent implementations.
  * Used before executing agent commands to prevent errors.
- *
- * @param agent - The agent type to validate
- * @returns Success/error result with error message if not supported
  */
-export async function validateAgentSupported(
-  agent: string
-): Promise<{ supported: boolean; error?: string }> {
+export async function validateAgentSupported({
+  agent
+}: ValidateAgentSupportedOptions): Promise<{ supported: boolean; error?: string }> {
   // Supported agents
   const supportedAgents = ["claude", "codex"];
 

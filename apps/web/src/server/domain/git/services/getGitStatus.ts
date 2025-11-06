@@ -1,13 +1,14 @@
-import simpleGit from 'simple-git';
+import simpleGit from 'simple-git'
 import type {
   GitStatus,
   GitFileStatus,
-} from '@/shared/types/git.types';
+} from '@/shared/types/git.types'
+import type { GetGitStatusOptions } from '../types/GetGitStatusOptions'
 
 /**
  * Get the full git status including files, branch, and ahead/behind counts
  */
-export async function getGitStatus(projectPath: string): Promise<GitStatus> {
+export async function getGitStatus({ projectPath }: GetGitStatusOptions): Promise<GitStatus> {
   const git = simpleGit(projectPath);
 
   // Check if directory is a git repository

@@ -112,12 +112,12 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             fastify.log.info({ projectId, cols, rows, userId }, 'Initializing shell session');
 
             // Create shell session
-            const session = await createShellSession(
+            const session = await createShellSession({
               projectId,
               userId,
               cols,
               rows
-            );
+            });
 
             sessionId = session.sessionId;
             fastify.log.info({ sessionId }, 'Shell session created successfully');
@@ -201,7 +201,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             return;
           }
 
-          const session = getShellSession(sessionId);
+          const session = getShellSession({ sessionId });
           if (!session) {
             socket.send(
               JSON.stringify({
@@ -239,7 +239,7 @@ export async function registerShellRoute(fastify: FastifyInstance) {
             return;
           }
 
-          const session = getShellSession(sessionId);
+          const session = getShellSession({ sessionId });
           if (!session) {
             socket.send(
               JSON.stringify({
@@ -264,8 +264,12 @@ export async function registerShellRoute(fastify: FastifyInstance) {
         // Handle disconnection
         socket.on('close', () => {
           if (sessionId) {
-            destroyShellSession(sessionId, fastify.log);
-            fastify.log.info({ sessionId }, 'Shell session destroyed');
+            try {
+              destroyShellSession({ sessionId });
+              fastify.log.info({ sessionId }, 'Shell session destroyed');
+            } catch (error) {
+              fastify.log.error({ err: error, sessionId }, 'Error destroying shell session');
+            }
           }
           fastify.log.info({ userId }, 'Shell WebSocket client disconnected');
         });
@@ -274,7 +278,11 @@ export async function registerShellRoute(fastify: FastifyInstance) {
         socket.on('error', (error: Error) => {
           fastify.log.error({ error, sessionId }, 'Shell WebSocket error');
           if (sessionId) {
-            destroyShellSession(sessionId, fastify.log);
+            try {
+              destroyShellSession({ sessionId });
+            } catch (cleanupError) {
+              fastify.log.error({ err: cleanupError, sessionId }, 'Error destroying shell session on error');
+            }
           }
         });
         } catch (error) {

@@ -1,16 +1,14 @@
 import { prisma } from '@/shared/prisma';
 import type { AgentSession } from '@prisma/client';
+import type { ArchiveSessionOptions } from '../types/ArchiveSessionOptions';
 
 /**
  * Archive a session by setting is_archived to true and archived_at to current timestamp
- * @param sessionId - The ID of the session to archive
- * @param userId - The ID of the user who owns the session (for verification)
- * @returns The updated session or null if not found
  */
-export async function archiveSession(
-	sessionId: string,
-	userId: string,
-): Promise<AgentSession | null> {
+export async function archiveSession({
+	sessionId,
+	userId
+}: ArchiveSessionOptions): Promise<AgentSession | null> {
 	// Verify session exists and belongs to user
 	const session = await prisma.agentSession.findFirst({
 		where: {

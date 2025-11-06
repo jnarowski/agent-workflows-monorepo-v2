@@ -1,15 +1,16 @@
-import simpleGit from 'simple-git';
-import type { GitBranch } from '@/shared/types/git.types';
+import simpleGit from 'simple-git'
+import type { GitBranch } from '@/shared/types/git.types'
+import type { CreateAndSwitchBranchOptions } from '../types/CreateAndSwitchBranchOptions'
 
 /**
  * Create and switch to a new branch
  * Automatically commits any uncommitted changes before creating the branch
  */
-export async function createAndSwitchBranch(
-  projectPath: string,
-  branchName: string,
-  from?: string
-): Promise<GitBranch> {
+export async function createAndSwitchBranch({
+  projectPath,
+  branchName,
+  from
+}: CreateAndSwitchBranchOptions): Promise<GitBranch> {
   // Validate branch name
   if (!/^[a-zA-Z0-9_/-]+$/.test(branchName)) {
     throw new Error('Invalid branch name. Only alphanumeric, dash, underscore, and slash allowed.');
