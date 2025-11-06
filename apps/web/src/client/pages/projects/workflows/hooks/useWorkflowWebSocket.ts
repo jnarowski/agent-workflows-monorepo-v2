@@ -39,7 +39,7 @@ export function useWorkflowWebSocket(projectId: string) {
   );
 
   // Handler: workflow:run:updated
-  const handleExecutionUpdated = useCallback(
+  const handleRunUpdated = useCallback(
     (data: WorkflowRunUpdatedData) => {
       const { run_id, changes } = data;
 
@@ -233,8 +233,8 @@ export function useWorkflowWebSocket(projectId: string) {
   const handleWorkflowEvent = useCallback(
     (event: WorkflowWebSocketEvent) => {
       switch (event.type) {
-        case WorkflowWebSocketEventTypes.EXECUTION_UPDATED:
-          handleExecutionUpdated(event.data);
+        case WorkflowWebSocketEventTypes.RUN_UPDATED:
+          handleRunUpdated(event.data);
           break;
         case WorkflowWebSocketEventTypes.STEP_UPDATED:
           handleStepUpdated(event.data);
@@ -252,7 +252,7 @@ export function useWorkflowWebSocket(projectId: string) {
         }
       }
     },
-    [handleExecutionUpdated, handleStepUpdated, handleEventCreated, handleArtifactCreated]
+    [handleRunUpdated, handleStepUpdated, handleEventCreated, handleArtifactCreated]
   );
 
   useEffect(() => {

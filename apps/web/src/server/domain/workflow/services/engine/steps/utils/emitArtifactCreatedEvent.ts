@@ -20,9 +20,9 @@ export function emitArtifactCreatedEvent(
   artifact: WorkflowArtifact
 ): void {
   emitWorkflowEvent(projectId, {
-    type: "workflow:execution:artifact:created",
+    type: "workflow:run:artifact:created",
     data: {
-      execution_id: runId,
+      run_id: runId,
       artifact: {
         id: artifact.id,
         workflow_run_id: artifact.workflow_run_id,

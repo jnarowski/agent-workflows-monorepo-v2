@@ -110,9 +110,9 @@ export function createWorkflowRuntime(
 
             // Emit execution:updated WebSocket event
             emitWorkflowEvent(projectId, {
-              type: "workflow:execution:updated",
+              type: "workflow:run:updated",
               data: {
-                execution_id: runId,
+                run_id: runId,
                 project_id: projectId,
                 changes: {
                   status: "running",
@@ -149,9 +149,9 @@ export function createWorkflowRuntime(
 
             // Emit execution:updated WebSocket event
             emitWorkflowEvent(projectId, {
-              type: "workflow:execution:updated",
+              type: "workflow:run:updated",
               data: {
-                execution_id: runId,
+                run_id: runId,
                 project_id: projectId,
                 changes: {
                   status: "completed",
@@ -191,9 +191,9 @@ export function createWorkflowRuntime(
 
             // Emit execution:updated WebSocket event
             emitWorkflowEvent(projectId, {
-              type: "workflow:execution:updated",
+              type: "workflow:run:updated",
               data: {
-                execution_id: runId,
+                run_id: runId,
                 project_id: projectId,
                 changes: {
                   status: "failed",

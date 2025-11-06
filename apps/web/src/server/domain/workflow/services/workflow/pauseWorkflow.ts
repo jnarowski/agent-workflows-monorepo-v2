@@ -1,5 +1,5 @@
 import { prisma } from "@/shared/prisma";
-import type { WorkflowExecution } from "@prisma/client";
+import type { WorkflowRun } from "@prisma/client";
 import type { FastifyBaseLogger } from "fastify";
 import { createWorkflowEvent } from "../events/createWorkflowEvent";
 import { emitWorkflowEvent } from "../events/emitWorkflowEvent";
@@ -12,7 +12,7 @@ export async function pauseWorkflow(
   runId: string,
   userId?: string,
   logger?: FastifyBaseLogger
-): Promise<WorkflowExecution> {
+): Promise<WorkflowRun> {
   const pausedAt = new Date();
   const execution = await prisma.workflowRun.update({
     where: { id: runId },
@@ -37,9 +37,9 @@ export async function pauseWorkflow(
 
   // Emit WebSocket event immediately for real-time updates
   emitWorkflowEvent(execution.project_id, {
-    type: 'workflow:execution:updated',
+    type: 'workflow:run:updated',
     data: {
-      execution_id: execution.id,
+      run_id: execution.id,
       project_id: execution.project_id,
       changes: {
         status: 'paused',

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { WorkflowPhaseKanbanColumn } from './components/WorkflowPhaseKanbanColumn';
-import { NewExecutionDialog } from './components/NewExecutionDialog';
+import { NewRunDialog } from './components/NewRunDialog';
 import { useWorkflowDefinition } from './hooks/useWorkflowDefinition';
 import { useWorkflowRuns } from './hooks/useWorkflowRuns';
 import { useWorkflowWebSocket } from './hooks/useWorkflowWebSocket';
@@ -35,7 +35,7 @@ export function WorkflowDefinitionView() {
   useWorkflowWebSocket(projectId!);
 
   // Dialog state
-  const [showNewExecutionDialog, setShowNewExecutionDialog] = useState(false);
+  const [showNewRunDialog, setShowNewRunDialog] = useState(false);
 
   const isLoading = definitionLoading || runsLoading || !definition;
 
@@ -95,7 +95,7 @@ export function WorkflowDefinitionView() {
           </div>
 
           <button
-            onClick={() => setShowNewExecutionDialog(true)}
+            onClick={() => setShowNewRunDialog(true)}
             className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
@@ -138,9 +138,9 @@ export function WorkflowDefinitionView() {
       </div>
 
       {/* New Execution Dialog */}
-      <NewExecutionDialog
-        open={showNewExecutionDialog}
-        onOpenChange={setShowNewExecutionDialog}
+      <NewRunDialog
+        open={showNewRunDialog}
+        onOpenChange={setShowNewRunDialog}
         projectId={projectId!}
         definitionId={definitionId!}
         definition={definition}

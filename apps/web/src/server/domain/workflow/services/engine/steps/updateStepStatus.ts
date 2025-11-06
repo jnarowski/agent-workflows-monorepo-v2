@@ -63,9 +63,9 @@ export async function updateStepStatus(
   }
 
   emitWorkflowEvent(projectId, {
-    type: "workflow:execution:step:updated",
+    type: "workflow:run:step:updated",
     data: {
-      execution_id: runId,
+      run_id: runId,
       step_id: stepId,
       changes,
     },

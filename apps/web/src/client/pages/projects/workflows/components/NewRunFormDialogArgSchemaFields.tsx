@@ -23,7 +23,7 @@ interface JSONSchema {
   placeholder?: string;
 }
 
-interface NewExecutionFormDialogArgSchemaFieldsProps {
+interface NewRunFormDialogArgSchemaFieldsProps {
   argsSchema: JSONSchema;
   values: Record<string, unknown>;
   onChange: (values: Record<string, unknown>) => void;
@@ -40,12 +40,12 @@ function getInitialValue(schema: JSONSchema): unknown {
   return '';
 }
 
-export function NewExecutionFormDialogArgSchemaFields({
+export function NewRunFormDialogArgSchemaFields({
   argsSchema,
   values,
   onChange,
   disabled = false,
-}: NewExecutionFormDialogArgSchemaFieldsProps) {
+}: NewRunFormDialogArgSchemaFieldsProps) {
   const properties = argsSchema.properties || {};
   const required = argsSchema.required || [];
 

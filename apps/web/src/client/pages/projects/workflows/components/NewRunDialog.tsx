@@ -16,9 +16,9 @@ import { Combobox } from "@/client/components/ui/combobox";
 import { useCreateWorkflow } from "../hooks/useWorkflowMutations";
 import { api } from "@/client/utils/api-client";
 import type { WorkflowDefinition } from "../types";
-import { NewExecutionFormDialogArgSchemaFields } from "./NewExecutionFormDialogArgSchemaFields";
+import { NewRunFormDialogArgSchemaFields } from "./NewRunFormDialogArgSchemaFields";
 
-interface NewExecutionDialogProps {
+interface NewRunDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: string;
@@ -26,13 +26,13 @@ interface NewExecutionDialogProps {
   definition?: WorkflowDefinition;
 }
 
-export function NewExecutionDialog({
+export function NewRunDialog({
   open,
   onOpenChange,
   projectId,
   definitionId,
   definition,
-}: NewExecutionDialogProps) {
+}: NewRunDialogProps) {
   const navigate = useNavigate();
   const createWorkflow = useCreateWorkflow();
 
@@ -462,7 +462,7 @@ export function NewExecutionDialog({
               <Label htmlFor="run-args" className="text-base pb-2 pt-3">
                 Arguments
               </Label>
-              <NewExecutionFormDialogArgSchemaFields
+              <NewRunFormDialogArgSchemaFields
                 argsSchema={definition.args_schema}
                 values={args}
                 onChange={setArgs}

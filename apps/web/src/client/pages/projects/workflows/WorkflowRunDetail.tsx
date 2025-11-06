@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Plus } from "lucide-react";
 import { WorkflowRunHeader } from "./components/WorkflowRunHeader";
 import { PhaseTimeline } from "./components/timeline/PhaseTimeline";
-import { NewExecutionDialog } from "./components/NewExecutionDialog";
+import { NewRunDialog } from "./components/NewRunDialog";
 import { useWorkflowRun } from "./hooks/useWorkflowRun";
 import { useWorkflowDefinition } from "./hooks/useWorkflowDefinition";
 import { useWorkflowWebSocket } from "./hooks/useWorkflowWebSocket";
@@ -68,7 +68,7 @@ export function WorkflowRunDetail() {
   const cancelWorkflow = useCancelWorkflow();
 
   // Dialog state
-  const [showNewExecutionDialog, setShowNewExecutionDialog] = useState(false);
+  const [showNewRunDialog, setShowNewRunDialog] = useState(false);
 
   const isLoading = runLoading || definitionLoading;
 
@@ -108,7 +108,7 @@ export function WorkflowRunDetail() {
           </button>
 
           <button
-            onClick={() => setShowNewExecutionDialog(true)}
+            onClick={() => setShowNewRunDialog(true)}
             className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
@@ -137,9 +137,9 @@ export function WorkflowRunDetail() {
       </div>
 
       {/* New Execution Dialog */}
-      <NewExecutionDialog
-        open={showNewExecutionDialog}
-        onOpenChange={setShowNewExecutionDialog}
+      <NewRunDialog
+        open={showNewRunDialog}
+        onOpenChange={setShowNewRunDialog}
         projectId={projectId!}
         definitionId={definitionId!}
         definition={definition}

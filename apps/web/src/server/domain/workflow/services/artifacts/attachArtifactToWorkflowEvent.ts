@@ -25,7 +25,7 @@ export async function attachArtifactToWorkflowEvent(
   const event = await prisma.workflowEvent.findUnique({
     where: { id: eventId },
     include: {
-      workflow_execution: {
+      workflow_run: {
         select: { id: true, project_id: true },
       },
     },
@@ -44,10 +44,10 @@ export async function attachArtifactToWorkflowEvent(
   });
 
   // Emit artifact:created WebSocket event
-  emitWorkflowEvent(event.workflow_execution.project_id, {
-    type: 'workflow:execution:artifact:created',
+  emitWorkflowEvent(event.workflow_run.project_id, {
+    type: 'workflow:run:artifact:created',
     data: {
-      execution_id: event.workflow_execution.id,
+      run_id: event.workflow_run.id,
       artifact: {
         id: updatedArtifact.id,
         workflow_run_id: updatedArtifact.workflow_run_id,

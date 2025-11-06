@@ -13,7 +13,7 @@ export async function downloadArtifact(
   const artifact = await prisma.workflowArtifact.findUnique({
     where: { id },
     include: {
-      workflow_execution: {
+      workflow_run: {
         include: {
           project: true,
         },
@@ -26,7 +26,7 @@ export async function downloadArtifact(
   }
 
   // Get project path from direct execution relationship
-  const projectPath = artifact.workflow_execution.project.path;
+  const projectPath = artifact.workflow_run.project.path;
 
   // Resolve absolute file path
   const absoluteFilePath = path.resolve(projectPath, artifact.file_path);

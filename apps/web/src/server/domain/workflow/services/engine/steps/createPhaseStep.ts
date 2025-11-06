@@ -2,7 +2,7 @@ import { Channels } from "@/shared/websocket/channels";
 import { broadcast } from "@/server/websocket/infrastructure/subscriptions";
 import type { RuntimeContext } from "../../../types/engine.types";
 import type { PhaseDefinition } from "@repo/workflow-sdk";
-import { updateWorkflowExecution } from "../../executions/updateWorkflowExecution";
+import { updateWorkflowRun } from "../../runs/updateWorkflowRun";
 import { findOrCreateWorkflowEvent } from "../../events/findOrCreateWorkflowEvent";
 import { toId } from "./utils/toId";
 import { toName } from "./utils/toName";
@@ -12,7 +12,7 @@ import { toName } from "./utils/toName";
  *
  * Phase step executes a workflow phase WITHOUT Inngest step.run() wrapper
  * - Phases are organizational containers, not memoized steps
- * - Updates WorkflowExecution.current_phase
+ * - Updates WorkflowRun.current_phase
  * - Creates phase events (started, completed, failed) with consistent step IDs for deduplication
  * - Broadcasts WebSocket events
  * - All nested steps tagged with phase name
@@ -51,7 +51,7 @@ export function createPhaseStep<TPhases extends readonly PhaseDefinition[] | und
     logger.info({ runId, phase: name }, "Phase started");
 
     // Update current_phase in execution using domain service
-    await updateWorkflowExecution(
+    await updateWorkflowRun(
       runId,
       { current_phase: id },
       logger
