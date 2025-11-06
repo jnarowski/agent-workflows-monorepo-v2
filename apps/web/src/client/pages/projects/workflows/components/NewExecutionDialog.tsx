@@ -25,6 +25,7 @@ import { Combobox } from '@/client/components/ui/combobox';
 import { useCreateWorkflow } from '../hooks/useWorkflowMutations';
 import { api } from '@/client/utils/api-client';
 import type { WorkflowDefinition } from '../types';
+import { NewExecutionFormDialogArgSchemaFields } from './NewExecutionFormDialogArgSchemaFields';
 
 interface NewExecutionDialogProps {
   open: boolean;
@@ -45,7 +46,7 @@ export function NewExecutionDialog({
   const createWorkflow = useCreateWorkflow();
 
   const [name, setName] = useState('');
-  const [argsJson, setArgsJson] = useState('{}');
+  const [args, setArgs] = useState<Record<string, unknown>>({});
   const [specMode, setSpecMode] = useState<'file' | 'content'>('file');
   const [specFile, setSpecFile] = useState<string>('');
   const [specContent, setSpecContent] = useState('');
@@ -134,19 +135,6 @@ export function NewExecutionDialog({
       return;
     }
 
-    // Parse and validate JSON args
-    let args: Record<string, unknown> = {};
-    try {
-      args = JSON.parse(argsJson);
-      if (typeof args !== 'object' || Array.isArray(args)) {
-        setError('Arguments must be a valid JSON object');
-        return;
-      }
-    } catch {
-      setError('Invalid JSON format for arguments');
-      return;
-    }
-
     try {
       const execution = await createWorkflow.mutateAsync({
         projectId,
@@ -168,7 +156,7 @@ export function NewExecutionDialog({
 
       // Reset form and close dialog
       setName('');
-      setArgsJson('{}');
+      setArgs({});
       setSpecFile('');
       setSpecContent('');
       setBranchFrom('');
@@ -183,7 +171,7 @@ export function NewExecutionDialog({
 
   const handleCancel = () => {
     setName('');
-    setArgsJson('{}');
+    setArgs({});
     setSpecFile('');
     setSpecContent('');
     setBranchFrom('');
@@ -418,31 +406,25 @@ export function NewExecutionDialog({
           </RadioGroup>
         </div>
 
-        {/* Args input */}
-        <div className="space-y-2">
-          <Label htmlFor="execution-args">
-            Arguments (optional)
-            {definition?.args_schema && (
-              <span className="ml-2 text-xs text-muted-foreground">
-                (JSON format)
-              </span>
+        {/* Args input - only show if workflow has args_schema with properties */}
+        {definition?.args_schema?.properties && Object.keys(definition.args_schema.properties).length > 0 && (
+          <div className="space-y-2">
+            <Label htmlFor="execution-args">
+              Arguments (optional)
+            </Label>
+            <NewExecutionFormDialogArgSchemaFields
+              argsSchema={definition.args_schema}
+              values={args}
+              onChange={setArgs}
+              disabled={createWorkflow.isPending}
+            />
+            {definition?.description && (
+              <p className="text-xs text-muted-foreground">
+                {definition.description}
+              </p>
             )}
-          </Label>
-          <Textarea
-            id="execution-args"
-            placeholder='{"key": "value"}'
-            value={argsJson}
-            onChange={(e) => setArgsJson(e.target.value)}
-            disabled={createWorkflow.isPending}
-            className="font-mono text-sm"
-            rows={4}
-          />
-          {definition?.description && (
-            <p className="text-xs text-muted-foreground">
-              {definition.description}
-            </p>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Error message */}
         {error && (

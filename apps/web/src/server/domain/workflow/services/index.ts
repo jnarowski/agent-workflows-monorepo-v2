@@ -14,3 +14,4 @@ export * from "./artifacts/detachArtifactFromWorkflowEvent";
 export * from "./events/getWorkflowEvents";
 export * from "./events/createWorkflowEvent";
 export * from "./events/findOrCreateWorkflowEvent";
+export * from "./generateExecutionNames";

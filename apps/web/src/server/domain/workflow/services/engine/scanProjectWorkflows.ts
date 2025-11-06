@@ -42,12 +42,14 @@ export async function scanProjectWorkflows(
         type: "code",
         path: filePath,
         phases: config.phases ?? [],
+        args_schema: (config.argsSchema as object) ?? null,
       },
       update: {
         name: config.name ?? config.id,
         description: config.description ?? null,
         path: filePath,
         phases: config.phases ?? [],
+        args_schema: (config.argsSchema as object) ?? null,
         updated_at: new Date(),
       },
     });
