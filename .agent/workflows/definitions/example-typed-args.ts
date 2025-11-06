@@ -19,11 +19,7 @@ export default defineWorkflow(
     id: "typed-build-workflow",
     trigger: "workflow/typed-build",
     name: "Type-Safe Build Workflow",
-    phases: [
-      { id: "validate", label: "Validate" },
-      { id: "build", label: "Build" },
-      { id: "test", label: "Test" },
-    ],
+    phases: [{ id: "validate", label: "Validate" }],
     argsSchema: defineSchema({
       type: "object",
       properties: {
@@ -42,15 +38,18 @@ export default defineWorkflow(
     }),
   },
   async ({ event, step }) => {
-    console.log(event.data.args.buildType);
+    // Return all params user provided via custom args
+    await step.run("return-params", async () => {
+      return {
+        success: true,
+        providedParams: event.data.args,
+        message: `Received workflow with projectName: ${event.data.args.projectName}, buildType: ${event.data.args.buildType}`,
+      };
+    });
 
-    // @ts-expect-error - this should be an error
-    console.log(event.data.args.something);
-
-    // @ts-expect-error - this should be an error
-    await step.phase("validssates", async () => {});
-    await step.phase("validate", async () => {});
-
-    return { success: true };
+    return {
+      success: true,
+      params: event.data.args,
+    };
   }
 );

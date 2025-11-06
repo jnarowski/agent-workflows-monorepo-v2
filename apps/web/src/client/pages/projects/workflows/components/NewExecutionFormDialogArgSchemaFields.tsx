@@ -30,6 +30,16 @@ interface NewExecutionFormDialogArgSchemaFieldsProps {
   disabled?: boolean;
 }
 
+// Helper to get initial value based on schema type (prevents uncontrolled input warnings)
+function getInitialValue(schema: JSONSchema): unknown {
+  if (schema.type === 'string') return '';
+  if (schema.type === 'number') return 0;
+  if (schema.type === 'boolean') return false;
+  if (schema.type === 'array') return [];
+  if (schema.properties) return {};
+  return '';
+}
+
 export function NewExecutionFormDialogArgSchemaFields({
   argsSchema,
   values,
@@ -44,7 +54,7 @@ export function NewExecutionFormDialogArgSchemaFields({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {Object.entries(properties).map(([key, schema]) => (
         <SchemaField
           key={key}
@@ -123,7 +133,8 @@ function SchemaField({
 
   // Nested object field
   if (schema.properties) {
-    const objValue = (value as Record<string, unknown>) || {};
+    // Initialize with empty object if undefined, ensuring controlled inputs
+    const objValue = (value as Record<string, unknown> | undefined) || {};
     const objRequired = schema.required || [];
 
     return (
@@ -133,20 +144,25 @@ function SchemaField({
           {required && <span className="text-red-500 ml-1">*</span>}
         </Label>
         <div className="border rounded-md p-4 space-y-3">
-          {Object.entries(schema.properties).map(([key, nestedSchema]) => (
-            <SchemaField
-              key={key}
-              name={key}
-              schema={nestedSchema}
-              value={objValue[key]}
-              onChange={(newValue) => {
-                onChange({ ...objValue, [key]: newValue });
-              }}
-              required={objRequired.includes(key)}
-              disabled={disabled}
-              depth={depth + 1}
-            />
-          ))}
+          {Object.entries(schema.properties).map(([key, nestedSchema]) => {
+            // Initialize nested values based on type to prevent uncontrolled->controlled warnings
+            const nestedValue = objValue[key] ?? getInitialValue(nestedSchema);
+
+            return (
+              <SchemaField
+                key={key}
+                name={key}
+                schema={nestedSchema}
+                value={nestedValue}
+                onChange={(newValue) => {
+                  onChange({ ...objValue, [key]: newValue });
+                }}
+                required={objRequired.includes(key)}
+                disabled={disabled}
+                depth={depth + 1}
+              />
+            );
+          })}
         </div>
         {description && (
           <p className="text-xs text-muted-foreground">{description}</p>
@@ -177,7 +193,7 @@ function SchemaField({
       <div className="flex items-center space-x-2">
         <Checkbox
           id={name}
-          checked={value as boolean}
+          checked={(value as boolean) ?? false}
           onCheckedChange={onChange}
           disabled={disabled}
           required={required}
@@ -204,7 +220,7 @@ function SchemaField({
         <Input
           id={name}
           type="number"
-          value={value as number}
+          value={(value as number) ?? 0}
           onChange={(e) => onChange(Number(e.target.value))}
           placeholder={placeholder}
           disabled={disabled}

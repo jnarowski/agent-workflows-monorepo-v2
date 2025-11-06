@@ -147,12 +147,12 @@ Major UI update to replace Tabs+Select with Combobox and add automatic AI genera
   - File: `apps/web/src/server/domain/workflow/services/generateExecutionNames.ts`
   - Temperature: 0.7
 
-- [ ] `ai-service-2` [3/10] Export new service from barrel file
+- [x] `ai-service-2` [3/10] Export new service from barrel file
   - Add export statement for `generateExecutionNames`
   - File: `apps/web/src/server/domain/workflow/services/index.ts`
   - Command: None (single line change)
 
-- [ ] `ai-endpoint-1` [7/10] Add POST endpoint for AI name generation
+- [x] `ai-endpoint-1` [7/10] Add POST endpoint for AI name generation
   - Route: `POST /api/workflows/generate-names-from-spec`
   - Add `preHandler: fastify.authenticate` for auth
   - Define Zod schemas for request/response validation
@@ -165,14 +165,21 @@ Major UI update to replace Tabs+Select with Combobox and add automatic AI genera
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Implemented `generateExecutionNames` AI service using Vercel AI SDK's `generateObject()` with Claude Sonnet 4.5
+- Service returns structured output with `executionName` and `branchName` fields
+- Silent fallback to `null` when ANTHROPIC_API_KEY not configured
+- Spec content truncated to 2000 chars for token cost control
+- Added POST `/api/workflows/generate-names-from-spec` endpoint with JWT auth
+- Endpoint validates project exists, reads spec from `.agent/specs/todo/`, calls AI service
+- Returns `{ data: { executionName, branchName } | null }`
+- Proper error handling: 404 for missing project/spec, silent null return for missing API key
 
 ### Phase 2: Frontend - UI Refactor
 
 **Phase Complexity**: 16 points (avg 5.2/10)
 
 <!-- prettier-ignore -->
-- [ ] `ui-refactor-1` [7/10] Replace spec Tabs+Select with Combobox component
+- [x] `ui-refactor-1` [7/10] Replace spec Tabs+Select with Combobox component
   - Remove `specMode` state ('file' | 'content')
   - Remove `specContent` state (string)
   - Remove `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` components
@@ -184,13 +191,13 @@ Major UI update to replace Tabs+Select with Combobox and add automatic AI genera
   - File: `apps/web/src/client/pages/projects/workflows/components/NewExecutionDialog.tsx`
   - Make full width (remove grid/column constraints)
 
-- [ ] `ui-refactor-2` [4/10] Reorder form layout (spec first, then name)
+- [x] `ui-refactor-2` [4/10] Reorder form layout (spec first, then name)
   - Move spec file selection section to top (before execution name)
   - Order: Spec → Name → Args → Git Mode
   - Update validation to check `specFile` instead of `specMode`/`specContent`
   - File: `apps/web/src/client/pages/projects/workflows/components/NewExecutionDialog.tsx`
 
-- [ ] `ui-refactor-3` [6/10] Add AI generation logic with useEffect
+- [x] `ui-refactor-3` [6/10] Add AI generation logic with useEffect
   - Add state: `const [isGeneratingNames, setIsGeneratingNames] = useState(false)`
   - Create useEffect that triggers on `specFile` change
   - Call `POST /api/workflows/generate-names-from-spec` with `{ projectId, specFile }`
@@ -200,13 +207,13 @@ Major UI update to replace Tabs+Select with Combobox and add automatic AI genera
   - File: `apps/web/src/client/pages/projects/workflows/components/NewExecutionDialog.tsx`
   - Dependencies: `[specFile, projectId]`
 
-- [ ] `ui-refactor-4` [4/10] Add loading spinner to name field
+- [x] `ui-refactor-4` [4/10] Add loading spinner to name field
   - Show spinner icon during `isGeneratingNames` state
   - Add visual feedback that AI is working
   - Disable name field during generation (optional)
   - File: `apps/web/src/client/pages/projects/workflows/components/NewExecutionDialog.tsx`
 
-- [ ] `ui-refactor-5` [3/10] Update form reset logic
+- [x] `ui-refactor-5` [3/10] Update form reset logic
   - Remove `setSpecMode()` and `setSpecContent()` from reset handlers
   - Keep `setSpecFile('')` in reset
   - Ensure `isGeneratingNames` resets to false
@@ -214,7 +221,18 @@ Major UI update to replace Tabs+Select with Combobox and add automatic AI genera
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Removed `specMode` and `specContent` state - only using `specFile` now
+- Replaced Tabs + Select with Combobox component for spec file selection
+- Moved spec selection to top of form (before execution name)
+- Added `isGeneratingNames` state for loading UI
+- Implemented useEffect that auto-triggers AI generation when `specFile` changes
+- API call to `/api/workflows/generate-names-from-spec` with silent error handling
+- Populates `name`, `branchName`, and `worktreeName` with AI results
+- Added loading spinner to name field with "Generating names from spec..." message
+- Disabled name field during generation to prevent confusion
+- Updated form reset logic to clear `isGeneratingNames` state
+- Removed unused imports: Tabs, TabsContent, TabsList, TabsTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea
+- All fields remain editable after AI generation completes
 
 ### Phase 3: Testing & Validation
 

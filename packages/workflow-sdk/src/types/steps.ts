@@ -192,12 +192,8 @@ export interface AiStepConfig<TSchema = unknown> {
 export interface AiStepResult<T = { text: string }> {
   /** Generated data (text or structured object) */
   data: T;
-  /** Token usage statistics */
-  usage?: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
+  /** Full response from AI SDK (for advanced use cases) */
+  result?: unknown;
   /** Success status */
   success: boolean;
   /** Error message if failed */

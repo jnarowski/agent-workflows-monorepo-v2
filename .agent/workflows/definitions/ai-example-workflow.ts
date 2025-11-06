@@ -17,6 +17,9 @@ export default defineWorkflow(
     ],
   },
   async ({ step }) => {
+    let haikuResponse: string;
+    let planResponse: any;
+
     // Phase 1: Simple text generation
     await step.phase("generate", async () => {
       const haiku = await step.ai("generate-haiku", {
@@ -25,6 +28,11 @@ export default defineWorkflow(
         prompt: "Write a haiku about workflow automation",
         temperature: 0.7,
       });
+
+      haikuResponse = haiku.data.text;
+
+      // Access full Vercel AI SDK response
+      console.log("Full result:", haiku.result);
 
       await step.artifact("haiku-output", {
         name: "haiku.txt",
@@ -64,23 +72,31 @@ export default defineWorkflow(
         required: ["title", "priority", "tasks"],
       });
 
-      const plan = await step.ai<TaskBreakdown>("generate-plan", {
+      planResponse = await step.ai<TaskBreakdown>("generate-plan", {
         provider: "anthropic",
         prompt: "Create a task breakdown for implementing user authentication",
         schema: taskSchema,
         temperature: 0.3,
       });
 
+      // Access full Vercel AI SDK response (usage, warnings, metadata, etc.)
+      // @ts-ignore
+      console.log("Full result:", planResponse?.data);
+
       await step.artifact("plan-output", {
         name: "task-plan.json",
         type: "text",
-        content: JSON.stringify(plan.data, null, 2),
+        content: JSON.stringify(planResponse?.data, null, 2),
       });
     });
 
     return {
       success: true,
       message: "AI workflow completed",
+      taskResponse: {
+        haikuResponse,
+        planResponse: planResponse.data,
+      },
       timestamp: new Date().toISOString(),
     };
   }

@@ -10,6 +10,7 @@ import {
   cancelWorkflow,
   generateExecutionNames,
 } from "@/server/domain/workflow/services";
+import { readFile } from "@/server/domain/file/services/readFile";
 import {
   createWorkflowExecutionSchema,
   workflowExecutionFiltersSchema,
@@ -389,6 +390,66 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       });
 
       return reply.send({ data: workflows });
+    }
+  );
+
+  /**
+   * POST /api/workflows/generate-names-from-spec
+   * Generate execution and branch names from spec file using AI
+   */
+  fastify.post<{
+    Body: {
+      projectId: string;
+      specFile: string;
+    };
+  }>(
+    "/api/workflows/generate-names-from-spec",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        body: z.object({
+          projectId: z.string().cuid(),
+          specFile: z.string().min(1),
+        }),
+      },
+    },
+    async (request, reply) => {
+      const userId = (request.user! as { id: string }).id;
+      const { projectId, specFile } = request.body;
+
+      fastify.log.info(
+        { userId, projectId, specFile },
+        "Generating execution names from spec"
+      );
+
+      // Verify project exists
+      const project = await prisma.project.findUnique({
+        where: { id: projectId },
+      });
+
+      if (!project) {
+        throw new NotFoundError("Project not found");
+      }
+
+      // Read spec file from .agent/specs/todo/{specFile}
+      const specPath = `.agent/specs/todo/${specFile}`;
+
+      let specContent: string;
+      try {
+        specContent = await readFile(projectId, specPath, fastify.log);
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        fastify.log.error(
+          { err, projectId, specPath },
+          "Failed to read spec file"
+        );
+        throw new NotFoundError("Spec file not found");
+      }
+
+      // Generate names using AI
+      const names = await generateExecutionNames({ specContent });
+
+      return reply.send({ data: names });
     }
   );
 }

@@ -3,7 +3,11 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { createOpenAI } from "@ai-sdk/openai";
 import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
-import type { AiStepConfig, AiStepResult, StepOptions } from "@repo/workflow-sdk";
+import type {
+  AiStepConfig,
+  AiStepResult,
+  StepOptions,
+} from "@repo/workflow-sdk";
 import { executeStep } from "./executeStep";
 import { withTimeout } from "./utils/withTimeout";
 import { toId } from "./utils/toId";
@@ -11,6 +15,101 @@ import { toName } from "./utils/toName";
 import { Configuration } from "@/server/config/Configuration";
 
 const DEFAULT_AI_TIMEOUT = 60000; // 60 seconds
+
+/**
+ * Get API key for the specified provider
+ */
+function getApiKey(
+  provider: "anthropic" | "openai",
+  apiKeys: { anthropicApiKey?: string; openaiApiKey?: string }
+): string {
+  const apiKey =
+    provider === "anthropic" ? apiKeys.anthropicApiKey : apiKeys.openaiApiKey;
+
+  if (!apiKey) {
+    throw new Error(
+      `${provider === "anthropic" ? "ANTHROPIC_API_KEY" : "OPENAI_API_KEY"} not configured. Please set the environment variable.`
+    );
+  }
+
+  return apiKey;
+}
+
+/**
+ * Create AI model instance based on provider
+ */
+function createModel(
+  provider: "anthropic" | "openai",
+  apiKeys: { anthropicApiKey?: string; openaiApiKey?: string },
+  modelName?: string
+) {
+  const apiKey = getApiKey(provider, apiKeys);
+
+  return provider === "anthropic"
+    ? createAnthropic({ apiKey })(modelName ?? "claude-sonnet-4-5-20250929")
+    : createOpenAI({ apiKey })(modelName ?? "gpt-4");
+}
+
+/**
+ * Build common generation parameters
+ */
+function buildGenerationParams(config: AiStepConfig) {
+  const temperature = config.temperature ?? 0.7;
+
+  return {
+    prompt: config.prompt,
+    ...(config.systemPrompt && { system: config.systemPrompt }),
+    ...(temperature !== undefined && { temperature }),
+    ...(config.maxTokens && { maxTokens: config.maxTokens }),
+  };
+}
+
+/**
+ * Execute AI generation (text or structured output)
+ */
+async function executeGeneration<T>(
+  config: AiStepConfig,
+  model: ReturnType<typeof createModel>,
+  timeout: number
+): Promise<AiStepResult<T>> {
+  const params = buildGenerationParams(config);
+
+  if (config.schema) {
+    // Structured output with schema
+    const result = await withTimeout(
+      generateObject({
+        model,
+        // @ts-expect-error - Schema type from workflow-sdk is compatible but TypeScript can't infer it
+        schema: config.schema,
+        ...params,
+      }),
+      timeout,
+      "AI generation"
+    );
+
+    return {
+      data: result.object as T,
+      result,
+      success: true,
+    };
+  }
+
+  // Text generation
+  const result = await withTimeout(
+    generateText({
+      model,
+      ...params,
+    }),
+    timeout,
+    "AI generation"
+  );
+
+  return {
+    data: { text: result.text } as T,
+    result,
+    success: true,
+  };
+}
 
 /**
  * Create AI step factory function
@@ -39,9 +138,7 @@ export function createAiStep(
         const configuration = Configuration.getInstance();
         const apiKeys = configuration.get("apiKeys");
 
-        // Default provider and model
         const provider = config.provider ?? "anthropic";
-        const temperature = config.temperature ?? 0.7;
 
         logger.debug(
           { provider, model: config.model, promptLength: config.prompt.length },
@@ -49,78 +146,15 @@ export function createAiStep(
         );
 
         try {
-          // Get API key for provider
-          const apiKey =
-            provider === "anthropic"
-              ? apiKeys.anthropicApiKey
-              : apiKeys.openaiApiKey;
+          const model = createModel(provider, apiKeys, config.model);
 
-          if (!apiKey) {
-            throw new Error(
-              `${provider === "anthropic" ? "ANTHROPIC_API_KEY" : "OPENAI_API_KEY"} not configured. Please set the environment variable.`
-            );
-          }
+          logger.debug(
+            config.schema
+              ? "Using generateObject with schema"
+              : "Using generateText"
+          );
 
-          // Select model based on provider and create model instance
-          const model =
-            provider === "anthropic"
-              ? createAnthropic({ apiKey: apiKeys.anthropicApiKey })(
-                  config.model ?? "claude-sonnet-4-5-20250929"
-                )
-              : createOpenAI({ apiKey: apiKeys.openaiApiKey })(
-                  config.model ?? "gpt-4"
-                );
-
-          // Determine if structured output or text generation
-          if (config.schema) {
-            // Structured output with schema
-            logger.debug("Using generateObject with schema");
-
-            const result = await withTimeout(
-              generateObject({
-                model,
-                // @ts-expect-error - Schema type from workflow-sdk is compatible but TypeScript can't infer it
-                schema: config.schema,
-                prompt: config.prompt,
-                ...(config.systemPrompt && { system: config.systemPrompt }),
-                ...(temperature !== undefined && { temperature }),
-                ...(config.maxTokens && { maxTokens: config.maxTokens }),
-              }),
-              timeout,
-              "AI generation"
-            );
-
-            // Note: AI SDK v5 usage tracking is handled differently
-            // Usage stats may not be available in the expected format
-            return {
-              data: result.object as T,
-              usage: undefined,
-              success: true,
-            };
-          } else {
-            // Text generation
-            logger.debug("Using generateText");
-
-            const result = await withTimeout(
-              generateText({
-                model,
-                prompt: config.prompt,
-                ...(config.systemPrompt && { system: config.systemPrompt }),
-                ...(temperature !== undefined && { temperature }),
-                ...(config.maxTokens && { maxTokens: config.maxTokens }),
-              }),
-              timeout,
-              "AI generation"
-            );
-
-            // Note: AI SDK v5 usage tracking is handled differently
-            // Usage stats may not be available in the expected format
-            return {
-              data: { text: result.text } as T,
-              usage: undefined,
-              success: true,
-            };
-          }
+          return await executeGeneration<T>(config, model, timeout);
         } catch (error: unknown) {
           const err = error as Error;
           logger.error(
