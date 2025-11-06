@@ -12,3 +12,4 @@ export { createOrUpdateProject } from "./createOrUpdateProject";
 export { syncFromClaudeProjects } from "./syncProjectFromClaude";
 export { hasEnoughSessions } from "./hasEnoughSessions";
 export { getProjectSlashCommands } from "./getProjectSlashCommands";
+export { listSpecFiles } from "./listSpecFiles";

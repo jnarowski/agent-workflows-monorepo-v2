@@ -12,7 +12,9 @@ import {
   toggleProjectStarred,
   projectExistsByPath,
   syncFromClaudeProjects,
+  listSpecFiles,
 } from "@/server/domain/project/services";
+import { getBranches } from "@/server/domain/git/services";
 import { getFileTree, readFile, writeFile } from "@/server/domain/file/services/index";
 import {
   createProjectSchema,
@@ -136,6 +138,81 @@ export async function projectRoutes(fastify: FastifyInstance) {
       }
 
       return reply.send({ data: project });
+    }
+  );
+
+  /**
+   * GET /api/projects/:id/specs
+   * List all spec files in .agent/specs/todo/
+   */
+  fastify.get<{
+    Params: { id: string };
+  }>(
+    "/api/projects/:id/specs",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: projectIdSchema,
+        response: {
+          200: z.object({
+            data: z.array(z.string()),
+          }),
+          404: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      const project = await getProjectById(request.params.id);
+
+      if (!project) {
+        return reply
+          .code(404)
+          .send(buildErrorResponse(404, "Project not found"));
+      }
+
+      const specFiles = await listSpecFiles(project.path);
+
+      return reply.send({ data: specFiles });
+    }
+  );
+
+  /**
+   * GET /api/projects/:id/branches
+   * List all git branches in the project
+   */
+  fastify.get<{
+    Params: { id: string };
+  }>(
+    "/api/projects/:id/branches",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: projectIdSchema,
+        response: {
+          200: z.object({
+            data: z.array(
+              z.object({
+                name: z.string(),
+                current: z.boolean(),
+              })
+            ),
+          }),
+          404: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      const project = await getProjectById(request.params.id);
+
+      if (!project) {
+        return reply
+          .code(404)
+          .send(buildErrorResponse(404, "Project not found"));
+      }
+
+      const branches = await getBranches(project.path);
+
+      return reply.send({ data: branches });
     }
   );
 

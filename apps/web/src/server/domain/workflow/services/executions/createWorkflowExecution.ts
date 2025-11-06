@@ -31,6 +31,11 @@ export async function createWorkflowExecution(
       name: data.name,
       // @ts-ignore - JSON value type
       args: data.args,
+      spec_file: data.spec_file,
+      spec_content: data.spec_content,
+      branch_from: data.branch_from,
+      branch_name: data.branch_name,
+      worktree_name: data.worktree_name,
       current_phase: firstPhaseId,
       current_step_index: 0,
       status: 'pending',

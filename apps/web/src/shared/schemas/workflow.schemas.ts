@@ -124,13 +124,37 @@ export type WorkflowEventType = z.infer<typeof workflowEventTypeSchema>;
  *
  * Validates the request body for creating a new workflow execution.
  */
-export const createWorkflowExecutionSchema = z.object({
-  project_id: z.string().cuid(),
-  workflow_definition_id: z.string().cuid(),
-  name: z.string().min(1).max(200),
-  args: z.record(z.string(), z.unknown()).default({}),
-  inngest_run_id: z.string().optional(),
-});
+export const createWorkflowExecutionSchema = z
+  .object({
+    project_id: z.string().cuid(),
+    workflow_definition_id: z.string().cuid(),
+    name: z.string().min(1).max(200),
+    args: z.record(z.string(), z.unknown()).default({}),
+    spec_file: z.string().optional(),
+    spec_content: z.string().optional(),
+    branch_from: z.string().optional(),
+    branch_name: z.string().optional(),
+    worktree_name: z.string().optional(),
+    inngest_run_id: z.string().optional(),
+  })
+  .refine((data) => {
+    // XOR: spec_file OR spec_content (exactly one must be provided)
+    const hasSpecFile = !!data.spec_file;
+    const hasSpecContent = !!data.spec_content;
+    return hasSpecFile !== hasSpecContent; // XOR: true when exactly one is true
+  }, {
+    message: "Either spec_file or spec_content must be provided, but not both",
+    path: ["spec_file", "spec_content"],
+  })
+  .refine((data) => {
+    // XOR: branch_name OR worktree_name (exactly one must be provided)
+    const hasBranchName = !!data.branch_name;
+    const hasWorktreeName = !!data.worktree_name;
+    return hasBranchName !== hasWorktreeName; // XOR: true when exactly one is true
+  }, {
+    message: "Either branch_name or worktree_name must be provided, but not both",
+    path: ["branch_name", "worktree_name"],
+  });
 
 /**
  * Workflow Execution Filters Schema
@@ -270,6 +294,11 @@ export const workflowExecutionResponseSchema = z.object({
   workflow_definition_id: z.string(),
   name: z.string(),
   args: z.record(z.string(), z.unknown()),
+  spec_file: z.string().nullable(),
+  spec_content: z.string().nullable(),
+  branch_from: z.string().nullable(),
+  branch_name: z.string().nullable(),
+  worktree_name: z.string().nullable(),
   current_phase: z.string().nullable(),
   current_step_index: z.number(),
   status: z.string(),

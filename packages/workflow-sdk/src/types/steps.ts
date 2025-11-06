@@ -55,12 +55,14 @@ export interface GitStepConfig {
   /** Display name for the step (defaults to step ID) */
   name?: string;
   /** Git operation type */
-  operation: "commit" | "branch" | "pr";
+  operation: "commit" | "branch" | "pr" | "commit-and-branch";
   /** Commit message (for commit operation) */
   message?: string;
-  /** Branch name (for branch/pr operation) */
+  /** Commit message (for commit-and-branch operation, defaults to "WIP: Auto-commit before branching") */
+  commitMessage?: string;
+  /** Branch name (for branch/pr/commit-and-branch operation) */
   branch?: string;
-  /** Base branch for PR (default: main) */
+  /** Base branch for PR or branch creation (default: main) */
   baseBranch?: string;
   /** PR title */
   title?: string;
@@ -75,7 +77,7 @@ export interface GitStepConfig {
  */
 export interface GitStepResult {
   /** Operation that was performed */
-  operation: "commit" | "branch" | "pr";
+  operation: "commit" | "branch" | "pr" | "commit-and-branch";
   /** Commit SHA */
   commitSha?: string;
   /** Branch name */
@@ -84,6 +86,10 @@ export interface GitStepResult {
   prNumber?: number;
   /** PR URL */
   prUrl?: string;
+  /** Whether there were uncommitted changes (commit-and-branch only) */
+  hadUncommittedChanges?: boolean;
+  /** Whether already on target branch (commit-and-branch only) */
+  alreadyOnBranch?: boolean;
   /** Success status */
   success: boolean;
 }
@@ -170,6 +176,9 @@ export interface InngestStepTools {
   waitForEvent(name: string, opts: { event: string; timeout: string }): Promise<unknown>;
 }
 
+// Import generated slash command types
+import type { SlashCommandName, SlashCommandArgs } from './slash-commands';
+
 /**
  * Extended step interface with custom workflow step methods
  */
@@ -199,14 +208,21 @@ export interface WorkflowStep<TPhaseId extends string = string> extends InngestS
   ): Promise<AgentStepResult>;
 
   /**
-   * Execute a slash command via agent
-   * @param command - Slash command (e.g., "/commit")
-   * @param args - Command arguments
+   * Execute a slash command via agent (type-safe)
+   * @param command - Slash command name (autocompleted)
+   * @param args - Command arguments (typed based on command)
    * @param options - Step options (timeout)
+   *
+   * @example
+   * await step.slash('/generate-prd', {
+   *   featurename: 'auth',
+   *   context: 'Add OAuth',
+   *   format: 'md'
+   * });
    */
-  slash(
-    command: string,
-    args?: string[],
+  slash<T extends SlashCommandName>(
+    command: T,
+    args: SlashCommandArgs[T],
     options?: StepOptions
   ): Promise<AgentStepResult>;
 

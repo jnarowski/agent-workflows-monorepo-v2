@@ -17,6 +17,11 @@ export interface CreateWorkflowExecutionInput {
   workflow_definition_id: string;
   name: string;
   args: Record<string, unknown>;
+  spec_file?: string;
+  spec_content?: string;
+  branch_from?: string;
+  branch_name?: string;
+  worktree_name?: string;
   inngest_run_id?: string;
 }
 

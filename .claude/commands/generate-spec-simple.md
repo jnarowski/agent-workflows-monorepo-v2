@@ -1,6 +1,6 @@
 ---
 description: Generate implementation spec and write to numbered spec file
-argument-hint: [number-or-feature-name] [format]
+argument-hint: [number-or-feature-name, format]
 ---
 
 # Generate Simple Implementation Spec

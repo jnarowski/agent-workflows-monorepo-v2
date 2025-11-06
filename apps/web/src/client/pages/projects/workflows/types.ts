@@ -43,6 +43,11 @@ export interface WorkflowExecution {
   status: WorkflowStatus;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   args: Record<string, any> | null;
+  spec_file: string | null;
+  spec_content: string | null;
+  branch_from: string | null;
+  branch_name: string | null;
+  worktree_name: string | null;
   current_step: string | null;
   current_phase: string | null;
   error_message: string | null;
@@ -197,6 +202,11 @@ export interface WorkflowExecutionDetail {
   status: WorkflowStatus;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   args: Record<string, any> | null;
+  spec_file: string | null;
+  spec_content: string | null;
+  branch_from: string | null;
+  branch_name: string | null;
+  worktree_name: string | null;
   current_step: string | null;
   current_phase: string | null;
   error_message: string | null;

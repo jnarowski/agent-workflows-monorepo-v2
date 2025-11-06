@@ -5,6 +5,8 @@ import type { GitStepOptions } from "../../../types/event.types";
 import { commitChanges } from "@/server/domain/git/services/commitChanges";
 import { createAndSwitchBranch } from "@/server/domain/git/services/createAndSwitchBranch";
 import { createPullRequest } from "@/server/domain/git/services/createPullRequest";
+import { getCurrentBranch } from "@/server/domain/git/services/getCurrentBranch";
+import { getGitStatus } from "@/server/domain/git/services/getGitStatus";
 import { generateInngestStepId } from "./utils/generateInngestStepId";
 import { withTimeout } from "./utils/withTimeout";
 import { toId } from "./utils/toId";
@@ -96,6 +98,65 @@ async function executeGitOperation(
         operation: "pr",
         prUrl: result.prUrl,
         success: result.success,
+      };
+    }
+
+    case "commit-and-branch": {
+      if (!config.branch) {
+        throw new Error("Branch name is required for commit-and-branch operation");
+      }
+
+      // Get current branch
+      const currentBranch = await getCurrentBranch(projectPath);
+
+      // Check if already on target branch
+      if (currentBranch === config.branch) {
+        // Already on target branch - just commit if needed
+        const status = await getGitStatus(projectPath);
+        const hasUncommittedChanges = status.files.length > 0;
+
+        let commitSha: string | undefined;
+        if (hasUncommittedChanges) {
+          const commitMessage = config.commitMessage ?? "WIP: Auto-commit";
+          commitSha = await commitChanges(projectPath, commitMessage, ["."]);
+        }
+
+        return {
+          operation: "commit-and-branch",
+          branch: config.branch,
+          commitSha,
+          hadUncommittedChanges: hasUncommittedChanges,
+          alreadyOnBranch: true,
+          success: true,
+        };
+      }
+
+      // Not on target branch - check for uncommitted changes
+      const status = await getGitStatus(projectPath);
+      const hasUncommittedChanges = status.files.length > 0;
+
+      let commitSha: string | undefined;
+
+      // If uncommitted changes exist, commit them
+      if (hasUncommittedChanges) {
+        const commitMessage = config.commitMessage ?? "WIP: Auto-commit before branching";
+        commitSha = await commitChanges(projectPath, commitMessage, ["."]);
+      }
+
+      // Create and switch to new branch
+      await createAndSwitchBranch(
+        projectPath,
+        config.branch,
+        config.baseBranch
+      );
+
+      return {
+        operation: "commit-and-branch",
+        branch: config.branch,
+        commitSha,
+        hadUncommittedChanges: hasUncommittedChanges,
+        alreadyOnBranch: false,
+        success: true,
       };
     }
 

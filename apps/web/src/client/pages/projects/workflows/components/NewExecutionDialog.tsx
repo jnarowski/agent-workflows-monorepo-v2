@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { BaseDialog } from '@/client/components/BaseDialog';
 import {
   DialogDescription,
@@ -11,7 +12,17 @@ import { Button } from '@/client/components/ui/button';
 import { Input } from '@/client/components/ui/input';
 import { Label } from '@/client/components/ui/label';
 import { Textarea } from '@/client/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/client/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/client/components/ui/radio-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/client/components/ui/tabs';
 import { useCreateWorkflow } from '../hooks/useWorkflowMutations';
+import { api } from '@/client/utils/api-client';
 import type { WorkflowDefinition } from '../types';
 
 interface NewExecutionDialogProps {
@@ -34,7 +45,66 @@ export function NewExecutionDialog({
 
   const [name, setName] = useState('');
   const [argsJson, setArgsJson] = useState('{}');
+  const [specMode, setSpecMode] = useState<'file' | 'content'>('file');
+  const [specFile, setSpecFile] = useState<string>('');
+  const [specContent, setSpecContent] = useState('');
+  const [branchFrom, setBranchFrom] = useState('');
+  const [branchSearchQuery, setBranchSearchQuery] = useState('');
+  const [gitMode, setGitMode] = useState<'branch' | 'worktree'>('branch');
+  const [branchName, setBranchName] = useState('');
+  const [worktreeName, setWorktreeName] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  // Fetch available spec files
+  const { data: specFiles } = useQuery({
+    queryKey: ['projects', projectId, 'specs'],
+    queryFn: async () => {
+      const response = await api.get<{ data: string[] }>(
+        `/api/projects/${projectId}/specs`
+      );
+      return response.data;
+    },
+    enabled: open && specMode === 'file',
+  });
+
+  // Fetch available branches
+  const { data: branches } = useQuery({
+    queryKey: ['projects', projectId, 'branches'],
+    queryFn: async () => {
+      const response = await api.get<{
+        data: Array<{ name: string; current: boolean }>;
+      }>(`/api/projects/${projectId}/branches`);
+      return response.data;
+    },
+    enabled: open,
+  });
+
+  // Filter branches based on search query
+  const filteredBranches = useMemo(() => {
+    if (!branches) return [];
+    if (!branchSearchQuery) return branches;
+
+    const query = branchSearchQuery.toLowerCase();
+    return branches.filter((branch) =>
+      branch.name.toLowerCase().includes(query)
+    );
+  }, [branches, branchSearchQuery]);
+
+  // Auto-generate branch/worktree name from execution name
+  useEffect(() => {
+    if (name) {
+      const slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+      if (gitMode === 'branch') {
+        setBranchName(slug);
+      } else {
+        setWorktreeName(slug);
+      }
+    }
+  }, [name, gitMode]);
 
   const handleCreate = async () => {
     setError(null);
@@ -42,6 +112,26 @@ export function NewExecutionDialog({
     // Validate name
     if (!name.trim()) {
       setError('Execution name is required');
+      return;
+    }
+
+    // Validate spec (either file or content)
+    if (specMode === 'file' && !specFile) {
+      setError('Spec file is required');
+      return;
+    }
+    if (specMode === 'content' && !specContent.trim()) {
+      setError('Spec content is required');
+      return;
+    }
+
+    // Validate git mode
+    if (gitMode === 'branch' && !branchName.trim()) {
+      setError('Branch name is required');
+      return;
+    }
+    if (gitMode === 'worktree' && !worktreeName.trim()) {
+      setError('Worktree name is required');
       return;
     }
 
@@ -64,6 +154,11 @@ export function NewExecutionDialog({
         definitionId,
         name: name.trim(),
         args,
+        spec_file: specMode === 'file' ? specFile : undefined,
+        spec_content: specMode === 'content' ? specContent : undefined,
+        branch_from: branchFrom || undefined,
+        branch_name: gitMode === 'branch' ? branchName : undefined,
+        worktree_name: gitMode === 'worktree' ? worktreeName : undefined,
       });
 
       // Navigate to new execution
@@ -74,6 +169,12 @@ export function NewExecutionDialog({
       // Reset form and close dialog
       setName('');
       setArgsJson('{}');
+      setSpecFile('');
+      setSpecContent('');
+      setBranchFrom('');
+      setBranchSearchQuery('');
+      setBranchName('');
+      setWorktreeName('');
       setError(null);
       onOpenChange(false);
     } catch (err) {
@@ -84,6 +185,12 @@ export function NewExecutionDialog({
   const handleCancel = () => {
     setName('');
     setArgsJson('{}');
+    setSpecFile('');
+    setSpecContent('');
+    setBranchFrom('');
+    setBranchSearchQuery('');
+    setBranchName('');
+    setWorktreeName('');
     setError(null);
     onOpenChange(false);
   };
@@ -103,7 +210,7 @@ export function NewExecutionDialog({
         </DialogDescription>
       </DialogHeader>
 
-      <div className="space-y-4 py-4">
+      <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
         {/* Name input */}
         <div className="space-y-2">
           <Label htmlFor="execution-name">Execution Name</Label>
@@ -116,10 +223,134 @@ export function NewExecutionDialog({
           />
         </div>
 
+        {/* Spec selection */}
+        <div className="space-y-2">
+          <Label>Spec</Label>
+          <Tabs value={specMode} onValueChange={(v) => setSpecMode(v as 'file' | 'content')}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="file">File</TabsTrigger>
+              <TabsTrigger value="content">Content</TabsTrigger>
+            </TabsList>
+            <TabsContent value="file" className="space-y-2">
+              <Select value={specFile} onValueChange={setSpecFile} disabled={createWorkflow.isPending}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select spec file..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {specFiles && specFiles.length > 0 ? (
+                    specFiles.map((file: string) => (
+                      <SelectItem key={file} value={file}>
+                        {file}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-specs" disabled>
+                      No spec files found
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Select from .agent/specs/todo/
+              </p>
+            </TabsContent>
+            <TabsContent value="content" className="space-y-2">
+              <Textarea
+                placeholder="Paste spec content here..."
+                value={specContent}
+                onChange={(e) => setSpecContent(e.target.value)}
+                disabled={createWorkflow.isPending}
+                className="font-mono text-sm"
+                rows={6}
+              />
+              <p className="text-xs text-muted-foreground">
+                Provide inline spec content
+              </p>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Branch From (optional) */}
+        <div className="space-y-2">
+          <Label htmlFor="branch-from">Branch From (optional)</Label>
+          <Select value={branchFrom} onValueChange={setBranchFrom} disabled={createWorkflow.isPending}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select branch (defaults to current)..." />
+            </SelectTrigger>
+            <SelectContent>
+              <div className="flex items-center border-b px-3 pb-2">
+                <Input
+                  placeholder="Search branches..."
+                  value={branchSearchQuery}
+                  onChange={(e) => setBranchSearchQuery(e.target.value)}
+                  className="h-8 w-full border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+              </div>
+              <div className="max-h-[200px] overflow-y-auto">
+                {filteredBranches.length > 0 ? (
+                  filteredBranches.map((branch) => (
+                    <SelectItem key={branch.name} value={branch.name}>
+                      {branch.name}
+                      {branch.current && ' (current)'}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <div className="py-6 text-center text-sm text-muted-foreground">
+                    {branchSearchQuery ? 'No branches found' : 'No branches available'}
+                  </div>
+                )}
+              </div>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Defaults to current branch if not specified
+          </p>
+        </div>
+
+        {/* Git mode: branch or worktree */}
+        <div className="space-y-2">
+          <Label>Git Mode</Label>
+          <RadioGroup value={gitMode} onValueChange={(v) => setGitMode(v as 'branch' | 'worktree')}>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="branch" id="mode-branch" />
+              <Label htmlFor="mode-branch" className="font-normal cursor-pointer">
+                Branch
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="worktree" id="mode-worktree" />
+              <Label htmlFor="mode-worktree" className="font-normal cursor-pointer">
+                Worktree
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {/* Branch/Worktree Name (auto-generated from execution name) */}
+        <div className="space-y-2">
+          <Label htmlFor="git-name">
+            {gitMode === 'branch' ? 'Branch Name' : 'Worktree Name'}
+          </Label>
+          <Input
+            id="git-name"
+            placeholder={`Auto-generated from execution name`}
+            value={gitMode === 'branch' ? branchName : worktreeName}
+            onChange={(e) =>
+              gitMode === 'branch'
+                ? setBranchName(e.target.value)
+                : setWorktreeName(e.target.value)
+            }
+            disabled={createWorkflow.isPending}
+          />
+          <p className="text-xs text-muted-foreground">
+            Auto-generated, but you can edit
+          </p>
+        </div>
+
         {/* Args input */}
         <div className="space-y-2">
           <Label htmlFor="execution-args">
-            Arguments
+            Arguments (optional)
             {definition?.args_schema && (
               <span className="ml-2 text-xs text-muted-foreground">
                 (JSON format)
@@ -133,7 +364,7 @@ export function NewExecutionDialog({
             onChange={(e) => setArgsJson(e.target.value)}
             disabled={createWorkflow.isPending}
             className="font-mono text-sm"
-            rows={6}
+            rows={4}
           />
           {definition?.description && (
             <p className="text-xs text-muted-foreground">

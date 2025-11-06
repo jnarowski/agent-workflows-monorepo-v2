@@ -45,8 +45,20 @@ export type {
   PhaseDefinition,
 } from "./types";
 
+// Generated slash command types (re-export for convenience)
+export type { SlashCommandName, SlashCommandArgs } from "./types/slash-commands";
+export { buildSlashCommand } from "./types/slash-commands";
+
 // Runtime exports
 export type { WorkflowRuntime } from "./runtime";
+
+// Slash command type generation utilities
+export { parseSlashCommands, parseArgumentHint, parseJsonResponseSchema } from "./utils/parseSlashCommands";
+export { generateSlashCommandTypesCode, generateSlashCommandTypesFromDir } from "./utils/generateSlashCommandTypes";
+export { generateResponseTypeCode, commandNameToTypeName } from "./utils/generateCommandResponseTypes";
+
+// Internal types for slash command parsing
+export type { CommandDefinition, CommandArgument, ResponseSchema } from "./types/slash-commands-internal";
 
 // Package version
 export const VERSION = "1.0.0";

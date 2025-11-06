@@ -10,16 +10,27 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./cli": {
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.js"
     }
   },
+  "bin": {
+    "workflow-sdk": "./bin/workflow-sdk.js"
+  },
   "files": [
-    "dist"
+    "dist",
+    "bin"
   ],
   "scripts": {
     "build": "bunchee",
     "dev": "bunchee --watch",
     "clean": "rm -rf dist",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "gen-slash-types": "node dist/cli.js generate-slash-types",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [
     "workflow",
@@ -33,10 +44,15 @@
   "peerDependencies": {
     "inngest": "^3.0.0"
   },
+  "dependencies": {
+    "gray-matter": "^4.0.3"
+  },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.0.0",
     "bunchee": "^6.6.2",
     "inngest": "^3.0.0",
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.0"
   }
 }
