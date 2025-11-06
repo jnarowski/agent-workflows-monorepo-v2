@@ -19,7 +19,7 @@ export async function updateStepStatus(
   _result?: Record<string, unknown>,
   error?: string
 ): Promise<void> {
-  const { executionId, projectId, logger } = context;
+  const { runId, projectId, logger } = context;
 
   // Update step using domain service
   const step = await updateWorkflowStep({
@@ -42,7 +42,7 @@ export async function updateStepStatus(
     };
 
     await createWorkflowEvent({
-      workflow_execution_id: executionId,
+      workflow_run_id: runId,
       event_type: "step_failed",
       event_data: eventData,
       phase: step.phase,
@@ -65,14 +65,14 @@ export async function updateStepStatus(
   emitWorkflowEvent(projectId, {
     type: "workflow:execution:step:updated",
     data: {
-      execution_id: executionId,
+      execution_id: runId,
       step_id: stepId,
       changes,
     },
   });
 
   logger.info(
-    { executionId, stepId, stepName: step.name, status, phase: step.phase },
+    { runId, stepId, stepName: step.name, status, phase: step.phase },
     `Step ${status}`
   );
 }

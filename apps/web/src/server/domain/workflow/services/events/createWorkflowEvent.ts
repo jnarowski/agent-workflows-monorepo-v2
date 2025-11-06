@@ -5,7 +5,7 @@ import type { WorkflowEvent, EventDataMap } from '@/server/domain/workflow/types
 import { emitWorkflowEvent } from './emitWorkflowEvent';
 
 export interface CreateWorkflowEventParams<T extends keyof EventDataMap = keyof EventDataMap> {
-  workflow_execution_id: string;
+  workflow_run_id: string;
   event_type: T;
   event_data: EventDataMap[T];
   phase?: string | null;
@@ -23,7 +23,7 @@ export async function createWorkflowEvent<T extends keyof EventDataMap>(
   params: CreateWorkflowEventParams<T>
 ): Promise<WorkflowEvent> {
   const {
-    workflow_execution_id,
+    workflow_run_id,
     event_type,
     event_data,
     phase,
@@ -35,7 +35,7 @@ export async function createWorkflowEvent<T extends keyof EventDataMap>(
 
   logger?.debug(
     {
-      workflow_execution_id,
+      workflow_run_id,
       event_type,
       phase,
       inngest_step_id,
@@ -46,7 +46,7 @@ export async function createWorkflowEvent<T extends keyof EventDataMap>(
 
   const event = await prisma.workflowEvent.create({
     data: {
-      workflow_execution_id,
+      workflow_run_id,
       // @ts-ignore - event type
       event_type,
       event_data: event_data as unknown as Prisma.InputJsonValue,
@@ -60,20 +60,20 @@ export async function createWorkflowEvent<T extends keyof EventDataMap>(
   logger?.debug({ eventId: event.id, phase }, 'Workflow event created');
 
   // Get project_id for WebSocket emission
-  const execution = await prisma.workflowExecution.findUnique({
-    where: { id: workflow_execution_id },
+  const run = await prisma.workflowRun.findUnique({
+    where: { id: workflow_run_id },
     select: { project_id: true },
   });
 
   // Emit event:created WebSocket event
-  if (execution) {
-    emitWorkflowEvent(execution.project_id, {
-      type: 'workflow:execution:event:created',
+  if (run) {
+    emitWorkflowEvent(run.project_id, {
+      type: 'workflow:run:event:created',
       data: {
-        execution_id: workflow_execution_id,
+        run_id: workflow_run_id,
         event: {
           id: event.id,
-          workflow_execution_id: event.workflow_execution_id,
+          workflow_run_id: event.workflow_run_id,
           event_type: event.event_type,
           event_data: event.event_data as unknown,
           phase: event.phase,

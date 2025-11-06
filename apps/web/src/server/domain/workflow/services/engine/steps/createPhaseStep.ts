@@ -31,7 +31,7 @@ export function createPhaseStep<TPhases extends readonly PhaseDefinition[] | und
   ): Promise<T> {
     const id = toId(idOrName);
     const name = toName(idOrName);
-    const { executionId, projectId, logger, config } = context;
+    const { runId, projectId, logger, config } = context;
 
     // Validate phase ID in development
     if (process.env.NODE_ENV !== "production" && config.phases) {
@@ -48,11 +48,11 @@ export function createPhaseStep<TPhases extends readonly PhaseDefinition[] | und
     // Generate consistent step ID for phase lifecycle events (for deduplication on replay)
     const phaseStepId = `phase-${id}-lifecycle`;
 
-    logger.info({ executionId, phase: name }, "Phase started");
+    logger.info({ runId, phase: name }, "Phase started");
 
     // Update current_phase in execution using domain service
     await updateWorkflowExecution(
-      executionId,
+      runId,
       { current_phase: id },
       logger
     );
@@ -62,7 +62,7 @@ export function createPhaseStep<TPhases extends readonly PhaseDefinition[] | und
 
     // Create phase_started event with step ID for idempotency
     await findOrCreateWorkflowEvent({
-      workflow_execution_id: executionId,
+      workflow_run_id: runId,
       event_type: "phase_started",
       event_data: {
         title: `Phase Started: ${name}`,
@@ -78,7 +78,7 @@ export function createPhaseStep<TPhases extends readonly PhaseDefinition[] | und
     broadcast(Channels.project(projectId), {
       type: "workflow:phase:started",
       data: {
-        executionId,
+        runId,
         phase: id,
         timestamp: new Date().toISOString(),
       },
@@ -90,7 +90,7 @@ export function createPhaseStep<TPhases extends readonly PhaseDefinition[] | und
 
       // Success - create phase_completed event with step ID
       await findOrCreateWorkflowEvent({
-        workflow_execution_id: executionId,
+        workflow_run_id: runId,
         event_type: "phase_completed",
         event_data: {
           title: `Phase Completed: ${name}`,
@@ -106,26 +106,26 @@ export function createPhaseStep<TPhases extends readonly PhaseDefinition[] | und
       broadcast(Channels.project(projectId), {
         type: "workflow:phase:completed",
         data: {
-          executionId,
+          runId,
           phase: id,
           timestamp: new Date().toISOString(),
         },
       });
 
-      logger.info({ executionId, phase: name }, "Phase completed");
+      logger.info({ runId, phase: name }, "Phase completed");
 
       return result;
     } catch (error) {
       const err = error as Error;
 
       logger.error(
-        { executionId, phase: name, error: err.message },
+        { runId, phase: name, error: err.message },
         "Phase failed"
       );
 
       // Create phase_failed event with step ID
       await findOrCreateWorkflowEvent({
-        workflow_execution_id: executionId,
+        workflow_run_id: runId,
         event_type: "phase_failed",
         event_data: {
           title: `Phase Failed: ${name}`,
@@ -142,7 +142,7 @@ export function createPhaseStep<TPhases extends readonly PhaseDefinition[] | und
       broadcast(Channels.project(projectId), {
         type: "workflow:phase:failed",
         data: {
-          executionId,
+          runId,
           phase: id,
           error: err.message,
           timestamp: new Date().toISOString(),

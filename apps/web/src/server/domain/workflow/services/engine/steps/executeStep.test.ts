@@ -31,7 +31,7 @@ describe("executeStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -43,7 +43,7 @@ describe("executeStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -74,9 +74,9 @@ describe("executeStep", () => {
       expect.any(Function)
     );
 
-    const step = await prisma.workflowExecutionStep.findFirst({
+    const step = await prisma.workflowRunStep.findFirst({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         name: "Compile Code",
       },
     });
@@ -107,7 +107,7 @@ describe("executeStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -119,7 +119,7 @@ describe("executeStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -144,9 +144,9 @@ describe("executeStep", () => {
       )
     ).rejects.toThrow("Build failed");
 
-    const step = await prisma.workflowExecutionStep.findFirst({
+    const step = await prisma.workflowRunStep.findFirst({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         name: "Compile Code",
       },
     });

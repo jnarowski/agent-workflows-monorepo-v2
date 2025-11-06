@@ -21,7 +21,7 @@ import { createWorkflowEvent, CreateWorkflowEventParams } from './createWorkflow
 export async function findOrCreateWorkflowEvent<T extends keyof EventDataMap>(
   params: CreateWorkflowEventParams<T>
 ): Promise<WorkflowEvent> {
-  const { workflow_execution_id, inngest_step_id, event_type, logger } = params;
+  const { workflow_run_id, inngest_step_id, event_type, logger } = params;
 
   // If no inngest_step_id, always create (no deduplication needed)
   if (!inngest_step_id) {
@@ -31,7 +31,7 @@ export async function findOrCreateWorkflowEvent<T extends keyof EventDataMap>(
   // Try to find existing event with same inngest_step_id and event_type
   const existingEvent = await prisma.workflowEvent.findFirst({
     where: {
-      workflow_execution_id,
+      workflow_run_id,
       inngest_step_id,
       event_type: event_type as WorkflowEventType,
     },

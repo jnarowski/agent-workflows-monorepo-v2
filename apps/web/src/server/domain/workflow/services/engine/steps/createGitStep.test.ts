@@ -41,7 +41,7 @@ describe("createGitStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -53,7 +53,7 @@ describe("createGitStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -113,7 +113,7 @@ describe("createGitStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -125,7 +125,7 @@ describe("createGitStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -188,7 +188,7 @@ describe("createGitStep", () => {
         phases: [],
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -200,7 +200,7 @@ describe("createGitStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -260,7 +260,7 @@ describe("createGitStep", () => {
         phases: [],
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -272,7 +272,7 @@ describe("createGitStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test2",
       userId: "user-123",
@@ -326,7 +326,7 @@ describe("createGitStep", () => {
         phases: [],
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -338,7 +338,7 @@ describe("createGitStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test3",
       userId: "user-123",

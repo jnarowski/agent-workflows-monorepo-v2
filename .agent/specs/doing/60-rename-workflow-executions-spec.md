@@ -385,160 +385,160 @@ No new files created - this is pure refactoring.
 **Agent 3A: Core Run Services**
 
 <!-- prettier-ignore -->
-- [ ] p3-t1 [4/10] Rename services folder
+- [x] p3-t1 [4/10] Rename services folder
   - Rename folder: `apps/web/src/server/domain/workflow/services/executions/` → `runs/`
-- [ ] p3-t2 [4/10] Rename and update createWorkflowExecution service
+- [x] p3-t2 [4/10] Rename and update createWorkflowExecution service
   - Rename: `services/runs/createWorkflowExecution.ts` → `createWorkflowRun.ts`
   - Update function name: `createWorkflowExecution` → `createWorkflowRun`
   - Update parameter type: `CreateWorkflowExecutionInput` → `CreateWorkflowRunInput`
   - Update return type: `WorkflowExecution` → `WorkflowRun`
   - Update Prisma call: `prisma.workflowExecution.create` → `prisma.workflowRun.create`
   - Update all JSDoc comments
-- [ ] p3-t3 [4/10] Rename and update getWorkflowExecutions service
+- [x] p3-t3 [4/10] Rename and update getWorkflowExecutions service
   - Rename: `services/runs/getWorkflowExecutions.ts` → `getWorkflowRuns.ts`
   - Update function name, types, Prisma calls, variable names
-- [ ] p3-t4 [4/10] Rename and update getWorkflowExecutionById service
+- [x] p3-t4 [4/10] Rename and update getWorkflowExecutionById service
   - Rename: `services/runs/getWorkflowExecutionById.ts` → `getWorkflowRunById.ts`
   - Update function name, types, Prisma calls
-- [ ] p3-t5 [4/10] Rename and update updateWorkflowExecution service
+- [x] p3-t5 [4/10] Rename and update updateWorkflowExecution service
   - Rename: `services/runs/updateWorkflowExecution.ts` → `updateWorkflowRun.ts`
   - Update function name, types, Prisma calls
-- [ ] p3-t6 [3/10] Rename and update generateExecutionNames service
+- [x] p3-t6 [3/10] Rename and update generateExecutionNames service
   - Rename: `services/generateExecutionNames.ts` → `generateRunNames.ts`
   - Update function name and all references to "execution" in logic
-- [ ] p3-t7 [3/10] Update service exports
+- [x] p3-t7 [3/10] Update service exports
   - Edit `services/index.ts`
   - Update all 5 renamed function exports
 
 **Agent 3B: Step & Event Services**
 
 <!-- prettier-ignore -->
-- [ ] p3-t8 [3/10] Update createWorkflowStep service
+- [x] p3-t8 [3/10] Update createWorkflowStep service
   - Edit `services/steps/createWorkflowStep.ts`
   - Change parameter: `workflow_execution_id` → `workflow_run_id`
   - Update Prisma call: `prisma.workflowExecutionStep.create` → `prisma.workflowRunStep.create`
-- [ ] p3-t9 [2/10] Update getWorkflowStepById service
+- [x] p3-t9 [2/10] Update getWorkflowStepById service
   - Edit `services/steps/getWorkflowStepById.ts`
   - Update Prisma call: `prisma.workflowExecutionStep.findUnique` → `prisma.workflowRunStep.findUnique`
-- [ ] p3-t10 [3/10] Update findWorkflowStepByName service
+- [x] p3-t10 [3/10] Update findWorkflowStepByName service
   - Edit `services/steps/findWorkflowStepByName.ts`
   - Change parameter: `workflowExecutionId` → `workflowRunId`
   - Update Prisma call and where clause field name
-- [ ] p3-t11 [3/10] Update findOrCreateWorkflowStep service
+- [x] p3-t11 [3/10] Update findOrCreateWorkflowStep service
   - Edit `services/steps/findOrCreateWorkflowStep.ts`
   - Change parameter: `workflowExecutionId` → `workflowRunId`
   - Update Prisma calls
-- [ ] p3-t12 [2/10] Update updateWorkflowStep service
+- [x] p3-t12 [2/10] Update updateWorkflowStep service
   - Edit `services/steps/updateWorkflowStep.ts`
   - Update Prisma call: `prisma.workflowExecutionStep.update` → `prisma.workflowRunStep.update`
-- [ ] p3-t13 [3/10] Update createWorkflowEvent service
+- [x] p3-t13 [3/10] Update createWorkflowEvent service
   - Edit `services/events/createWorkflowEvent.ts`
   - Change parameter: `workflowExecutionId` → `workflowRunId`
   - Update field name in Prisma create call
-- [ ] p3-t14 [3/10] Update findOrCreateWorkflowEvent service
+- [x] p3-t14 [3/10] Update findOrCreateWorkflowEvent service
   - Edit `services/events/findOrCreateWorkflowEvent.ts`
   - Change parameter and field names
-- [ ] p3-t15 [3/10] Update getWorkflowEvents service
+- [x] p3-t15 [3/10] Update getWorkflowEvents service
   - Edit `services/events/getWorkflowEvents.ts`
   - Change parameter: `workflowExecutionId` → `workflowRunId`
   - Update where clause field name
-- [ ] p3-t16 [2/10] Update emitWorkflowEvent service
+- [x] p3-t16 [2/10] Update emitWorkflowEvent service
   - Edit `services/events/emitWorkflowEvent.ts`
   - Update any `executionId` parameters → `runId`
-- [ ] p3-t17 [3/10] Update createWorkflowArtifact service
+- [x] p3-t17 [3/10] Update createWorkflowArtifact service
   - Edit `services/artifacts/createWorkflowArtifact.ts`
   - Change field: `workflow_execution_id` → `workflow_run_id`
   - Change field: `workflow_execution_step_id` → `workflow_run_step_id`
-- [ ] p3-t18 [2/10] Update attachArtifactToWorkflowEvent service
+- [x] p3-t18 [2/10] Update attachArtifactToWorkflowEvent service
   - Edit `services/artifacts/attachArtifactToWorkflowEvent.ts`
   - Update FK field references if present
-- [ ] p3-t19 [2/10] Update downloadArtifact service
+- [x] p3-t19 [2/10] Update downloadArtifact service
   - Edit `services/artifacts/downloadArtifact.ts`
   - Update FK field references if present
-- [ ] p3-t20 [2/10] Update uploadArtifact service
+- [x] p3-t20 [2/10] Update uploadArtifact service
   - Edit `services/artifacts/uploadArtifact.ts`
   - Update FK field references if present
 
 **Agent 3C: Engine & Workflow Operations**
 
 <!-- prettier-ignore -->
-- [ ] p3-t21 [4/10] Update executeWorkflow service
+- [x] p3-t21 [4/10] Update executeWorkflow service
   - Edit `services/workflow/executeWorkflow.ts`
   - Update Prisma call: `prisma.workflowExecution.findUnique` → `prisma.workflowRun.findUnique`
   - Change all variable names: `execution` → `run`
   - Update error messages with new terminology
-- [ ] p3-t22 [3/10] Update pauseWorkflow service
+- [x] p3-t22 [3/10] Update pauseWorkflow service
   - Edit `services/workflow/pauseWorkflow.ts`
   - Change parameter: `executionId` → `runId`
   - Update Prisma call: `prisma.workflowExecution.update` → `prisma.workflowRun.update`
-- [ ] p3-t23 [3/10] Update resumeWorkflow service
+- [x] p3-t23 [3/10] Update resumeWorkflow service
   - Edit `services/workflow/resumeWorkflow.ts`
   - Change parameter: `executionId` → `runId`
   - Update Prisma call
-- [ ] p3-t24 [3/10] Update cancelWorkflow service
+- [x] p3-t24 [3/10] Update cancelWorkflow service
   - Edit `services/workflow/cancelWorkflow.ts`
   - Change parameter: `executionId` → `runId`
   - Update Prisma call
-- [ ] p3-t25 [4/10] Update createWorkflowRuntime service
+- [x] p3-t25 [4/10] Update createWorkflowRuntime service
   - Edit `services/engine/createWorkflowRuntime.ts`
   - Change parameter: `workflowExecutionId` → `workflowRunId`
   - Update all internal references
-- [ ] p3-t26 [2/10] Update createAiStep
+- [x] p3-t26 [2/10] Update createAiStep
   - Edit `services/engine/steps/createAiStep.ts`
   - Update `executionId` parameters → `runId`
-- [ ] p3-t27 [2/10] Update createBashStep
+- [x] p3-t27 [2/10] Update createBashStep
   - Edit `services/engine/steps/createBashStep.ts`
   - Update parameters
-- [ ] p3-t28 [2/10] Update createCheckoutStep
+- [x] p3-t28 [2/10] Update createCheckoutStep
   - Edit `services/engine/steps/createCheckoutStep.ts`
   - Update parameters
-- [ ] p3-t29 [2/10] Update createConditionalStep
+- [x] p3-t29 [2/10] Update createConditionalStep
   - Edit `services/engine/steps/createConditionalStep.ts`
   - Update parameters
-- [ ] p3-t30 [2/10] Update createDelayStep
+- [x] p3-t30 [2/10] Update createDelayStep
   - Edit `services/engine/steps/createDelayStep.ts`
   - Update parameters
-- [ ] p3-t31 [2/10] Update createFileOperationStep
+- [x] p3-t31 [2/10] Update createFileOperationStep
   - Edit `services/engine/steps/createFileOperationStep.ts`
   - Update parameters
-- [ ] p3-t32 [2/10] Update createGitOperationStep
+- [x] p3-t32 [2/10] Update createGitOperationStep
   - Edit `services/engine/steps/createGitOperationStep.ts`
   - Update parameters
-- [ ] p3-t33 [2/10] Update createHttpRequestStep
+- [x] p3-t33 [2/10] Update createHttpRequestStep
   - Edit `services/engine/steps/createHttpRequestStep.ts`
   - Update parameters
-- [ ] p3-t34 [2/10] Update createLoopStep
+- [x] p3-t34 [2/10] Update createLoopStep
   - Edit `services/engine/steps/createLoopStep.ts`
   - Update parameters
-- [ ] p3-t35 [2/10] Update createParallelStep
+- [x] p3-t35 [2/10] Update createParallelStep
   - Edit `services/engine/steps/createParallelStep.ts`
   - Update parameters
-- [ ] p3-t36 [2/10] Update createPromptStep
+- [x] p3-t36 [2/10] Update createPromptStep
   - Edit `services/engine/steps/createPromptStep.ts`
   - Update parameters
-- [ ] p3-t37 [2/10] Update createRetryStep
+- [x] p3-t37 [2/10] Update createRetryStep
   - Edit `services/engine/steps/createRetryStep.ts`
   - Update parameters
-- [ ] p3-t38 [2/10] Update createTransformStep
+- [x] p3-t38 [2/10] Update createTransformStep
   - Edit `services/engine/steps/createTransformStep.ts`
   - Update parameters
-- [ ] p3-t39 [2/10] Update createValidationStep
+- [x] p3-t39 [2/10] Update createValidationStep
   - Edit `services/engine/steps/createValidationStep.ts`
   - Update parameters
-- [ ] p3-t40 [2/10] Update other engine step files
+- [x] p3-t40 [2/10] Update other engine step files
   - Check `services/engine/steps/` for additional step files
   - Update parameters in each
-- [ ] p3-t41 [3/10] Update workflow domain types
+- [x] p3-t41 [3/10] Update workflow domain types
   - Edit `types/workflow.types.ts`
   - Rename: `CreateWorkflowExecutionInput` → `CreateWorkflowRunInput`
   - Rename: `WorkflowExecutionFilters` → `WorkflowRunFilters`
-- [ ] p3-t42 [2/10] Update artifact domain types
+- [x] p3-t42 [2/10] Update artifact domain types
   - Edit `types/artifact.types.ts`
   - Update FK field references
-- [ ] p3-t43 [2/10] Update engine domain types
+- [x] p3-t43 [2/10] Update engine domain types
   - Edit `types/engine.types.ts`
   - Update `executionId` → `runId` references
-- [ ] p3-t44 [2/10] Update comment domain types
+- [x] p3-t44 [2/10] Update comment domain types
   - Edit `types/comment.types.ts`
   - Update FK field references if present
 
@@ -546,7 +546,26 @@ No new files created - this is pure refactoring.
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+**COMPLETED - Phase 3 (Backend Domain Layer)**
+- Renamed folder: `services/executions/` → `services/runs/` ✓
+- Core run services: 4 files renamed and updated (createWorkflowRun, getWorkflowRuns, getWorkflowRunById, updateWorkflowRun)
+- generateRunNames: Function and all interfaces renamed (GenerateRunNamesOptions, GenerateRunNamesResult, runName field)
+- Service exports: Updated index.ts with new file paths and names
+- Automated sed replacements across all 39 service files:
+  - Field names: `workflow_execution_id` → `workflow_run_id`, `workflow_execution_step_id` → `workflow_run_step_id`
+  - Variable names: `executionId` → `runId`, `workflowExecutionId` → `workflowRunId`, `execution` → `run`
+  - Prisma calls: `prisma.workflowExecution` → `prisma.workflowRun`, `prisma.workflowExecutionStep` → `prisma.workflowRunStep`
+  - Types: `WorkflowExecution` → `WorkflowRun`, `WorkflowExecutionStep` → `WorkflowRunStep`
+  - Input/output types: `CreateWorkflowExecutionInput` → `CreateWorkflowRunInput`, `WorkflowExecutionFilters` → `WorkflowRunFilters`
+- Manual fix: Updated WebSocket event type in createWorkflowEvent.ts from `workflow:execution:event:created` → `workflow:run:event:created`
+- Domain types: All 4 type files updated (workflow.types, artifact.types, engine.types, comment.types)
+- Step services: All 5 files updated (createWorkflowStep, getWorkflowStepById, findWorkflowStepByName, findOrCreateWorkflowStep, updateWorkflowStep)
+- Event services: All 4 files updated (createWorkflowEvent, findOrCreateWorkflowEvent, getWorkflowEvents, emitWorkflowEvent)
+- Artifact services: All 4 files updated (createWorkflowArtifact, attachArtifactToWorkflowEvent, downloadArtifact, uploadArtifact)
+- Workflow operation services: All 4 files updated (executeWorkflow, pauseWorkflow, resumeWorkflow, cancelWorkflow)
+- Engine runtime: createWorkflowRuntime service updated
+- Engine steps: All 15 step files updated (createAiStep through createValidationStep)
+- **Total**: All 44 tasks completed successfully
 
 ### Phase 4: Backend API Layer
 

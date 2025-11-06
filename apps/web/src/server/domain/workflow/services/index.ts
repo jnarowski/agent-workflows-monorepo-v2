@@ -1,7 +1,7 @@
 // Barrel export for workflow services
-export * from "./executions/createWorkflowExecution";
-export * from "./executions/getWorkflowExecutionById";
-export * from "./executions/getWorkflowExecutions";
+export * from "./runs/createWorkflowRun";
+export * from "./runs/getWorkflowRunById";
+export * from "./runs/getWorkflowRuns";
 export * from "./steps/getWorkflowStepById";
 export * from "./workflow/executeWorkflow";
 export * from "./workflow/pauseWorkflow";
@@ -14,4 +14,4 @@ export * from "./artifacts/detachArtifactFromWorkflowEvent";
 export * from "./events/getWorkflowEvents";
 export * from "./events/createWorkflowEvent";
 export * from "./events/findOrCreateWorkflowEvent";
-export * from "./generateExecutionNames";
+export * from "./generateRunNames";

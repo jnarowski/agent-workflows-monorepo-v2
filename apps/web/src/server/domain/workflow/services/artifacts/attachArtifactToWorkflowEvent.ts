@@ -50,8 +50,8 @@ export async function attachArtifactToWorkflowEvent(
       execution_id: event.workflow_execution.id,
       artifact: {
         id: updatedArtifact.id,
-        workflow_execution_id: updatedArtifact.workflow_execution_id,
-        workflow_execution_step_id: null, // WorkflowArtifact doesn't have step_id - attached to events only
+        workflow_run_id: updatedArtifact.workflow_run_id,
+        workflow_run_step_id: null, // WorkflowArtifact doesn't have step_id - attached to events only
         workflow_event_id: updatedArtifact.workflow_event_id,
         name: updatedArtifact.name,
         file_path: updatedArtifact.file_path,

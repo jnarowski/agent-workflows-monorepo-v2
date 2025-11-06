@@ -1,5 +1,5 @@
 import { prisma } from '@/shared/prisma';
-import type { WorkflowExecutionStep } from '@prisma/client';
+import type { WorkflowRunStep } from '@prisma/client';
 import type { FastifyBaseLogger } from 'fastify';
 
 /**
@@ -7,19 +7,19 @@ import type { FastifyBaseLogger } from 'fastify';
  * Returns null if not found
  */
 export async function findWorkflowStepByName(
-  executionId: string,
+  runId: string,
   stepName: string,
   phase?: string,
   logger?: FastifyBaseLogger
-): Promise<WorkflowExecutionStep | null> {
+): Promise<WorkflowRunStep | null> {
   logger?.debug(
-    { executionId, stepName, phase },
+    { runId, stepName, phase },
     'Finding workflow step by name'
   );
 
-  const step = await prisma.workflowExecutionStep.findFirst({
+  const step = await prisma.workflowRunStep.findFirst({
     where: {
-      workflow_execution_id: executionId,
+      workflow_run_id: runId,
       name: stepName,
       ...(phase && { phase }),
     },

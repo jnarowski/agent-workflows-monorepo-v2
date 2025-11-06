@@ -48,7 +48,7 @@ describe("createArtifactStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -60,7 +60,7 @@ describe("createArtifactStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-456",
@@ -92,7 +92,7 @@ describe("createArtifactStep", () => {
 
     const artifact = await prisma.workflowArtifact.findFirst({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         name: "build.log",
       },
     });
@@ -128,7 +128,7 @@ describe("createArtifactStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -140,7 +140,7 @@ describe("createArtifactStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-456",
@@ -172,7 +172,7 @@ describe("createArtifactStep", () => {
 
     const artifact = await prisma.workflowArtifact.findFirst({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         name: "app.bundle.js",
       },
     });
@@ -205,7 +205,7 @@ describe("createArtifactStep", () => {
         phases: [],
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -217,7 +217,7 @@ describe("createArtifactStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test2",
       userId: "user-456",
@@ -272,7 +272,7 @@ describe("createArtifactStep", () => {
         phases: [],
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -284,7 +284,7 @@ describe("createArtifactStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test3",
       userId: "user-456",

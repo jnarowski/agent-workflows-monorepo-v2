@@ -18,7 +18,7 @@ describe("handleStepFailure", () => {
     );
 
     const context: RuntimeContext = {
-      executionId: "exec-123",
+      runId: "exec-123",
       projectId: "project-456",
       projectPath: "/tmp/test",
       userId: "user-789",

@@ -19,8 +19,8 @@ describe("emitArtifactCreatedEvent", () => {
 
     const artifact: WorkflowArtifact = {
       id: "artifact-123",
-      workflow_execution_id: "exec-456",
-      workflow_execution_step_id: null,
+      workflow_run_id: "exec-456",
+      workflow_run_step_id: null,
       workflow_event_id: null,
       name: "test-artifact.txt",
       file_path: ".agent/workflows/executions/exec-456/artifacts/test.txt",
@@ -40,8 +40,8 @@ describe("emitArtifactCreatedEvent", () => {
         execution_id: "exec-456",
         artifact: {
           id: "artifact-123",
-          workflow_execution_id: "exec-456",
-          workflow_execution_step_id: null,
+          workflow_run_id: "exec-456",
+          workflow_run_step_id: null,
           workflow_event_id: null,
           name: "test-artifact.txt",
           file_path: ".agent/workflows/executions/exec-456/artifacts/test.txt",

@@ -41,7 +41,7 @@ describe("createPhaseStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -53,7 +53,7 @@ describe("createPhaseStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -84,7 +84,7 @@ describe("createPhaseStep", () => {
     // Verify phase_started and phase_completed events created
     const events = await prisma.workflowEvent.findMany({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         phase: "build",
       },
       orderBy: { created_at: "asc" },
@@ -115,7 +115,7 @@ describe("createPhaseStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -127,7 +127,7 @@ describe("createPhaseStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -174,7 +174,7 @@ describe("createPhaseStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -186,7 +186,7 @@ describe("createPhaseStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -211,7 +211,7 @@ describe("createPhaseStep", () => {
     // Verify phase_failed event created
     const failedEvent = await prisma.workflowEvent.findFirst({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         event_type: "phase_failed",
         phase: "build",
       },
@@ -247,7 +247,7 @@ describe("createPhaseStep", () => {
         phases: []
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -259,7 +259,7 @@ describe("createPhaseStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -294,7 +294,7 @@ describe("createPhaseStep", () => {
     // Verify events created with kebab-case phase ID
     const events = await prisma.workflowEvent.findMany({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         phase: "run-tests", // Stored with kebab-case ID
       },
       orderBy: { created_at: "asc" },
@@ -333,7 +333,7 @@ describe("createPhaseStep", () => {
         phases: []
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -345,7 +345,7 @@ describe("createPhaseStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -376,7 +376,7 @@ describe("createPhaseStep", () => {
 
     const events = await prisma.workflowEvent.findMany({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         phase: "deploy",
       },
       orderBy: { created_at: "asc" },

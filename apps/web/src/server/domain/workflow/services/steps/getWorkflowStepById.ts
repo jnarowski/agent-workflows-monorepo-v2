@@ -1,12 +1,12 @@
 import { prisma } from '@/shared/prisma';
-import type { WorkflowExecutionStep } from '@prisma/client';
+import type { WorkflowRunStep } from '@prisma/client';
 
 /**
  * Get a workflow execution step by ID
  * Includes: agent session
  */
-export async function getWorkflowStepById(id: string): Promise<WorkflowExecutionStep | null> {
-  const step = await prisma.workflowExecutionStep.findUnique({
+export async function getWorkflowStepById(id: string): Promise<WorkflowRunStep | null> {
+  const step = await prisma.workflowRunStep.findUnique({
     where: { id },
     include: {
       session: true, // Agent session if present

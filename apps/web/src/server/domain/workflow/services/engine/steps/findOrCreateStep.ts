@@ -1,5 +1,5 @@
 import type { RuntimeContext } from "../../../types/engine.types";
-import type { WorkflowExecutionStep } from "@prisma/client";
+import type { WorkflowRunStep } from "@prisma/client";
 import { findOrCreateWorkflowStep } from "../../steps/findOrCreateWorkflowStep";
 
 /**
@@ -9,18 +9,18 @@ import { findOrCreateWorkflowStep } from "../../steps/findOrCreateWorkflowStep";
  * @param context - Runtime context
  * @param inngestStepId - Inngest step ID for memoization
  * @param stepName - Step display name
- * @returns WorkflowExecutionStep record
+ * @returns WorkflowRunStep record
  */
 export async function findOrCreateStep(
   context: RuntimeContext,
   inngestStepId: string,
   stepName: string
-): Promise<WorkflowExecutionStep> {
-  const { executionId, currentPhase, logger } = context;
+): Promise<WorkflowRunStep> {
+  const { runId, currentPhase, logger } = context;
 
   // Use domain service for find-or-create logic
   const step = await findOrCreateWorkflowStep(
-    executionId,
+    runId,
     inngestStepId,
     stepName,
     currentPhase ?? undefined,

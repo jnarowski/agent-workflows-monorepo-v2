@@ -31,7 +31,7 @@ describe("createRunStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -43,7 +43,7 @@ describe("createRunStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -68,9 +68,9 @@ describe("createRunStep", () => {
     // Assert
     expect(result).toEqual({ data: "result" });
 
-    const step = await prisma.workflowExecutionStep.findFirst({
+    const step = await prisma.workflowRunStep.findFirst({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         name: "Custom Step", // Name is converted by toName()
       },
     });
@@ -99,7 +99,7 @@ describe("createRunStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -111,7 +111,7 @@ describe("createRunStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -135,9 +135,9 @@ describe("createRunStep", () => {
       })
     ).rejects.toThrow("Step failed");
 
-    const step = await prisma.workflowExecutionStep.findFirst({
+    const step = await prisma.workflowRunStep.findFirst({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         name: "Failing Step", // Name is converted by toName()
       },
     });
@@ -167,7 +167,7 @@ describe("createRunStep", () => {
         phases: []
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -179,7 +179,7 @@ describe("createRunStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -208,9 +208,9 @@ describe("createRunStep", () => {
     // Assert
     expect(result).toEqual({ valid: true });
 
-    const step = await prisma.workflowExecutionStep.findFirst({
+    const step = await prisma.workflowRunStep.findFirst({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         name: "Validate Data", // Name stored as display name
       },
     });
@@ -239,7 +239,7 @@ describe("createRunStep", () => {
         phases: []
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -251,7 +251,7 @@ describe("createRunStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -279,9 +279,9 @@ describe("createRunStep", () => {
     // Assert
     expect(result).toEqual({ processed: true });
 
-    const step = await prisma.workflowExecutionStep.findFirst({
+    const step = await prisma.workflowRunStep.findFirst({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         name: "Process Results", // Name converted from kebab-case
       },
     });

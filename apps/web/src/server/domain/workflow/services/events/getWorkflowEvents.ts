@@ -7,13 +7,13 @@ import type { WorkflowEvent } from '@prisma/client';
  * Orders by created_at asc
  */
 export async function getWorkflowEvents(
-  executionId: string,
+  runId: string,
   stepId?: string
 ): Promise<WorkflowEvent[]> {
   const events = await prisma.workflowEvent.findMany({
     where: {
-      workflow_execution_id: executionId,
-      ...(stepId && { workflow_execution_step_id: stepId }),
+      workflow_run_id: runId,
+      ...(stepId && { workflow_run_step_id: stepId }),
     },
     include: {
       created_by_user: {

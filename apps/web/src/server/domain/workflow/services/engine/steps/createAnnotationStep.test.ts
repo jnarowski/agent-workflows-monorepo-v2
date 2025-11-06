@@ -35,7 +35,7 @@ describe("createAnnotationStep", () => {
         phases: [],
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -47,7 +47,7 @@ describe("createAnnotationStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -72,7 +72,7 @@ describe("createAnnotationStep", () => {
     // Assert
     const event = await prisma.workflowEvent.findFirst({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         event_type: "annotation_added",
       },
     });
@@ -110,7 +110,7 @@ describe("createAnnotationStep", () => {
         phases: [],
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -122,7 +122,7 @@ describe("createAnnotationStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test2",
       userId: "user-123",
@@ -147,7 +147,7 @@ describe("createAnnotationStep", () => {
     // Assert
     const event = await prisma.workflowEvent.findFirst({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         event_type: "annotation_added",
       },
     });
@@ -184,7 +184,7 @@ describe("createAnnotationStep", () => {
         phases: [],
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -196,7 +196,7 @@ describe("createAnnotationStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test3",
       userId: "user-123",

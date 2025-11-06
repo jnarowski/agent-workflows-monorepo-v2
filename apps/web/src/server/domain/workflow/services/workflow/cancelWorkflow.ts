@@ -9,14 +9,14 @@ import { emitWorkflowEvent } from "../events/emitWorkflowEvent";
  * Updates status to 'cancelled' and sets cancelled_at timestamp
  */
 export async function cancelWorkflow(
-  executionId: string,
+  runId: string,
   userId?: string,
   reason?: string,
   logger?: FastifyBaseLogger
 ): Promise<WorkflowExecution> {
   const cancelledAt = new Date();
-  const execution = await prisma.workflowExecution.update({
-    where: { id: executionId },
+  const execution = await prisma.workflowRun.update({
+    where: { id: runId },
     data: {
       status: "cancelled",
       cancelled_at: cancelledAt,
@@ -25,7 +25,7 @@ export async function cancelWorkflow(
 
   // Create workflow_cancelled event
   await createWorkflowEvent({
-    workflow_execution_id: executionId,
+    workflow_run_id: runId,
     event_type: "workflow_cancelled",
     event_data: {
       title: "Cancelled",

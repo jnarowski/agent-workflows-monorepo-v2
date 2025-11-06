@@ -42,7 +42,7 @@ describe("createAgentStep", () => {
         phases: []
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -74,7 +74,7 @@ describe("createAgentStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-456",
       projectPath: "/tmp/test",
       userId: "user-789",
@@ -163,7 +163,7 @@ describe("createAgentStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -175,7 +175,7 @@ describe("createAgentStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-456",
       projectPath: "/tmp/test",
       userId: "user-789",

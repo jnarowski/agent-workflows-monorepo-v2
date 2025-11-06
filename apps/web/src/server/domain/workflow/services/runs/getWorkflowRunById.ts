@@ -1,13 +1,13 @@
 import { prisma } from '@/shared/prisma';
-import type { WorkflowExecution } from '@prisma/client';
+import type { WorkflowRun } from '@prisma/client';
 
 /**
- * Gets a single workflow execution by ID with all relations
+ * Gets a single workflow run by ID with all relations
  * Includes: steps (with agent sessions), events, workflow_definition, artifacts
  * Note: Artifacts are now organized by phase, not by step
  */
-export async function getWorkflowExecutionById(id: string): Promise<WorkflowExecution | null> {
-  const execution = await prisma.workflowExecution.findUnique({
+export async function getWorkflowRunById(id: string): Promise<WorkflowRun | null> {
+  const run = await prisma.workflowRun.findUnique({
     where: { id },
     include: {
       workflow_definition: true,
@@ -17,26 +17,26 @@ export async function getWorkflowExecutionById(id: string): Promise<WorkflowExec
         },
         orderBy: { created_at: 'asc' },
       },
-      events: true, // Include all events at execution level
+      events: true, // Include all events at run level
     },
   });
 
-  if (!execution) {
+  if (!run) {
     return null;
   }
 
-  // Fetch all artifacts for this execution using direct relationship
+  // Fetch all artifacts for this run using direct relationship
   const allArtifacts = await prisma.workflowArtifact.findMany({
     where: {
-      workflow_execution_id: id,
+      workflow_run_id: id,
     },
     orderBy: { created_at: 'asc' },
   });
 
-  // Fetch all events for this execution
+  // Fetch all events for this run
   const allEvents = await prisma.workflowEvent.findMany({
     where: {
-      workflow_execution_id: id,
+      workflow_run_id: id,
     },
     include: {
       created_by_user: {
@@ -52,22 +52,22 @@ export async function getWorkflowExecutionById(id: string): Promise<WorkflowExec
 
   // Parse JSON fields (Prisma stores JSON as strings in SQLite)
   // Transform field names to match frontend types
-  const parsedExecution = {
-    ...execution,
-    args: execution.args && typeof execution.args === 'string'
-      ? JSON.parse(execution.args)
-      : execution.args,
-    workflowDefinition: execution.workflow_definition ? {
-      ...execution.workflow_definition,
-      phases: typeof execution.workflow_definition.phases === 'string'
-        ? JSON.parse(execution.workflow_definition.phases)
-        : execution.workflow_definition.phases,
-      argsSchema: execution.workflow_definition.args_schema && typeof execution.workflow_definition.args_schema === 'string'
-        ? JSON.parse(execution.workflow_definition.args_schema)
-        : execution.workflow_definition.args_schema,
-    } : execution.workflow_definition,
+  const parsedRun = {
+    ...run,
+    args: run.args && typeof run.args === 'string'
+      ? JSON.parse(run.args)
+      : run.args,
+    workflowDefinition: run.workflow_definition ? {
+      ...run.workflow_definition,
+      phases: typeof run.workflow_definition.phases === 'string'
+        ? JSON.parse(run.workflow_definition.phases)
+        : run.workflow_definition.phases,
+      argsSchema: run.workflow_definition.args_schema && typeof run.workflow_definition.args_schema === 'string'
+        ? JSON.parse(run.workflow_definition.args_schema)
+        : run.workflow_definition.args_schema,
+    } : run.workflow_definition,
     // Transform steps to match frontend types (step_name, phase_name, logs)
-    steps: execution.steps.map(step => ({
+    steps: run.steps.map(step => ({
       ...step,
       stepName: step.name,
       phaseName: step.phase,
@@ -88,5 +88,5 @@ export async function getWorkflowExecutionById(id: string): Promise<WorkflowExec
     artifacts: allArtifacts,
   };
 
-  return parsedExecution as WorkflowExecution;
+  return parsedRun as WorkflowRun;
 }

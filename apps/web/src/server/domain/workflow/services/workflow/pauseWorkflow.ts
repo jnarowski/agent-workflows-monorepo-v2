@@ -9,13 +9,13 @@ import { emitWorkflowEvent } from "../events/emitWorkflowEvent";
  * Updates status to 'paused' and sets paused_at timestamp
  */
 export async function pauseWorkflow(
-  executionId: string,
+  runId: string,
   userId?: string,
   logger?: FastifyBaseLogger
 ): Promise<WorkflowExecution> {
   const pausedAt = new Date();
-  const execution = await prisma.workflowExecution.update({
-    where: { id: executionId },
+  const execution = await prisma.workflowRun.update({
+    where: { id: runId },
     data: {
       status: "paused",
       paused_at: pausedAt,
@@ -24,7 +24,7 @@ export async function pauseWorkflow(
 
   // Create workflow_paused event
   await createWorkflowEvent({
-    workflow_execution_id: executionId,
+    workflow_run_id: runId,
     event_type: "workflow_paused",
     event_data: {
       title: "Paused",

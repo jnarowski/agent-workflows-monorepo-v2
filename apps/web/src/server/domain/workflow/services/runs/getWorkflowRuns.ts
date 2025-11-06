@@ -1,22 +1,22 @@
 import { prisma } from '@/shared/prisma';
-import type { WorkflowExecutionFilters } from '../../types';
-import type { WorkflowExecution } from '@prisma/client';
+import type { WorkflowRunFilters } from '../../types';
+import type { WorkflowRun } from '@prisma/client';
 
 /**
- * Query workflow executions with filters (optimized for list views)
+ * Query workflow runs with filters (optimized for list views)
  *
- * Returns minimal data for displaying executions in list/board views:
+ * Returns minimal data for displaying runs in list/board views:
  * - 8 core fields (id, name, status, current_phase, workflow_definition_id, started_at, created_at)
  * - workflow_definition.name and workflow_definition.phases (for phase progress)
  * - _count.steps (for step count badge)
  *
- * This reduces payload size by ~95% compared to full nested data (500 bytes vs 10KB per execution)
- * For detail views, use `getWorkflowExecutionById` which fetches full nested data
+ * This reduces payload size by ~95% compared to full nested data (500 bytes vs 10KB per run)
+ * For detail views, use `getWorkflowRunById` which fetches full nested data
  */
-export async function getWorkflowExecutions(
-  filters: WorkflowExecutionFilters
-): Promise<WorkflowExecution[]> {
-  const executions = await prisma.workflowExecution.findMany({
+export async function getWorkflowRuns(
+  filters: WorkflowRunFilters
+): Promise<WorkflowRun[]> {
+  const runs = await prisma.workflowRun.findMany({
     where: {
       ...(filters.project_id && { project_id: filters.project_id }),
       ...(filters.user_id && { user_id: filters.user_id }),
@@ -46,15 +46,15 @@ export async function getWorkflowExecutions(
   });
 
   // Parse JSON fields (Prisma stores JSON as strings in SQLite)
-  const parsedExecutions = executions.map((execution) => ({
-    ...execution,
+  const parsedRuns = runs.map((run) => ({
+    ...run,
     workflow_definition: {
-      name: execution.workflow_definition.name,
-      phases: typeof execution.workflow_definition.phases === 'string'
-        ? JSON.parse(execution.workflow_definition.phases)
-        : execution.workflow_definition.phases,
+      name: run.workflow_definition.name,
+      phases: typeof run.workflow_definition.phases === 'string'
+        ? JSON.parse(run.workflow_definition.phases)
+        : run.workflow_definition.phases,
     },
   }));
 
-  return parsedExecutions as unknown as WorkflowExecution[];
+  return parsedRuns as unknown as WorkflowRun[];
 }

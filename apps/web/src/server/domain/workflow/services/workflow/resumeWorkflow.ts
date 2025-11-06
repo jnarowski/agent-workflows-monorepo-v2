@@ -10,15 +10,15 @@ import { emitWorkflowEvent } from "../events/emitWorkflowEvent";
  * Logs warning that resume not implemented
  */
 export async function resumeWorkflow(
-  executionId: string,
+  runId: string,
   userId?: string,
   logger?: FastifyBaseLogger
 ): Promise<WorkflowExecution> {
-  logger?.warn({ executionId }, "Resume workflow not implemented - stubbed");
+  logger?.warn({ runId }, "Resume workflow not implemented - stubbed");
 
   const resumedAt = new Date();
-  const execution = await prisma.workflowExecution.update({
-    where: { id: executionId },
+  const execution = await prisma.workflowRun.update({
+    where: { id: runId },
     data: {
       status: "running",
       paused_at: null, // Clear paused_at when resuming
@@ -27,7 +27,7 @@ export async function resumeWorkflow(
 
   // Create workflow_resumed event
   await createWorkflowEvent({
-    workflow_execution_id: executionId,
+    workflow_run_id: runId,
     event_type: "workflow_resumed",
     event_data: {
       title: "Resumed",

@@ -10,13 +10,13 @@ const ajv = new Ajv();
  * The engine will process steps asynchronously in the background.
  */
 export async function executeWorkflow(
-  executionId: string,
+  runId: string,
   fastifyOrWorkflowClient: FastifyInstance | { workflowClient?: { send: (event: { name: string; data: unknown }) => Promise<void> } },
   logger?: { info: (obj: unknown, msg: string) => void; error: (obj: unknown, msg: string) => void }
 ): Promise<void> {
   // Get execution details
-  const execution = await prisma.workflowExecution.findUnique({
-    where: { id: executionId },
+  const execution = await prisma.workflowRun.findUnique({
+    where: { id: runId },
     include: {
       workflow_definition: true,
       project: true,
@@ -24,11 +24,11 @@ export async function executeWorkflow(
   });
 
   if (!execution) {
-    throw new Error(`Workflow execution ${executionId} not found`);
+    throw new Error(`Workflow execution ${runId} not found`);
   }
 
   if (!execution.workflow_definition) {
-    throw new Error(`Workflow definition not found for execution ${executionId}`);
+    throw new Error(`Workflow definition not found for execution ${runId}`);
   }
 
   // Validate args against argsSchema if defined
@@ -41,7 +41,7 @@ export async function executeWorkflow(
         const errorMessage = `Invalid workflow args: ${JSON.stringify(validate.errors)}`;
         logger?.error(
           {
-            executionId,
+            runId,
             workflowDefinitionId: execution.workflow_definition.id,
             validationErrors: validate.errors,
           },
@@ -49,8 +49,8 @@ export async function executeWorkflow(
         );
 
         // Update execution status to failed
-        await prisma.workflowExecution.update({
-          where: { id: executionId },
+        await prisma.workflowRun.update({
+          where: { id: runId },
           data: {
             status: 'failed',
             error_message: errorMessage,
@@ -62,7 +62,7 @@ export async function executeWorkflow(
       }
 
       logger?.info(
-        { executionId, workflowDefinitionId: execution.workflow_definition.id },
+        { runId, workflowDefinitionId: execution.workflow_definition.id },
         'Workflow args validated successfully'
       );
     } catch (error) {
@@ -74,12 +74,12 @@ export async function executeWorkflow(
       // Handle unexpected validation errors
       const err = error instanceof Error ? error : new Error(String(error));
       logger?.error(
-        { err, executionId },
+        { err, runId },
         'Unexpected error during workflow args validation'
       );
 
-      await prisma.workflowExecution.update({
-        where: { id: executionId },
+      await prisma.workflowRun.update({
+        where: { id: runId },
         data: {
           status: 'failed',
           error_message: `Validation error: ${err.message}`,
@@ -92,8 +92,8 @@ export async function executeWorkflow(
   }
 
   // Update execution status to pending (queued for processing)
-  await prisma.workflowExecution.update({
-    where: { id: executionId },
+  await prisma.workflowRun.update({
+    where: { id: runId },
     data: {
       status: 'pending',
       started_at: new Date(),
@@ -112,7 +112,7 @@ export async function executeWorkflow(
   // Trigger workflow via Inngest using identifier with workflow/ prefix (Inngest convention)
   const eventName = `workflow/${execution.workflow_definition.identifier}`;
   const eventData = {
-    executionId,
+    runId,
     projectId: execution.project_id,
     userId: execution.user_id,
     projectPath: execution.project.path,
@@ -121,7 +121,7 @@ export async function executeWorkflow(
 
   logger?.info(
     {
-      executionId,
+      runId,
       eventName,
       workflowIdentifier: execution.workflow_definition.identifier,
       projectId: execution.project_id,
@@ -136,13 +136,13 @@ export async function executeWorkflow(
     });
 
     logger?.info(
-      { executionId, eventName },
+      { runId, eventName },
       'Successfully sent workflow execution event to Inngest'
     );
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
     logger?.error(
-      { err, executionId, eventName },
+      { err, runId, eventName },
       'Failed to send workflow execution event to Inngest'
     );
     throw err;

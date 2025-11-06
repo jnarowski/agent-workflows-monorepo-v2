@@ -58,11 +58,11 @@ export function createWorkflowRuntime(
         { event: `workflow/${config.id}` },
         async ({ event, step: inngestStep }) => {
           // Extract runtime context from event data
-          const { executionId, projectId, userId, projectPath } = event.data;
+          const { runId, projectId, userId, projectPath } = event.data;
 
           // Create runtime context
           const context: RuntimeContext<TPhases> = {
-            executionId,
+            runId,
             projectId,
             userId,
             currentPhase: null,
@@ -91,8 +91,8 @@ export function createWorkflowRuntime(
           try {
             // Update execution status and emit event
             const startedAt = new Date();
-            await prisma.workflowExecution.update({
-              where: { id: executionId },
+            await prisma.workflowRun.update({
+              where: { id: runId },
               data: {
                 status: "running",
                 started_at: startedAt,
@@ -100,7 +100,7 @@ export function createWorkflowRuntime(
             });
 
             await createWorkflowEvent({
-              workflow_execution_id: executionId,
+              workflow_run_id: runId,
               // @ts-ignore - event data
               event_type: "workflow_started",
               // @ts-ignore - event data
@@ -112,7 +112,7 @@ export function createWorkflowRuntime(
             emitWorkflowEvent(projectId, {
               type: "workflow:execution:updated",
               data: {
-                execution_id: executionId,
+                execution_id: runId,
                 project_id: projectId,
                 changes: {
                   status: "running",
@@ -121,7 +121,7 @@ export function createWorkflowRuntime(
               },
             });
 
-            logger.info({ executionId, projectId }, "Workflow started");
+            logger.info({ runId, projectId }, "Workflow started");
 
             // Call user's workflow function with enriched context
             const result = await fn({
@@ -131,8 +131,8 @@ export function createWorkflowRuntime(
 
             // Emit workflow:completed event
             const completedAt = new Date();
-            await prisma.workflowExecution.update({
-              where: { id: executionId },
+            await prisma.workflowRun.update({
+              where: { id: runId },
               data: {
                 status: "completed",
                 completed_at: completedAt,
@@ -140,7 +140,7 @@ export function createWorkflowRuntime(
             });
 
             await createWorkflowEvent({
-              workflow_execution_id: executionId,
+              workflow_run_id: runId,
               event_type: "workflow_completed",
               // @ts-ignore - event data
               event_data: { timestamp: completedAt.toISOString() },
@@ -151,7 +151,7 @@ export function createWorkflowRuntime(
             emitWorkflowEvent(projectId, {
               type: "workflow:execution:updated",
               data: {
-                execution_id: executionId,
+                execution_id: runId,
                 project_id: projectId,
                 changes: {
                   status: "completed",
@@ -160,7 +160,7 @@ export function createWorkflowRuntime(
               },
             });
 
-            logger.info({ executionId, projectId }, "Workflow completed");
+            logger.info({ runId, projectId }, "Workflow completed");
 
             return result;
           } catch (error) {
@@ -169,8 +169,8 @@ export function createWorkflowRuntime(
 
             // Emit workflow:failed event
             const failedAt = new Date();
-            await prisma.workflowExecution.update({
-              where: { id: executionId },
+            await prisma.workflowRun.update({
+              where: { id: runId },
               data: {
                 status: "failed",
                 completed_at: failedAt,
@@ -179,7 +179,7 @@ export function createWorkflowRuntime(
             });
 
             await createWorkflowEvent({
-              workflow_execution_id: executionId,
+              workflow_run_id: runId,
               event_type: "workflow_failed",
               // @ts-ignore - event data
               event_data: {
@@ -193,7 +193,7 @@ export function createWorkflowRuntime(
             emitWorkflowEvent(projectId, {
               type: "workflow:execution:updated",
               data: {
-                execution_id: executionId,
+                execution_id: runId,
                 project_id: projectId,
                 changes: {
                   status: "failed",
@@ -204,7 +204,7 @@ export function createWorkflowRuntime(
             });
 
             logger.error(
-              { executionId, projectId, error: err.message },
+              { runId, projectId, error: err.message },
               "Workflow failed"
             );
 
