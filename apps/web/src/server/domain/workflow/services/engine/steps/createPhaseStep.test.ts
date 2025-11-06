@@ -3,9 +3,9 @@ import { prisma } from "@/shared/prisma";
 import { cleanTestDB } from "@/server/test-utils/db";
 import { createPhaseStep } from "./createPhaseStep";
 import type { RuntimeContext } from "../../../types/engine.types";
-import * as updateWorkflowRunModule from "../../executions/updateWorkflowRun";
+import * as updateWorkflowRunModule from "../../runs/updateWorkflowRun";
 
-vi.mock("../../executions/updateWorkflowRun");
+vi.mock("../../runs/updateWorkflowRun");
 vi.mock("@/server/websocket/infrastructure/subscriptions", () => ({
   broadcast: vi.fn(),
 }));

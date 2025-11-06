@@ -14,9 +14,9 @@ import type { WorkflowWebSocketEvent } from "@/shared/types/websocket.types";
  * @example
  * ```typescript
  * emitWorkflowEvent('project-123', {
- *   type: 'workflow:execution:updated',
+ *   type: 'workflow:run:updated',
  *   data: {
- *     execution_id: 'exec-1',
+ *     run_id: 'run-1',
  *     project_id: 'project-123',
  *     changes: { status: 'running', started_at: new Date() }
  *   }

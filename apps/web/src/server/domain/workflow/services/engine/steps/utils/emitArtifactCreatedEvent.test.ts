@@ -19,11 +19,11 @@ describe("emitArtifactCreatedEvent", () => {
 
     const artifact: WorkflowArtifact = {
       id: "artifact-123",
-      workflow_run_id: "exec-456",
+      workflow_run_id: "run-456",
       workflow_run_step_id: null,
       workflow_event_id: null,
       name: "test-artifact.txt",
-      file_path: ".agent/workflows/executions/exec-456/artifacts/test.txt",
+      file_path: ".agent/workflows/runs/run-456/artifacts/test.txt",
       file_type: "text",
       mime_type: "text/plain",
       size_bytes: 1024,
@@ -32,19 +32,19 @@ describe("emitArtifactCreatedEvent", () => {
       created_at: new Date("2025-01-01T00:00:00Z"),
     };
 
-    emitArtifactCreatedEvent("project-789", "exec-456", artifact);
+    emitArtifactCreatedEvent("project-789", "run-456", artifact);
 
     expect(mockEmitWorkflowEvent).toHaveBeenCalledWith("project-789", {
-      type: "workflow:execution:artifact:created",
+      type: "workflow:run:artifact:created",
       data: {
-        execution_id: "exec-456",
+        run_id: "run-456",
         artifact: {
           id: "artifact-123",
-          workflow_run_id: "exec-456",
+          workflow_run_id: "run-456",
           workflow_run_step_id: null,
           workflow_event_id: null,
           name: "test-artifact.txt",
-          file_path: ".agent/workflows/executions/exec-456/artifacts/test.txt",
+          file_path: ".agent/workflows/runs/run-456/artifacts/test.txt",
           file_type: "text",
           mime_type: "text/plain",
           size_bytes: 1024,

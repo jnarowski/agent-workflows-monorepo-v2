@@ -23,7 +23,7 @@ export interface WorkflowDefinition {
  * Frontend-specific WorkflowRun interface
  *
  * **Note**: This interface intentionally diverges from the backend response schema
- * (`workflowExecutionResponseSchema`) to meet frontend UI requirements:
+ * (`workflowRunResponseSchema`) to meet frontend UI requirements:
  *
  * - Uses `created_by: string` instead of `user_id` (more descriptive for UI)
  * - Uses `current_step: string | null` instead of `current_step_index: number` (UI displays step name, not index)

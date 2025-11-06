@@ -43,7 +43,7 @@ function getMimeType(
 /**
  * Create artifact step factory function
  * Uploads files, directories, or text content as workflow artifacts
- * Artifacts are stored in: {projectPath}/.agent/workflows/executions/{runId}/artifacts
+ * Artifacts are stored in: {projectPath}/.agent/workflows/runs/{runId}/artifacts
  */
 export function createArtifactStep(
   context: RuntimeContext,
@@ -68,12 +68,12 @@ export function createArtifactStep(
       // Find or create step record for linking artifacts
       const step = await findOrCreateStep(context, inngestStepId, name);
 
-      // Create artifacts directory: {projectPath}/.agent/workflows/executions/{runId}/artifacts
+      // Create artifacts directory: {projectPath}/.agent/workflows/runs/{runId}/artifacts
       const artifactsDir = join(
         projectPath,
         ".agent",
         "workflows",
-        "executions",
+        "runs",
         runId,
         "artifacts"
       );

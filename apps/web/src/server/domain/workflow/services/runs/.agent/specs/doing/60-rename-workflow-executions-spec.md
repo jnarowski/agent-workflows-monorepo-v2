@@ -1,6 +1,6 @@
 # Rename workflow_execution to workflow_run
 
-**Status**: completed
+**Status**: draft
 **Created**: 2025-11-06
 **Package**: apps/web
 **Total Complexity**: 327 points
@@ -1173,3 +1173,134 @@ Phases 3, 5, 6, 8 can use parallel agents because:
 4. Commit after each phase
 5. Complete Phase 10: Final Validation
 6. Create PR: `/pull-request "Rename workflow_execution to workflow_run"`
+
+## Review Findings
+
+**Review Date:** 2025-11-06
+**Reviewed By:** Claude Code
+**Review Iteration:** 1 of 3
+**Branch:** feat/execution-rename
+**Commits Reviewed:** 9
+
+### Summary
+
+Overall implementation quality is excellent with 98/98 tasks completed across all 10 phases. The refactoring is comprehensive and systematic. However, 8 issues were identified that should be addressed before considering this complete: 1 HIGH priority (blocking tests) and 7 MEDIUM priority (incomplete renames in specific files).
+
+### Phase 1: Database Foundation
+
+**Status:** ✅ Complete - All database tables, FK columns, indexes renamed correctly
+
+### Phase 2: Shared Contracts
+
+**Status:** ✅ Complete - All schemas and WebSocket types updated
+
+### Phase 3: Backend Domain Layer
+
+**Status:** ⚠️ Incomplete - Service files updated correctly, but test imports broken
+
+#### HIGH Priority
+
+- [ ] **Test file imports reference deleted executions/ folder**
+  - **File:** `apps/web/src/server/domain/workflow/services/engine/steps/createPhaseStep.test.ts:6,8`
+  - **Spec Reference:** "Phase 3: Rename services folder: `executions/` → `runs/`"
+  - **Expected:** Imports should use `../../runs/updateWorkflowRun`
+  - **Actual:** Still imports from `../../executions/updateWorkflowRun` (folder doesn't exist)
+  - **Fix:** Update import paths to reference `runs/` folder
+
+### Phase 4: Backend API Layer
+
+**Status:** ✅ Complete - All routes and endpoints updated correctly
+
+### Phase 5: Frontend Foundation
+
+**Status:** ⚠️ Incomplete - Types and hooks updated, but stale comment found
+
+#### MEDIUM Priority
+
+- [ ] **Comment references old schema name**
+  - **File:** `apps/web/src/client/pages/projects/workflows/types.ts:26`
+  - **Spec Reference:** Phase 5 requires updating "all comments"
+  - **Expected:** Comment should reference `workflowRunResponseSchema`
+  - **Actual:** Comment says `workflowExecutionResponseSchema`
+  - **Fix:** Update comment to match new schema name
+
+### Phase 6: Frontend UI Components
+
+**Status:** ✅ Complete - All components renamed and updated correctly
+
+### Phase 7: Pages & Routing
+
+**Status:** ✅ Complete - All routes and navigation updated correctly
+
+### Phase 8: Tests
+
+**Status:** ⚠️ Incomplete - Most tests updated, but some mock data and file paths still use old names
+
+#### MEDIUM Priority
+
+- [ ] **Test mock data uses old field name**
+  - **File:** `apps/web/src/server/domain/workflow/services/engine/steps/utils/emitArtifactCreatedEvent.test.ts:40`
+  - **Spec Reference:** Phase 8 requires "Update mock data and assertions"
+  - **Expected:** Mock should have `run_id: "run-456"`
+  - **Actual:** Has `execution_id: "exec-456"`
+  - **Fix:** Update mock data field name and value prefix
+
+- [ ] **Test file paths use old folder name**
+  - **File:** `apps/web/src/server/domain/workflow/services/engine/steps/utils/emitArtifactCreatedEvent.test.ts:26,47`
+  - **Spec Reference:** Phase 3 folder rename should apply to all file paths
+  - **Expected:** Paths should contain `/runs/` instead of `/executions/`
+  - **Actual:** Test paths: `.agent/workflows/executions/exec-456/artifacts/test.txt`
+  - **Fix:** Replace `/executions/` with `/runs/` in test file paths
+
+### Phase 9: Documentation
+
+**Status:** ⚠️ Incomplete - Most docs updated, but JSDoc examples need fixing
+
+#### MEDIUM Priority
+
+- [ ] **JSDoc example uses old field name**
+  - **File:** `apps/web/src/server/domain/workflow/services/events/emitWorkflowEvent.ts:19`
+  - **Spec Reference:** Phase 9 requires updating all documentation
+  - **Expected:** JSDoc should show `run_id: 'run-1'`
+  - **Actual:** Shows `execution_id: 'exec-1'`
+  - **Fix:** Update JSDoc example to use new field name and ID prefix
+
+### Phase 10: Final Validation
+
+**Status:** ⚠️ Incomplete - Type check and tests run, but some files missed in sweep
+
+#### MEDIUM Priority
+
+- [ ] **Seed file incomplete**
+  - **File:** `apps/web/prisma/seed-workflows.ts`
+  - **Spec Reference:** Phase 1, p1-t4 "Update seed file"
+  - **Expected:** All Prisma calls should use `prisma.workflowRun`
+  - **Actual:** 11 instances of `prisma.workflowExecution` remain
+  - **Fix:** Replace remaining instances: `prisma.workflowExecution` → `prisma.workflowRun`
+
+- [ ] **Artifact file paths in production code use old folder**
+  - **Files:** 
+    - `apps/web/src/server/domain/workflow/services/engine/steps/createArtifactStep.ts:46,71`
+  - **Spec Reference:** Phase 3 folder rename applies to runtime file paths
+  - **Expected:** `.agent/workflows/runs/{runId}/artifacts`
+  - **Actual:** `.agent/workflows/executions/{runId}/artifacts`
+  - **Fix:** Update artifact file path construction to use `/runs/`
+  - **Impact:** HIGH - Artifacts will be saved/loaded from wrong location, breaking artifact feature
+
+### Positive Findings
+
+- ✅ Excellent systematic approach with all 10 phases completed
+- ✅ Perfect commit structure (9 commits, clear messages)
+- ✅ Database migration executed correctly (tables renamed, FKs updated)
+- ✅ All 47 service files in `runs/` folder properly updated
+- ✅ All API routes correctly updated to `/api/workflow-runs`
+- ✅ All frontend components and hooks renamed properly
+- ✅ All WebSocket event types updated to `workflow:run:*`
+- ✅ Comprehensive test coverage maintained (26/27 suites passing)
+- ✅ Strong type safety maintained throughout refactor
+
+### Review Completion Checklist
+
+- [x] All spec requirements reviewed
+- [x] Code quality checked
+- [ ] All findings addressed and tested
