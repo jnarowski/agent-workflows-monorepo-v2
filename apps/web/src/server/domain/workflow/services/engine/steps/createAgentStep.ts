@@ -11,9 +11,9 @@ import { withTimeout } from "./utils/withTimeout";
 import { toId } from "./utils/toId";
 import { toName } from "./utils/toName";
 import { generateInngestStepId } from "./utils/generateInngestStepId";
-import { findOrCreateStep } from "./findOrCreateStep";
-import { updateStepStatus } from "./updateStepStatus";
-import { handleStepFailure } from "./handleStepFailure";
+import { findOrCreateStep } from "./utils/findOrCreateStep";
+import { updateStepStatus } from "./utils/updateStepStatus";
+import { handleStepFailure } from "./utils/handleStepFailure";
 import { randomUUID } from "node:crypto";
 
 const DEFAULT_AGENT_TIMEOUT = 1800000; // 30 minutes

@@ -8,7 +8,7 @@ import type {
   AiStepResult,
   StepOptions,
 } from "@repo/workflow-sdk";
-import { executeStep } from "./executeStep";
+import { executeStep } from "./utils/executeStep";
 import { withTimeout } from "./utils/withTimeout";
 import { toId } from "./utils/toId";
 import { toName } from "./utils/toName";

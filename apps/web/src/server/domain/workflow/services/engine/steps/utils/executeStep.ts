@@ -1,9 +1,9 @@
 import type { GetStepTools } from "inngest";
-import type { RuntimeContext } from "../../../types/engine.types";
+import type { RuntimeContext } from "../../../../types/engine.types";
 import { findOrCreateStep } from "./findOrCreateStep";
 import { updateStepStatus } from "./updateStepStatus";
 import { handleStepFailure } from "./handleStepFailure";
-import { generateInngestStepId } from "./utils/generateInngestStepId";
+import { generateInngestStepId } from "./generateInngestStepId";
 
 /**
  * Execute a step function with automatic status tracking and Inngest memoization

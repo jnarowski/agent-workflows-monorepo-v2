@@ -127,7 +127,7 @@ None - all changes to existing files
 **Phase Complexity**: 18 points (avg 6.0/10)
 
 <!-- prettier-ignore -->
-- [ ] 1.1 [7/10] Add optional definition selection props and state to NewRunDialog
+- [x] 1.1 [7/10] Add optional definition selection props and state to NewRunDialog
   - Add `definitions?: WorkflowDefinition[]` prop
   - Change `definitionId` prop to allow empty string
   - Add `selectedDefinitionId` state initialized from prop or empty string
@@ -135,7 +135,7 @@ None - all changes to existing files
   - Derive actual definition from `selectedDefinitionId || definitionId`
   - File: `apps/web/src/client/pages/projects/workflows/components/NewRunDialog.tsx`
 
-- [ ] 1.2 [6/10] Add definition Combobox field as first form element
+- [x] 1.2 [6/10] Add definition Combobox field as first form element
   - Add `useMemo` to transform definitions to Combobox options
   - Add definition Combobox before spec file field
   - Show only when `!definitionId && definitions && definitions.length > 0`
@@ -143,7 +143,7 @@ None - all changes to existing files
   - Update dialog description based on selected definition
   - File: `apps/web/src/client/pages/projects/workflows/components/NewRunDialog.tsx`
 
-- [ ] 1.3 [5/10] Update validation to handle empty definition selection
+- [x] 1.3 [5/10] Update validation to handle empty definition selection
   - Add validation: "Workflow definition is required"
   - Disable "Create Execution" button when no definition selected
   - Update error handling for missing definition
@@ -151,14 +151,22 @@ None - all changes to existing files
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Added `definitions` prop to NewRunDialog interface
+- Implemented `selectedDefinitionId` state initialized from `definitionId` prop
+- Added `actualDefinition` derived value that prioritizes prop over selected state
+- Created reset effect when definition changes (clears spec/name/args)
+- Added Combobox for definition selection with search support
+- Definition selector only shows when `!definitionId && definitions?.length > 0`
+- Implemented validation preventing creation without definition when selector is shown
+- Button disabled state reflects validation rules
+- All mutations and navigation use `selectedDefinitionId || definitionId`
 
 ### Phase 2: Update Parent Components
 
 **Phase Complexity**: 10 points (avg 3.3/10)
 
 <!-- prettier-ignore -->
-- [ ] 2.1 [5/10] Refactor ProjectWorkflowsView to use NewRunDialog
+- [x] 2.1 [5/10] Refactor ProjectWorkflowsView to use NewRunDialog
   - Remove import of `NewWorkflowModal`
   - Import `NewRunDialog` instead
   - Replace `isModalOpen` state with `showNewRunDialog`
@@ -168,39 +176,49 @@ None - all changes to existing files
   - Update button handler: `onClick={() => setShowNewRunDialog(true)}`
   - File: `apps/web/src/client/pages/projects/workflows/ProjectWorkflowsView.tsx`
 
-- [ ] 2.2 [3/10] Verify WorkflowDefinitionView still works correctly
+- [x] 2.2 [3/10] Verify WorkflowDefinitionView still works correctly
   - Confirm it passes `definitionId` prop (not empty string)
   - Confirm definition selector is hidden
   - Test "New Run" button opens dialog without selector
   - File: `apps/web/src/client/pages/projects/workflows/WorkflowDefinitionView.tsx` (read-only verification)
 
-- [ ] 2.3 [2/10] Update button text for consistency
+- [x] 2.3 [2/10] Update button text for consistency
   - Change "New Workflow" button to "New Run" in ProjectWorkflowsView
   - Ensure consistent terminology across both views
   - File: `apps/web/src/client/pages/projects/workflows/ProjectWorkflowsView.tsx`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Replaced `NewWorkflowModal` import with `NewRunDialog` in ProjectWorkflowsView
+- Changed state from `isModalOpen` to `showNewRunDialog`
+- Removed `handleCreateWorkflow` function (dialog handles mutation internally now)
+- Removed `useCreateWorkflow` import (no longer needed in parent)
+- Updated button text from "New Workflow" to "New Run"
+- Pass empty string as `definitionId=""` to trigger definition selector
+- Pass `definitions` prop to enable definition selection
+- WorkflowDefinitionView verified - passes non-empty `definitionId` which correctly hides selector
+- Both views now use consistent "New Run" terminology
 
 ### Phase 3: Cleanup
 
 **Phase Complexity**: 4 points (avg 2.0/10)
 
 <!-- prettier-ignore -->
-- [ ] 3.1 [2/10] Delete NewWorkflowModal component
+- [x] 3.1 [2/10] Delete NewWorkflowModal component
   - Remove file: `apps/web/src/client/pages/projects/workflows/components/NewWorkflowModal.tsx`
   - Verify no other imports exist via grep
   - Command: `git rm apps/web/src/client/pages/projects/workflows/components/NewWorkflowModal.tsx`
 
-- [ ] 3.2 [2/10] Search for any remaining references to NewWorkflowModal
+- [x] 3.2 [2/10] Search for any remaining references to NewWorkflowModal
   - Search codebase for "NewWorkflowModal" string
   - Remove any stale imports or comments
   - Command: `rg "NewWorkflowModal" apps/web/src/`
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+- Deleted `NewWorkflowModal.tsx` using `git rm`
+- Searched entire `apps/web/src/` directory for "NewWorkflowModal" references
+- No remaining references found - clean removal
 
 ## Testing Strategy
 

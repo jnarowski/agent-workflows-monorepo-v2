@@ -210,9 +210,6 @@ export interface InngestStepTools {
   waitForEvent(name: string, opts: { event: string; timeout: string }): Promise<unknown>;
 }
 
-// Import generated slash command types
-import type { SlashCommandName, SlashCommandArgs } from './slash-commands';
-
 /**
  * Extended step interface with custom workflow step methods
  */
@@ -242,9 +239,9 @@ export interface WorkflowStep<TPhaseId extends string = string> extends InngestS
   ): Promise<AgentStepResult>;
 
   /**
-   * Execute a slash command via agent (type-safe)
-   * @param command - Slash command name (autocompleted)
-   * @param args - Command arguments (typed based on command)
+   * Execute a slash command via agent
+   * @param command - Slash command name
+   * @param args - Command arguments
    * @param options - Step options (timeout)
    *
    * @example
@@ -253,10 +250,14 @@ export interface WorkflowStep<TPhaseId extends string = string> extends InngestS
    *   context: 'Add OAuth',
    *   format: 'md'
    * });
+   *
+   * Note: For type-safe slash commands in your project, import generated types:
+   * import type { SlashCommandName, SlashCommandArgs } from '../generated/slash-commands';
+   * Then use: step.slash<SlashCommandName>(command, args)
    */
-  slash<T extends SlashCommandName>(
-    command: T,
-    args: SlashCommandArgs[T],
+  slash<TArgs extends Record<string, unknown> = Record<string, never>>(
+    command: string,
+    args: TArgs,
     options?: StepOptions
   ): Promise<AgentStepResult>;
 

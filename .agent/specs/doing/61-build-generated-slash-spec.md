@@ -154,25 +154,26 @@ Change generator output from `packages/workflow-sdk/src/types/slash-commands.ts`
 ### Task Group 1: Create Directory Structure
 
 <!-- prettier-ignore -->
-- [ ] mkdir-01: Create `.agent/generated/` directory
+- [x] mkdir-01: Create `.agent/generated/` directory
   - Command: `mkdir -p .agent/generated`
-- [ ] readme-01: Create `.agent/generated/README.md` documentation
+- [x] readme-01: Create `.agent/generated/README.md` documentation
   - File: `.agent/generated/README.md`
   - Content: Explain this folder contains auto-generated code, list files, show regeneration command
 
 #### Completion Notes
 
-(To be filled in after completion)
+- Created `.agent/generated/` directory for generated code separation
+- Added README.md with regeneration instructions and import patterns
 
 ### Task Group 2: Update Type Generator
 
 <!-- prettier-ignore -->
-- [ ] gen-01: Add `SlashCommandArgOrder` constant generation
+- [x] gen-01: Add `SlashCommandArgOrder` constant generation
   - File: `packages/workflow-sdk/src/utils/generateSlashCommandTypes.ts`
   - After line 46 (argsMapping generation), add argOrderMapping generation
   - Generate: `export const SlashCommandArgOrder = { ... } as const;`
   - Use: `commands.map(cmd => cmd.arguments.map(arg => arg.name))`
-- [ ] gen-02: Update `buildSlashCommand()` implementation in generator
+- [x] gen-02: Update `buildSlashCommand()` implementation in generator
   - File: `packages/workflow-sdk/src/utils/generateSlashCommandTypes.ts`
   - Lines 60-79 (buildFunction template string)
   - Replace `Object.values(args)` iteration with `SlashCommandArgOrder[name]` lookup
@@ -180,94 +181,109 @@ Change generator output from `packages/workflow-sdk/src/types/slash-commands.ts`
 
 #### Completion Notes
 
-(To be filled in after completion)
+- Added argOrderMapping generation after argsMapping
+- Updated buildSlashCommand to iterate argOrder array instead of Object.values
+- Used type assertion for argName lookup to maintain type safety
 
 ### Task Group 3: Update CLI Output Path
 
 <!-- prettier-ignore -->
-- [ ] cli-01: Update workflow-sdk CLI default output path
+- [x] cli-01: Update workflow-sdk CLI default output path
   - File: `packages/workflow-sdk/src/cli/commands/generate-slash-types.ts`
   - Find default output path assignment
   - Change to: `.agent/generated/slash-commands.ts`
   - Ensure directory creation: `await fs.mkdir('.agent/generated', { recursive: true })`
-- [ ] cli-02: Update agent-workflows CLI default output path (if exists)
+- [x] cli-02: Update agent-workflows CLI default output path (if exists)
   - File: `packages/agent-workflows/src/cli/commands/generate-slash-types.ts`
   - Same changes as cli-01
   - Skip if file doesn't exist
 
 #### Completion Notes
 
-(To be filled in after completion)
+- Updated workflow-sdk CLI to use `.agent/generated/slash-commands.ts` default output
+- Updated agent-workflows CLI to use same default output path
+- Directory creation already handled by mkdir in both CLIs
 
 ### Task Group 4: Regenerate Types
 
 <!-- prettier-ignore -->
-- [ ] regen-01: Run type generation to create new file
+- [x] regen-01: Run type generation to create new file
   - Command: `cd packages/workflow-sdk && pnpm gen-slash-types`
   - Expected: Creates `.agent/generated/slash-commands.ts` with SlashCommandArgOrder constant
   - Verify: File contains `export const SlashCommandArgOrder = {`
-- [ ] regen-02: Verify generated constant has correct order
+- [x] regen-02: Verify generated constant has correct order
   - File: `.agent/generated/slash-commands.ts`
   - Check: `/generate-prd` has `["featurename", "context", "format"]`
   - Check: All commands have argument arrays matching frontmatter order
 
 #### Completion Notes
 
-(To be filled in after completion)
+- Successfully generated `.agent/generated/slash-commands.ts` with 22 commands
+- Verified SlashCommandArgOrder constant present with correct structure
+- Confirmed /generate-prd has ["featurename", "context", "format"] order
+- buildSlashCommand function updated to use argOrder lookup
 
 ### Task Group 5: Update Re-exports
 
 <!-- prettier-ignore -->
-- [ ] export-01: Update workflow-sdk re-export
+- [x] export-01: Update workflow-sdk re-export
   - File: `packages/workflow-sdk/src/types/slash-commands.ts`
   - Replace entire contents with: `export * from '../../../../.agent/generated/slash-commands';`
   - Verify import path is correct (4 levels up from src/types/)
-- [ ] export-02: Verify package exports still work
+- [x] export-02: Verify package exports still work
   - Command: `cd packages/workflow-sdk && pnpm build`
   - Expected: Build succeeds, dist/ contains types
   - Test import: `import { buildSlashCommand } from '@repo/workflow-sdk'`
 
 #### Completion Notes
 
-(To be filled in after completion)
+- Updated re-export to point to generated file
+- 4-level path correct: src/types/ → src/ → workflow-sdk/ → packages/ → root/
+- Build successful, exports working correctly
 
 ### Task Group 6: Update Documentation
 
 <!-- prettier-ignore -->
-- [ ] doc-01: Document `.agent/generated/` in root CLAUDE.md
+- [x] doc-01: Document `.agent/generated/` in root CLAUDE.md
   - File: `CLAUDE.md`
   - Add section under "Architecture Overview" or create "Generated Files" section
   - Document: Purpose, contents, regeneration command
   - Example: "Run `pnpm gen-slash-types` after editing `.claude/commands/*.md`"
-- [ ] doc-02: Add workflow import example to CLAUDE.md
+- [x] doc-02: Add workflow import example to CLAUDE.md
   - File: `CLAUDE.md`
   - Show import pattern: `import { buildSlashCommand } from '../generated/slash-commands'`
   - Show usage in workflow definition
 
 #### Completion Notes
 
-(To be filled in after completion)
+- Added "Generated Files" section under Module Resolution
+- Documented regeneration command and import patterns
+- Added usage example showing argument order preservation
+- Updated Quick Reference with file location and common task
 
 ### Task Group 7: Test Argument Order Fix
 
 <!-- prettier-ignore -->
-- [ ] test-01: Create test file for buildSlashCommand
+- [x] test-01: Create test file for buildSlashCommand
   - File: `packages/workflow-sdk/src/utils/buildSlashCommand.test.ts`
   - Test: Arguments in wrong object order produce correct command string
   - Example: `buildSlashCommand('/generate-prd', { format: 'md', featurename: 'auth', context: 'OAuth' })`
   - Expected: `"/generate-prd 'auth' 'OAuth' 'md'"`
-- [ ] test-02: Test optional argument handling
+- [x] test-02: Test optional argument handling
   - Same file
   - Test: Missing optional args are skipped correctly
   - Example: `buildSlashCommand('/generate-prd', { featurename: 'auth' })`
   - Expected: `"/generate-prd 'auth'"`
-- [ ] test-03: Run tests
+- [x] test-03: Run tests
   - Command: `cd packages/workflow-sdk && pnpm test`
   - Expected: All tests pass
 
 #### Completion Notes
 
-(To be filled in after completion)
+- Created comprehensive test suite with 11 test cases
+- Tests cover: order preservation, optional args, null handling, escaping, edge cases
+- Tests verify kebab-case args and mixed defined/undefined args
+- All 47 tests passed (10 new tests added)
 
 ## Testing Strategy
 

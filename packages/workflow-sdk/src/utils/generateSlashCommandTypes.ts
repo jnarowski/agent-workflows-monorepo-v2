@@ -45,6 +45,14 @@ export function buildSlashCommand(): string {
     })
     .join('\n');
 
+  // Generate argument order constant
+  const argOrderMapping = commands
+    .map((cmd) => {
+      const argNames = cmd.arguments.map((arg) => `"${arg.name}"`).join(', ');
+      return `  "${cmd.name}": [${argNames}]`;
+    })
+    .join(',\n');
+
   // Generate buildSlashCommand implementation
   const buildFunction = `/**
  * Build a type-safe slash command string
@@ -62,10 +70,12 @@ export function buildSlashCommand<T extends SlashCommandName>(
   args: SlashCommandArgs[T]
 ): string {
   const parts: string[] = [name];
+  const argOrder = SlashCommandArgOrder[name];
 
-  // Add arguments in order (if any)
-  if (args && typeof args === "object") {
-    for (const value of Object.values(args)) {
+  // Add arguments in frontmatter order
+  if (args && typeof args === "object" && argOrder) {
+    for (const argName of argOrder) {
+      const value = (args as Record<string, unknown>)[argName];
       // Skip undefined values (optional arguments)
       if (value !== undefined && value !== null) {
         // Escape single quotes in the value
@@ -112,6 +122,14 @@ export type SlashCommandName = ${commandNames};
 export interface SlashCommandArgs {
 ${argsMapping}
 }
+
+/**
+ * Mapping of command names to their argument order from frontmatter
+ * Preserves positional argument order regardless of object property order
+ */
+export const SlashCommandArgOrder = {
+${argOrderMapping}
+} as const;
 
 ${buildFunction}
 ${responseTypes ? '\n' + responseTypes : ''}${responsesInterface ? '\n' + responsesInterface : ''}

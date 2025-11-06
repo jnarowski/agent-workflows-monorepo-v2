@@ -1,4 +1,4 @@
-import type { RuntimeContext } from "../../../types/engine.types";
+import type { RuntimeContext } from "../../../../types/engine.types";
 import { updateStepStatus } from "./updateStepStatus";
 
 /**

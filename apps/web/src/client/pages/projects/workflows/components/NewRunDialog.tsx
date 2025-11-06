@@ -24,6 +24,7 @@ interface NewRunDialogProps {
   projectId: string;
   definitionId: string;
   definition?: WorkflowDefinition;
+  definitions?: WorkflowDefinition[];
 }
 
 export function NewRunDialog({
@@ -32,10 +33,14 @@ export function NewRunDialog({
   projectId,
   definitionId,
   definition,
+  definitions,
 }: NewRunDialogProps) {
   const navigate = useNavigate();
   const createWorkflow = useCreateWorkflow();
 
+  const [selectedDefinitionId, setSelectedDefinitionId] = useState(
+    definitionId || ""
+  );
   const [specFile, setSpecFile] = useState<string>("");
   const [name, setName] = useState("");
   const [args, setArgs] = useState<Record<string, unknown>>({});
@@ -47,6 +52,25 @@ export function NewRunDialog({
   const [worktreeName, setWorktreeName] = useState("");
   const [isGeneratingNames, setIsGeneratingNames] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Derive actual definition from selectedDefinitionId or prop
+  const actualDefinition = definition || definitions?.find((d) => d.id === selectedDefinitionId);
+
+  // Auto-select first definition when dialog opens with definitions prop
+  useEffect(() => {
+    if (open && !definitionId && definitions && definitions.length > 0 && !selectedDefinitionId) {
+      setSelectedDefinitionId(definitions[0].id);
+    }
+  }, [open, definitionId, definitions, selectedDefinitionId]);
+
+  // Reset dependent state when definition changes
+  useEffect(() => {
+    if (selectedDefinitionId && selectedDefinitionId !== definitionId) {
+      setSpecFile("");
+      setName("");
+      setArgs({});
+    }
+  }, [selectedDefinitionId, definitionId]);
 
   // Fetch available spec files
   const { data: specFiles } = useQuery({
@@ -90,6 +114,16 @@ export function NewRunDialog({
       label: file,
     }));
   }, [specFiles]);
+
+  // Transform definitions to combobox options
+  const definitionOptions = useMemo(() => {
+    if (!definitions) return [];
+    return definitions.map((def) => ({
+      value: def.id,
+      label: def.name,
+      description: def.description || undefined,
+    }));
+  }, [definitions]);
 
   // Auto-generate names from spec file using AI
   useEffect(() => {
@@ -140,6 +174,12 @@ export function NewRunDialog({
   const handleCreate = async () => {
     setError(null);
 
+    // Validate workflow definition (only when definitions prop is provided)
+    if (!definitionId && definitions && definitions.length > 0 && !selectedDefinitionId) {
+      setError("Workflow definition is required");
+      return;
+    }
+
     // Validate name
     if (!name.trim()) {
       setError("Execution name is required");
@@ -165,7 +205,7 @@ export function NewRunDialog({
     try {
       const run = await createWorkflow.mutateAsync({
         projectId,
-        definitionId,
+        definitionId: selectedDefinitionId || definitionId,
         name: name.trim(),
         args,
         spec_file: specFile,
@@ -177,7 +217,7 @@ export function NewRunDialog({
 
       // Navigate to new run
       navigate(
-        `/projects/${projectId}/workflows/${definitionId}/runs/${run.id}`
+        `/projects/${projectId}/workflows/${selectedDefinitionId || definitionId}/runs/${run.id}`
       );
 
       // Reset form and close dialog
@@ -218,13 +258,32 @@ export function NewRunDialog({
       <DialogHeader className="px-6 pt-6 pb-4 border-b">
         <DialogTitle className="text-2xl">New Workflow Run</DialogTitle>
         <DialogDescription className="text-base">
-          {definition
-            ? `Create a new run of "${definition.name}"`
+          {actualDefinition
+            ? `Create a new run of "${actualDefinition.name}"`
             : "Create a new workflow run"}
         </DialogDescription>
       </DialogHeader>
 
       <div className="space-y-4 px-6 py-4 max-h-[60vh] overflow-y-auto [&>div]:space-y-2">
+        {/* Workflow definition selection - only show when no definitionId provided */}
+        {!definitionId && definitions && definitions.length > 0 && (
+          <div>
+            <Label>Workflow Definition</Label>
+            <Combobox
+              value={selectedDefinitionId}
+              onValueChange={setSelectedDefinitionId}
+              options={definitionOptions}
+              placeholder="Select workflow definition..."
+              searchPlaceholder="Search definitions..."
+              emptyMessage="No workflow definitions found"
+              disabled={createWorkflow.isPending}
+            />
+            <p className="text-xs text-muted-foreground">
+              Choose the workflow template to run
+            </p>
+          </div>
+        )}
+
         {/* Spec selection */}
         <div>
           <Label>Spec File</Label>
@@ -456,21 +515,21 @@ export function NewRunDialog({
         </div>
 
         {/* Args input - only show if workflow has args_schema with properties */}
-        {definition?.args_schema?.properties &&
-          Object.keys(definition.args_schema.properties).length > 0 && (
+        {actualDefinition?.args_schema?.properties &&
+          Object.keys(actualDefinition.args_schema.properties).length > 0 && (
             <div>
               <Label htmlFor="run-args" className="text-base pb-2 pt-3">
                 Arguments
               </Label>
               <NewRunFormDialogArgSchemaFields
-                argsSchema={definition.args_schema}
+                argsSchema={actualDefinition.args_schema}
                 values={args}
                 onChange={setArgs}
                 disabled={createWorkflow.isPending}
               />
-              {definition?.description && (
+              {actualDefinition?.description && (
                 <p className="text-xs text-muted-foreground">
-                  {definition.description}
+                  {actualDefinition.description}
                 </p>
               )}
             </div>
@@ -492,7 +551,13 @@ export function NewRunDialog({
         >
           Cancel
         </Button>
-        <Button onClick={handleCreate} disabled={createWorkflow.isPending}>
+        <Button
+          onClick={handleCreate}
+          disabled={
+            createWorkflow.isPending ||
+            (!definitionId && definitions && definitions.length > 0 && !selectedDefinitionId)
+          }
+        >
           {createWorkflow.isPending ? "Creating..." : "Create Execution"}
         </Button>
       </DialogFooter>

@@ -6,7 +6,7 @@ import type {
   ArtifactStepConfig,
   ArtifactStepResult,
 } from "@repo/workflow-sdk";
-import { findOrCreateStep } from "./findOrCreateStep";
+import { findOrCreateStep } from "./utils/findOrCreateStep";
 import { createWorkflowArtifact } from "../../artifacts/createWorkflowArtifact";
 import { generateInngestStepId } from "./utils/generateInngestStepId";
 import { emitArtifactCreatedEvent } from "./utils/emitArtifactCreatedEvent";

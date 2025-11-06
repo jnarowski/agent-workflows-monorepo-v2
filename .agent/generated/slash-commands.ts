@@ -4,7 +4,7 @@
 /**
  * Union type of all available slash command names
  */
-export type SlashCommandName = "/audit" | "/check" | "/commit-and-push" | "/commit" | "/document-cli-tool" | "/find-claude-session" | "/fix" | "/generate-feature" | "/generate-prd" | "/generate-research" | "/generate-slash-command" | "/generate-spec-simple" | "/implement-spec" | "/list-specs" | "/move-spec" | "/prime" | "/pull-request" | "/review-spec-implementation" | "/tools" | "/use-browser";
+export type SlashCommandName = "/audit" | "/check" | "/commit-and-push" | "/commit" | "/document-cli-tool" | "/estimate-spec" | "/find-claude-session" | "/fix" | "/generate-feature" | "/generate-prd" | "/generate-research" | "/generate-slash-command" | "/generate-spec-simple" | "/generate-spec" | "/implement-spec" | "/list-specs" | "/move-spec" | "/prime" | "/pull-request" | "/review-spec-implementation" | "/tools" | "/use-browser";
 
 /**
  * Mapping of command names to their argument types
@@ -15,6 +15,7 @@ export interface SlashCommandArgs {
   "/commit-and-push": { "base-branch": string };
   "/commit": Record<string, never>;
   "/document-cli-tool": { "cli-name": string };
+  "/estimate-spec": { "spec-number-or-path-or-name": string };
   "/find-claude-session": { "search-description": string; "project-path (optional)": string };
   "/fix": Record<string, never>;
   "/generate-feature": { "featureName": string; "context": string; "format": string };
@@ -22,6 +23,7 @@ export interface SlashCommandArgs {
   "/generate-research": { "featureName": string; "researchTopic": string; "format": string };
   "/generate-slash-command": { "command-name": string; "description": string };
   "/generate-spec-simple": { "number-or-feature-name": string; "format": string };
+  "/generate-spec": { "number-or-feature-name": string; "format": string };
   "/implement-spec": { "specNumberOrNameOrPath": string; "format": string };
   "/list-specs": { "folder": string; "status": string };
   "/move-spec": { "specNumberOrNameOrPath": string; "targetFolder": string };
@@ -31,6 +33,35 @@ export interface SlashCommandArgs {
   "/tools": Record<string, never>;
   "/use-browser": { "featureSteps": string };
 }
+
+/**
+ * Mapping of command names to their argument order from frontmatter
+ * Preserves positional argument order regardless of object property order
+ */
+export const SlashCommandArgOrder = {
+  "/audit": ["mode", "scope"],
+  "/check": ["format"],
+  "/commit-and-push": ["base-branch"],
+  "/commit": [],
+  "/document-cli-tool": ["cli-name"],
+  "/estimate-spec": ["spec-number-or-path-or-name"],
+  "/find-claude-session": ["search-description", "project-path (optional)"],
+  "/fix": [],
+  "/generate-feature": ["featureName", "context", "format"],
+  "/generate-prd": ["featurename", "context", "format"],
+  "/generate-research": ["featureName", "researchTopic", "format"],
+  "/generate-slash-command": ["command-name", "description"],
+  "/generate-spec-simple": ["number-or-feature-name", "format"],
+  "/generate-spec": ["number-or-feature-name", "format"],
+  "/implement-spec": ["specNumberOrNameOrPath", "format"],
+  "/list-specs": ["folder", "status"],
+  "/move-spec": ["specNumberOrNameOrPath", "targetFolder"],
+  "/prime": [],
+  "/pull-request": ["title", "format"],
+  "/review-spec-implementation": ["specNumberOrNameOrPath", "format"],
+  "/tools": [],
+  "/use-browser": ["featureSteps"]
+} as const;
 
 /**
  * Build a type-safe slash command string
@@ -48,10 +79,12 @@ export function buildSlashCommand<T extends SlashCommandName>(
   args: SlashCommandArgs[T]
 ): string {
   const parts: string[] = [name];
+  const argOrder = SlashCommandArgOrder[name];
 
-  // Add arguments in order (if any)
-  if (args && typeof args === "object") {
-    for (const value of Object.values(args)) {
+  // Add arguments in frontmatter order
+  if (args && typeof args === "object" && argOrder) {
+    for (const argName of argOrder) {
+      const value = (args as Record<string, unknown>)[argName];
       // Skip undefined values (optional arguments)
       if (value !== undefined && value !== null) {
         // Escape single quotes in the value

@@ -51,10 +51,6 @@ export type {
 // Schema type utilities
 export type { InferSchemaType, DeepReadonly } from "./types/schema";
 
-// Generated slash command types (re-export for convenience)
-export type { SlashCommandName, SlashCommandArgs } from "./types/slash-commands";
-export { buildSlashCommand } from "./types/slash-commands";
-
 // Runtime exports
 export type { WorkflowRuntime } from "./runtime";
 

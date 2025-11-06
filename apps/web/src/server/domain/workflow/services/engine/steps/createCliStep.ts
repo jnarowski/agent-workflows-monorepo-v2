@@ -4,7 +4,7 @@ import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
 import type { CliStepConfig, CliStepResult } from "@repo/workflow-sdk";
 import type { CliStepOptions } from "../../../types/event.types";
-import { executeStep } from "./executeStep";
+import { executeStep } from "./utils/executeStep";
 import { withTimeout } from "./utils/withTimeout";
 import { toId } from "./utils/toId";
 import { toName } from "./utils/toName";

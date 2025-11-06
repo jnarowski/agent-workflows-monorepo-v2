@@ -69,7 +69,7 @@ program
   .command("generate-slash-types")
   .description("Generate TypeScript types from .claude/commands/*.md")
   .option("--input <dir>", "Input directory", ".claude/commands")
-  .option("--output <file>", "Output file path", "src/types/slash-commands.ts")
+  .option("--output <file>", "Output file path", ".agent/generated/slash-commands.ts")
   .action(async (options) => {
     try {
       console.log("🔍 Scanning slash commands in:", options.input);

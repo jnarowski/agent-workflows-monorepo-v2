@@ -100,6 +100,9 @@ pnpm check               # Run lint + type-check + tests
 ```
 .
 ├── .agent/                      # Agent workflow artifacts
+│   ├── generated/              # Auto-generated code (DO NOT edit manually)
+│   │   ├── slash-commands.ts   # Generated slash command types and utilities
+│   │   └── README.md           # Regeneration instructions
 │   └── docs/                   # Extended documentation
 │       ├── claude-tool-result-patterns.md
 │       ├── testing-best-practices.md
@@ -246,6 +249,48 @@ pnpm check               # Run lint + type-check + tests
 - ❌ `import { foo } from "./bar.js"`
 
 **Why**: All packages use `moduleResolution: "bundler"` which tells TypeScript that bundlers (Vite, Bunchee, TSX) will handle extension resolution at build/runtime. Extensions are added automatically during transpilation.
+
+**Generated Files:**
+
+The `.agent/generated/` directory contains auto-generated code that should **be committed to source control** but **never edited manually**:
+
+- **`slash-commands.ts`**: Type-safe slash command types, `SlashCommandArgOrder` constant, and `buildSlashCommand()` utility
+- Generated from `.claude/commands/*.md` frontmatter
+- Preserves argument positional order from command definitions (fixes object property order issue)
+- **Generated per-project** (each project generates types for its own slash commands)
+
+**After editing `.claude/commands/*.md` files, regenerate types:**
+
+```bash
+pnpm --filter @repo/workflow-sdk gen-slash-types
+```
+
+**Or if using the package externally:**
+
+```bash
+npx workflow-sdk generate-slash-types
+```
+
+**Import pattern:**
+
+```typescript
+// Import from your project's generated file
+import { buildSlashCommand } from '../generated/slash-commands';
+// or
+import { buildSlashCommand } from '../../.agent/generated/slash-commands';
+```
+
+**Usage example:**
+
+```typescript
+// Arguments can be in any object property order - frontmatter order is preserved
+const cmd = buildSlashCommand('/generate-prd', {
+  format: 'md',        // 3rd in frontmatter
+  featurename: 'auth', // 1st in frontmatter
+  context: 'OAuth'     // 2nd in frontmatter
+});
+// Returns: "/generate-prd 'auth' 'OAuth' 'md'"
+```
 
 **4. Multi-Agent Architecture**
 
@@ -719,6 +764,7 @@ pnpm ship
 - Database: `apps/web/prisma/dev.db`
 - Workflow logs: `.agent/workflows/logs/{workflowId}/`
 - Build output: `dist/` in each package/app
+- Generated files: `.agent/generated/` (DO NOT edit manually)
 - Extended docs: `.agent/docs/`
 
 **Port Numbers:**
@@ -734,6 +780,7 @@ pnpm ship
 - Remove dependency: `pnpm remove <package>`
 - Update dependencies: `pnpm update`
 - Clear Turborepo cache: `rm -rf .turbo`
+- Regenerate slash command types: `pnpm --filter @repo/workflow-sdk gen-slash-types` (after editing `.claude/commands/*.md`)
 
 ## Important
 

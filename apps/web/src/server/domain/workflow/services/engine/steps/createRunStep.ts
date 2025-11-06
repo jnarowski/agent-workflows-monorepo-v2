@@ -1,9 +1,9 @@
 import type { GetStepTools } from "inngest";
 import type { RuntimeContext } from "../../../types/engine.types";
 import { generateInngestStepId } from "./utils/generateInngestStepId";
-import { findOrCreateStep } from "./findOrCreateStep";
-import { updateStepStatus } from "./updateStepStatus";
-import { handleStepFailure } from "./handleStepFailure";
+import { findOrCreateStep } from "./utils/findOrCreateStep";
+import { updateStepStatus } from "./utils/updateStepStatus";
+import { handleStepFailure } from "./utils/handleStepFailure";
 import { toId } from "./utils/toId";
 import { toName } from "./utils/toName";
 

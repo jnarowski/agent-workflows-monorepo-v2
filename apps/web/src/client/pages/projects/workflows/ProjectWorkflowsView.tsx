@@ -6,11 +6,10 @@ import { WorkflowStatusValues } from "@/shared/schemas/workflow.schemas";
 import type { WorkflowStatus } from "@/shared/schemas/workflow.schemas";
 import { WorkflowKanbanColumn } from "./components/WorkflowKanbanColumn";
 import { WorkflowDefinitionsList } from "./components/WorkflowDefinitionsList";
-import { NewWorkflowModal } from "./components/NewWorkflowModal";
+import { NewRunDialog } from "./components/NewRunDialog";
 import { useWorkflowRuns } from "./hooks/useWorkflowRuns";
 import { useWorkflowDefinitions } from "./hooks/useWorkflowDefinitions";
 import { useWorkflowWebSocket } from "./hooks/useWorkflowWebSocket";
-import { useCreateWorkflow } from "./hooks/useWorkflowMutations";
 
 export interface ProjectWorkflowsViewProps {
   projectId?: string;
@@ -26,7 +25,7 @@ export function ProjectWorkflowsView({
   const [definitionFilter, setDefinitionFilter] = useState<
     string | undefined
   >();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showNewRunDialog, setShowNewRunDialog] = useState(false);
 
   // Hooks
   const { data: runs, isLoading } = useWorkflowRuns(projectId, {
@@ -36,8 +35,6 @@ export function ProjectWorkflowsView({
   const { data: definitions } = useWorkflowDefinitions();
   useWorkflowWebSocket(projectId);
 
-  // Mutations
-  const createWorkflow = useCreateWorkflow();
   // TODO: Wire up workflow control mutations
   // const pauseWorkflow = usePauseWorkflow();
   // const resumeWorkflow = useResumeWorkflow();
@@ -50,15 +47,6 @@ export function ProjectWorkflowsView({
     navigate(
       `/projects/${projectId}/workflows/${definitionId}/runs/${runId}`
     );
-  };
-
-  const handleCreateWorkflow = async (data: any) => {
-    await createWorkflow.mutateAsync({
-      projectId,
-      definitionId: data.definitionId,
-      name: data.name,
-      args: data.args,
-    });
   };
 
   // Group runs by status
@@ -88,11 +76,11 @@ export function ProjectWorkflowsView({
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">Workflows</h1>
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setShowNewRunDialog(true)}
             className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            New Workflow
+            New Run
           </button>
         </div>
 
@@ -151,12 +139,13 @@ export function ProjectWorkflowsView({
         </div>
       </div>
 
-      {/* New Workflow Modal */}
-      <NewWorkflowModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        definitions={definitions || []}
-        onSubmit={handleCreateWorkflow}
+      {/* New Run Dialog */}
+      <NewRunDialog
+        open={showNewRunDialog}
+        onOpenChange={setShowNewRunDialog}
+        projectId={projectId}
+        definitionId=""
+        definitions={definitions}
       />
     </div>
   );
