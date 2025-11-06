@@ -22,6 +22,7 @@
 
 // Builder exports
 export { defineWorkflow } from "./builder";
+export { defineSchema } from "./builder/defineSchema";
 export type { WorkflowDefinition } from "./builder";
 
 // Type exports

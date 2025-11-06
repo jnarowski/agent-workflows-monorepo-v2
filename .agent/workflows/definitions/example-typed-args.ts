@@ -1,68 +1,69 @@
-import { defineWorkflow } from "../../../packages/workflow-sdk/dist";
+import { defineWorkflow, defineSchema } from "@repo/workflow-sdk";
 
 /**
- * Example: Type-safe workflow arguments
+ * Example: Type-safe workflow arguments with defineSchema
  *
  * Simple:
- * 1. Define interface
- * 2. Pass as second generic
- * 3. argsSchema validates runtime
+ * 1. Use defineSchema() to define typed schema
+ * 2. Pass argsSchema to defineWorkflow config
+ * 3. Types inferred automatically - no interface needed!
  */
 
-interface BuildArgs {
-  projectName: string;
-  buildType: "production" | "development";
-  includeTests?: boolean;
-}
+const argsSchema = defineSchema({
+  type: "object",
+  properties: {
+    projectName: { type: "string" },
+    buildType: { enum: ["production", "development"] as const },
+    includeTests: { type: "boolean" },
+  },
+  required: ["projectName", "buildType"] as const,
+});
 
-export default defineWorkflow<undefined, BuildArgs>(
+const phases = [
+  { id: "validate", label: "Validate" },
+  { id: "build", label: "Build" },
+  { id: "test", label: "Test" },
+];
+
+export default defineWorkflow(
   {
     id: "typed-build-workflow",
     trigger: "workflow/typed-build",
     name: "Type-Safe Build Workflow",
-
-    phases: [
-      { id: "validate", label: "Validate" },
-      { id: "build", label: "Build" },
-      { id: "test", label: "Test" },
-    ],
-    // argsSchema: runtime validation
-    argsSchema: {
-      type: "object",
-      properties: {
-        projectName: { type: "string" },
-        buildType: { enum: ["production", "development"] },
-        includeTests: { type: "boolean" },
-      },
-      required: ["projectName", "buildType"],
-      additionalProperties: false,
-    },
+    phases,
+    argsSchema,
   },
   async ({ event, step }) => {
-    // Fully typed! No casting needed.
+    // ✅ Typed automatically - no interface needed!
+    // buildType is typed as "production" | "development"
+    // projectName is string, includeTests is boolean | undefined
     const { projectName, buildType, includeTests } = event.data.args;
 
-    step.phase(, async () => {
-      console.log(`Validating ${projectName} in ${buildType} mode`);
-      return { success: true };
+    await step.phase("validate", async () => {
+      await step.run("log-config", async () => {
+        console.log(`Validating ${projectName} in ${buildType} mode`);
+        console.log(`Include tests: ${includeTests ?? false}`);
+      });
     });
 
-    step.phase("build", async () => {
-      console.log(`Building ${projectName} in ${buildType} mode`);
+    await step.phase("build", async () => {
+      await step.run("build-project", async () => {
+        console.log(`Building ${projectName} in ${buildType} mode`);
+        // buildType is typed as literal union
+        if (buildType === "production") {
+          console.log("Running production build");
+        } else {
+          console.log("Running development build");
+        }
+      });
     });
-
-    step.phase("test", async () => {
-      console.log(`Testing ${projectName}`);
-    });
-
-    console.log(`Building ${projectName} in ${buildType} mode`);
-
-    if (buildType === "production") {
-      console.log("Production build");
-    }
 
     if (includeTests) {
-      console.log("Running tests");
+      await step.phase("test", async () => {
+        await step.run("run-tests", async () => {
+          console.log(`Running tests for ${projectName}`);
+        });
+      });
     }
 
     return { success: true };

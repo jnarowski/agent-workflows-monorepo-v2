@@ -636,6 +636,9 @@ importers:
 
   packages/workflow-sdk:
     dependencies:
+      commander:
+        specifier: ^14.0.2
+        version: 14.0.2
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
@@ -643,6 +646,9 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@types/commander':
+        specifier: ^2.12.5
+        version: 2.12.5
       '@types/json-schema':
         specifier: ^7.0.15
         version: 7.0.15
@@ -3170,6 +3176,10 @@ packages:
 
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
+
+  '@types/commander@2.12.5':
+    resolution: {integrity: sha512-YXGZ/rz+s57VbzcvEV9fUoXeJlBt5HaKu5iUheiIWNsJs23bz6AnRuRiZBRVBLYyPnixNvVnuzM5pSaxr8Yp/g==}
+    deprecated: This is a stub types definition. commander provides its own type definitions, so you do not need this installed.
 
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
@@ -10120,6 +10130,10 @@ snapshots:
     dependencies:
       '@types/deep-eql': 4.0.2
       assertion-error: 2.0.1
+
+  '@types/commander@2.12.5':
+    dependencies:
+      commander: 14.0.2
 
   '@types/connect@3.4.38':
     dependencies:

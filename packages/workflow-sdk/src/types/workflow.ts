@@ -1,5 +1,6 @@
 import type { JSONSchema7 } from "json-schema";
 import type { WorkflowStep } from "./steps";
+import type { InferSchemaType } from "./schema";
 
 /**
  * Phase definition - can be a simple string (id = label) or object with separate id and label
@@ -22,7 +23,7 @@ export type ExtractPhaseIds<T extends readonly PhaseDefinition[]> =
  */
 export interface WorkflowConfig<
   TPhases extends readonly PhaseDefinition[] | undefined = undefined,
-  TArgs = Record<string, unknown>
+  TArgsSchema = undefined
 > {
   /** Unique workflow identifier */
   id: string;
@@ -37,9 +38,10 @@ export interface WorkflowConfig<
   /** Global workflow timeout in milliseconds */
   timeout?: number;
   /**
-   * JSON Schema for workflow arguments (runtime validation)
+   * JSON Schema for workflow arguments (runtime validation and type inference)
+   * Use defineSchema() helper for automatic type inference
    */
-  argsSchema?: JSONSchema7;
+  argsSchema?: TArgsSchema;
 }
 
 /**
@@ -47,12 +49,12 @@ export interface WorkflowConfig<
  */
 export interface WorkflowContext<
   TPhases extends readonly PhaseDefinition[] | undefined = undefined,
-  TArgs = Record<string, unknown>
+  TArgsSchema = undefined
 > {
   /** Inngest event data */
   event: {
     name: string;
-    data: WorkflowEventData<TArgs>;
+    data: WorkflowEventData<TArgsSchema>;
   };
   /** Extended step interface with custom methods */
   step: WorkflowStep<
@@ -65,7 +67,7 @@ export interface WorkflowContext<
 /**
  * Event data structure for workflow triggers
  */
-export interface WorkflowEventData<TArgs = Record<string, unknown>> {
+export interface WorkflowEventData<TArgsSchema = undefined> {
   /** Workflow execution ID */
   executionId: string;
   /** Project ID */
@@ -75,9 +77,9 @@ export interface WorkflowEventData<TArgs = Record<string, unknown>> {
   /** Project filesystem path */
   projectPath: string;
   /**
-   * Workflow arguments - type-safe based on defineWorkflow generic
+   * Workflow arguments - type-safe based on schema inference
    */
-  args: TArgs;
+  args: InferSchemaType<TArgsSchema>;
 }
 
 /**
@@ -85,7 +87,7 @@ export interface WorkflowEventData<TArgs = Record<string, unknown>> {
  */
 export type WorkflowFunction<
   TPhases extends readonly PhaseDefinition[] | undefined = undefined,
-  TArgs = Record<string, unknown>
+  TArgsSchema = undefined
 > = (
-  context: WorkflowContext<TPhases, TArgs>
+  context: WorkflowContext<TPhases, TArgsSchema>
 ) => Promise<unknown>;

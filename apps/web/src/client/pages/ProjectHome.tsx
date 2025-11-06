@@ -4,10 +4,10 @@ import {
   useProjectsWithSessions,
   useProjectReadme,
 } from "@/client/pages/projects/hooks/useProjects";
-import { SessionListItem } from "@/client/pages/projects/sessions/components/SessionListItem";
 import { NewSessionButton } from "@/client/pages/projects/sessions/components/NewSessionButton";
 import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
 import { OnboardingSuggestions } from "@/client/pages/projects/components/OnboardingSuggestions";
+import { ProjectHomeSessions } from "@/client/pages/projects/components/ProjectHomeSessions";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import {
   Card,
@@ -142,42 +142,19 @@ export default function ProjectHome() {
         </CardContent>
       </Card>
 
-      {/* Recent Sessions Section */}
+      {/* Sessions Section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
             <MessageSquare className="h-5 w-5 shrink-0" />
-            <span className="truncate">Recent Sessions</span>
+            <span className="truncate">Sessions</span>
           </CardTitle>
           <CardDescription className="mt-1.5 text-xs md:text-sm">
-            Your most recent chat sessions
+            Manage and filter your chat sessions
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
-          {!sessions || sessions.length === 0 ? (
-            <div className="py-8 text-center">
-              <p className="text-sm text-muted-foreground">
-                No sessions yet. Start a new chat to see it here.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-0 -mx-2">
-              {sessions
-                .sort(
-                  (a, b) =>
-                    new Date(b.metadata.lastMessageAt).getTime() -
-                    new Date(a.metadata.lastMessageAt).getTime()
-                )
-                .slice(0, 10)
-                .map((session) => (
-                  <SessionListItem
-                    key={session.id}
-                    session={session}
-                    projectId={id!}
-                  />
-                ))}
-            </div>
-          )}
+          <ProjectHomeSessions sessions={sessions} projectId={id!} />
         </CardContent>
       </Card>
 

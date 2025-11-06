@@ -21,7 +21,8 @@
   },
   "files": [
     "dist",
-    "bin"
+    "bin",
+    "templates"
   ],
   "scripts": {
     "build": "bunchee",
@@ -45,10 +46,12 @@
     "inngest": "^3.0.0"
   },
   "dependencies": {
+    "commander": "^14.0.2",
     "gray-matter": "^4.0.3"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
+    "@types/commander": "^2.12.5",
     "@types/json-schema": "^7.0.15",
     "@types/node": "^22.0.0",
     "bunchee": "^6.6.2",
