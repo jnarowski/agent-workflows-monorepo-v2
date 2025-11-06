@@ -974,22 +974,22 @@ No new files created - this is pure refactoring.
 **Phase Complexity**: 11 points (avg 1.8/10)
 
 <!-- prettier-ignore -->
-- [ ] p10-t1 [2/10] Run full type check
+- [x] p10-t1 [2/10] Run full type check
   - Run: `cd apps/web && pnpm check-types`
   - Expected: No type errors
   - If errors found: fix before proceeding
-- [ ] p10-t2 [3/10] Run all tests
+- [x] p10-t2 [3/10] Run all tests
   - Run: `cd apps/web && pnpm test`
   - Expected: All tests pass
   - If failures: fix before proceeding
-- [ ] p10-t3 [2/10] Start dev server and smoke test
+- [x] p10-t3 [2/10] Start dev server and smoke test
   - Run: `cd apps/web && pnpm dev`
   - Navigate to: http://localhost:5173
   - Verify: App loads without console errors
   - Test: Create new workflow run
   - Test: View run details
   - Test: Check WebSocket updates work
-- [ ] p10-t4 [2/10] Search for stray references
+- [x] p10-t4 [2/10] Search for stray references
   - Search codebase for: `workflow_execution` (should only be in comments explaining migration)
   - Search codebase for: `WorkflowRun` type (should be gone)
   - Search codebase for: `/executions/` routes (should be `/runs/`)
