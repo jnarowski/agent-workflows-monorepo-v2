@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { ArrowLeft, Plus } from 'lucide-react';
-import { WorkflowPhaseKanbanColumn } from './components/WorkflowPhaseKanbanColumn';
-import { NewRunDialog } from './components/NewRunDialog';
-import { useWorkflowDefinition } from './hooks/useWorkflowDefinition';
-import { useWorkflowRuns } from './hooks/useWorkflowRuns';
-import { useWorkflowWebSocket } from './hooks/useWorkflowWebSocket';
-import { getPhaseId, getPhaseLabel } from '@/shared/utils/phase.utils';
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Plus } from "lucide-react";
+import { WorkflowPhaseKanbanColumn } from "./components/WorkflowPhaseKanbanColumn";
+import { NewRunDialog } from "./components/NewRunDialog";
+import { useWorkflowDefinition } from "./hooks/useWorkflowDefinition";
+import { useWorkflowRuns } from "./hooks/useWorkflowRuns";
+import { useWorkflowWebSocket } from "./hooks/useWorkflowWebSocket";
+import { getPhaseId, getPhaseLabel } from "@/shared/utils/phase.utils";
 
 export function WorkflowDefinitionView() {
   const { projectId, definitionId } = useParams<{
@@ -16,7 +16,11 @@ export function WorkflowDefinitionView() {
   }>();
   const navigate = useNavigate();
 
-  const { data: definition, isLoading: definitionLoading, isError: definitionError } = useWorkflowDefinition(definitionId);
+  const {
+    data: definition,
+    isLoading: definitionLoading,
+    isError: definitionError,
+  } = useWorkflowDefinition(definitionId);
 
   // Redirect to workflows list if definition not found
   useEffect(() => {
@@ -53,7 +57,7 @@ export function WorkflowDefinitionView() {
   // Group runs by current phase
   const runsByPhase = (allExecutions || []).reduce(
     (acc, exec) => {
-      const phase = exec.current_phase || 'Not Started';
+      const phase = exec.current_phase || "Not Started";
       if (!acc[phase]) {
         acc[phase] = [];
       }
@@ -65,7 +69,9 @@ export function WorkflowDefinitionView() {
 
   const handleExecutionClick = (clickedExecution: any) => {
     // Navigate to run detail view
-    navigate(`/projects/${projectId}/workflows/${definitionId}/runs/${clickedExecution.id}`);
+    navigate(
+      `/projects/${projectId}/workflows/${definitionId}/runs/${clickedExecution.id}`
+    );
   };
 
   return (
@@ -82,15 +88,15 @@ export function WorkflowDefinitionView() {
 
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold">
-                {definition?.name}
-              </h1>
+              <h1 className="text-2xl font-bold">{definition?.name}</h1>
               <span className="text-sm text-muted-foreground">
-                {(allExecutions || []).length} run{(allExecutions || []).length !== 1 ? 's' : ''}
+                {(allExecutions || []).length} run
+                {(allExecutions || []).length !== 1 ? "s" : ""}
               </span>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Workflow Definition • {phases.length} phase{phases.length !== 1 ? 's' : ''}
+              Workflow Definition • {phases.length} phase
+              {phases.length !== 1 ? "s" : ""}
             </p>
           </div>
 
@@ -99,7 +105,7 @@ export function WorkflowDefinitionView() {
             className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            New Execution
+            New Run
           </button>
         </div>
       </div>
@@ -108,12 +114,12 @@ export function WorkflowDefinitionView() {
       <div className="flex-1 overflow-x-auto overflow-y-hidden p-4">
         <div className="flex gap-4 h-full min-w-full">
           {/* Add "Not Started" column first */}
-          {runsByPhase['Not Started'] && (
+          {runsByPhase["Not Started"] && (
             <div className="flex-1 min-w-80 h-full">
               <WorkflowPhaseKanbanColumn
                 phaseId="not-started"
                 phaseLabel="Not Started"
-                runs={runsByPhase['Not Started']}
+                runs={runsByPhase["Not Started"]}
                 onExecutionClick={handleExecutionClick}
               />
             </div>
@@ -137,7 +143,7 @@ export function WorkflowDefinitionView() {
         </div>
       </div>
 
-      {/* New Execution Dialog */}
+      {/* New Run Dialog */}
       <NewRunDialog
         open={showNewRunDialog}
         onOpenChange={setShowNewRunDialog}

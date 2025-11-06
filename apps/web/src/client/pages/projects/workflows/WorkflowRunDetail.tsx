@@ -112,7 +112,7 @@ export function WorkflowRunDetail() {
             className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            New Execution
+            New Run
           </button>
         </div>
       </div>
@@ -136,7 +136,7 @@ export function WorkflowRunDetail() {
         </div>
       </div>
 
-      {/* New Execution Dialog */}
+      {/* New Run Dialog */}
       <NewRunDialog
         open={showNewRunDialog}
         onOpenChange={setShowNewRunDialog}

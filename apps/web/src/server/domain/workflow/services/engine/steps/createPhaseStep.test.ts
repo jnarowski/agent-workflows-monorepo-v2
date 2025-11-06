@@ -98,7 +98,7 @@ describe("createPhaseStep", () => {
     // Arrange
     const user = await prisma.user.create({
       data: {
-        email: "test@example.com",
+        email: "test2@example.com",
         password_hash: "hash",
       },
     });
@@ -157,7 +157,7 @@ describe("createPhaseStep", () => {
     // Arrange
     const user = await prisma.user.create({
       data: {
-        email: "test@example.com",
+        email: "test3@example.com",
         password_hash: "hash",
       },
     });
@@ -230,7 +230,7 @@ describe("createPhaseStep", () => {
 
     const user = await prisma.user.create({
       data: {
-        email: "test@example.com",
+        email: "test4@example.com",
         password_hash: "hash",
       },
     });
@@ -316,7 +316,7 @@ describe("createPhaseStep", () => {
 
     const user = await prisma.user.create({
       data: {
-        email: "test@example.com",
+        email: "test5@example.com",
         password_hash: "hash",
       },
     });
