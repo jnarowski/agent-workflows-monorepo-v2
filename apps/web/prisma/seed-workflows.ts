@@ -56,13 +56,13 @@ async function main() {
     console.log(`\n🧹 Clearing existing workflow data for ${projects.length} project(s)...`);
   }
 
-  // Get workflow executions for the target project(s)
+  // Get workflow runs for the target project(s)
   const projectIds = projects.map(p => p.id);
-  const existingExecutions = await prisma.workflowExecution.findMany({
+  const existingRuns = await prisma.workflowRun.findMany({
     where: { project_id: { in: projectIds } },
     select: { id: true }
   });
-  const executionIds = existingExecutions.map(e => e.id);
+  const runIds = existingRuns.map(e => e.id);
 
   // Get workflow definitions for the target project(s)
   const existingDefinitions = await prisma.workflowDefinition.findMany({
@@ -72,25 +72,25 @@ async function main() {
   const definitionIds = existingDefinitions.map(d => d.id);
 
   // Delete in correct order (respecting foreign key constraints)
-  if (executionIds.length > 0) {
+  if (runIds.length > 0) {
     await prisma.workflowArtifact.deleteMany({
       where: {
         step: {
-          workflow_execution_id: { in: executionIds }
+          workflow_run_id: { in: runIds }
         }
       }
     });
 
     await prisma.workflowEvent.deleteMany({
-      where: { workflow_execution_id: { in: executionIds } }
+      where: { workflow_run_id: { in: runIds } }
     });
 
-    await prisma.workflowExecutionStep.deleteMany({
-      where: { workflow_execution_id: { in: executionIds } }
+    await prisma.workflowRunStep.deleteMany({
+      where: { workflow_run_id: { in: runIds } }
     });
 
-    await prisma.workflowExecution.deleteMany({
-      where: { id: { in: executionIds } }
+    await prisma.workflowRun.deleteMany({
+      where: { id: { in: runIds } }
     });
   }
 
@@ -101,7 +101,7 @@ async function main() {
     });
   }
 
-  console.log(`✅ Cleared workflow data (${executionIds.length} executions, ${definitionIds.length} definitions)`);
+  console.log(`✅ Cleared workflow data (${runIds.length} runs, ${definitionIds.length} definitions)`);
 
   // Create Workflow Definitions (Templates)
   const featureWorkflow = await prisma.workflowDefinition.create({
@@ -220,12 +220,12 @@ async function main() {
 
   console.log('Created 3 workflow definitions');
 
-  // Create Workflow Executions with various statuses
-  const executions = [];
+  // Create Workflow Runs with various statuses
+  const runs = [];
 
-  // Pending executions (2)
-  executions.push(
-    await prisma.workflowExecution.create({
+  // Pending runs (2)
+  runs.push(
+    await prisma.workflowRun.create({
       data: {
         name: 'Feature: User Profile Settings',
         workflow_definition_id: featureWorkflow.id,

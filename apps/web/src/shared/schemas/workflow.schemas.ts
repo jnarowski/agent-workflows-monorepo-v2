@@ -120,11 +120,11 @@ export type WorkflowEventType = z.infer<typeof workflowEventTypeSchema>;
 // ============================================================================
 
 /**
- * Create Workflow Execution Request Schema
+ * Create Workflow Run Request Schema
  *
- * Validates the request body for creating a new workflow execution.
+ * Validates the request body for creating a new workflow run.
  */
-export const createWorkflowExecutionSchema = z
+export const createWorkflowRunSchema = z
   .object({
     project_id: z.string().cuid(),
     workflow_definition_id: z.string().cuid(),
@@ -157,11 +157,11 @@ export const createWorkflowExecutionSchema = z
   });
 
 /**
- * Workflow Execution Filters Schema
+ * Workflow Run Filters Schema
  *
- * Validates query parameters for filtering workflow executions.
+ * Validates query parameters for filtering workflow runs.
  */
-export const workflowExecutionFiltersSchema = z.object({
+export const workflowRunFiltersSchema = z.object({
   project_id: z.string().cuid().optional(),
   status: workflowStatusSchema.optional(),
 });
@@ -212,13 +212,13 @@ export const getWorkflowEventsQuerySchema = z.object({
 // ============================================================================
 
 /**
- * Workflow Execution Step Response Schema
+ * Workflow Run Step Response Schema
  *
- * Validates the response for a workflow execution step (used in nested relations).
+ * Validates the response for a workflow run step (used in nested relations).
  */
-export const workflowExecutionStepResponseSchema = z.object({
+export const workflowRunStepResponseSchema = z.object({
   id: z.string(),
-  workflow_execution_id: z.string(),
+  workflow_run_id: z.string(),
   step_id: z.string(),
   name: z.string(),
   phase: z.string(),
@@ -239,10 +239,10 @@ export const workflowExecutionStepResponseSchema = z.object({
  */
 export const workflowEventResponseSchema = z.object({
   id: z.string(),
-  workflow_execution_id: z.string(),
+  workflow_run_id: z.string(),
   event_type: z.string(),
   event_data: z.record(z.string(), z.unknown()),
-  workflow_execution_step_id: z.string().nullable(),
+  workflow_run_step_id: z.string().nullable(),
   created_by_user_id: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
@@ -283,11 +283,11 @@ export const workflowDefinitionResponseSchema = z.object({
 });
 
 /**
- * Workflow Execution Response Schema
+ * Workflow Run Response Schema
  *
- * Validates the response for a workflow execution, with optional nested relations.
+ * Validates the response for a workflow run, with optional nested relations.
  */
-export const workflowExecutionResponseSchema = z.object({
+export const workflowRunResponseSchema = z.object({
   id: z.string(),
   project_id: z.string(),
   user_id: z.string(),
@@ -311,7 +311,7 @@ export const workflowExecutionResponseSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   // Optional relations
-  steps: z.array(workflowExecutionStepResponseSchema).optional(),
+  steps: z.array(workflowRunStepResponseSchema).optional(),
   events: z.array(workflowEventResponseSchema).optional(),
   workflow_definition: workflowDefinitionResponseSchema.optional(),
 });
@@ -323,8 +323,8 @@ export const workflowExecutionResponseSchema = z.object({
  */
 export const artifactResponseSchema = z.object({
   id: z.string(),
-  workflow_execution_id: z.string(),
-  workflow_execution_step_id: z.string().nullable(),
+  workflow_run_id: z.string(),
+  workflow_run_step_id: z.string().nullable(),
   workflow_event_id: z.string().nullable(),
   name: z.string(),
   file_path: z.string(),
@@ -342,12 +342,12 @@ export const artifactResponseSchema = z.object({
 
 /**
  * Workflow created event
- * Emitted when workflow execution is created
+ * Emitted when workflow run is created
  */
 const WorkflowCreatedSchema = z.object({
   type: z.literal('workflow:created'),
   data: z.object({
-    executionId: z.string(),
+    runId: z.string(),
     projectId: z.string(),
     timestamp: z.string(),
     definitionId: z.string(),
@@ -356,12 +356,12 @@ const WorkflowCreatedSchema = z.object({
 
 /**
  * Workflow started event
- * Emitted when workflow execution begins
+ * Emitted when workflow run begins
  */
 const WorkflowStartedSchema = z.object({
   type: z.literal('workflow:started'),
   data: z.object({
-    executionId: z.string(),
+    runId: z.string(),
     projectId: z.string(),
     timestamp: z.string(),
   }),
@@ -369,12 +369,12 @@ const WorkflowStartedSchema = z.object({
 
 /**
  * Workflow completed event
- * Emitted when workflow execution finishes successfully
+ * Emitted when workflow run finishes successfully
  */
 const WorkflowCompletedSchema = z.object({
   type: z.literal('workflow:completed'),
   data: z.object({
-    executionId: z.string(),
+    runId: z.string(),
     projectId: z.string(),
     timestamp: z.string(),
   }),
@@ -382,12 +382,12 @@ const WorkflowCompletedSchema = z.object({
 
 /**
  * Workflow failed event
- * Emitted when workflow execution fails with error
+ * Emitted when workflow run fails with error
  */
 const WorkflowFailedSchema = z.object({
   type: z.literal('workflow:failed'),
   data: z.object({
-    executionId: z.string(),
+    runId: z.string(),
     projectId: z.string(),
     timestamp: z.string(),
     error: z.string(),
@@ -396,12 +396,12 @@ const WorkflowFailedSchema = z.object({
 
 /**
  * Workflow paused event
- * Emitted when workflow execution is paused
+ * Emitted when workflow run is paused
  */
 const WorkflowPausedSchema = z.object({
   type: z.literal('workflow:paused'),
   data: z.object({
-    executionId: z.string(),
+    runId: z.string(),
     projectId: z.string(),
     timestamp: z.string(),
   }),
@@ -409,12 +409,12 @@ const WorkflowPausedSchema = z.object({
 
 /**
  * Workflow resumed event
- * Emitted when paused workflow execution resumes
+ * Emitted when paused workflow run resumes
  */
 const WorkflowResumedSchema = z.object({
   type: z.literal('workflow:resumed'),
   data: z.object({
-    executionId: z.string(),
+    runId: z.string(),
     projectId: z.string(),
     timestamp: z.string(),
   }),
@@ -422,12 +422,12 @@ const WorkflowResumedSchema = z.object({
 
 /**
  * Workflow cancelled event
- * Emitted when workflow execution is cancelled by user
+ * Emitted when workflow run is cancelled by user
  */
 const WorkflowCancelledSchema = z.object({
   type: z.literal('workflow:cancelled'),
   data: z.object({
-    executionId: z.string(),
+    runId: z.string(),
     projectId: z.string(),
     timestamp: z.string(),
   }),
@@ -440,7 +440,7 @@ const WorkflowCancelledSchema = z.object({
 const WorkflowStepStartedSchema = z.object({
   type: z.literal('workflow:step:started'),
   data: z.object({
-    executionId: z.string(),
+    runId: z.string(),
     projectId: z.string(),
     timestamp: z.string(),
     stepId: z.string(),
@@ -456,7 +456,7 @@ const WorkflowStepStartedSchema = z.object({
 const WorkflowStepCompletedSchema = z.object({
   type: z.literal('workflow:step:completed'),
   data: z.object({
-    executionId: z.string(),
+    runId: z.string(),
     projectId: z.string(),
     timestamp: z.string(),
     stepId: z.string(),
@@ -473,7 +473,7 @@ const WorkflowStepCompletedSchema = z.object({
 const WorkflowStepFailedSchema = z.object({
   type: z.literal('workflow:step:failed'),
   data: z.object({
-    executionId: z.string(),
+    runId: z.string(),
     projectId: z.string(),
     timestamp: z.string(),
     stepId: z.string(),
@@ -490,7 +490,7 @@ const WorkflowStepFailedSchema = z.object({
 const WorkflowPhaseStartedSchema = z.object({
   type: z.literal('workflow:phase:started'),
   data: z.object({
-    executionId: z.string(),
+    runId: z.string(),
     projectId: z.string(),
     timestamp: z.string(),
     phase: z.string(),
@@ -504,7 +504,7 @@ const WorkflowPhaseStartedSchema = z.object({
 const WorkflowPhaseCompletedSchema = z.object({
   type: z.literal('workflow:phase:completed'),
   data: z.object({
-    executionId: z.string(),
+    runId: z.string(),
     projectId: z.string(),
     timestamp: z.string(),
     phase: z.string(),
@@ -513,12 +513,12 @@ const WorkflowPhaseCompletedSchema = z.object({
 
 /**
  * Annotation created event
- * Emitted when a comment/annotation is added to workflow execution
+ * Emitted when a comment/annotation is added to workflow run
  */
 const WorkflowAnnotationCreatedSchema = z.object({
   type: z.literal('workflow:annotation:created'),
   data: z.object({
-    executionId: z.string(),
+    runId: z.string(),
     projectId: z.string(),
     timestamp: z.string(),
     commentId: z.string(),

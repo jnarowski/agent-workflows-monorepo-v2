@@ -16,7 +16,7 @@ CREATE TABLE "workflow_definitions" (
 );
 
 -- CreateTable
-CREATE TABLE "workflow_executions" (
+CREATE TABLE "workflow_runs" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "project_id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
@@ -39,15 +39,15 @@ CREATE TABLE "workflow_executions" (
     "cancelled_at" DATETIME,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "workflow_executions_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "workflow_executions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "workflow_executions_workflow_definition_id_fkey" FOREIGN KEY ("workflow_definition_id") REFERENCES "workflow_definitions" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "workflow_runs_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "workflow_runs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "workflow_runs_workflow_definition_id_fkey" FOREIGN KEY ("workflow_definition_id") REFERENCES "workflow_definitions" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "workflow_execution_steps" (
+CREATE TABLE "workflow_run_steps" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "workflow_execution_id" TEXT NOT NULL,
+    "workflow_run_id" TEXT NOT NULL,
     "inngest_step_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "phase" TEXT NOT NULL,
@@ -59,14 +59,14 @@ CREATE TABLE "workflow_execution_steps" (
     "completed_at" DATETIME,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "workflow_execution_steps_workflow_execution_id_fkey" FOREIGN KEY ("workflow_execution_id") REFERENCES "workflow_executions" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "workflow_execution_steps_agent_session_id_fkey" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "workflow_run_steps_workflow_run_id_fkey" FOREIGN KEY ("workflow_run_id") REFERENCES "workflow_runs" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "workflow_run_steps_agent_session_id_fkey" FOREIGN KEY ("agent_session_id") REFERENCES "agent_sessions" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "workflow_events" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "workflow_execution_id" TEXT NOT NULL,
+    "workflow_run_id" TEXT NOT NULL,
     "event_type" TEXT NOT NULL,
     "event_data" JSONB NOT NULL,
     "phase" TEXT,
@@ -74,14 +74,14 @@ CREATE TABLE "workflow_events" (
     "created_by_user_id" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "workflow_events_workflow_execution_id_fkey" FOREIGN KEY ("workflow_execution_id") REFERENCES "workflow_executions" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "workflow_events_workflow_run_id_fkey" FOREIGN KEY ("workflow_run_id") REFERENCES "workflow_runs" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "workflow_events_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "workflow_artifacts" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "workflow_execution_id" TEXT NOT NULL,
+    "workflow_run_id" TEXT NOT NULL,
     "workflow_event_id" TEXT,
     "name" TEXT NOT NULL,
     "file_path" TEXT NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE "workflow_artifacts" (
     "inngest_step_id" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "workflow_artifacts_workflow_execution_id_fkey" FOREIGN KEY ("workflow_execution_id") REFERENCES "workflow_executions" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "workflow_artifacts_workflow_run_id_fkey" FOREIGN KEY ("workflow_run_id") REFERENCES "workflow_runs" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "workflow_artifacts_workflow_event_id_fkey" FOREIGN KEY ("workflow_event_id") REFERENCES "workflow_events" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
@@ -149,31 +149,31 @@ CREATE INDEX "workflow_definitions_project_id_idx" ON "workflow_definitions"("pr
 CREATE UNIQUE INDEX "workflow_definitions_project_id_identifier_key" ON "workflow_definitions"("project_id", "identifier");
 
 -- CreateIndex
-CREATE INDEX "workflow_executions_project_id_status_idx" ON "workflow_executions"("project_id", "status");
+CREATE INDEX "workflow_runs_project_id_status_idx" ON "workflow_runs"("project_id", "status");
 
 -- CreateIndex
-CREATE INDEX "workflow_executions_user_id_status_idx" ON "workflow_executions"("user_id", "status");
+CREATE INDEX "workflow_runs_user_id_status_idx" ON "workflow_runs"("user_id", "status");
 
 -- CreateIndex
-CREATE INDEX "workflow_executions_workflow_definition_id_idx" ON "workflow_executions"("workflow_definition_id");
+CREATE INDEX "workflow_runs_workflow_definition_id_idx" ON "workflow_runs"("workflow_definition_id");
 
 -- CreateIndex
-CREATE INDEX "workflow_executions_status_idx" ON "workflow_executions"("status");
+CREATE INDEX "workflow_runs_status_idx" ON "workflow_runs"("status");
 
 -- CreateIndex
-CREATE INDEX "workflow_executions_inngest_run_id_idx" ON "workflow_executions"("inngest_run_id");
+CREATE INDEX "workflow_runs_inngest_run_id_idx" ON "workflow_runs"("inngest_run_id");
 
 -- CreateIndex
-CREATE INDEX "workflow_execution_steps_workflow_execution_id_status_idx" ON "workflow_execution_steps"("workflow_execution_id", "status");
+CREATE INDEX "workflow_run_steps_workflow_run_id_status_idx" ON "workflow_run_steps"("workflow_run_id", "status");
 
 -- CreateIndex
-CREATE INDEX "workflow_execution_steps_agent_session_id_idx" ON "workflow_execution_steps"("agent_session_id");
+CREATE INDEX "workflow_run_steps_agent_session_id_idx" ON "workflow_run_steps"("agent_session_id");
 
 -- CreateIndex
-CREATE INDEX "workflow_execution_steps_status_idx" ON "workflow_execution_steps"("status");
+CREATE INDEX "workflow_run_steps_status_idx" ON "workflow_run_steps"("status");
 
 -- CreateIndex
-CREATE INDEX "workflow_events_workflow_execution_id_created_at_idx" ON "workflow_events"("workflow_execution_id", "created_at");
+CREATE INDEX "workflow_events_workflow_run_id_created_at_idx" ON "workflow_events"("workflow_run_id", "created_at");
 
 -- CreateIndex
 CREATE INDEX "workflow_events_event_type_idx" ON "workflow_events"("event_type");
@@ -182,10 +182,10 @@ CREATE INDEX "workflow_events_event_type_idx" ON "workflow_events"("event_type")
 CREATE INDEX "workflow_events_phase_idx" ON "workflow_events"("phase");
 
 -- CreateIndex
-CREATE INDEX "workflow_artifacts_workflow_execution_id_idx" ON "workflow_artifacts"("workflow_execution_id");
+CREATE INDEX "workflow_artifacts_workflow_run_id_idx" ON "workflow_artifacts"("workflow_run_id");
 
 -- CreateIndex
-CREATE INDEX "workflow_artifacts_workflow_execution_id_phase_idx" ON "workflow_artifacts"("workflow_execution_id", "phase");
+CREATE INDEX "workflow_artifacts_workflow_run_id_phase_idx" ON "workflow_artifacts"("workflow_run_id", "phase");
 
 -- CreateIndex
 CREATE INDEX "workflow_artifacts_workflow_event_id_idx" ON "workflow_artifacts"("workflow_event_id");
