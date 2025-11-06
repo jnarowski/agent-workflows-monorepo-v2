@@ -572,23 +572,23 @@ No new files created - this is pure refactoring.
 **Phase Complexity**: 16 points (avg 4.0/10)
 
 <!-- prettier-ignore -->
-- [ ] p4-t1 [5/10] Update workflows route
+- [x] p4-t1 [5/10] Update workflows route
   - Edit `apps/web/src/server/routes/workflows.ts`
   - Update imports: `createWorkflowExecution` → `createWorkflowRun`, etc.
   - Update all variable names: `execution` → `run`, `executionId` → `runId`
   - Update error messages: "Workflow execution not found" → "Workflow run not found"
   - Update comments referencing "execution"
   - ~60 individual changes across function signatures, variables, calls
-- [ ] p4-t2 [4/10] Update workflow-events route
+- [x] p4-t2 [4/10] Update workflow-events route
   - Edit `apps/web/src/server/routes/workflow-events.ts`
   - Update route parameters: `executionId` → `runId`
   - Update query parameters
   - Update service calls
-- [ ] p4-t3 [4/10] Update workflow-artifacts route
+- [x] p4-t3 [4/10] Update workflow-artifacts route
   - Edit `apps/web/src/server/routes/workflow-artifacts.ts`
   - Update route parameters: `executionId` → `runId`
   - Update FK field references
-- [ ] p4-t4 [3/10] Update test utilities
+- [x] p4-t4 [3/10] Update test utilities
   - Edit `apps/web/src/server/test-utils/db.ts`
   - Update helper functions for creating test executions → runs
   - Update type references
@@ -597,7 +597,19 @@ No new files created - this is pure refactoring.
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+**COMPLETED - Phase 4 (Backend API Layer)**
+- Automated sed replacements across 4 files (routes/workflows.ts, routes/workflow-events.ts, routes/workflow-artifacts.ts, test-utils/db.ts)
+- Updated all imports: createWorkflowRun, getWorkflowRunById, getWorkflowRuns, updateWorkflowRun, generateRunNames
+- Updated all schemas: createWorkflowRunSchema, workflowRunFiltersSchema, runIdSchema
+- Updated all variable names: run, runId, workflowRunId
+- Updated all FK field names: workflow_run_id, workflow_run_step_id
+- Updated all Prisma calls: prisma.workflowRun, prisma.workflowRunStep
+- Updated all API endpoints: /api/workflow-runs/*
+- Updated error messages: "Workflow run not found", "Run is not running", "Run is not paused"
+- Updated comments: "Generate run and branch names", "List events for a workflow run"
+- Updated file paths in artifacts: `.agent/workflows/runs/${runId}/artifacts/`
+- Test utilities: Updated cleanTestDB to use workflowRun and workflowRunStep
+- **Total**: 4 files updated with ~80 individual changes
 
 ### Phase 5: Frontend Foundation
 

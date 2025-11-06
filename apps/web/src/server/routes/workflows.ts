@@ -1,19 +1,19 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import {
-  createWorkflowExecution,
-  getWorkflowExecutionById,
-  getWorkflowExecutions,
+  createWorkflowRun,
+  getWorkflowRunById,
+  getWorkflowRuns,
   executeWorkflow,
   pauseWorkflow,
   resumeWorkflow,
   cancelWorkflow,
-  generateExecutionNames,
+  generateRunNames,
 } from "@/server/domain/workflow/services";
 import { readFile } from "@/server/domain/file/services/readFile";
 import {
-  createWorkflowExecutionSchema,
-  workflowExecutionFiltersSchema,
+  createWorkflowRunSchema,
+  workflowRunFiltersSchema,
 } from "@/shared/schemas/workflow.schemas";
 import { NotFoundError } from "@/server/errors";
 import { scanProjectWorkflows } from "@/server/domain/workflow/services/engine";
@@ -21,23 +21,23 @@ import { prisma } from "@/shared/prisma";
 import '@/server/plugins/auth';
 
 // Params schema
-const executionIdSchema = z.object({
+const runIdSchema = z.object({
   id: z.cuid(),
 });
 
 export async function workflowRoutes(fastify: FastifyInstance) {
   /**
-   * POST /api/workflow-executions
-   * Create and start a workflow execution
+   * POST /api/workflow-runs
+   * Create and start a workflow run
    */
   fastify.post<{
-    Body: z.infer<typeof createWorkflowExecutionSchema>;
+    Body: z.infer<typeof createWorkflowRunSchema>;
   }>(
-    "/api/workflow-executions",
+    "/api/workflow-runs",
     {
       preHandler: fastify.authenticate,
       schema: {
-        body: createWorkflowExecutionSchema,
+        body: createWorkflowRunSchema,
       },
     },
     async (request, reply) => {
@@ -46,10 +46,10 @@ export async function workflowRoutes(fastify: FastifyInstance) {
 
       fastify.log.info(
         { userId, workflowDefinitionId: body.workflow_definition_id },
-        "Creating workflow execution"
+        "Creating workflow run"
       );
 
-      const execution = await createWorkflowExecution({
+      const run = await createWorkflowRun({
         project_id: body.project_id,
         user_id: userId,
         workflow_definition_id: body.workflow_definition_id,
@@ -62,45 +62,45 @@ export async function workflowRoutes(fastify: FastifyInstance) {
         worktree_name: body.worktree_name,
       });
 
-      if (!execution) {
+      if (!run) {
         throw new NotFoundError("Workflow definition not found");
       }
 
-      // Start execution via Inngest
+      // Start run via Inngest
       try {
-        await executeWorkflow(execution.id, fastify, fastify.log);
+        await executeWorkflow(run.id, fastify, fastify.log);
 
         fastify.log.info(
-          { executionId: execution.id, userId },
-          "Workflow execution triggered successfully"
+          { runId: run.id, userId },
+          "Workflow run triggered successfully"
         );
       } catch (error) {
         const err = error instanceof Error ? error : new Error(String(error));
         fastify.log.error(
-          { err, executionId: execution.id, userId },
-          "Failed to trigger workflow execution"
+          { err, runId: run.id, userId },
+          "Failed to trigger workflow run"
         );
 
         // Re-throw to let global error handler return 500
         throw err;
       }
 
-      return reply.code(201).send({ data: execution });
+      return reply.code(201).send({ data: run });
     }
   );
 
   /**
-   * GET /api/workflow-executions
-   * List workflow executions for a project
+   * GET /api/workflow-runs
+   * List workflow runs for a project
    */
   fastify.get<{
-    Querystring: z.infer<typeof workflowExecutionFiltersSchema>;
+    Querystring: z.infer<typeof workflowRunFiltersSchema>;
   }>(
-    "/api/workflow-executions",
+    "/api/workflow-runs",
     {
       preHandler: fastify.authenticate,
       schema: {
-        querystring: workflowExecutionFiltersSchema,
+        querystring: workflowRunFiltersSchema,
       },
     },
     async (request, reply) => {
@@ -115,31 +115,31 @@ export async function workflowRoutes(fastify: FastifyInstance) {
 
       fastify.log.info(
         { userId, projectId: project_id, status },
-        "Fetching workflow executions"
+        "Fetching workflow runs"
       );
 
-      const executions = await getWorkflowExecutions({
+      const runs = await getWorkflowRuns({
         project_id,
         user_id: userId,
         status,
       });
 
-      return reply.send({ data: executions });
+      return reply.send({ data: runs });
     }
   );
 
   /**
-   * GET /api/workflow-executions/:id
-   * Get detailed execution information
+   * GET /api/workflow-runs/:id
+   * Get detailed run information
    */
   fastify.get<{
-    Params: z.infer<typeof executionIdSchema>;
+    Params: z.infer<typeof runIdSchema>;
   }>(
-    "/api/workflow-executions/:id",
+    "/api/workflow-runs/:id",
     {
       preHandler: fastify.authenticate,
       schema: {
-        params: executionIdSchema,
+        params: runIdSchema,
       },
     },
     async (request, reply) => {
@@ -147,39 +147,39 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       const userId = (request.user! as { id: string }).id;
 
       fastify.log.info(
-        { userId, executionId: id },
-        "Fetching workflow execution"
+        { userId, runId: id },
+        "Fetching workflow run"
       );
 
-      const execution = await getWorkflowExecutionById(id);
+      const run = await getWorkflowRunById(id);
 
-      if (!execution) {
-        throw new NotFoundError("Workflow execution not found");
+      if (!run) {
+        throw new NotFoundError("Workflow run not found");
       }
 
-      // Verify user owns this execution
-      if (execution.user_id !== userId) {
+      // Verify user owns this run
+      if (run.user_id !== userId) {
         return reply
           .code(403)
           .send({ error: { message: "Access denied", statusCode: 403 } });
       }
 
-      return reply.send({ data: execution });
+      return reply.send({ data: run });
     }
   );
 
   /**
-   * POST /api/workflow-executions/:id/pause
-   * Pause a running workflow execution
+   * POST /api/workflow-runs/:id/pause
+   * Pause a running workflow run
    */
   fastify.post<{
-    Params: z.infer<typeof executionIdSchema>;
+    Params: z.infer<typeof runIdSchema>;
   }>(
-    "/api/workflow-executions/:id/pause",
+    "/api/workflow-runs/:id/pause",
     {
       preHandler: fastify.authenticate,
       schema: {
-        params: executionIdSchema,
+        params: runIdSchema,
       },
     },
     async (request, reply) => {
@@ -187,25 +187,25 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       const userId = (request.user! as { id: string }).id;
 
       fastify.log.info(
-        { userId, executionId: id },
-        "Pausing workflow execution"
+        { userId, runId: id },
+        "Pausing workflow run"
       );
 
-      const execution = await getWorkflowExecutionById(id);
+      const run = await getWorkflowRunById(id);
 
-      if (!execution) {
-        throw new NotFoundError("Workflow execution not found");
+      if (!run) {
+        throw new NotFoundError("Workflow run not found");
       }
 
-      if (execution.user_id !== userId) {
+      if (run.user_id !== userId) {
         return reply
           .code(403)
           .send({ error: { message: "Access denied", statusCode: 403 } });
       }
 
-      if (execution.status !== "running") {
+      if (run.status !== "running") {
         return reply.code(400).send({
-          error: { message: "Execution is not running", statusCode: 400 },
+          error: { message: "Run is not running", statusCode: 400 },
         });
       }
 
@@ -216,17 +216,17 @@ export async function workflowRoutes(fastify: FastifyInstance) {
   );
 
   /**
-   * POST /api/workflow-executions/:id/resume
-   * Resume a paused workflow execution
+   * POST /api/workflow-runs/:id/resume
+   * Resume a paused workflow run
    */
   fastify.post<{
-    Params: z.infer<typeof executionIdSchema>;
+    Params: z.infer<typeof runIdSchema>;
   }>(
-    "/api/workflow-executions/:id/resume",
+    "/api/workflow-runs/:id/resume",
     {
       preHandler: fastify.authenticate,
       schema: {
-        params: executionIdSchema,
+        params: runIdSchema,
       },
     },
     async (request, reply) => {
@@ -234,25 +234,25 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       const userId = (request.user! as { id: string }).id;
 
       fastify.log.info(
-        { userId, executionId: id },
-        "Resuming workflow execution"
+        { userId, runId: id },
+        "Resuming workflow run"
       );
 
-      const execution = await getWorkflowExecutionById(id);
+      const run = await getWorkflowRunById(id);
 
-      if (!execution) {
-        throw new NotFoundError("Workflow execution not found");
+      if (!run) {
+        throw new NotFoundError("Workflow run not found");
       }
 
-      if (execution.user_id !== userId) {
+      if (run.user_id !== userId) {
         return reply
           .code(403)
           .send({ error: { message: "Access denied", statusCode: 403 } });
       }
 
-      if (execution.status !== "paused") {
+      if (run.status !== "paused") {
         return reply.code(400).send({
-          error: { message: "Execution is not paused", statusCode: 400 },
+          error: { message: "Run is not paused", statusCode: 400 },
         });
       }
 
@@ -263,17 +263,17 @@ export async function workflowRoutes(fastify: FastifyInstance) {
   );
 
   /**
-   * POST /api/workflow-executions/:id/cancel
-   * Cancel a workflow execution
+   * POST /api/workflow-runs/:id/cancel
+   * Cancel a workflow run
    */
   fastify.post<{
-    Params: z.infer<typeof executionIdSchema>;
+    Params: z.infer<typeof runIdSchema>;
   }>(
-    "/api/workflow-executions/:id/cancel",
+    "/api/workflow-runs/:id/cancel",
     {
       preHandler: fastify.authenticate,
       schema: {
-        params: executionIdSchema,
+        params: runIdSchema,
       },
     },
     async (request, reply) => {
@@ -281,17 +281,17 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       const userId = (request.user! as { id: string }).id;
 
       fastify.log.info(
-        { userId, executionId: id },
-        "Cancelling workflow execution"
+        { userId, runId: id },
+        "Cancelling workflow run"
       );
 
-      const execution = await getWorkflowExecutionById(id);
+      const run = await getWorkflowRunById(id);
 
-      if (!execution) {
-        throw new NotFoundError("Workflow execution not found");
+      if (!run) {
+        throw new NotFoundError("Workflow run not found");
       }
 
-      if (execution.user_id !== userId) {
+      if (run.user_id !== userId) {
         return reply
           .code(403)
           .send({ error: { message: "Access denied", statusCode: 403 } });
@@ -395,7 +395,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
 
   /**
    * POST /api/workflows/generate-names-from-spec
-   * Generate execution and branch names from spec file using AI
+   * Generate run and branch names from spec file using AI
    */
   fastify.post<{
     Body: {
@@ -419,7 +419,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
 
       fastify.log.info(
         { userId, projectId, specFile },
-        "Generating execution names from spec"
+        "Generating run names from spec"
       );
 
       // Verify project exists
@@ -447,7 +447,7 @@ export async function workflowRoutes(fastify: FastifyInstance) {
       }
 
       // Generate names using AI
-      const names = await generateExecutionNames({ specContent });
+      const names = await generateRunNames({ specContent });
 
       return reply.send({ data: names });
     }

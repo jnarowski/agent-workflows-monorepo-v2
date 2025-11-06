@@ -12,8 +12,8 @@ export async function cleanTestDB(prisma: PrismaClient): Promise<void> {
   // Leaf nodes first, then tables they reference
   await prisma.workflowArtifact.deleteMany();
   await prisma.workflowEvent.deleteMany();
-  await prisma.workflowExecutionStep.deleteMany();
-  await prisma.workflowExecution.deleteMany();
+  await prisma.workflowRunStep.deleteMany();
+  await prisma.workflowRun.deleteMany();
   await prisma.workflowDefinition.deleteMany();
   await prisma.agentSession.deleteMany();
   await prisma.project.deleteMany();
