@@ -114,47 +114,51 @@ export function ProjectHomeSessions({
         {/* Filter Row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {/* Search Input */}
-          <div className="relative">
+          <div className="relative md:col-span-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search sessions..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
+              className="pl-9 w-full"
             />
           </div>
 
           {/* State Filter */}
-          <Select value={selectedState} onValueChange={setSelectedState}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by state" />
-            </SelectTrigger>
-            <SelectContent>
-              {stateOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="md:col-span-1">
+            <Select value={selectedState} onValueChange={setSelectedState}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Filter by state" />
+              </SelectTrigger>
+              <SelectContent>
+                {stateOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Agent Filter */}
-          <Select value={selectedAgent} onValueChange={setSelectedAgent}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by agent" />
-            </SelectTrigger>
-            <SelectContent>
-              {agentOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="md:col-span-1">
+            <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Filter by agent" />
+              </SelectTrigger>
+              <SelectContent>
+                {agentOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Show Archived Checkbox */}
-          <div className="flex items-center space-x-2 px-3 border border-border/50 rounded-md bg-background">
+          <div className="md:col-span-1 flex items-center space-x-2 px-3 border border-border/50 rounded-md bg-background">
             <Checkbox
               id="show-archived"
               checked={showArchived}

@@ -2,6 +2,7 @@ import type {
   WorkflowConfig,
   WorkflowContext,
   WorkflowFunction,
+  PhaseDefinition,
 } from "../types/workflow";
 import type { WorkflowRuntime } from "../runtime/adapter";
 
@@ -9,12 +10,11 @@ import type { WorkflowRuntime } from "../runtime/adapter";
  * Workflow definition with type marker for runtime detection
  */
 export interface WorkflowDefinition<
-  TPhases extends readonly import("../types/workflow").PhaseDefinition[] | undefined = undefined,
-  TArgsSchema = undefined
+  TPhases extends readonly PhaseDefinition[] | undefined = undefined
 > {
   __type: "workflow";
-  config: WorkflowConfig<TPhases, TArgsSchema>;
-  fn: WorkflowFunction<TPhases, TArgsSchema>;
+  config: WorkflowConfig<TPhases>;
+  fn: WorkflowFunction<TPhases>;
   /**
    * Create an Inngest function using the provided runtime adapter
    * This is called by the web app to hydrate the workflow with real implementations
@@ -25,8 +25,8 @@ export interface WorkflowDefinition<
 /**
  * Define a type-safe workflow
  *
- * Use defineSchema() helper to create typed argsSchema.
- * Types are inferred automatically from schema properties.
+ * Pass args type as second generic for type safety.
+ * argsSchema provides runtime validation.
  *
  * @param config - Workflow configuration
  * @param fn - Workflow function to execute
@@ -34,33 +34,35 @@ export interface WorkflowDefinition<
  *
  * @example
  * ```typescript
- * import { defineWorkflow, defineSchema } from '@repo/workflow-sdk';
+ * import { defineWorkflow } from '@repo/workflow-sdk';
  *
- * const argsSchema = defineSchema({
- *   type: 'object',
- *   properties: {
- *     featureName: { type: 'string' },
- *     priority: { enum: ['high', 'medium', 'low'] }
- *   },
- *   required: ['featureName', 'priority']
- * });
+ * interface FeatureArgs {
+ *   featureName: string;
+ *   priority: 'high' | 'medium' | 'low';
+ * }
  *
- * export default defineWorkflow({
+ * export default defineWorkflow<typeof phases, FeatureArgs>({
  *   id: 'implement-feature',
  *   phases: [{ id: 'plan', label: 'Plan' }] as const,
- *   argsSchema,
+ *   argsSchema: {
+ *     type: 'object',
+ *     properties: {
+ *       featureName: { type: 'string' },
+ *       priority: { enum: ['high', 'medium', 'low'] }
+ *     },
+ *     required: ['featureName', 'priority']
+ *   }
  * }, async ({ event }) => {
  *   const { featureName, priority } = event.data.args; // Typed!
  * });
  * ```
  */
 export function defineWorkflow<
-  const TPhases extends readonly import("../types/workflow").PhaseDefinition[] | undefined,
-  const TArgsSchema = undefined
+  const TPhases extends readonly PhaseDefinition[] | undefined = undefined
 >(
-  config: WorkflowConfig<TPhases, TArgsSchema>,
-  fn: WorkflowFunction<TPhases, TArgsSchema>
-): WorkflowDefinition<TPhases, TArgsSchema> {
+  config: WorkflowConfig<TPhases>,
+  fn: WorkflowFunction<TPhases>
+): WorkflowDefinition<TPhases> {
   return {
     __type: "workflow",
     config,

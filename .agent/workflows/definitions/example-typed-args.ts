@@ -1,4 +1,7 @@
-import { defineWorkflow, defineSchema } from "@repo/workflow-sdk";
+import {
+  defineWorkflow,
+  defineSchema,
+} from "../../../packages/workflow-sdk/dist/index.js";
 
 /**
  * Example: Type-safe workflow arguments with defineSchema
@@ -9,29 +12,35 @@ import { defineWorkflow, defineSchema } from "@repo/workflow-sdk";
  * 3. Types inferred automatically - no interface needed!
  */
 
-const argsSchema = defineSchema({
-  type: "object",
-  properties: {
-    projectName: { type: "string" },
-    buildType: { enum: ["production", "development"] as const },
-    includeTests: { type: "boolean" },
-  },
-  required: ["projectName", "buildType"] as const,
-});
-
-const phases = [
-  { id: "validate", label: "Validate" },
-  { id: "build", label: "Build" },
-  { id: "test", label: "Test" },
-];
+// const argsSchema = defineSchema({
+//   type: "object",
+//   properties: {
+//     projectName: { type: "string" },
+//     buildType: { enum: ["production", "development"] as const },
+//     includeTests: { type: "boolean" },
+//   },
+//   required: ["projectName", "buildType"] as const,
+// });
 
 export default defineWorkflow(
   {
     id: "typed-build-workflow",
     trigger: "workflow/typed-build",
     name: "Type-Safe Build Workflow",
-    phases,
-    argsSchema,
+    phases: [
+      { id: "validate", label: "Validate" },
+      { id: "build", label: "Build" },
+      { id: "test", label: "Test" },
+    ],
+    argsSchema: {
+      type: "object",
+      properties: {
+        projectName: { type: "string" },
+        buildType: { enum: ["production", "development"] },
+        includeTests: { type: "boolean" },
+      },
+      required: ["projectName", "buildType"],
+    },
   },
   async ({ event, step }) => {
     // ✅ Typed automatically - no interface needed!

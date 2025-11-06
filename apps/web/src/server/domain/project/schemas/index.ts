@@ -113,6 +113,38 @@ export const projectSyncResponseSchema = z.object({
   data: projectSyncResultSchema,
 });
 
+/**
+ * Workflow SDK check result schema
+ */
+export const workflowSdkCheckResultSchema = z.object({
+  hasPackageJson: z.boolean(),
+  installed: z.boolean(),
+  version: z.string().optional(),
+});
+
+/**
+ * Workflow SDK check response wrapper
+ */
+export const workflowSdkCheckResponseSchema = z.object({
+  data: workflowSdkCheckResultSchema,
+});
+
+/**
+ * Workflow SDK install result schema
+ */
+export const workflowSdkInstallResultSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+  output: z.string().optional(),
+});
+
+/**
+ * Workflow SDK install response wrapper
+ */
+export const workflowSdkInstallResponseSchema = z.object({
+  data: workflowSdkInstallResultSchema,
+});
+
 // ============================================================================
 // Type Exports
 // ============================================================================
@@ -125,3 +157,5 @@ export type FileContentQuery = z.infer<typeof fileContentQuerySchema>;
 export type FileContentBody = z.infer<typeof fileContentBodySchema>;
 export type HideProjectInput = z.infer<typeof hideProjectSchema>;
 export type StarProjectInput = z.infer<typeof starProjectSchema>;
+export type WorkflowSdkCheckResult = z.infer<typeof workflowSdkCheckResultSchema>;
+export type WorkflowSdkInstallResult = z.infer<typeof workflowSdkInstallResultSchema>;

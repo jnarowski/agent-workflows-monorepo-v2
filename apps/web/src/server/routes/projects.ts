@@ -14,6 +14,8 @@ import {
   syncFromClaudeProjects,
   listSpecFiles,
 } from "@/server/domain/project/services";
+import { checkWorkflowSdk } from "@/server/domain/project/services/checkWorkflowSdk";
+import { installWorkflowSdk } from "@/server/domain/project/services/installWorkflowSdk";
 import { getBranches } from "@/server/domain/git/services";
 import { getFileTree, readFile, writeFile } from "@/server/domain/file/services/index";
 import {
@@ -26,6 +28,8 @@ import {
   starProjectSchema,
   projectResponseSchema,
   projectSyncResponseSchema,
+  workflowSdkCheckResponseSchema,
+  workflowSdkInstallResponseSchema,
 } from "@/server/domain/project/schemas";
 import {
   fileTreeResponseSchema,
@@ -594,6 +598,84 @@ export async function projectRoutes(fastify: FastifyInstance) {
 
         throw error;
       }
+    }
+  );
+
+  /**
+   * GET /api/projects/:id/workflow-sdk/check
+   * Check if workflow-sdk is installed in project
+   */
+  fastify.get<{
+    Params: { id: string };
+  }>(
+    "/api/projects/:id/workflow-sdk/check",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: projectIdSchema,
+        response: {
+          200: workflowSdkCheckResponseSchema,
+          404: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      const project = await getProjectById(request.params.id);
+
+      if (!project) {
+        return reply
+          .code(404)
+          .send(buildErrorResponse(404, "Project not found"));
+      }
+
+      const checkResult = await checkWorkflowSdk(project.path);
+
+      return reply.send({ data: checkResult });
+    }
+  );
+
+  /**
+   * POST /api/projects/:id/workflow-sdk/install
+   * Install workflow-sdk in project
+   */
+  fastify.post<{
+    Params: { id: string };
+  }>(
+    "/api/projects/:id/workflow-sdk/install",
+    {
+      preHandler: fastify.authenticate,
+      schema: {
+        params: projectIdSchema,
+        response: {
+          200: workflowSdkInstallResponseSchema,
+          404: errorResponse,
+        },
+      },
+    },
+    async (request, reply) => {
+      const project = await getProjectById(request.params.id);
+
+      if (!project) {
+        return reply
+          .code(404)
+          .send(buildErrorResponse(404, "Project not found"));
+      }
+
+      fastify.log.info(
+        { projectId: project.id, projectPath: project.path },
+        "Installing workflow-sdk"
+      );
+
+      const installResult = await installWorkflowSdk(project.path);
+
+      if (!installResult.success) {
+        fastify.log.error(
+          { projectId: project.id, error: installResult.message },
+          "Workflow SDK installation failed"
+        );
+      }
+
+      return reply.send({ data: installResult });
     }
   );
 }

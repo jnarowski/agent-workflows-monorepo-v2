@@ -1,6 +1,6 @@
 /**
- * OnboardingSuggestions Component
- * Shows installation status for CLI tools and API key
+ * GlobalOnboardingSuggestions Component
+ * Shows installation status for global CLI tools and API key
  * Dismissible card with visual status indicators
  */
 
@@ -17,7 +17,7 @@ interface SuggestionItem {
   docsUrl: string;
 }
 
-export function OnboardingSuggestions() {
+export function GlobalOnboardingSuggestions() {
   const { data: settings } = useSettings();
   const updateSettings = useUpdateSettings();
 

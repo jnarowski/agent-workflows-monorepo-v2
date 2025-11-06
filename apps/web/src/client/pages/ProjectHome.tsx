@@ -6,7 +6,7 @@ import {
 } from "@/client/pages/projects/hooks/useProjects";
 import { NewSessionButton } from "@/client/pages/projects/sessions/components/NewSessionButton";
 import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
-import { OnboardingSuggestions } from "@/client/pages/projects/components/OnboardingSuggestions";
+import { ProjectOnboardingSuggestions } from "@/client/pages/projects/components/ProjectOnboardingSuggestions";
 import { ProjectHomeSessions } from "@/client/pages/projects/components/ProjectHomeSessions";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import {
@@ -95,8 +95,8 @@ export default function ProjectHome() {
         </div>
       </div>
 
-      {/* Onboarding Suggestions */}
-      <OnboardingSuggestions />
+      {/* Project Setup */}
+      <ProjectOnboardingSuggestions projectId={id!} />
 
       <Card className="border-border/50 py-2">
         <CardContent className="p-0">
