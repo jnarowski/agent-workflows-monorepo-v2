@@ -26,6 +26,7 @@ import {
 import { FolderOpen, Plus, Calendar, FolderGit2, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
+import { OnboardingSuggestions } from "@/client/pages/projects/components/OnboardingSuggestions";
 import { useDocumentTitle } from "@/client/hooks/useDocumentTitle";
 import { truncatePath } from "@/client/utils/cn";
 
@@ -117,6 +118,9 @@ export default function Projects() {
           New Project
         </Button>
       </div>
+
+      {/* Onboarding Suggestions */}
+      <OnboardingSuggestions />
 
       {/* Projects Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

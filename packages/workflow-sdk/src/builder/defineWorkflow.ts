@@ -9,11 +9,12 @@ import type { WorkflowRuntime } from "../runtime/adapter";
  * Workflow definition with type marker for runtime detection
  */
 export interface WorkflowDefinition<
-  TPhases extends readonly import("../types/workflow").PhaseDefinition[] | undefined = undefined
+  TPhases extends readonly import("../types/workflow").PhaseDefinition[] | undefined = undefined,
+  TArgs = Record<string, unknown>
 > {
   __type: "workflow";
-  config: WorkflowConfig<TPhases>;
-  fn: WorkflowFunction<TPhases>;
+  config: WorkflowConfig<TPhases, TArgs>;
+  fn: WorkflowFunction<TPhases, TArgs>;
   /**
    * Create an Inngest function using the provided runtime adapter
    * This is called by the web app to hydrate the workflow with real implementations
@@ -22,10 +23,10 @@ export interface WorkflowDefinition<
 }
 
 /**
- * Define a type-safe workflow with custom step methods
+ * Define a type-safe workflow
  *
- * Uses const type parameters to automatically infer phase IDs from config.
- * argsSchema enables runtime validation of workflow arguments via JSON Schema.
+ * Pass args type as second generic for type safety.
+ * argsSchema provides runtime validation.
  *
  * @param config - Workflow configuration
  * @param fn - Workflow function to execute
@@ -35,50 +36,34 @@ export interface WorkflowDefinition<
  * ```typescript
  * import { defineWorkflow } from '@repo/workflow-sdk';
  *
- * // Define argument types
  * interface FeatureArgs {
  *   featureName: string;
  *   priority: 'high' | 'medium' | 'low';
- *   estimatedHours?: number;
  * }
  *
- * export default defineWorkflow({
+ * export default defineWorkflow<typeof phases, FeatureArgs>({
  *   id: 'implement-feature',
- *   trigger: 'workflow/implement-feature',
- *   phases: [
- *     { id: 'plan', label: 'Plan' },
- *     { id: 'implement', label: 'Implement' },
- *     { id: 'review', label: 'Review' }
- *   ],
+ *   phases: [{ id: 'plan', label: 'Plan' }] as const,
  *   argsSchema: {
  *     type: 'object',
  *     properties: {
  *       featureName: { type: 'string' },
- *       priority: { type: 'string', enum: ['high', 'medium', 'low'] },
- *       estimatedHours: { type: 'number' }
+ *       priority: { enum: ['high', 'medium', 'low'] }
  *     },
  *     required: ['featureName', 'priority']
  *   }
- * }, async ({ event, step }) => {
- *   // Cast to your interface for type safety
- *   const args = event.data.args as FeatureArgs;
- *   const { featureName, priority } = args;
- *
- *   await step.phase('plan', async () => {
- *     await step.agent('analyze', {
- *       agent: 'claude',
- *       prompt: `Analyze ${featureName} (priority: ${priority})`
- *     });
- *   });
+ * }, async ({ event }) => {
+ *   const { featureName, priority } = event.data.args; // Typed!
  * });
  * ```
  */
 export function defineWorkflow<
-  const TPhases extends readonly import("../types/workflow").PhaseDefinition[] | undefined
+  const TPhases extends readonly import("../types/workflow").PhaseDefinition[] | undefined,
+  TArgs = Record<string, unknown>
 >(
-  config: WorkflowConfig<TPhases>,
-  fn: WorkflowFunction<TPhases>
-): WorkflowDefinition<TPhases> {
+  config: WorkflowConfig<TPhases, TArgs>,
+  fn: WorkflowFunction<TPhases, TArgs>
+): WorkflowDefinition<TPhases, TArgs> {
   return {
     __type: "workflow",
     config,

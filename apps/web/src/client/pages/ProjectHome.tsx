@@ -7,6 +7,7 @@ import {
 import { SessionListItem } from "@/client/pages/projects/sessions/components/SessionListItem";
 import { NewSessionButton } from "@/client/pages/projects/sessions/components/NewSessionButton";
 import { ProjectDialog } from "@/client/pages/projects/components/ProjectDialog";
+import { OnboardingSuggestions } from "@/client/pages/projects/components/OnboardingSuggestions";
 import { Skeleton } from "@/client/components/ui/skeleton";
 import {
   Card,
@@ -93,6 +94,9 @@ export default function ProjectHome() {
           </div>
         </div>
       </div>
+
+      {/* Onboarding Suggestions */}
+      <OnboardingSuggestions />
 
       <Card className="border-border/50 py-2">
         <CardContent className="p-0">

@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
+    "@types/json-schema": "^7.0.15",
     "@types/node": "^22.0.0",
     "bunchee": "^6.6.2",
     "inngest": "^3.0.0",

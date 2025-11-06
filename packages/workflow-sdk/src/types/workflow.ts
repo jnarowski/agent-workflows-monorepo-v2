@@ -1,3 +1,4 @@
+import type { JSONSchema7 } from "json-schema";
 import type { WorkflowStep } from "./steps";
 
 /**
@@ -20,7 +21,8 @@ export type ExtractPhaseIds<T extends readonly PhaseDefinition[]> =
  * Workflow configuration
  */
 export interface WorkflowConfig<
-  TPhases extends readonly PhaseDefinition[] | undefined = undefined
+  TPhases extends readonly PhaseDefinition[] | undefined = undefined,
+  TArgs = Record<string, unknown>
 > {
   /** Unique workflow identifier */
   id: string;
@@ -35,22 +37,22 @@ export interface WorkflowConfig<
   /** Global workflow timeout in milliseconds */
   timeout?: number;
   /**
-   * JSON Schema for workflow arguments - enables runtime validation
-   * Note: For type safety, define args interfaces separately and use type guards
+   * JSON Schema for workflow arguments (runtime validation)
    */
-  argsSchema?: Record<string, unknown>;
+  argsSchema?: JSONSchema7;
 }
 
 /**
  * Workflow execution context passed to workflow function
  */
 export interface WorkflowContext<
-  TPhases extends readonly PhaseDefinition[] | undefined = undefined
+  TPhases extends readonly PhaseDefinition[] | undefined = undefined,
+  TArgs = Record<string, unknown>
 > {
   /** Inngest event data */
   event: {
     name: string;
-    data: WorkflowEventData;
+    data: WorkflowEventData<TArgs>;
   };
   /** Extended step interface with custom methods */
   step: WorkflowStep<
@@ -63,7 +65,7 @@ export interface WorkflowContext<
 /**
  * Event data structure for workflow triggers
  */
-export interface WorkflowEventData {
+export interface WorkflowEventData<TArgs = Record<string, unknown>> {
   /** Workflow execution ID */
   executionId: string;
   /** Project ID */
@@ -73,17 +75,17 @@ export interface WorkflowEventData {
   /** Project filesystem path */
   projectPath: string;
   /**
-   * Workflow arguments
-   * Note: Type this manually based on your argsSchema, or use type guards for runtime type safety
+   * Workflow arguments - type-safe based on defineWorkflow generic
    */
-  args: Record<string, unknown>;
+  args: TArgs;
 }
 
 /**
  * Workflow function signature
  */
 export type WorkflowFunction<
-  TPhases extends readonly PhaseDefinition[] | undefined = undefined
+  TPhases extends readonly PhaseDefinition[] | undefined = undefined,
+  TArgs = Record<string, unknown>
 > = (
-  context: WorkflowContext<TPhases>
+  context: WorkflowContext<TPhases, TArgs>
 ) => Promise<unknown>;

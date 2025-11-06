@@ -20,6 +20,7 @@ const userPreferencesSchema = z.object({
   default_permission_mode: z.enum(["default", "plan", "acceptEdits", "bypassPermissions"]),
   default_theme: z.enum(["light", "dark", "system"]),
   default_agent: z.enum(["claude", "codex", "cursor", "gemini"]),
+  onboarding_dismissed: z.boolean().optional(),
 });
 
 // Zod schema for updating user preferences (all fields optional)

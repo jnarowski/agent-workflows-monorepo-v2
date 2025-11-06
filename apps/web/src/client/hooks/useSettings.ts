@@ -25,6 +25,7 @@ interface UserPreferences {
   default_permission_mode: 'default' | 'plan' | 'acceptEdits' | 'bypassPermissions';
   default_theme: 'light' | 'dark' | 'system';
   default_agent: AgentType;
+  onboarding_dismissed?: boolean;
 }
 
 interface Settings {
