@@ -21,7 +21,7 @@ import { WorkflowStatusValues, StepStatusValues } from '@/shared/schemas/workflo
 // Mock Data
 // ============================================================================
 
-const mockExecution: WorkflowRun = {
+const mockRun: WorkflowRun = {
   id: 'exec-1',
   workflow_definition_id: 'def-1',
   project_id: 'proj-1',
@@ -38,8 +38,8 @@ const mockExecution: WorkflowRun = {
   created_by: 'user-1',
 };
 
-const mockExecutionWithSteps: WorkflowRun = {
-  ...mockExecution,
+const mockRunWithSteps: WorkflowRun = {
+  ...mockRun,
   steps: [
     {
       id: 'step-1',
@@ -88,7 +88,7 @@ const mockEvent: WorkflowEvent = {
 
 describe('updateExecutionInMap', () => {
   it('updates run immutably', () => {
-    const runs = new Map([['exec-1', mockExecution]]);
+    const runs = new Map([['exec-1', mockRun]]);
     const result = updateExecutionInMap(runs, 'exec-1', (exec) => ({
       ...exec,
       status: WorkflowStatusValues.COMPLETED,
@@ -105,7 +105,7 @@ describe('updateExecutionInMap', () => {
   });
 
   it('returns original map if run not found', () => {
-    const runs = new Map([['exec-1', mockExecution]]);
+    const runs = new Map([['exec-1', mockRun]]);
     const result = updateExecutionInMap(runs, 'non-existent', (exec) => ({
       ...exec,
       status: WorkflowStatusValues.COMPLETED,
@@ -117,7 +117,7 @@ describe('updateExecutionInMap', () => {
 
 describe('updateStepInExecution', () => {
   it('updates step immutably', () => {
-    const run = mockExecutionWithSteps;
+    const run = mockRunWithSteps;
     const result = updateStepInExecution(run, 'step-1', {
       status: StepStatusValues.COMPLETED,
     });
@@ -135,7 +135,7 @@ describe('updateStepInExecution', () => {
   });
 
   it('returns unchanged run if no steps', () => {
-    const run = mockExecution;
+    const run = mockRun;
     const result = updateStepInExecution(run, 'step-1', {
       status: StepStatusValues.COMPLETED,
     });
@@ -144,7 +144,7 @@ describe('updateStepInExecution', () => {
   });
 
   it('only updates matching step', () => {
-    const run = mockExecutionWithSteps;
+    const run = mockRunWithSteps;
     const result = updateStepInExecution(run, 'step-1', {
       status: StepStatusValues.COMPLETED,
     });
@@ -160,7 +160,7 @@ describe('updateStepInExecution', () => {
 
 describe('applyStepStarted', () => {
   it('updates run and step status', () => {
-    const run = mockExecutionWithSteps;
+    const run = mockRunWithSteps;
     const result = applyStepStarted(run, {
       stepId: 'step-1',
       stepName: 'Step 1',
@@ -175,7 +175,7 @@ describe('applyStepStarted', () => {
   });
 
   it('updates run without steps', () => {
-    const run = mockExecution;
+    const run = mockRun;
     const result = applyStepStarted(run, {
       stepId: 'step-1',
       stepName: 'Step 1',
@@ -190,7 +190,7 @@ describe('applyStepStarted', () => {
 
 describe('applyStepCompleted', () => {
   it('updates step to completed', () => {
-    const run = mockExecutionWithSteps;
+    const run = mockRunWithSteps;
     const result = applyStepCompleted(run, {
       stepId: 'step-1',
       logs: 'Step completed successfully',
@@ -202,7 +202,7 @@ describe('applyStepCompleted', () => {
   });
 
   it('returns unchanged if no steps', () => {
-    const run = mockExecution;
+    const run = mockRun;
     const result = applyStepCompleted(run, {
       stepId: 'step-1',
       logs: 'logs',
@@ -214,7 +214,7 @@ describe('applyStepCompleted', () => {
 
 describe('applyStepFailed', () => {
   it('updates step to failed with error', () => {
-    const run = mockExecutionWithSteps;
+    const run = mockRunWithSteps;
     const result = applyStepFailed(run, {
       stepId: 'step-1',
       error: 'Step failed with error',
@@ -226,7 +226,7 @@ describe('applyStepFailed', () => {
   });
 
   it('returns unchanged if no steps', () => {
-    const run = mockExecution;
+    const run = mockRun;
     const result = applyStepFailed(run, {
       stepId: 'step-1',
       error: 'error',
@@ -238,7 +238,7 @@ describe('applyStepFailed', () => {
 
 describe('applyPhaseCompleted', () => {
   it('updates current phase', () => {
-    const run = mockExecution;
+    const run = mockRun;
     const result = applyPhaseCompleted(run, 'Phase 2');
 
     expect(result.current_phase).toBe('Phase 2');
@@ -246,7 +246,7 @@ describe('applyPhaseCompleted', () => {
   });
 
   it('handles null next phase', () => {
-    const run = mockExecution;
+    const run = mockRun;
     const result = applyPhaseCompleted(run, null);
 
     expect(result.current_phase).toBeNull();
@@ -259,7 +259,7 @@ describe('applyPhaseCompleted', () => {
 
 describe('applyWorkflowStarted', () => {
   it('updates status to running and sets started_at', () => {
-    const run = { ...mockExecution, status: WorkflowStatusValues.PENDING };
+    const run = { ...mockRun, status: WorkflowStatusValues.PENDING };
     const result = applyWorkflowStarted(run);
 
     expect(result.status).toBe(WorkflowStatusValues.RUNNING);
@@ -270,7 +270,7 @@ describe('applyWorkflowStarted', () => {
 
 describe('applyWorkflowCompleted', () => {
   it('updates status to completed and sets completed_at', () => {
-    const run = mockExecution;
+    const run = mockRun;
     const result = applyWorkflowCompleted(run);
 
     expect(result.status).toBe(WorkflowStatusValues.COMPLETED);
@@ -281,7 +281,7 @@ describe('applyWorkflowCompleted', () => {
 
 describe('applyWorkflowFailed', () => {
   it('updates status to failed with error message', () => {
-    const run = mockExecution;
+    const run = mockRun;
     const result = applyWorkflowFailed(run, 'Workflow failed');
 
     expect(result.status).toBe(WorkflowStatusValues.FAILED);
@@ -293,7 +293,7 @@ describe('applyWorkflowFailed', () => {
 
 describe('applyWorkflowPaused', () => {
   it('updates status to paused', () => {
-    const run = mockExecution;
+    const run = mockRun;
     const result = applyWorkflowPaused(run);
 
     expect(result.status).toBe(WorkflowStatusValues.PAUSED);
@@ -303,7 +303,7 @@ describe('applyWorkflowPaused', () => {
 
 describe('applyWorkflowResumed', () => {
   it('updates status to running', () => {
-    const run = { ...mockExecution, status: WorkflowStatusValues.PAUSED };
+    const run = { ...mockRun, status: WorkflowStatusValues.PAUSED };
     const result = applyWorkflowResumed(run);
 
     expect(result.status).toBe(WorkflowStatusValues.RUNNING);
@@ -313,7 +313,7 @@ describe('applyWorkflowResumed', () => {
 
 describe('applyWorkflowCancelled', () => {
   it('updates status to cancelled and sets completed_at', () => {
-    const run = mockExecution;
+    const run = mockRun;
     const result = applyWorkflowCancelled(run);
 
     expect(result.status).toBe(WorkflowStatusValues.CANCELLED);
@@ -328,7 +328,7 @@ describe('applyWorkflowCancelled', () => {
 
 describe('applyEventCreated', () => {
   it('adds event to run', () => {
-    const run = mockExecution;
+    const run = mockRun;
     const result = applyEventCreated(run, mockEvent);
 
     expect(result.events).toHaveLength(1);
@@ -338,7 +338,7 @@ describe('applyEventCreated', () => {
 
   it('appends to existing events', () => {
     const run = {
-      ...mockExecution,
+      ...mockRun,
       events: [mockEvent],
     };
     const newEvent = { ...mockEvent, id: 'event-2' };
@@ -351,7 +351,7 @@ describe('applyEventCreated', () => {
 
   it('preserves immutability of original events array', () => {
     const run = {
-      ...mockExecution,
+      ...mockRun,
       events: [mockEvent],
     };
     const newEvent = { ...mockEvent, id: 'event-2' };

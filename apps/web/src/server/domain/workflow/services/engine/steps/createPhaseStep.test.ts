@@ -3,9 +3,9 @@ import { prisma } from "@/shared/prisma";
 import { cleanTestDB } from "@/server/test-utils/db";
 import { createPhaseStep } from "./createPhaseStep";
 import type { RuntimeContext } from "../../../types/engine.types";
-import * as updateWorkflowExecutionModule from "../../executions/updateWorkflowExecution";
+import * as updateWorkflowRunModule from "../../executions/updateWorkflowRun";
 
-vi.mock("../../executions/updateWorkflowExecution");
+vi.mock("../../executions/updateWorkflowRun");
 vi.mock("@/server/websocket/infrastructure/subscriptions", () => ({
   broadcast: vi.fn(),
 }));
@@ -18,8 +18,8 @@ describe("createPhaseStep", () => {
 
   it("updates execution current_phase and creates phase events", async () => {
     // Arrange
-    const mockUpdateWorkflowExecution = vi.mocked(
-      updateWorkflowExecutionModule.updateWorkflowExecution
+    const mockUpdateWorkflowRun = vi.mocked(
+      updateWorkflowRunModule.updateWorkflowRun
     );
 
     const user = await prisma.user.create({
@@ -75,7 +75,7 @@ describe("createPhaseStep", () => {
 
     // Assert
     expect(result).toBe("build complete");
-    expect(mockUpdateWorkflowExecution).toHaveBeenCalledWith(
+    expect(mockUpdateWorkflowRun).toHaveBeenCalledWith(
       execution.id,
       { current_phase: "build" },
       expect.anything()
@@ -224,8 +224,8 @@ describe("createPhaseStep", () => {
 
   it("accepts sentence case idOrName and converts to kebab-case for IDs", async () => {
     // Arrange
-    const mockUpdateWorkflowExecution = vi.mocked(
-      updateWorkflowExecutionModule.updateWorkflowExecution
+    const mockUpdateWorkflowRun = vi.mocked(
+      updateWorkflowRunModule.updateWorkflowRun
     );
 
     const user = await prisma.user.create({
@@ -284,8 +284,8 @@ describe("createPhaseStep", () => {
     // Assert
     expect(result).toBe("tests passed");
 
-    // Verify updateWorkflowExecution called with kebab-case ID
-    expect(mockUpdateWorkflowExecution).toHaveBeenCalledWith(
+    // Verify updateWorkflowRun called with kebab-case ID
+    expect(mockUpdateWorkflowRun).toHaveBeenCalledWith(
       execution.id,
       { current_phase: "run-tests" },
       expect.anything()
@@ -310,8 +310,8 @@ describe("createPhaseStep", () => {
 
   it("accepts kebab-case idOrName and uses as-is", async () => {
     // Arrange
-    const mockUpdateWorkflowExecution = vi.mocked(
-      updateWorkflowExecutionModule.updateWorkflowExecution
+    const mockUpdateWorkflowRun = vi.mocked(
+      updateWorkflowRunModule.updateWorkflowRun
     );
 
     const user = await prisma.user.create({
@@ -368,7 +368,7 @@ describe("createPhaseStep", () => {
 
     // Assert
     expect(result).toBe("deployed");
-    expect(mockUpdateWorkflowExecution).toHaveBeenCalledWith(
+    expect(mockUpdateWorkflowRun).toHaveBeenCalledWith(
       execution.id,
       { current_phase: "deploy" },
       expect.anything()

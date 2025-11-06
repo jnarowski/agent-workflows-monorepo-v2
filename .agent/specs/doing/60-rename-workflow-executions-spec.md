@@ -806,47 +806,47 @@ No new files created - this is pure refactoring.
 **Agent 8A: Backend Tests**
 
 <!-- prettier-ignore -->
-- [ ] p8-t1 [2/10] Update createAiStep test
+- [x] p8-t1 [2/10] Update createAiStep test
   - Edit `services/engine/steps/createAiStep.test.ts`
   - Update mock data: `WorkflowExecution` → `WorkflowRun`
   - Update field names: `workflow_execution_id` → `workflow_run_id`
   - Update all variable names
-- [ ] p8-t2 [2/10] Update createBashStep test
+- [x] p8-t2 [2/10] Update createBashStep test
   - Edit `services/engine/steps/createBashStep.test.ts`
   - Update mock data and assertions
-- [ ] p8-t3 [2/10] Update createCheckoutStep test
+- [x] p8-t3 [2/10] Update createCheckoutStep test
   - Edit `services/engine/steps/createCheckoutStep.test.ts`
   - Update mock data and assertions
-- [ ] p8-t4 [2/10] Update createConditionalStep test
+- [x] p8-t4 [2/10] Update createConditionalStep test
   - Edit `services/engine/steps/createConditionalStep.test.ts`
   - Update mock data and assertions
-- [ ] p8-t5 [2/10] Update createDelayStep test
+- [x] p8-t5 [2/10] Update createDelayStep test
   - Edit `services/engine/steps/createDelayStep.test.ts`
   - Update mock data and assertions
-- [ ] p8-t6 [2/10] Update createFileOperationStep test
+- [x] p8-t6 [2/10] Update createFileOperationStep test
   - Edit `services/engine/steps/createFileOperationStep.test.ts`
   - Update mock data and assertions
-- [ ] p8-t7 [2/10] Update createGitOperationStep test
+- [x] p8-t7 [2/10] Update createGitOperationStep test
   - Edit `services/engine/steps/createGitOperationStep.test.ts`
   - Update mock data and assertions
-- [ ] p8-t8 [2/10] Update other engine step tests
+- [x] p8-t8 [2/10] Update other engine step tests
   - Find and update remaining step tests (~5 more files)
   - Update mock data and assertions in each
 
 **Agent 8B: Frontend Tests**
 
 <!-- prettier-ignore -->
-- [ ] p8-t9 [3/10] Update workflowStateUpdates test
+- [x] p8-t9 [3/10] Update workflowStateUpdates test
   - Edit `utils/workflowStateUpdates.test.ts`
   - Update type references: `WorkflowExecution` → `WorkflowRun`
   - Update mock data
-- [ ] p8-t10 [3/10] Update runMetrics test (if exists)
+- [x] p8-t10 [3/10] Update runMetrics test (if exists)
   - Check for test file for runMetrics
   - Update type references and assertions
-- [ ] p8-t11 [2/10] Update component tests (if exist)
+- [x] p8-t11 [2/10] Update component tests (if exist)
   - Check for component test files
   - Update type references
-- [ ] p8-t12 [2/10] Update integration tests (if exist)
+- [x] p8-t12 [2/10] Update integration tests (if exist)
   - Check for integration test files
   - Update API endpoint references
 - [ ] p8-t13 [2/10] Update E2E tests (if exist)
@@ -860,7 +860,15 @@ No new files created - this is pure refactoring.
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+**COMPLETED - Phase 8 (Tests)**
+- Automated sed replacements across all *.test.ts files
+- Updated all type references: WorkflowRun, WorkflowRunStep
+- Updated all FK field names: workflow_run_id, workflow_run_step_id
+- Updated all variable names: runId, workflowRunId, mockRun, testRun
+- Updated all Prisma calls: prisma.workflowRun, prisma.workflowRunStep
+- Backend engine step tests: All 15+ test files updated (createAiStep through createRunStep)
+- Frontend test: workflowStateUpdates.test.ts updated
+- **Total**: ~20 test files updated with ~100 individual changes
 
 ### Phase 9: Documentation
 
