@@ -30,7 +30,7 @@ describe("findOrCreateStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -42,7 +42,7 @@ describe("findOrCreateStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -55,13 +55,13 @@ describe("findOrCreateStep", () => {
 
     // Assert
     expect(step).toBeDefined();
-    expect(step.workflow_execution_id).toBe(execution.id);
+    expect(step.workflow_run_id).toBe(execution.id);
     expect(step.name).toBe("Compile");
     expect(step.inngest_step_id).toBe("build-compile");
     expect(step.phase).toBe("build");
     expect(step.status).toBe("pending");
 
-    const dbStep = await prisma.workflowExecutionStep.findUnique({
+    const dbStep = await prisma.workflowRunStep.findUnique({
       where: { id: step.id },
     });
     expect(dbStep).toBeDefined();
@@ -88,7 +88,7 @@ describe("findOrCreateStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -100,7 +100,7 @@ describe("findOrCreateStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -115,8 +115,8 @@ describe("findOrCreateStep", () => {
     // Assert: Same step returned
     expect(step1.id).toBe(step2.id);
 
-    const allSteps = await prisma.workflowExecutionStep.findMany({
-      where: { workflow_execution_id: execution.id },
+    const allSteps = await prisma.workflowRunStep.findMany({
+      where: { workflow_run_id: execution.id },
     });
     expect(allSteps).toHaveLength(1);
   });

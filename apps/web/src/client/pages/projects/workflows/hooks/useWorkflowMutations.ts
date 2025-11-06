@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/client/utils/api-client';
 import { toast } from 'sonner';
-import type { WorkflowExecution, WorkflowEvent, WorkflowArtifact } from '../types';
+import type { WorkflowRun, WorkflowEvent, WorkflowArtifact } from '../types';
 
 // Create workflow
 interface CreateWorkflowInput {
@@ -17,12 +17,12 @@ interface CreateWorkflowInput {
 }
 
 interface CreateWorkflowResponse {
-  data: WorkflowExecution;
+  data: WorkflowRun;
 }
 
-async function createWorkflow(input: CreateWorkflowInput): Promise<WorkflowExecution> {
+async function createWorkflow(input: CreateWorkflowInput): Promise<WorkflowRun> {
   const response = await api.post<CreateWorkflowResponse>(
-    '/api/workflow-executions',
+    '/api/workflow-runs',
     {
       project_id: input.projectId,
       workflow_definition_id: input.definitionId,
@@ -45,7 +45,7 @@ export function useCreateWorkflow() {
     mutationFn: createWorkflow,
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: ['workflow-executions', data.project_id],
+        queryKey: ['workflow-runs', data.project_id],
       });
       toast.success('Workflow created successfully');
     },
@@ -56,8 +56,8 @@ export function useCreateWorkflow() {
 }
 
 // Pause workflow
-async function pauseWorkflow(executionId: string): Promise<void> {
-  await api.post(`/api/workflow-executions/${executionId}/pause`);
+async function pauseWorkflow(runId: string): Promise<void> {
+  await api.post(`/api/workflow-runs/${runId}/pause`);
 }
 
 export function usePauseWorkflow() {
@@ -65,9 +65,9 @@ export function usePauseWorkflow() {
 
   return useMutation({
     mutationFn: pauseWorkflow,
-    onSuccess: (_data, executionId) => {
+    onSuccess: (_data, runId) => {
       queryClient.invalidateQueries({
-        queryKey: ['workflow-execution', executionId],
+        queryKey: ['workflow-run', runId],
       });
       toast.success('Workflow paused');
     },
@@ -78,8 +78,8 @@ export function usePauseWorkflow() {
 }
 
 // Resume workflow
-async function resumeWorkflow(executionId: string): Promise<void> {
-  await api.post(`/api/workflow-executions/${executionId}/resume`);
+async function resumeWorkflow(runId: string): Promise<void> {
+  await api.post(`/api/workflow-runs/${runId}/resume`);
 }
 
 export function useResumeWorkflow() {
@@ -87,9 +87,9 @@ export function useResumeWorkflow() {
 
   return useMutation({
     mutationFn: resumeWorkflow,
-    onSuccess: (_data, executionId) => {
+    onSuccess: (_data, runId) => {
       queryClient.invalidateQueries({
-        queryKey: ['workflow-execution', executionId],
+        queryKey: ['workflow-run', runId],
       });
       toast.success('Workflow resumed');
     },
@@ -100,8 +100,8 @@ export function useResumeWorkflow() {
 }
 
 // Cancel workflow
-async function cancelWorkflow(executionId: string): Promise<void> {
-  await api.post(`/api/workflow-executions/${executionId}/cancel`);
+async function cancelWorkflow(runId: string): Promise<void> {
+  await api.post(`/api/workflow-runs/${runId}/cancel`);
 }
 
 export function useCancelWorkflow() {
@@ -109,9 +109,9 @@ export function useCancelWorkflow() {
 
   return useMutation({
     mutationFn: cancelWorkflow,
-    onSuccess: (_data, executionId) => {
+    onSuccess: (_data, runId) => {
       queryClient.invalidateQueries({
-        queryKey: ['workflow-execution', executionId],
+        queryKey: ['workflow-run', runId],
       });
       toast.success('Workflow cancelled');
     },
@@ -123,7 +123,7 @@ export function useCancelWorkflow() {
 
 // Create annotation
 interface CreateAnnotationInput {
-  executionId: string;
+  runId: string;
   content: string;
   stepId?: string;
 }
@@ -134,7 +134,7 @@ interface CreateAnnotationResponse {
 
 async function createAnnotation(input: CreateAnnotationInput): Promise<WorkflowEvent> {
   const response = await api.post<CreateAnnotationResponse>(
-    `/api/workflow-executions/${input.executionId}/events`,
+    `/api/workflow-runs/${input.runId}/events`,
     {
       text: input.content,
       step_id: input.stepId,
@@ -151,7 +151,7 @@ export function useCreateAnnotation() {
     mutationFn: createAnnotation,
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['workflow-execution', variables.executionId],
+        queryKey: ['workflow-run', variables.runId],
       });
       toast.success('Annotation added');
     },
@@ -163,7 +163,7 @@ export function useCreateAnnotation() {
 
 // Upload artifact
 interface UploadArtifactInput {
-  executionId: string;
+  runId: string;
   stepId?: string;
   file: File;
 }
@@ -180,7 +180,7 @@ async function uploadArtifact(input: UploadArtifactInput): Promise<WorkflowArtif
   }
 
   const response = await api.post<UploadArtifactResponse>(
-    `/api/workflow-executions/${input.executionId}/artifacts`,
+    `/api/workflow-runs/${input.runId}/artifacts`,
     formData
   );
   return response.data;
@@ -193,7 +193,7 @@ export function useUploadArtifact() {
     mutationFn: uploadArtifact,
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ['workflow-execution', variables.executionId],
+        queryKey: ['workflow-run', variables.runId],
       });
       toast.success('Artifact uploaded');
     },

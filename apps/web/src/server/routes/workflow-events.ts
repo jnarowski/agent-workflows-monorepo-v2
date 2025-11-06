@@ -9,24 +9,24 @@ import {
 import { createWorkflowEvent } from "@/server/domain/workflow/services/events/createWorkflowEvent";
 import '@/server/plugins/auth';
 
-const executionIdSchema = z.object({
+const runIdSchema = z.object({
   id: z.string().cuid(),
 });
 
 export async function workflowEventRoutes(fastify: FastifyInstance) {
   /**
-   * POST /api/workflow-executions/:id/events
+   * POST /api/workflow-runs/:id/events
    * Create an event on a workflow or step
    */
   fastify.post<{
-    Params: z.infer<typeof executionIdSchema>;
+    Params: z.infer<typeof runIdSchema>;
     Body: z.infer<typeof createWorkflowEventSchema>;
   }>(
-    "/api/workflow-executions/:id/events",
+    "/api/workflow-runs/:id/events",
     {
       preHandler: fastify.authenticate,
       schema: {
-        params: executionIdSchema,
+        params: runIdSchema,
         body: createWorkflowEventSchema,
       },
     },
@@ -35,17 +35,17 @@ export async function workflowEventRoutes(fastify: FastifyInstance) {
       const userId = (request.user! as { id: string }).id;
       const body = request.body;
 
-      // Get execution to extract current phase
-      const execution = await prisma.workflowExecution.findUnique({
+      // Get run to extract current phase
+      const run = await prisma.workflowRun.findUnique({
         where: { id },
         select: { current_phase: true },
       });
 
       const event = await createWorkflowEvent({
-        workflow_execution_id: id,
+        workflow_run_id: id,
         event_type: "annotation_added" as const,
         event_data: { message: body.text },
-        phase: execution?.current_phase,
+        phase: run?.current_phase,
         created_by_user_id: userId,
         logger: fastify.log,
       });
@@ -55,18 +55,18 @@ export async function workflowEventRoutes(fastify: FastifyInstance) {
   );
 
   /**
-   * GET /api/workflow-executions/:id/events
-   * List events for a workflow execution
+   * GET /api/workflow-runs/:id/events
+   * List events for a workflow run
    */
   fastify.get<{
-    Params: z.infer<typeof executionIdSchema>;
+    Params: z.infer<typeof runIdSchema>;
     Querystring: z.infer<typeof getWorkflowEventsQuerySchema>;
   }>(
-    "/api/workflow-executions/:id/events",
+    "/api/workflow-runs/:id/events",
     {
       preHandler: fastify.authenticate,
       schema: {
-        params: executionIdSchema,
+        params: runIdSchema,
         querystring: getWorkflowEventsQuerySchema,
       },
     },

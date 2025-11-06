@@ -1,5 +1,5 @@
 import { prisma } from '@/shared/prisma';
-import type { WorkflowExecutionStep } from '@prisma/client';
+import type { WorkflowRunStep } from '@prisma/client';
 import type { FastifyBaseLogger } from 'fastify';
 
 /**
@@ -7,20 +7,20 @@ import type { FastifyBaseLogger } from 'fastify';
  * Includes WebSocket broadcasting for real-time updates
  */
 export async function createWorkflowStep(
-  executionId: string,
+  runId: string,
   inngestStepId: string,
   stepName: string,
   phase?: string,
   logger?: FastifyBaseLogger
-): Promise<WorkflowExecutionStep> {
+): Promise<WorkflowRunStep> {
   logger?.debug(
-    { executionId, inngestStepId, stepName, phase },
+    { runId, inngestStepId, stepName, phase },
     'Creating workflow step'
   );
 
-  const step = await prisma.workflowExecutionStep.create({
+  const step = await prisma.workflowRunStep.create({
     data: {
-      workflow_execution_id: executionId,
+      workflow_run_id: runId,
       inngest_step_id: inngestStepId,
       name: stepName,
       status: 'pending',
@@ -31,7 +31,7 @@ export async function createWorkflowStep(
   logger?.debug({ stepId: step.id }, 'Workflow step created');
 
   // TODO: Add WebSocket broadcasting when event bus is available
-  // eventBus.emit('workflow.step.created', { stepId: step.id, executionId });
+  // eventBus.emit('workflow.step.created', { stepId: step.id, runId });
 
   return step;
 }

@@ -47,7 +47,7 @@ apps/web/
 │   │   │   │   ├── emitWorkflowEvent.ts         # ✨ NEW - emission helper
 │   │   │   │   └── createWorkflowEvent.ts       # ⚠️ UPDATE - add emit
 │   │   │   ├── executions/
-│   │   │   │   └── getWorkflowExecutions.ts     # ⚠️ REWRITE - optimize query
+│   │   │   │   └── getWorkflowRuns.ts     # ⚠️ REWRITE - optimize query
 │   │   │   ├── artifacts/
 │   │   │   │   ├── createWorkflowArtifact.ts    # ⚠️ UPDATE - add emit
 │   │   │   │   └── attachArtifactToWorkflowEvent.ts # ⚠️ UPDATE - add emit
@@ -68,11 +68,11 @@ apps/web/
 │       ├── types.ts                    # ⚠️ UPDATE - add list/detail interfaces
 │       ├── hooks/
 │       │   ├── useWorkflowWebSocket.ts # ⚠️ REWRITE - React Query integration
-│       │   ├── useWorkflowExecutions.ts # ⚠️ UPDATE - remove store, update types
-│       │   └── useWorkflowExecution.ts  # ⚠️ UPDATE - remove store, update types
+│       │   ├── useWorkflowRuns.ts # ⚠️ UPDATE - remove store, update types
+│       │   └── useWorkflowRun.ts  # ⚠️ UPDATE - remove store, update types
 │       ├── ProjectWorkflowsView.tsx     # ⚠️ UPDATE - remove store imports
 │       ├── WorkflowDefinitionView.tsx   # ⚠️ UPDATE - remove store imports
-│       └── WorkflowExecutionDetail.tsx  # ⚠️ UPDATE - remove store imports
+│       └── WorkflowRunDetail.tsx  # ⚠️ UPDATE - remove store imports
 ```
 
 ### Integration Points
@@ -111,7 +111,7 @@ workflow:execution:artifact:created  // WorkflowArtifact uploaded/attached
 
 **Key Points**:
 - Hierarchical namespace with colons (Socket.io convention)
-- One event per database table (WorkflowExecution, WorkflowExecutionStep, WorkflowEvent, WorkflowArtifact)
+- One event per database table (WorkflowRun, WorkflowRunStep, WorkflowEvent, WorkflowArtifact)
 - `changes` object contains only modified fields (partial update)
 - All events include `execution_id` for filtering
 
@@ -194,10 +194,10 @@ io.to(`project:${projectId}`).emit('message', event);
 
 **Type System (2):**
 1. `apps/web/src/shared/types/websocket.types.ts` - Remove 12 old events, add 4 new hierarchical events
-2. `apps/web/src/client/pages/projects/workflows/types.ts` - Add WorkflowExecutionListItem and WorkflowExecutionDetail interfaces
+2. `apps/web/src/client/pages/projects/workflows/types.ts` - Add WorkflowRunListItem and WorkflowRunDetail interfaces
 
 **Backend Query (1):**
-3. `apps/web/src/server/domain/workflow/services/executions/getWorkflowExecutions.ts` - Optimize to select minimal fields
+3. `apps/web/src/server/domain/workflow/services/executions/getWorkflowRuns.ts` - Optimize to select minimal fields
 
 **Backend Emission (10):**
 4. `apps/web/src/server/domain/workflow/services/engine/createWorkflowRuntime.ts` - Emit execution:updated on start
@@ -214,11 +214,11 @@ io.to(`project:${projectId}`).emit('message', event);
 
 **Frontend (6):**
 15. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowWebSocket.ts` - Complete rewrite with React Query
-16. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowExecutions.ts` - Remove store, update types
-17. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowExecution.ts` - Remove store, update types
+16. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowRuns.ts` - Remove store, update types
+17. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowRun.ts` - Remove store, update types
 18. `apps/web/src/client/pages/projects/workflows/ProjectWorkflowsView.tsx` - Remove store imports
 19. `apps/web/src/client/pages/projects/workflows/WorkflowDefinitionView.tsx` - Remove store imports
-20. `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx` - Remove store imports
+20. `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx` - Remove store imports
 
 ### Deleted Files (1)
 
@@ -239,8 +239,8 @@ io.to(`project:${projectId}`).emit('message', event);
   - Use Partial<> for changes objects to allow incremental updates
 - [x] 52-2 Add frontend type interfaces for list and detail views
   - File: `apps/web/src/client/pages/projects/workflows/types.ts`
-  - Add `WorkflowExecutionListItem` interface (8 fields + _count)
-  - Add `WorkflowExecutionDetail` interface (full nested data)
+  - Add `WorkflowRunListItem` interface (8 fields + _count)
+  - Add `WorkflowRunDetail` interface (full nested data)
   - Use snake_case for all field names (match Prisma)
   - Export both interfaces
 
@@ -249,8 +249,8 @@ io.to(`project:${projectId}`).emit('message', event);
 - Replaced 12 granular events with 4 hierarchical events using colon delimiters
 - New event types: `workflow:execution:updated`, `workflow:execution:step:updated`, `workflow:execution:event:created`, `workflow:execution:artifact:created`
 - Used `Partial<>` for changes objects to support incremental updates
-- Added `WorkflowExecutionListItem` for optimized list queries (8 fields + _count)
-- Added `WorkflowExecutionDetail` for full detail view (existing WorkflowExecution renamed for clarity)
+- Added `WorkflowRunListItem` for optimized list queries (8 fields + _count)
+- Added `WorkflowRunDetail` for full detail view (existing WorkflowRun renamed for clarity)
 - All field names use snake_case to match Prisma conventions
 - Updated `AnyChannelEvent` union to reference new `WorkflowWebSocketEvent` type
 
@@ -341,8 +341,8 @@ io.to(`project:${projectId}`).emit('message', event);
 ### Phase 5: Backend - Query Optimization
 
 <!-- prettier-ignore -->
-- [x] 52-15 Optimize getWorkflowExecutions query for list views
-  - File: `apps/web/src/server/domain/workflow/services/executions/getWorkflowExecutions.ts`
+- [x] 52-15 Optimize getWorkflowRuns query for list views
+  - File: `apps/web/src/server/domain/workflow/services/executions/getWorkflowRuns.ts`
   - Change from `include` to `select` for precise field control
   - Select only: id, name, status, current_phase, workflow_definition_id, started_at, created_at
   - Include: `workflow_definition: { select: { name: true, phases: true } }`
@@ -352,11 +352,11 @@ io.to(`project:${projectId}`).emit('message', event);
 
 #### Completion Notes
 
-- Rewrote `getWorkflowExecutions` to use `select` instead of `include` for precise field control
+- Rewrote `getWorkflowRuns` to use `select` instead of `include` for precise field control
 - Query now fetches only 8 fields + workflow_definition (name, phases) + _count.steps
 - Removed nested `steps[]`, `events[]` arrays that were bloating list query responses
 - Payload size reduced by ~95% (from ~10KB to ~500 bytes per execution for 50 executions)
-- Added documentation noting that detail views should use `getWorkflowExecutionById` for full nested data
+- Added documentation noting that detail views should use `getWorkflowRunById` for full nested data
 - Simplified JSON parsing logic to only handle workflow_definition.phases
 
 ### Phase 6: Frontend - Remove Zustand Store
@@ -387,15 +387,15 @@ io.to(`project:${projectId}`).emit('message', event);
 - [x] 52-18 Add debounce utility or import from lodash
   - If not already available, add debounce function
   - Used for 5s delayed invalidation
-- [x] 52-19 Update useWorkflowExecutions hook types
-  - File: `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowExecutions.ts`
+- [x] 52-19 Update useWorkflowRuns hook types
+  - File: `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowRuns.ts`
   - Remove any workflowStore imports/usage
-  - Type return as `WorkflowExecutionListItem[]`
+  - Type return as `WorkflowRunListItem[]`
   - Already uses React Query, just update types
-- [x] 52-20 Update useWorkflowExecution hook types
-  - File: `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowExecution.ts`
+- [x] 52-20 Update useWorkflowRun hook types
+  - File: `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowRun.ts`
   - Remove any workflowStore imports/usage
-  - Type return as `WorkflowExecutionDetail`
+  - Type return as `WorkflowRunDetail`
   - Already uses React Query, just update types
 
 #### Completion Notes
@@ -417,16 +417,16 @@ io.to(`project:${projectId}`).emit('message', event);
   - File: `apps/web/src/client/pages/projects/workflows/ProjectWorkflowsView.tsx`
   - Remove workflowStore imports
   - Keep `useWorkflowWebSocket(projectId)` call (sets up listener)
-  - Use query data directly from `useWorkflowExecutions`
+  - Use query data directly from `useWorkflowRuns`
   - Grouping by status already done client-side
 - [x] 52-22 Remove workflowStore from WorkflowDefinitionView
   - File: `apps/web/src/client/pages/projects/workflows/WorkflowDefinitionView.tsx`
   - Remove workflowStore imports
   - Keep `useWorkflowWebSocket(projectId)` call
-  - Use query data directly from `useWorkflowExecutions`
+  - Use query data directly from `useWorkflowRuns`
   - Grouping by phase already done client-side
-- [x] 52-23 Remove workflowStore from WorkflowExecutionDetail
-  - File: `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx`
+- [x] 52-23 Remove workflowStore from WorkflowRunDetail
+  - File: `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx`
   - Remove workflowStore imports
   - Already uses React Query for data
   - Phase cards automatically update via cache changes
@@ -436,7 +436,7 @@ io.to(`project:${projectId}`).emit('message', event);
 - No changes needed - all three view components already using React Query hooks correctly
 - Verified no workflowStore imports exist in any view components
 - All components call `useWorkflowWebSocket(projectId)` to set up WebSocket listeners
-- All components use `useWorkflowExecutions` or `useWorkflowExecution` for data fetching
+- All components use `useWorkflowRuns` or `useWorkflowRun` for data fetching
 - Client-side grouping (by status, phase) already implemented
 
 ### Phase 9: Verification & Testing
@@ -454,7 +454,7 @@ io.to(`project:${projectId}`).emit('message', event);
 - [x] 52-26 Build application (not needed - type checking passed, linting can be done separately)
   - Command: `cd apps/web && pnpm build`
   - Expected: Successful build
-- [ ] 52-27 Manual test: Create workflow execution
+- [ ] 52-27 Manual test: Create workflow run
   - Start dev server: `pnpm dev`
   - Navigate to workflows page
   - Create new execution
@@ -491,10 +491,10 @@ io.to(`project:${projectId}`).emit('message', event);
 
 - All type errors fixed successfully
 - Backend errors from Phase 2-5 fixed:
-  - Fixed missing `workflow_execution_step_id` field (set to null - WorkflowArtifact doesn't have this field)
+  - Fixed missing `workflow_run_step_id` field (set to null - WorkflowArtifact doesn't have this field)
   - Removed unused `result` parameter in `updateStepStatus` (prefixed with `_`)
   - Added project_id fetch for event emission in `createWorkflowEvent`
-  - Fixed return type cast in `getWorkflowExecutions` (added `as unknown as`)
+  - Fixed return type cast in `getWorkflowRuns` (added `as unknown as`)
   - Removed deprecated `WorkflowEventTypes` imports from cancelWorkflow, pauseWorkflow, resumeWorkflow
   - Replaced old `broadcast()` calls with new `emitWorkflowEvent()` helper
   - Fixed shared types import path (used relative import instead of @/ alias)
@@ -595,7 +595,7 @@ pnpm build
 1. Start application: `cd apps/web && pnpm dev`
 2. Navigate to: `http://localhost:5173/projects/{projectId}/workflows`
 3. Open browser DevTools > Network > WS tab
-4. Create new workflow execution
+4. Create new workflow run
 5. Verify WebSocket event received: `workflow:execution:updated` with correct structure
 6. Start execution
 7. Verify UI updates instantly (< 100ms)
@@ -627,7 +627,7 @@ pnpm build
   }
 }
 
-# Verify all 4 event types emit during workflow execution:
+# Verify all 4 event types emit during workflow run:
 # 1. workflow:execution:updated (on start/complete)
 # 2. workflow:execution:step:updated (on each step)
 # 3. workflow:execution:event:created (on annotations/phase complete)
@@ -747,7 +747,7 @@ Consider feature flag if gradual rollout needed.
 No issues found. Implementation verified:
 - New hierarchical event types defined correctly in `websocket.types.ts:298-310`
 - Four event types with proper discriminated unions: `workflow:execution:updated`, `workflow:execution:step:updated`, `workflow:execution:event:created`, `workflow:execution:artifact:created`
-- `WorkflowExecutionListItem` and `WorkflowExecutionDetail` interfaces added to frontend types
+- `WorkflowRunListItem` and `WorkflowRunDetail` interfaces added to frontend types
 - Partial update types correctly defined for incremental changes
 
 ### Phase 2: Backend - WebSocket Emission Infrastructure
@@ -785,10 +785,10 @@ No issues found. Implementation verified:
 **Status:** ✅ Complete - Query optimization implemented correctly
 
 No issues found. Implementation verified:
-- `getWorkflowExecutions` uses `select` instead of `include` for precise field control
+- `getWorkflowRuns` uses `select` instead of `include` for precise field control
 - Returns only 8 core fields + workflow_definition (name, phases) + _count.steps
 - Removed nested steps[], events[] arrays
-- Documentation notes detail views should use `getWorkflowExecutionById` for full nested data
+- Documentation notes detail views should use `getWorkflowRunById` for full nested data
 - JSON parsing logic simplified to only handle workflow_definition.phases
 
 ### Phase 6: Frontend - Remove Zustand Store
@@ -821,7 +821,7 @@ No issues found. Implementation verified:
 - All three view components already using React Query hooks correctly
 - No workflowStore imports exist in any view components
 - All components call `useWorkflowWebSocket(projectId)` to set up WebSocket listeners
-- All components use `useWorkflowExecutions` or `useWorkflowExecution` for data fetching
+- All components use `useWorkflowRuns` or `useWorkflowRun` for data fetching
 
 ### Phase 9: Verification & Testing
 
@@ -835,7 +835,7 @@ N/A - No blocking issues
 
 - [ ] **Manual testing incomplete**
   - **Tasks:** 52-27 through 52-32
-  - **Spec Reference:** "Manual test: Create workflow execution", "Manual test: Execution status changes", "Manual test: Detail view real-time updates", "Manual test: Cross-view synchronization", "Manual test: Background refetch", "Check browser console for errors"
+  - **Spec Reference:** "Manual test: Create workflow run", "Manual test: Execution status changes", "Manual test: Detail view real-time updates", "Manual test: Cross-view synchronization", "Manual test: Background refetch", "Check browser console for errors"
   - **Expected:** All manual test scenarios pass, confirming real-time UI updates, WebSocket events, and cross-view synchronization work correctly
   - **Actual:** Type checking passes (52-24 ✅), but manual testing not yet performed
   - **Fix:** Run application with `pnpm dev`, execute manual test scenarios listed in tasks 52-27 through 52-32
@@ -871,7 +871,7 @@ cd apps/web && pnpm dev
 # 3. Open browser DevTools > Network > WS tab
 
 # 4. Execute test scenarios:
-# - Create new workflow execution (verify appears in list instantly)
+# - Create new workflow run (verify appears in list instantly)
 # - Start execution (verify moves to "running" column instantly)
 # - Monitor WebSocket events (verify workflow:execution:updated events)
 # - Open detail view in separate tab (verify both tabs update simultaneously)

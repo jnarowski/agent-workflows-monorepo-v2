@@ -172,8 +172,8 @@ Improve resilience and user feedback.
 1. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowWebSocket.ts` - Remove 12 `any` types, add validation
 2. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowMutations.ts` - Remove 9 `any` types
 3. `apps/web/src/client/pages/projects/workflows/stores/workflowStore.ts` - Extract logic to pure functions
-4. `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx` - Add error boundary
-5. `apps/web/src/client/pages/projects/workflows/WorkflowExecutionList.tsx` - Add error boundary
+4. `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx` - Add error boundary
+5. `apps/web/src/client/pages/projects/workflows/WorkflowRunList.tsx` - Add error boundary
 6. `apps/web/src/server/domain/workflow/schemas/workflow.schemas.ts` - Replace `z.any()` with `z.unknown()`
 7. `apps/web/src/server/domain/workflow/types/workflow.types.ts` - Use Prisma enum types
 8. `apps/web/src/shared/websocket/workflow.schemas.ts` - Add validation helpers
@@ -198,7 +198,7 @@ Improve resilience and user feedback.
 - [x] enum-3 Add StepStatus enum to Prisma schema
   - Define enum with values: pending, running, completed, failed, skipped
   - File: `apps/web/prisma/schema.prisma`
-  - Update WorkflowExecutionStep model
+  - Update WorkflowRunStep model
 - [x] enum-4 Generate Prisma migration
   - Command: `cd apps/web && pnpm prisma:generate && pnpm prisma:migrate`
   - Expected: Migration created, client regenerated with enum types
@@ -210,7 +210,7 @@ Improve resilience and user feedback.
 #### Completion Notes
 
 - Added three enums: WorkflowStatus (6 values), WorkflowEventType (12 values), StepStatus (5 values)
-- Updated WorkflowExecution.status, WorkflowEvent.event_type, WorkflowExecutionStep.status to use enums
+- Updated WorkflowRun.status, WorkflowEvent.event_type, WorkflowRunStep.status to use enums
 - Migration applied successfully (20251103180539_add_workflow_enums)
 - Prisma client regenerated with TypeScript enum types available for import
 - Existing database records updated to ensure valid enum values
@@ -220,14 +220,14 @@ Improve resilience and user feedback.
 <!-- prettier-ignore -->
 - [x] pure-1 Create workflowStateUpdates.ts file
   - File: `apps/web/src/client/pages/projects/workflows/lib/workflowStateUpdates.ts`
-  - Add imports for WorkflowExecution, WorkflowExecutionStep types
+  - Add imports for WorkflowRun, WorkflowRunStep types
 - [x] pure-2 Implement updateExecutionInMap helper
   - Generic helper to update execution in Map immutably
   - Signature: `updateExecutionInMap(executions, id, updater) => Map`
   - File: `apps/web/src/client/pages/projects/workflows/lib/workflowStateUpdates.ts`
 - [x] pure-3 Implement updateStepInExecution helper
   - Update specific step within execution immutably
-  - Signature: `updateStepInExecution(execution, stepId, updates) => WorkflowExecution`
+  - Signature: `updateStepInExecution(execution, stepId, updates) => WorkflowRun`
   - File: `apps/web/src/client/pages/projects/workflows/lib/workflowStateUpdates.ts`
 - [x] pure-4 Implement applyStepStarted function
   - Pure function for step started update
@@ -335,7 +335,7 @@ Improve resilience and user feedback.
 - Removed eslint-disable comment from useWorkflowWebSocket.ts
 - Typed all 12 event handlers with discriminated unions using Extract<WorkflowWebSocketMessage, {type: '...'}>
 - Replaced all error: any with error: Error in useWorkflowMutations (6 mutation hooks)
-- Changed args field in createWorkflowExecutionSchema from z.any() to z.unknown()
+- Changed args field in createWorkflowRunSchema from z.any() to z.unknown()
 - Changed CreateWorkflowInput args from Record<string, any> to Record<string, unknown>
 - Type checking passes with no errors (pnpm check-types)
 
@@ -360,7 +360,7 @@ Improve resilience and user feedback.
 - [x] valid-5 Add input validation in mutations
   - Validate mutation inputs before API calls
   - File: `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowMutations.ts`
-  - Use createWorkflowExecutionSchema, etc.
+  - Use createWorkflowRunSchema, etc.
 
 #### Completion Notes
 
@@ -382,11 +382,11 @@ Improve resilience and user feedback.
 - [x] error-3 Add retry mechanism to boundary
   - Button to reset error boundary
   - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowErrorBoundary.tsx`
-- [x] error-4 Wrap WorkflowExecutionDetail page
-  - File: `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx`
+- [x] error-4 Wrap WorkflowRunDetail page
+  - File: `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx`
   - Wrap entire page content with WorkflowErrorBoundary
-- [x] error-5 Wrap WorkflowExecutionList page
-  - File: `apps/web/src/client/pages/projects/workflows/WorkflowExecutionList.tsx`
+- [x] error-5 Wrap WorkflowRunList page
+  - File: `apps/web/src/client/pages/projects/workflows/WorkflowRunList.tsx`
   - Wrap entire page content with WorkflowErrorBoundary
 
 #### Completion Notes
@@ -395,7 +395,7 @@ Improve resilience and user feedback.
 - Component includes user-friendly fallback UI with error details
 - Shows component stack in development mode for debugging
 - Provides "Try Again" and "Reload Page" buttons
-- WorkflowExecutionDetail and WorkflowExecutionList pages don't exist yet (will use boundary when created)
+- WorkflowRunDetail and WorkflowRunList pages don't exist yet (will use boundary when created)
 
 ### Phase 7: Standards & Documentation
 
@@ -529,7 +529,7 @@ pnpm prisma:generate
 
 1. Start application: `cd apps/web && pnpm dev`
 2. Navigate to: Project → Workflows
-3. Create new workflow execution
+3. Create new workflow run
 4. Verify: WebSocket events update UI in real-time
 5. Verify: No console errors or warnings
 6. Test edge cases:

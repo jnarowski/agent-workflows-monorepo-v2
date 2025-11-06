@@ -6,8 +6,8 @@
  */
 
 import type {
-  WorkflowExecution,
-  WorkflowExecutionStep,
+  WorkflowRun,
+  WorkflowRunStep,
   WorkflowEvent,
 } from "../types";
 import { WorkflowStatusValues, StepStatusValues } from "@/shared/schemas/workflow.schemas";
@@ -17,44 +17,44 @@ import { WorkflowStatusValues, StepStatusValues } from "@/shared/schemas/workflo
 // ============================================================================
 
 /**
- * Immutably update an execution in a Map
+ * Immutably update an run in a Map
  *
- * @param executions - Current executions Map
+ * @param runs - Current runs Map
  * @param id - Execution ID to update
- * @param updater - Function that returns updated execution
- * @returns New Map with updated execution
+ * @param updater - Function that returns updated run
+ * @returns New Map with updated run
  */
 export function updateExecutionInMap(
-  executions: Map<string, WorkflowExecution>,
+  runs: Map<string, WorkflowRun>,
   id: string,
-  updater: (exec: WorkflowExecution) => WorkflowExecution
-): Map<string, WorkflowExecution> {
-  const execution = executions.get(id);
-  if (!execution) return executions;
+  updater: (exec: WorkflowRun) => WorkflowRun
+): Map<string, WorkflowRun> {
+  const run = runs.get(id);
+  if (!run) return runs;
 
-  const newExecutions = new Map(executions);
-  newExecutions.set(id, updater(execution));
+  const newExecutions = new Map(runs);
+  newExecutions.set(id, updater(run));
   return newExecutions;
 }
 
 /**
- * Immutably update a step within an execution
+ * Immutably update a step within an run
  *
- * @param execution - Current execution
+ * @param run - Current run
  * @param stepId - Step ID to update
  * @param updates - Partial step updates
- * @returns New execution with updated step
+ * @returns New run with updated step
  */
 export function updateStepInExecution(
-  execution: WorkflowExecution,
+  run: WorkflowRun,
   stepId: string,
-  updates: Partial<WorkflowExecutionStep>
-): WorkflowExecution {
-  if (!execution.steps) return execution;
+  updates: Partial<WorkflowRunStep>
+): WorkflowRun {
+  if (!run.steps) return run;
 
   return {
-    ...execution,
-    steps: execution.steps.map((step) =>
+    ...run,
+    steps: run.steps.map((step) =>
       step.id === stepId
         ? { ...step, ...updates, updated_at: new Date() }
         : step
@@ -71,10 +71,10 @@ export function updateStepInExecution(
  * Apply workflow started event
  */
 export function applyWorkflowStarted(
-  execution: WorkflowExecution
-): WorkflowExecution {
+  run: WorkflowRun
+): WorkflowRun {
   return {
-    ...execution,
+    ...run,
     status: WorkflowStatusValues.RUNNING,
     started_at: new Date(),
     updated_at: new Date(),
@@ -85,10 +85,10 @@ export function applyWorkflowStarted(
  * Apply workflow completed event
  */
 export function applyWorkflowCompleted(
-  execution: WorkflowExecution
-): WorkflowExecution {
+  run: WorkflowRun
+): WorkflowRun {
   return {
-    ...execution,
+    ...run,
     status: WorkflowStatusValues.COMPLETED,
     completed_at: new Date(),
     updated_at: new Date(),
@@ -99,11 +99,11 @@ export function applyWorkflowCompleted(
  * Apply workflow failed event
  */
 export function applyWorkflowFailed(
-  execution: WorkflowExecution,
+  run: WorkflowRun,
   error: string
-): WorkflowExecution {
+): WorkflowRun {
   return {
-    ...execution,
+    ...run,
     status: WorkflowStatusValues.FAILED,
     error_message: error,
     completed_at: new Date(),
@@ -115,10 +115,10 @@ export function applyWorkflowFailed(
  * Apply workflow paused event
  */
 export function applyWorkflowPaused(
-  execution: WorkflowExecution
-): WorkflowExecution {
+  run: WorkflowRun
+): WorkflowRun {
   return {
-    ...execution,
+    ...run,
     status: WorkflowStatusValues.PAUSED,
     updated_at: new Date(),
   };
@@ -128,10 +128,10 @@ export function applyWorkflowPaused(
  * Apply workflow resumed event
  */
 export function applyWorkflowResumed(
-  execution: WorkflowExecution
-): WorkflowExecution {
+  run: WorkflowRun
+): WorkflowRun {
   return {
-    ...execution,
+    ...run,
     status: WorkflowStatusValues.RUNNING,
     updated_at: new Date(),
   };
@@ -141,10 +141,10 @@ export function applyWorkflowResumed(
  * Apply workflow cancelled event
  */
 export function applyWorkflowCancelled(
-  execution: WorkflowExecution
-): WorkflowExecution {
+  run: WorkflowRun
+): WorkflowRun {
   return {
-    ...execution,
+    ...run,
     status: WorkflowStatusValues.CANCELLED,
     completed_at: new Date(),
     updated_at: new Date(),
@@ -159,22 +159,22 @@ export function applyWorkflowCancelled(
  * Apply step started event
  */
 export function applyStepStarted(
-  execution: WorkflowExecution,
+  run: WorkflowRun,
   event: {
     stepId: string;
     stepName: string;
     phaseId: string;
   }
-): WorkflowExecution {
+): WorkflowRun {
   const updatedExec = {
-    ...execution,
+    ...run,
     current_step: event.stepName,
     current_phase: event.phaseId,
     updated_at: new Date(),
   };
 
   // Update step status if steps are loaded
-  if (execution.steps) {
+  if (run.steps) {
     return updateStepInExecution(updatedExec, event.stepId, {
       status: StepStatusValues.RUNNING,
       started_at: new Date(),
@@ -188,15 +188,15 @@ export function applyStepStarted(
  * Apply step completed event
  */
 export function applyStepCompleted(
-  execution: WorkflowExecution,
+  run: WorkflowRun,
   event: {
     stepId: string;
     logs: string;
   }
-): WorkflowExecution {
-  if (!execution.steps) return execution;
+): WorkflowRun {
+  if (!run.steps) return run;
 
-  return updateStepInExecution(execution, event.stepId, {
+  return updateStepInExecution(run, event.stepId, {
     status: StepStatusValues.COMPLETED,
     logs: event.logs,
     completed_at: new Date(),
@@ -207,15 +207,15 @@ export function applyStepCompleted(
  * Apply step failed event
  */
 export function applyStepFailed(
-  execution: WorkflowExecution,
+  run: WorkflowRun,
   event: {
     stepId: string;
     error: string;
   }
-): WorkflowExecution {
-  if (!execution.steps) return execution;
+): WorkflowRun {
+  if (!run.steps) return run;
 
-  return updateStepInExecution(execution, event.stepId, {
+  return updateStepInExecution(run, event.stepId, {
     status: StepStatusValues.FAILED,
     error_message: event.error,
     completed_at: new Date(),
@@ -226,11 +226,11 @@ export function applyStepFailed(
  * Apply phase completed event
  */
 export function applyPhaseCompleted(
-  execution: WorkflowExecution,
+  run: WorkflowRun,
   nextPhase: string | null
-): WorkflowExecution {
+): WorkflowRun {
   return {
-    ...execution,
+    ...run,
     current_phase: nextPhase,
     updated_at: new Date(),
   };
@@ -244,12 +244,12 @@ export function applyPhaseCompleted(
  * Apply event created (e.g., annotation_added)
  */
 export function applyEventCreated(
-  execution: WorkflowExecution,
+  run: WorkflowRun,
   event: WorkflowEvent
-): WorkflowExecution {
+): WorkflowRun {
   return {
-    ...execution,
-    events: execution.events ? [...execution.events, event] : [event],
+    ...run,
+    events: run.events ? [...run.events, event] : [event],
     updated_at: new Date(),
   };
 }

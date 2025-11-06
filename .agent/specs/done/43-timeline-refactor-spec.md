@@ -7,7 +7,7 @@
 
 ## Overview
 
-Fix critical bugs in the workflow execution timeline system and standardize API contracts for workflow engine integration. This refactor addresses compilation errors, data loss bugs, duplicate events, and establishes type-safe WebSocket message contracts. Maintains the existing chronological timeline view optimized for sequential workflow execution.
+Fix critical bugs in the workflow run timeline system and standardize API contracts for workflow engine integration. This refactor addresses compilation errors, data loss bugs, duplicate events, and establishes type-safe WebSocket message contracts. Maintains the existing chronological timeline view optimized for sequential workflow run.
 
 ## User Story
 
@@ -53,7 +53,7 @@ apps/web/src/
 │   ├── lib/
 │   │   ├── buildTimelineModel.ts                 # [MODIFY] Add JSDoc comments
 │   │   └── applyWorkflowUpdate.ts                # [MODIFY] Remove duplicate event creation
-│   ├── WorkflowExecutionDetail.tsx               # [MODIFY] Add error boundary wrapper
+│   ├── WorkflowRunDetail.tsx               # [MODIFY] Add error boundary wrapper
 │   └── types.ts                                  # [VERIFY] Check event types
 │
 ├── server/
@@ -72,7 +72,7 @@ apps/web/src/
 
 **Timeline Components**:
 - `StepItem.tsx` - Fix import to use `buildTimelineModel.ts`
-- `WorkflowExecutionDetail.tsx` - Wrap timeline in error boundary
+- `WorkflowRunDetail.tsx` - Wrap timeline in error boundary
 
 **WebSocket Layer**:
 - `useWorkflowWebSocket.ts` - Fix annotation text extraction, add update queue
@@ -335,7 +335,7 @@ function useWorkflowUpdateQueue() {
 2. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowWebSocket.ts` - Fix annotation text extraction and integrate update queue
 3. `apps/web/src/client/pages/projects/workflows/lib/applyWorkflowUpdate.ts` - Remove duplicate event creation in `applyStepStarted()`
 4. `apps/web/src/client/pages/projects/workflows/lib/buildTimelineModel.ts` - Add JSDoc comments documenting status transitions
-5. `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx` - Wrap timeline in error boundary
+5. `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx` - Wrap timeline in error boundary
 6. `apps/web/src/server/websocket/handlers/workflow.handler.ts` - Add missing type import and JSDoc comments
 7. `apps/web/src/shared/websocket/types.ts` - Add `WorkflowAnnotationCreatedData` interface
 8. `apps/web/src/server/domain/workflow/services/MockWorkflowOrchestrator.ts` - Add JSDoc comments for state machine
@@ -383,10 +383,10 @@ function useWorkflowUpdateQueue() {
 - [x] phase1-8: Wrap timeline in error boundary
   - Import `TimelineErrorBoundary` component
   - Wrap `<WorkflowTimeline>` component with `<TimelineErrorBoundary>`
-  - File: `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx`
+  - File: `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx`
 - [x] phase1-9: Test Phase 1 changes
   - Start dev server: `cd apps/web && pnpm dev`
-  - Open workflow execution detail page
+  - Open workflow run detail page
   - Verify timeline renders without errors
   - Create annotation and verify text displays correctly
   - Check for duplicate step_started events (should be none)
@@ -465,7 +465,7 @@ function useWorkflowUpdateQueue() {
   - File: `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowWebSocket.ts`
 - [ ] phase2-13: Test Phase 2 changes
   - Verify TypeScript compilation with new schemas
-  - Start workflow execution and check console for validation errors
+  - Start workflow run and check console for validation errors
   - Review generated JSDoc in IDE hover tooltips
   - Verify no runtime errors from schema validation
 
@@ -540,10 +540,10 @@ function useWorkflowUpdateQueue() {
   - Check console for any errors
   - Remove artificial delay after testing
 - [ ] phase3-13: Test complete system
-  - Start workflow execution
+  - Start workflow run
   - Navigate to detail page before workflow completes
   - Verify all WebSocket updates appear in timeline
-  - Refresh page during workflow execution
+  - Refresh page during workflow run
   - Verify timeline loads correctly with all events
 
 #### Completion Notes
@@ -620,12 +620,12 @@ pnpm test
 **Manual Verification:**
 
 1. Start application: `cd apps/web && pnpm dev`
-2. Navigate to: Workflow execution detail page (any workflow)
+2. Navigate to: Workflow run detail page (any workflow)
 3. Verify timeline renders without console errors
-4. Start a workflow execution and watch real-time updates
+4. Start a workflow run and watch real-time updates
 5. Verify no duplicate step_started events appear
 6. Create an annotation via WebSocket and verify text displays
-7. Refresh page during workflow execution - verify no lost updates
+7. Refresh page during workflow run - verify no lost updates
 8. Check browser console: No errors or warnings
 
 **Feature-Specific Checks:**
@@ -635,7 +635,7 @@ pnpm test
 - **No Duplicates**: Start workflow, watch for step_started events, count events of same type for same step (should be exactly 1)
 - **Error Boundary**: Temporarily throw error in timeline component, verify error UI displays instead of white screen
 - **Type Safety**: Open `workflow.handler.ts`, verify `WorkflowAnnotationCreatedData` type is recognized by TypeScript
-- **Queue**: Add `console.log` in queue flush, refresh page during workflow execution, verify queued updates are flushed
+- **Queue**: Add `console.log` in queue flush, refresh page during workflow run, verify queued updates are flushed
 - **Documentation**: Open orchestrator file, hover over status transitions, verify JSDoc comments display
 
 ## Implementation Notes

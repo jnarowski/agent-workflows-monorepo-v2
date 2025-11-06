@@ -1,10 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Plus } from "lucide-react";
-import { WorkflowExecutionHeader } from "./components/WorkflowExecutionHeader";
+import { WorkflowRunHeader } from "./components/WorkflowRunHeader";
 import { PhaseTimeline } from "./components/timeline/PhaseTimeline";
-import { NewExecutionDialog } from "./components/NewExecutionDialog";
-import { useWorkflowExecution } from "./hooks/useWorkflowExecution";
+import { NewRunDialog } from "./components/NewRunDialog";
+import { useWorkflowRun } from "./hooks/useWorkflowRun";
 import { useWorkflowDefinition } from "./hooks/useWorkflowDefinition";
 import { useWorkflowWebSocket } from "./hooks/useWorkflowWebSocket";
 import {
@@ -13,30 +13,30 @@ import {
   useCancelWorkflow,
 } from "./hooks/useWorkflowMutations";
 
-export function WorkflowExecutionDetail() {
-  const { projectId, definitionId, executionId } = useParams<{
+export function WorkflowRunDetail() {
+  const { projectId, definitionId, runId } = useParams<{
     projectId: string;
     definitionId: string;
-    executionId: string;
+    runId: string;
   }>();
   const navigate = useNavigate();
 
   // Fetch data
   const {
-    data: execution,
-    isLoading: executionLoading,
-    isError: executionError,
-  } = useWorkflowExecution(executionId);
+    data: run,
+    isLoading: runLoading,
+    isError: runError,
+  } = useWorkflowRun(runId);
   const {
     data: definition,
     isLoading: definitionLoading,
     isError: definitionError,
   } = useWorkflowDefinition(definitionId);
 
-  // Redirect if execution or definition not found
+  // Redirect if run or definition not found
   useEffect(() => {
-    // If execution not found, go back to workflow definition view
-    if (executionError || (!executionLoading && !execution)) {
+    // If run not found, go back to workflow definition view
+    if (runError || (!runLoading && !run)) {
       navigate(`/projects/${projectId}/workflows/${definitionId}`, {
         replace: true,
       });
@@ -49,9 +49,9 @@ export function WorkflowExecutionDetail() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    executionError,
-    executionLoading,
-    execution,
+    runError,
+    runLoading,
+    run,
     definitionError,
     definitionLoading,
     definition,
@@ -68,11 +68,11 @@ export function WorkflowExecutionDetail() {
   const cancelWorkflow = useCancelWorkflow();
 
   // Dialog state
-  const [showNewExecutionDialog, setShowNewExecutionDialog] = useState(false);
+  const [showNewRunDialog, setShowNewRunDialog] = useState(false);
 
-  const isLoading = executionLoading || definitionLoading;
+  const isLoading = runLoading || definitionLoading;
 
-  if (isLoading || !execution || !definition) {
+  if (isLoading || !run || !definition) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -81,15 +81,15 @@ export function WorkflowExecutionDetail() {
   }
 
   const handlePause = async () => {
-    await pauseWorkflow.mutateAsync(executionId!);
+    await pauseWorkflow.mutateAsync(runId!);
   };
 
   const handleResume = async () => {
-    await resumeWorkflow.mutateAsync(executionId!);
+    await resumeWorkflow.mutateAsync(runId!);
   };
 
   const handleCancel = async () => {
-    await cancelWorkflow.mutateAsync(executionId!);
+    await cancelWorkflow.mutateAsync(runId!);
   };
 
   return (
@@ -108,18 +108,18 @@ export function WorkflowExecutionDetail() {
           </button>
 
           <button
-            onClick={() => setShowNewExecutionDialog(true)}
+            onClick={() => setShowNewRunDialog(true)}
             className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
-            New Execution
+            New Run
           </button>
         </div>
       </div>
 
       {/* Header */}
-      <WorkflowExecutionHeader
-        execution={execution}
+      <WorkflowRunHeader
+        run={run}
         onPause={handlePause}
         onResume={handleResume}
         onCancel={handleCancel}
@@ -131,15 +131,15 @@ export function WorkflowExecutionDetail() {
           {/* Timeline section */}
           <section>
             <h2 className="text-xl font-bold mb-4">Execution Timeline</h2>
-            <PhaseTimeline execution={execution} projectId={projectId!} />
+            <PhaseTimeline run={run} projectId={projectId!} />
           </section>
         </div>
       </div>
 
-      {/* New Execution Dialog */}
-      <NewExecutionDialog
-        open={showNewExecutionDialog}
-        onOpenChange={setShowNewExecutionDialog}
+      {/* New Run Dialog */}
+      <NewRunDialog
+        open={showNewRunDialog}
+        onOpenChange={setShowNewRunDialog}
         projectId={projectId!}
         definitionId={definitionId!}
         definition={definition}

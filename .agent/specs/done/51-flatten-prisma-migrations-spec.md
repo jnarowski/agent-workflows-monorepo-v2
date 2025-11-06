@@ -251,11 +251,11 @@ cat package.json | grep -A 1 '"prisma"'
 
 - Open Prisma Studio: `pnpm prisma:studio` and verify:
   - User table has one entry (admin@example.com)
-  - All workflow tables exist (WorkflowDefinition, WorkflowExecution, etc.)
+  - All workflow tables exist (WorkflowDefinition, WorkflowRun, etc.)
   - All indexes and relations are correct
 - Check migration file:
   - `cat prisma/migrations/*/migration.sql | grep "CREATE TABLE"`
-  - Should see all 9 models (User, Project, AgentSession, WorkflowDefinition, WorkflowExecution, WorkflowExecutionStep, WorkflowEvent, WorkflowArtifact, and 5 enums)
+  - Should see all 9 models (User, Project, AgentSession, WorkflowDefinition, WorkflowRun, WorkflowRunStep, WorkflowEvent, WorkflowArtifact, and 5 enums)
 
 ## Implementation Notes
 

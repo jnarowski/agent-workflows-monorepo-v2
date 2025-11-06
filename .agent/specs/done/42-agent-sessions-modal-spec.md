@@ -7,11 +7,11 @@
 
 ## Overview
 
-Extract the chat interface into a reusable component and create a modal viewer for agent sessions on workflow execution steps. This enables users to view agent session conversations directly from the workflow UI without navigating away, while also refactoring the existing session page to use the same extracted component (eliminating code duplication).
+Extract the chat interface into a reusable component and create a modal viewer for agent sessions on workflow run steps. This enables users to view agent session conversations directly from the workflow UI without navigating away, while also refactoring the existing session page to use the same extracted component (eliminating code duplication).
 
 ## User Story
 
-As a user viewing workflow execution steps
+As a user viewing workflow run steps
 I want to click "View Agent Session" and see the conversation in a modal
 So that I can review agent interactions without leaving the workflow context
 
@@ -52,7 +52,7 @@ apps/web/src/client/
 │   └── workflows/
 │       └── components/
 │           ├── AgentSessionModal.tsx    # NEW - Modal wrapper
-│           └── WorkflowExecutionStepsList.tsx  # MODIFIED - Add modal trigger
+│           └── WorkflowRunStepsList.tsx  # MODIFIED - Add modal trigger
 ```
 
 ### Integration Points
@@ -71,7 +71,7 @@ apps/web/src/client/
 - `AgentSessionModal.tsx` - Modal wrapper for workflow steps
 - `ChatInterface.tsx` - Reused without changes
 - `ProjectSession.tsx` - Simplified to use `AgentSessionViewer`
-- `WorkflowExecutionStepsList.tsx` - Add modal trigger button
+- `WorkflowRunStepsList.tsx` - Add modal trigger button
 
 ## Implementation Details
 
@@ -247,9 +247,9 @@ export function AgentSessionModal({
 }
 ```
 
-### 3. Update WorkflowExecutionStepsList
+### 3. Update WorkflowRunStepsList
 
-**File**: `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionStepsList.tsx`
+**File**: `apps/web/src/client/pages/projects/workflows/components/WorkflowRunStepsList.tsx`
 
 **Changes**:
 - Add state for modal open/close
@@ -258,7 +258,7 @@ export function AgentSessionModal({
 
 **Implementation**:
 ```typescript
-export function WorkflowExecutionStepsList({ steps, comments, projectId }: Props) {
+export function WorkflowRunStepsList({ steps, comments, projectId }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [selectedSessionName, setSelectedSessionName] = useState<string | null>(null);
@@ -376,7 +376,7 @@ export function ProjectSession() {
 ### Modified Files (2)
 
 1. `apps/web/src/client/pages/projects/sessions/ProjectSession.tsx` - Use AgentSessionViewer
-2. `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionStepsList.tsx` - Add modal trigger
+2. `apps/web/src/client/pages/projects/workflows/components/WorkflowRunStepsList.tsx` - Add modal trigger
 
 ## Step by Step Tasks
 
@@ -474,7 +474,7 @@ export function ProjectSession() {
 - Early return for null sessionId to prevent rendering empty modal
 - Component is fully self-contained and manages cleanup automatically
 
-### Task Group 3: Update WorkflowExecutionStepsList
+### Task Group 3: Update WorkflowRunStepsList
 
 <!-- prettier-ignore -->
 - [x] workflow-1: Add modal state management
@@ -508,13 +508,13 @@ export function ProjectSession() {
 #### Completion Notes
 
 - Updated WorkflowTimelineItem component to add modal functionality
-- Thread projectId down from WorkflowExecutionDetail → WorkflowTimeline → WorkflowTimelineItem
+- Thread projectId down from WorkflowRunDetail → WorkflowTimeline → WorkflowTimelineItem
 - Added modal state management (modalOpen, selectedSessionId, selectedSessionName)
 - Replaced direct link with button that opens modal
 - Added handleSessionClick function to set session and open modal
 - Kept fallback external link for opening in new tab
 - Rendered AgentSessionModal at component bottom
-- Note: The component being updated was WorkflowTimelineItem, not WorkflowExecutionStepsList (which doesn't exist)
+- Note: The component being updated was WorkflowTimelineItem, not WorkflowRunStepsList (which doesn't exist)
 - All integration points properly connected with projectId threaded through component hierarchy
 
 ### Task Group 4: Refactor ProjectSession Page
@@ -559,7 +559,7 @@ export function ProjectSession() {
 
 <!-- prettier-ignore -->
 - [ ] test-1: Test modal opens and displays session
-  - Navigate to workflow execution page
+  - Navigate to workflow run page
   - Click "View Agent Session" button on a step
   - Verify modal opens with session messages
   - Command: Start dev server and manually test
@@ -709,7 +709,7 @@ cd apps/web && pnpm build
 **Manual Verification:**
 
 1. Start application: `cd apps/web && pnpm dev`
-2. Navigate to: Workflow execution page (any workflow with agent session steps)
+2. Navigate to: Workflow run page (any workflow with agent session steps)
 3. Click "View Agent Session" button on a step
 4. Verify modal opens with session messages displayed correctly
 5. Verify real-time updates if session is active (streaming messages)
@@ -813,7 +813,7 @@ This eliminates code duplication and ensures consistent behavior.
 | --------------------------------- | -------------- |
 | Create AgentSessionViewer         | 2-3 hours      |
 | Create AgentSessionModal          | 1 hour         |
-| Update WorkflowExecutionStepsList | 1 hour         |
+| Update WorkflowRunStepsList | 1 hour         |
 | Refactor ProjectSession page      | 30 minutes     |
 | Testing & validation              | 1-2 hours      |
 | **Total**                         | **5-7 hours**  |

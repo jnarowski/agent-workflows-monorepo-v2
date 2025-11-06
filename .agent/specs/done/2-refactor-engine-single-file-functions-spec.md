@@ -113,7 +113,7 @@ domain/workflow/types/
 ### 3. Split steps/helpers.ts (4 exports → 4 files)
 
 **Current exports**:
-- `findOrCreateStep(context, stepName): Promise<WorkflowExecutionStep>`
+- `findOrCreateStep(context, stepName): Promise<WorkflowRunStep>`
 - `updateStepStatus(context, stepId, status, result?, error?): Promise<void>`
 - `handleStepFailure(context, stepId, error): Promise<void>`
 - `executeStep<T>(context, stepName, fn): Promise<T>`
@@ -369,7 +369,7 @@ No new tests required - this is a refactor that preserves existing behavior. Exi
 1. Server starts without errors
 2. Workflow engine initializes successfully
 3. Workflow scanning works
-4. Workflow execution works
+4. Workflow run works
 
 ## Success Criteria
 

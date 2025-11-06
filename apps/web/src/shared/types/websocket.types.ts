@@ -295,19 +295,19 @@ export type ShellEvent =
  * Workflow WebSocket event type constants
  *
  * Hierarchical event naming with colon delimiters (Socket.io convention)
- * - workflow:execution:updated - Status, phase, error changes
- * - workflow:execution:step:updated - Step status, logs, error changes
- * - workflow:execution:event:created - WorkflowEvent created (annotations, etc.)
- * - workflow:execution:artifact:created - WorkflowArtifact uploaded/attached
+ * - workflow:run:updated - Status, phase, error changes
+ * - workflow:run:step:updated - Step status, logs, error changes
+ * - workflow:run:event:created - WorkflowEvent created (annotations, etc.)
+ * - workflow:run:artifact:created - WorkflowArtifact uploaded/attached
  *
  * All events broadcast to project:${projectId} room only
  * Client-side filtering handled efficiently by React Query cache
  */
 export const WorkflowWebSocketEventTypes = {
-  EXECUTION_UPDATED: "workflow:execution:updated",
-  STEP_UPDATED: "workflow:execution:step:updated",
-  EVENT_CREATED: "workflow:execution:event:created",
-  ARTIFACT_CREATED: "workflow:execution:artifact:created",
+  RUN_UPDATED: "workflow:run:updated",
+  STEP_UPDATED: "workflow:run:step:updated",
+  EVENT_CREATED: "workflow:run:event:created",
+  ARTIFACT_CREATED: "workflow:run:artifact:created",
 } as const;
 
 /**
@@ -317,11 +317,11 @@ export const WorkflowWebSocketEventTypes = {
 import type { WorkflowStatus, StepStatus } from '../schemas/workflow.schemas';
 
 /**
- * Execution updated event - partial updates to WorkflowExecution
+ * Run updated event - partial updates to WorkflowRun
  * Contains only changed fields to minimize payload size
  */
-export interface WorkflowExecutionUpdatedData {
-  execution_id: string;
+export interface WorkflowRunUpdatedData {
+  run_id: string;
   project_id: string;
   changes: Partial<{
     status: WorkflowStatus;
@@ -335,11 +335,11 @@ export interface WorkflowExecutionUpdatedData {
 }
 
 /**
- * Step updated event - partial updates to WorkflowExecutionStep
+ * Step updated event - partial updates to WorkflowRunStep
  * Contains only changed fields
  */
 export interface WorkflowStepUpdatedData {
-  execution_id: string;
+  run_id: string;
   step_id: string;
   changes: Partial<{
     status: StepStatus;
@@ -356,10 +356,10 @@ export interface WorkflowStepUpdatedData {
  * Sent when annotation or other event is created
  */
 export interface WorkflowEventCreatedData {
-  execution_id: string;
+  run_id: string;
   event: {
     id: string;
-    workflow_execution_id: string;
+    workflow_run_id: string;
     event_type: string;
     event_data: unknown;
     phase: string | null;
@@ -374,11 +374,11 @@ export interface WorkflowEventCreatedData {
  * Sent when artifact uploaded or attached to event
  */
 export interface WorkflowArtifactCreatedData {
-  execution_id: string;
+  run_id: string;
   artifact: {
     id: string;
-    workflow_execution_id: string;
-    workflow_execution_step_id: string | null;
+    workflow_run_id: string;
+    workflow_run_step_id: string | null;
     workflow_event_id: string | null;
     name: string;
     file_path: string;
@@ -397,8 +397,8 @@ export interface WorkflowArtifactCreatedData {
  */
 export type WorkflowWebSocketEvent =
   | {
-      type: typeof WorkflowWebSocketEventTypes.EXECUTION_UPDATED;
-      data: WorkflowExecutionUpdatedData;
+      type: typeof WorkflowWebSocketEventTypes.RUN_UPDATED;
+      data: WorkflowRunUpdatedData;
     }
   | {
       type: typeof WorkflowWebSocketEventTypes.STEP_UPDATED;

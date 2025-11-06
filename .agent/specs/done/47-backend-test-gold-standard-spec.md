@@ -146,7 +146,7 @@ Create `apps/web/src/server/routes/projects.test.ts` with comprehensive test cov
   - File: `apps/web/src/server/test-utils/db.ts`
 - [x] db-clean - Create table cleanup function
   - Export `cleanTestDB()` that truncates all tables in correct order (foreign keys)
-  - Order: WorkflowArtifact → WorkflowEvent → WorkflowExecutionStep → WorkflowExecution → WorkflowDefinition → AgentSession → Project → User
+  - Order: WorkflowArtifact → WorkflowEvent → WorkflowRunStep → WorkflowRun → WorkflowDefinition → AgentSession → Project → User
   - File: `apps/web/src/server/test-utils/db.ts`
 - [x] db-reset - Create schema reset function (optional, for schema change tests)
   - Export `resetTestDB()` that drops and recreates schema
@@ -390,8 +390,8 @@ Running migrations in tests requires careful handling:
 SQLite enforces foreign key constraints. Clean tables in this order:
 1. WorkflowArtifact (leaf node)
 2. WorkflowEvent (leaf node)
-3. WorkflowExecutionStep (references WorkflowExecution, AgentSession)
-4. WorkflowExecution (references WorkflowDefinition, Project, User)
+3. WorkflowRunStep (references WorkflowRun, AgentSession)
+4. WorkflowRun (references WorkflowDefinition, Project, User)
 5. WorkflowDefinition (references Project)
 6. AgentSession (references Project, User)
 7. Project (referenced by many)

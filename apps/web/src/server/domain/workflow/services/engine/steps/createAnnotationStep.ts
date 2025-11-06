@@ -24,7 +24,7 @@ export function createAnnotationStep(
   return async function annotation(idOrName: string, config: AnnotationStepConfig): Promise<void> {
     const id = toId(idOrName);
     const name = toName(idOrName);
-    const { executionId, projectId, currentPhase, logger } = context;
+    const { runId, projectId, currentPhase, logger } = context;
     const message = config.message;
 
     // Generate phase-prefixed Inngest step ID
@@ -34,7 +34,7 @@ export function createAnnotationStep(
     return await inngestStep.run(inngestStepId, async () => {
       // Create annotation event using domain service
       const event = await createWorkflowEvent({
-        workflow_execution_id: executionId,
+        workflow_run_id: runId,
         event_type: "annotation_added",
         event_data: {
           message,
@@ -47,7 +47,7 @@ export function createAnnotationStep(
       broadcast(Channels.project(projectId), {
         type: "workflow:annotation:created",
         data: {
-          executionId,
+          runId,
           message,
           phase: currentPhase,
           timestamp: event.created_at.toISOString(),
@@ -55,7 +55,7 @@ export function createAnnotationStep(
       });
 
       logger.debug(
-        { executionId, name, message, phase: currentPhase },
+        { runId, name, message, phase: currentPhase },
         "Annotation added"
       );
     }) as unknown as Promise<void>;

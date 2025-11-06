@@ -5,28 +5,28 @@ import { emitWorkflowEvent } from "../../../events/emitWorkflowEvent";
  * Emit artifact:created event for a workflow artifact
  *
  * @param projectId - Project ID for event routing
- * @param executionId - Workflow execution ID
+ * @param runId - Workflow execution ID
  * @param artifact - Created artifact record
  *
  * @example
  * ```typescript
  * const artifact = await createWorkflowArtifact({ ... });
- * emitArtifactCreatedEvent(projectId, executionId, artifact);
+ * emitArtifactCreatedEvent(projectId, runId, artifact);
  * ```
  */
 export function emitArtifactCreatedEvent(
   projectId: string,
-  executionId: string,
+  runId: string,
   artifact: WorkflowArtifact
 ): void {
   emitWorkflowEvent(projectId, {
-    type: "workflow:execution:artifact:created",
+    type: "workflow:run:artifact:created",
     data: {
-      execution_id: executionId,
+      run_id: runId,
       artifact: {
         id: artifact.id,
-        workflow_execution_id: artifact.workflow_execution_id,
-        workflow_execution_step_id: null,
+        workflow_run_id: artifact.workflow_run_id,
+        workflow_run_step_id: null,
         workflow_event_id: artifact.workflow_event_id,
         name: artifact.name,
         file_path: artifact.file_path,

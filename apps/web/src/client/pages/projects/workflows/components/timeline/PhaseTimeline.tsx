@@ -2,32 +2,32 @@ import { useMemo } from "react";
 import { PhaseCard } from "./PhaseCard";
 import { getPhaseId, getPhaseLabel } from "@/shared/utils/phase.utils";
 import type {
-  WorkflowExecution,
-  WorkflowExecutionStep,
+  WorkflowRun,
+  WorkflowRunStep,
   WorkflowEvent,
   WorkflowArtifact,
 } from "../../types";
 
 interface PhaseTimelineProps {
-  execution: WorkflowExecution;
+  run: WorkflowRun;
   projectId: string;
 }
 
 interface PhaseGroup {
   phaseId: string;
   phaseLabel: string;
-  steps: WorkflowExecutionStep[];
+  steps: WorkflowRunStep[];
   events: WorkflowEvent[];
   artifacts: WorkflowArtifact[];
 }
 
-export function PhaseTimeline({ execution, projectId }: PhaseTimelineProps) {
+export function PhaseTimeline({ run, projectId }: PhaseTimelineProps) {
   // Group data by phase
   const phaseGroups = useMemo((): PhaseGroup[] => {
-    const phases = execution.workflow_definition?.phases || [];
-    const steps = execution.steps || [];
-    const events = execution.events || [];
-    const artifacts = execution.artifacts || [];
+    const phases = run.workflow_definition?.phases || [];
+    const steps = run.steps || [];
+    const events = run.events || [];
+    const artifacts = run.artifacts || [];
 
     return phases.map((phase) => {
       const phaseId = getPhaseId(phase);
@@ -87,9 +87,9 @@ export function PhaseTimeline({ execution, projectId }: PhaseTimelineProps) {
         artifacts: phaseArtifacts,
       };
     });
-  }, [execution]);
+  }, [run]);
 
-  if (!execution.workflow_definition?.phases) {
+  if (!run.workflow_definition?.phases) {
     return (
       <div className="text-center text-muted-foreground py-8">
         No phases defined for this workflow
@@ -107,7 +107,7 @@ export function PhaseTimeline({ execution, projectId }: PhaseTimelineProps) {
           steps={group.steps}
           events={group.events}
           artifacts={group.artifacts}
-          currentPhase={execution.current_phase}
+          currentPhase={run.current_phase}
           projectId={projectId}
         />
       ))}

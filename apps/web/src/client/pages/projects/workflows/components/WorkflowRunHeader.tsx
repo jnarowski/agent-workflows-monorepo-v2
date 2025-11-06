@@ -1,27 +1,27 @@
 import { Pause, Play, X } from 'lucide-react';
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
-import type { WorkflowExecution } from '../types';
+import type { WorkflowRun } from '../types';
 
-interface WorkflowExecutionHeaderProps {
-  execution: WorkflowExecution;
+interface WorkflowRunHeaderProps {
+  run: WorkflowRun;
   onPause: () => void;
   onResume: () => void;
   onCancel: () => void;
 }
 
-export function WorkflowExecutionHeader({
-  execution,
+export function WorkflowRunHeader({
+  run,
   onPause,
   onResume,
   onCancel,
-}: WorkflowExecutionHeaderProps) {
+}: WorkflowRunHeaderProps) {
   const formatDate = (date: Date | null) => {
     if (!date) return 'N/A';
     return new Date(date).toLocaleString();
   };
 
-  const isRunning = execution.status === 'running';
-  const isPaused = execution.status === 'paused';
+  const isRunning = run.status === 'running';
+  const isPaused = run.status === 'paused';
   const isActive = isRunning || isPaused;
 
   return (
@@ -29,27 +29,27 @@ export function WorkflowExecutionHeader({
       <div className="flex items-center justify-between gap-6">
         {/* Title and badge */}
         <div className="flex items-center gap-3 min-w-0">
-          <h1 className="text-xl font-bold truncate">{execution.name}</h1>
-          <WorkflowStatusBadge status={execution.status} />
+          <h1 className="text-xl font-bold truncate">{run.name}</h1>
+          <WorkflowStatusBadge status={run.status} />
         </div>
 
         {/* Metadata - horizontal layout */}
         <div className="flex items-center gap-6 text-sm flex-wrap">
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground">Started:</span>
-            <span>{formatDate(execution.started_at)}</span>
+            <span>{formatDate(run.started_at)}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground">Completed:</span>
-            <span>{formatDate(execution.completed_at)}</span>
+            <span>{formatDate(run.completed_at)}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground">Current Phase:</span>
-            <span>{execution.current_phase || 'N/A'}</span>
+            <span>{run.current_phase || 'N/A'}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground">Current Step:</span>
-            <span>{execution.current_step || 'N/A'}</span>
+            <span>{run.current_step || 'N/A'}</span>
           </div>
         </div>
 

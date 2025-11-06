@@ -7,11 +7,11 @@
 
 ## Overview
 
-Refactor the workflow execution timeline system to use a domain model layer that transforms database entities into a debug-optimized view model. This eliminates component-level filtering and computation, enables efficient incremental WebSocket updates, and provides a clean separation between data fetching and UI rendering.
+Refactor the workflow run timeline system to use a domain model layer that transforms database entities into a debug-optimized view model. This eliminates component-level filtering and computation, enables efficient incremental WebSocket updates, and provides a clean separation between data fetching and UI rendering.
 
 ## User Story
 
-As a developer debugging workflow executions
+As a developer debugging workflow runs
 I want to see a clear, performant timeline with errors prominently displayed
 So that I can quickly identify failures and understand execution flow without UI lag or confusion
 
@@ -51,7 +51,7 @@ apps/web/src/client/pages/projects/workflows/
 │       ├── TimelineRow.tsx       # KEEP - Layout component
 │       ├── TimelineHeader.tsx    # KEEP - Layout component
 │       └── TimelineBody.tsx      # KEEP - Layout component
-├── WorkflowExecutionDetail.tsx   # MODIFY - Build model, incremental updates
+├── WorkflowRunDetail.tsx   # MODIFY - Build model, incremental updates
 └── types.ts                      # MODIFY - Re-export domain types
 ```
 
@@ -59,7 +59,7 @@ apps/web/src/client/pages/projects/workflows/
 
 **React Query Cache**:
 
-- `useWorkflowExecution(executionId)` - Fetches initial data
+- `useWorkflowRun(executionId)` - Fetches initial data
 - `queryClient.setQueryData()` - Receives incremental WebSocket updates
 
 **WebSocket**:
@@ -69,7 +69,7 @@ apps/web/src/client/pages/projects/workflows/
 
 **Components**:
 
-- `WorkflowExecutionDetail` - Builds model, subscribes to updates
+- `WorkflowRunDetail` - Builds model, subscribes to updates
 - `WorkflowTimeline` - Renders model items
 - `StepItem` / `EventItem` - Consume pre-computed data
 
@@ -95,7 +95,7 @@ export interface StepTimelineItem {
   itemType: 'step';
   id: string;
   timestamp: Date;
-  step: WorkflowExecutionStep;
+  step: WorkflowRunStep;
 
   // Pre-attached data
   annotations: StepAnnotation[];
@@ -180,9 +180,9 @@ Applies incremental updates to cached execution data using immutable patterns.
 
 ```typescript
 function applyStepCompleted(
-  execution: WorkflowExecution,
+  execution: WorkflowRun,
   update: StepCompletedUpdate
-): WorkflowExecution {
+): WorkflowRun {
   return {
     ...execution,
     steps: execution.steps.map((step) =>
@@ -201,7 +201,7 @@ function applyStepCompleted(
 
 ### 4. Component Refactoring
 
-**WorkflowExecutionDetail**:
+**WorkflowRunDetail**:
 
 - Build model with `useMemo(() => buildTimelineModel(...), [execution])`
 - WebSocket handler uses `queryClient.setQueryData()` + `applyWorkflowUpdate()`
@@ -235,7 +235,7 @@ function applyStepCompleted(
 
 ### Modified Files (12)
 
-1. `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx` - Use model, incremental updates
+1. `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx` - Use model, incremental updates
 2. `apps/web/src/client/pages/projects/workflows/components/WorkflowTimeline.tsx` - Remove filtering, simplify rendering
 3. `apps/web/src/client/pages/projects/workflows/components/timeline/StepItem.tsx` - Use pre-computed data
 4. `apps/web/src/client/pages/projects/workflows/components/timeline/StepCommentItem.tsx` - Rename to StepAnnotationItem, update types
@@ -272,8 +272,8 @@ function applyStepCompleted(
 
 - [x] TL-02 Implement `buildStepItems()` helper function
   - Filter steps with `started_at` (only started steps appear)
-  - For each step: filter annotations by `workflow_execution_step_id`
-  - For each step: filter artifacts by `workflow_execution_step_id`
+  - For each step: filter annotations by `workflow_run_step_id`
+  - For each step: filter artifacts by `workflow_run_step_id`
   - Compute `metadata`: duration, startedAt, completedAt
   - Compute `display`: status, statusLabel, iconColor, badgeVariant, flags
   - Compute `debug`: hasError, errorMessage, isCurrent
@@ -291,7 +291,7 @@ function applyStepCompleted(
   - Lines: ~30
 
 - [x] TL-04 Implement `buildAnnotationItems()` helper function
-  - Filter standalone annotations (no `workflow_execution_step_id`)
+  - Filter standalone annotations (no `workflow_run_step_id`)
   - Map to `AnnotationTimelineItem`
   - Extract text from event_data.body
   - Return `AnnotationTimelineItem[]`
@@ -440,19 +440,19 @@ function applyStepCompleted(
 ### Phase 3: Component Integration
 
 <!-- prettier-ignore -->
-- [x] TL-19 Update `WorkflowExecutionDetail.tsx` to build timeline model
+- [x] TL-19 Update `WorkflowRunDetail.tsx` to build timeline model
   - Import `buildTimelineModel` from `./lib/timelineModel`
   - Import `applyWorkflowUpdate` from `./lib/applyWorkflowUpdate`
   - Add `useMemo` to build model: `const model = useMemo(() => buildTimelineModel(execution, execution.steps, execution.events, execution.artifacts), [execution])`
   - Pass model to WorkflowTimeline: `<WorkflowTimeline model={model} />`
-  - File: `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx`
+  - File: `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx`
   - Changes: Add imports, add useMemo, change props
 
 - [x] TL-20 Update WebSocket handler for incremental updates
   - In `useEffect` for WebSocket subscription
   - Change from `queryClient.invalidateQueries()` to `queryClient.setQueryData()`
   - Apply update: `queryClient.setQueryData(['workflows', executionId], (old) => applyWorkflowUpdate(old, update))`
-  - File: `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx`
+  - File: `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx`
   - Changes: Replace invalidate with setQueryData + applyWorkflowUpdate
 
 - [x] TL-21 Update `WorkflowTimeline.tsx` props and remove filtering
@@ -519,7 +519,7 @@ function applyStepCompleted(
 
 #### Completion Notes
 
-- WorkflowExecutionDetail successfully builds timeline model using useMemo with execution data
+- WorkflowRunDetail successfully builds timeline model using useMemo with execution data
 - WebSocket handler now uses incremental updates via queryClient.setQueryData() + applyWorkflowUpdate()
 - Created helper function applyIncrementalUpdate() that maps WebSocket events to WebSocketUpdate types
 - WebSocket updates no longer invalidate queries (except for workflow list updates)
@@ -679,10 +679,10 @@ describe('applyWorkflowUpdate', () => {
 
 ### Integration Tests
 
-Manual testing with live workflow execution:
+Manual testing with live workflow run:
 
 1. Start dev server
-2. Create test workflow execution
+2. Create test workflow run
 3. Monitor timeline rendering
 4. Trigger WebSocket updates
 5. Verify incremental updates without refetch
@@ -738,7 +738,7 @@ pnpm test
 **Manual Verification:**
 
 1. Start application: `cd apps/web && pnpm dev`
-2. Navigate to: Workflow execution detail page (e.g., `/projects/test-project/workflows/exec-123`)
+2. Navigate to: Workflow run detail page (e.g., `/projects/test-project/workflows/exec-123`)
 3. Verify: Timeline renders with all steps and events visible
 4. Verify: Failed steps (if any) have red icons and expanded error messages
 5. Verify: Step completion times and durations display correctly
@@ -780,7 +780,7 @@ With 3-5 steps average, rebuilding the entire model on every update is ~1-2ms. D
 Implement incrementally:
 
 1. Create domain model (can coexist with old code)
-2. Update WorkflowExecutionDetail to use model
+2. Update WorkflowRunDetail to use model
 3. Verify timeline still works
 4. Update components one by one
 5. Test after each component update

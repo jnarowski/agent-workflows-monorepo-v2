@@ -43,7 +43,7 @@ function getMimeType(
 /**
  * Create artifact step factory function
  * Uploads files, directories, or text content as workflow artifacts
- * Artifacts are stored in: {projectPath}/.agent/workflows/executions/{executionId}/artifacts
+ * Artifacts are stored in: {projectPath}/.agent/workflows/runs/{runId}/artifacts
  */
 export function createArtifactStep(
   context: RuntimeContext,
@@ -61,20 +61,20 @@ export function createArtifactStep(
     const inngestStepId = generateInngestStepId(context, id);
 
     return await inngestStep.run(inngestStepId, async () => {
-      const { executionId, projectId, projectPath, currentPhase, logger } = context;
+      const { runId, projectId, projectPath, currentPhase, logger } = context;
       const artifactIds: string[] = [];
       let totalSize = 0;
 
       // Find or create step record for linking artifacts
       const step = await findOrCreateStep(context, inngestStepId, name);
 
-      // Create artifacts directory: {projectPath}/.agent/workflows/executions/{executionId}/artifacts
+      // Create artifacts directory: {projectPath}/.agent/workflows/runs/{runId}/artifacts
       const artifactsDir = join(
         projectPath,
         ".agent",
         "workflows",
-        "executions",
-        executionId,
+        "runs",
+        runId,
         "artifacts"
       );
       await mkdir(artifactsDir, { recursive: true });
@@ -99,7 +99,7 @@ export function createArtifactStep(
           // Create artifact using domain service
           const artifact = await createWorkflowArtifact(
             {
-              workflow_execution_id: executionId,
+              workflow_run_id: runId,
               name: config.name,
               file_type: "text",
               file_path: relativePath, // Relative to project root
@@ -113,7 +113,7 @@ export function createArtifactStep(
           totalSize += sizeBytes;
 
           // Emit artifact:created event for this artifact
-          emitArtifactCreatedEvent(projectId, executionId, artifact);
+          emitArtifactCreatedEvent(projectId, runId, artifact);
           break;
         }
 
@@ -137,7 +137,7 @@ export function createArtifactStep(
           // Create artifact using domain service
           const artifact = await createWorkflowArtifact(
             {
-              workflow_execution_id: executionId,
+              workflow_run_id: runId,
               name: config.name,
               file_type: config.type,
               file_path: relativePath, // Relative to project root
@@ -151,7 +151,7 @@ export function createArtifactStep(
           totalSize += fileStats.size;
 
           // Emit artifact:created event for this artifact
-          emitArtifactCreatedEvent(projectId, executionId, artifact);
+          emitArtifactCreatedEvent(projectId, runId, artifact);
           break;
         }
 
@@ -187,7 +187,7 @@ export function createArtifactStep(
             // Create artifact using domain service
             const artifact = await createWorkflowArtifact(
               {
-                workflow_execution_id: executionId,
+                workflow_run_id: runId,
                 name: `${config.name}/${relativeToSource}`,
                 file_type: "file",
                 file_path: relativeToProject, // Relative to project root
@@ -201,14 +201,14 @@ export function createArtifactStep(
             totalSize += fileStats.size;
 
             // Emit artifact:created event for this artifact
-            emitArtifactCreatedEvent(projectId, executionId, artifact);
+            emitArtifactCreatedEvent(projectId, runId, artifact);
           }
           break;
         }
       }
 
       logger.info(
-        { executionId, stepId: step.id, count: artifactIds.length, totalSize },
+        { runId, stepId: step.id, count: artifactIds.length, totalSize },
         "Artifacts uploaded"
       );
 

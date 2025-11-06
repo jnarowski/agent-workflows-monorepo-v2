@@ -7,23 +7,23 @@
 
 ## Overview
 
-Transform the workflow execution display into a chronological timeline by consolidating the separate `WorkflowComment` table into a unified `WorkflowEvent` table. This creates a single audit log for all workflow activities (comments, system events, phase transitions, and future command execution), displayed in chronological order with expandable step details.
+Transform the workflow run display into a chronological timeline by consolidating the separate `WorkflowComment` table into a unified `WorkflowEvent` table. This creates a single audit log for all workflow activities (comments, system events, phase transitions, and future command execution), displayed in chronological order with expandable step details.
 
 ## User Story
 
 As a workflow user
-I want to see a chronological history of everything that happened during workflow execution (steps, comments, pauses, phase transitions)
+I want to see a chronological history of everything that happened during workflow run (steps, comments, pauses, phase transitions)
 So that I can understand the sequence of events and debug issues more effectively
 
 ## Technical Approach
 
-Replace the separate `WorkflowComment` table with a consolidated `WorkflowEvent` table that stores all temporal workflow activities. The timeline UI merges events from `WorkflowEvent` (comments, system events, phases) with step data from `WorkflowExecutionStep` to create a unified chronological view. This approach uses events only for activities without dedicated tables (comments, system state changes, phases), while steps remain in their own table as the source of truth.
+Replace the separate `WorkflowComment` table with a consolidated `WorkflowEvent` table that stores all temporal workflow activities. The timeline UI merges events from `WorkflowEvent` (comments, system events, phases) with step data from `WorkflowRunStep` to create a unified chronological view. This approach uses events only for activities without dedicated tables (comments, system state changes, phases), while steps remain in their own table as the source of truth.
 
 ## Key Design Decisions
 
 1. **Consolidate Comments into Events**: Comments become events with `event_type='comment_added'` and text stored in `event_data` JSON field. This eliminates duplication between tracking comments and other workflow activities.
 
-2. **Events for State Changes Only**: Only create events for activities that don't have dedicated tables (comments, workflow state changes, phase transitions, future commands). Steps remain in `WorkflowExecutionStep` as source of truth.
+2. **Events for State Changes Only**: Only create events for activities that don't have dedicated tables (comments, workflow state changes, phase transitions, future commands). Steps remain in `WorkflowRunStep` as source of truth.
 
 3. **Dual-Write Migration Strategy**: Keep existing timestamp fields (`paused_at`, `cancelled_at`, etc.) alongside new events for backward compatibility. Timestamps remain source of truth for state; events are for historical display only.
 
@@ -48,7 +48,7 @@ apps/web/
 │   │   │   └── workflow/
 │   │   │       ├── services/
 │   │   │       │   ├── createWorkflowEvent.ts           # NEW: Event creation helper
-│   │   │       │   ├── getWorkflowExecutionById.ts      # MODIFIED: Fetch events
+│   │   │       │   ├── getWorkflowRunById.ts      # MODIFIED: Fetch events
 │   │   │       │   ├── MockWorkflowOrchestrator.ts      # MODIFIED: Log events
 │   │   │       │   ├── pauseWorkflow.ts                 # MODIFIED: Log pause event
 │   │   │       │   ├── resumeWorkflow.ts                # MODIFIED: Log resume event
@@ -70,9 +70,9 @@ apps/web/
 │                   │   ├── WorkflowTimeline.tsx         # NEW: Timeline container
 │                   │   ├── WorkflowTimelineStepItem.tsx # NEW: Step timeline item
 │                   │   ├── WorkflowTimelineEventItem.tsx # NEW: Event timeline item
-│                   │   ├── WorkflowExecutionComments.tsx # DELETE: Replaced by events
-│                   │   └── WorkflowExecutionStepsList.tsx # DELETE: Replaced by timeline
-│                   ├── WorkflowExecutionDetail.tsx      # MODIFIED: Use timeline
+│                   │   ├── WorkflowRunComments.tsx # DELETE: Replaced by events
+│                   │   └── WorkflowRunStepsList.tsx # DELETE: Replaced by timeline
+│                   ├── WorkflowRunDetail.tsx      # MODIFIED: Use timeline
 │                   └── hooks/
 │                       └── useWorkflowDefinition.ts     # MODIFIED: Handle events
 ```
@@ -87,10 +87,10 @@ apps/web/
 - `createWorkflowEvent.ts` - New service for consistent event creation
 - `MockWorkflowOrchestrator.ts` - Log workflow/step/phase events
 - Workflow control services - Log pause/resume/cancel events
-- `getWorkflowExecutionById.ts` - Fetch and return events
+- `getWorkflowRunById.ts` - Fetch and return events
 
 **Frontend Components**:
-- `WorkflowExecutionDetail.tsx` - Replace steps list + comments with unified timeline
+- `WorkflowRunDetail.tsx` - Replace steps list + comments with unified timeline
 - New timeline components - Display chronological event stream
 - Delete old comment components - No longer needed
 
@@ -103,10 +103,10 @@ Replace `WorkflowComment` table with `WorkflowEvent` table that supports all eve
 **Key Points**:
 - `event_type` string field supports extensibility (no enum)
 - `event_data` JSON field stores event-specific metadata
-- `workflow_execution_step_id` nullable for step-related events
+- `workflow_run_step_id` nullable for step-related events
 - `created_by_user_id` nullable for user-generated events
 - Artifacts relation moves from comments to events
-- Existing timestamps on `WorkflowExecution` remain unchanged (dual-write)
+- Existing timestamps on `WorkflowRun` remain unchanged (dual-write)
 
 ### 2. Event Logging Service
 
@@ -136,7 +136,7 @@ Update orchestrator to create events when emitting workflow lifecycle and phase 
 Create utility function to merge events and steps into chronological timeline structure.
 
 **Key Points**:
-- Merge `WorkflowEvent` records (comments, system events, phases) with `WorkflowExecutionStep` records
+- Merge `WorkflowEvent` records (comments, system events, phases) with `WorkflowRunStep` records
 - Steps use `started_at` timestamp for timeline positioning
 - Events use `created_at` timestamp
 - Sort merged array by timestamp ascending
@@ -155,7 +155,7 @@ Build vertical timeline with visual connectors showing chronological flow of all
 - Use icons/badges to distinguish event types
 - Show timestamps in consistent format
 - Expandable step details: duration, logs, session link, error, step comments, artifacts
-- Step comments render nested inside expanded step (filtered by `workflow_execution_step_id`)
+- Step comments render nested inside expanded step (filtered by `workflow_run_step_id`)
 - Workflow-level comments render as standalone timeline items
 
 ## Files to Create/Modify
@@ -178,17 +178,17 @@ Build vertical timeline with visual connectors showing chronological flow of all
 4. `apps/web/src/server/domain/workflow/services/pauseWorkflow.ts` - Create pause event
 5. `apps/web/src/server/domain/workflow/services/resumeWorkflow.ts` - Create resume event
 6. `apps/web/src/server/domain/workflow/services/cancelWorkflow.ts` - Create cancel event
-7. `apps/web/src/server/domain/workflow/services/getWorkflowExecutionById.ts` - Fetch events
+7. `apps/web/src/server/domain/workflow/services/getWorkflowRunById.ts` - Fetch events
 8. `apps/web/src/server/domain/workflow/services/index.ts` - Export new service
 9. `apps/web/src/server/routes/workflows.ts` - Update response schemas
-10. `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx` - Use timeline
+10. `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx` - Use timeline
 11. `apps/web/src/client/pages/projects/workflows/types.ts` - Add event types
 12. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowDefinition.ts` - Handle events
 
 ### Deleted Files (2)
 
-1. `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionComments.tsx` - Replaced by timeline
-2. `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionStepsList.tsx` - Replaced by timeline
+1. `apps/web/src/client/pages/projects/workflows/components/WorkflowRunComments.tsx` - Replaced by timeline
+2. `apps/web/src/client/pages/projects/workflows/components/WorkflowRunStepsList.tsx` - Replaced by timeline
 
 ## Step by Step Tasks
 
@@ -199,17 +199,17 @@ Build vertical timeline with visual connectors showing chronological flow of all
 <!-- prettier-ignore -->
 - [x] 1.1 Update Prisma schema to add WorkflowEvent model
   - Replace `WorkflowComment` model with `WorkflowEvent` model
-  - Add fields: id, workflow_execution_id, event_type, event_data, workflow_execution_step_id, created_by_user_id, created_at
+  - Add fields: id, workflow_run_id, event_type, event_data, workflow_run_step_id, created_by_user_id, created_at
   - Add relations: workflow_execution, workflow_execution_step (nullable), created_by_user (nullable), artifacts
-  - Add indexes: [workflow_execution_id, created_at], [event_type], [workflow_execution_step_id]
+  - Add indexes: [workflow_run_id, created_at], [event_type], [workflow_run_step_id]
   - File: `apps/web/prisma/schema.prisma`
 
-- [x] 1.2 Update WorkflowExecution model relations
+- [x] 1.2 Update WorkflowRun model relations
   - Remove `comments WorkflowComment[]` relation
   - Add `events WorkflowEvent[]` relation
   - File: `apps/web/prisma/schema.prisma`
 
-- [x] 1.3 Update WorkflowExecutionStep model relations
+- [x] 1.3 Update WorkflowRunStep model relations
   - Remove `comments WorkflowComment[]` relation
   - Add `events WorkflowEvent[]` relation (for step-related events)
   - File: `apps/web/prisma/schema.prisma`
@@ -233,7 +233,7 @@ Build vertical timeline with visual connectors showing chronological flow of all
 
 - Successfully replaced `WorkflowComment` model with `WorkflowEvent` model in Prisma schema
 - Migration created and applied: migrated 49 existing comments to events with `event_type='comment_added'`
-- Updated all relations: `WorkflowExecution`, `WorkflowExecutionStep`, `WorkflowArtifact`, and `User` models
+- Updated all relations: `WorkflowRun`, `WorkflowRunStep`, `WorkflowArtifact`, and `User` models
 - Prisma client regenerated successfully with new `WorkflowEvent` type available
 - Migration preserves all existing data including artifacts (12 artifact references updated)
 
@@ -248,7 +248,7 @@ Build vertical timeline with visual connectors showing chronological flow of all
 
 - [x] 2.2 Create createWorkflowEvent service
   - Function signature: `createWorkflowEvent(params: CreateWorkflowEventParams): Promise<WorkflowEvent>`
-  - Parameters: workflow_execution_id, event_type, event_data, workflow_execution_step_id?, created_by_user_id?, logger?
+  - Parameters: workflow_run_id, event_type, event_data, workflow_run_step_id?, created_by_user_id?, logger?
   - Use Prisma to create event with relations
   - Return created event
   - File: `apps/web/src/server/domain/workflow/services/createWorkflowEvent.ts`
@@ -272,7 +272,7 @@ Build vertical timeline with visual connectors showing chronological flow of all
   - Create `workflow_started` event when execution starts
   - Create `workflow_completed` event on successful completion
   - Create `workflow_failed` event on failure
-  - Pass workflow_execution_id to createWorkflowEvent
+  - Pass workflow_run_id to createWorkflowEvent
   - File: `apps/web/src/server/domain/workflow/services/MockWorkflowOrchestrator.ts`
 
 - [x] 3.2 Update MockWorkflowOrchestrator to log phase events
@@ -284,7 +284,7 @@ Build vertical timeline with visual connectors showing chronological flow of all
 - [x] 3.3 Update MockWorkflowOrchestrator to log step events
   - Create `step_started` event when step begins
   - Include step_id and step_name in event_data
-  - Set workflow_execution_step_id relation
+  - Set workflow_run_step_id relation
   - Use step.started_at as event created_at timestamp
   - File: `apps/web/src/server/domain/workflow/services/MockWorkflowOrchestrator.ts`
 
@@ -308,7 +308,7 @@ Build vertical timeline with visual connectors showing chronological flow of all
 - Successfully integrated event logging into MockWorkflowOrchestrator for all workflow lifecycle events
 - Added workflow_started, workflow_completed, and workflow_failed events with proper timestamps
 - Implemented phase tracking to create phase_started and phase_completed events as workflow progresses through phases
-- Added step_started events with workflow_execution_step_id relation for timeline visibility
+- Added step_started events with workflow_run_step_id relation for timeline visibility
 - Updated pauseWorkflow, resumeWorkflow, and cancelWorkflow services to create corresponding events
 - All services now accept optional userId and logger parameters for proper event attribution and debugging
 - Events use custom timestamps matching the state change timestamps (dual-write pattern maintained)
@@ -316,16 +316,16 @@ Build vertical timeline with visual connectors showing chronological flow of all
 ### Task Group 4: Backend - Timeline Data Fetching
 
 <!-- prettier-ignore -->
-- [x] 4.1 Update getWorkflowExecutionById to fetch events
+- [x] 4.1 Update getWorkflowRunById to fetch events
   - Add Prisma query to fetch WorkflowEvent records for execution
   - Include relations: created_by_user, artifacts, workflow_execution_step
   - Order events by created_at ascending
-  - File: `apps/web/src/server/domain/workflow/services/getWorkflowExecutionById.ts`
+  - File: `apps/web/src/server/domain/workflow/services/getWorkflowRunById.ts`
 
-- [x] 4.2 Update getWorkflowExecutionById return type
+- [x] 4.2 Update getWorkflowRunById return type
   - Replace comments array with events array in return type
   - Transform WorkflowEvent to frontend-friendly format if needed
-  - File: `apps/web/src/server/domain/workflow/services/getWorkflowExecutionById.ts`
+  - File: `apps/web/src/server/domain/workflow/services/getWorkflowRunById.ts`
 
 - [x] 4.3 Update workflow routes response schema
   - Replace workflowCommentSchema with workflowEventSchema in Zod schema
@@ -334,7 +334,7 @@ Build vertical timeline with visual connectors showing chronological flow of all
 
 #### Completion Notes
 
-- Updated getWorkflowExecutionById to fetch events instead of comments
+- Updated getWorkflowRunById to fetch events instead of comments
 - Added relations for created_by_user, artifacts, and workflow_execution_step
 - Events are ordered by created_at ascending for chronological timeline display
 - JSON event_data field is parsed automatically in transformation layer
@@ -351,12 +351,12 @@ Build vertical timeline with visual connectors showing chronological flow of all
   - File: `apps/web/src/client/pages/projects/workflows/types.ts`
 
 - [x] 5.2 Add TimelineItem discriminated union type
-  - Define union: `{ type: 'step'; data: WorkflowExecutionStep }` | `{ type: 'event'; data: WorkflowEvent }`
+  - Define union: `{ type: 'step'; data: WorkflowRunStep }` | `{ type: 'event'; data: WorkflowEvent }`
   - Add timestamp field for sorting
   - File: `apps/web/src/client/pages/projects/workflows/types.ts`
 
 - [x] 5.3 Create buildTimeline utility function
-  - Function signature: `buildTimeline(steps: WorkflowExecutionStep[], events: WorkflowEvent[]): TimelineItem[]`
+  - Function signature: `buildTimeline(steps: WorkflowRunStep[], events: WorkflowEvent[]): TimelineItem[]`
   - Map steps to timeline items using started_at timestamp
   - Map events to timeline items using created_at timestamp
   - Merge arrays and sort by timestamp ascending
@@ -384,7 +384,7 @@ Build vertical timeline with visual connectors showing chronological flow of all
   - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowTimeline.tsx`
 
 - [x] 6.2 Create WorkflowTimelineStepItem component
-  - Props: `step: WorkflowExecutionStep`, `stepEvents: WorkflowEvent[]` (comments for this step)
+  - Props: `step: WorkflowRunStep`, `stepEvents: WorkflowEvent[]` (comments for this step)
   - Collapsed view: step name, status badge, phase badge, started_at timestamp
   - Expandable (useState for collapsed state)
   - Expanded view: duration, completed_at, logs path, agent session link, error message
@@ -425,13 +425,13 @@ Build vertical timeline with visual connectors showing chronological flow of all
 ### Task Group 7: Frontend - Integration & Cleanup
 
 <!-- prettier-ignore -->
-- [x] 7.1 Update WorkflowExecutionDetail to use timeline
+- [x] 7.1 Update WorkflowRunDetail to use timeline
   - Import WorkflowTimeline component
   - Import buildTimeline utility
   - Build timeline from execution.steps and execution.events
-  - Replace WorkflowExecutionStepsList and WorkflowExecutionComments with WorkflowTimeline
-  - Keep WorkflowExecutionHeader unchanged
-  - File: `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx`
+  - Replace WorkflowRunStepsList and WorkflowRunComments with WorkflowTimeline
+  - Keep WorkflowRunHeader unchanged
+  - File: `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx`
 
 - [x] 7.2 Update useWorkflowDefinition hook if needed
   - Check if hook needs updates for events vs comments
@@ -440,20 +440,20 @@ Build vertical timeline with visual connectors showing chronological flow of all
 
 - [x] 7.3 Delete old comment component
   - Remove file entirely (replaced by timeline)
-  - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionComments.tsx`
+  - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowRunComments.tsx`
 
 - [x] 7.4 Delete old steps list component
   - Remove file entirely (replaced by timeline)
-  - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionStepsList.tsx`
+  - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowRunStepsList.tsx`
 
 #### Completion Notes
 
-- Updated WorkflowExecutionDetail to import and use WorkflowTimeline component
+- Updated WorkflowRunDetail to import and use WorkflowTimeline component
 - Replaced separate steps list and comments sections with unified timeline display
-- Hook updates not needed - types automatically infer from updated WorkflowExecution interface
-- WorkflowExecution type already updated with events array, TanStack Query types infer correctly
-- Deleted WorkflowExecutionComments.tsx component (replaced by timeline event items)
-- Deleted WorkflowExecutionStepsList.tsx component (replaced by timeline step items)
+- Hook updates not needed - types automatically infer from updated WorkflowRun interface
+- WorkflowRun type already updated with events array, TanStack Query types infer correctly
+- Deleted WorkflowRunComments.tsx component (replaced by timeline event items)
+- Deleted WorkflowRunStepsList.tsx component (replaced by timeline step items)
 - All old comment-based code successfully removed from codebase
 
 ### Task Group 8: Testing & Validation
@@ -461,13 +461,13 @@ Build vertical timeline with visual connectors showing chronological flow of all
 <!-- prettier-ignore -->
 - [x] 8.1 Test timeline display with mock data
   - Start dev server: `cd apps/web && pnpm dev`
-  - Navigate to workflow execution detail page
+  - Navigate to workflow run detail page
   - Verify timeline shows steps, comments, system events in chronological order
   - Verify step expand/collapse works
   - Verify timestamps are formatted correctly
 
 - [x] 8.2 Test creating workflow-level comments
-  - Add new comment to workflow execution
+  - Add new comment to workflow run
   - Verify comment appears as event in timeline
   - Verify comment has correct timestamp and user attribution
 
@@ -477,7 +477,7 @@ Build vertical timeline with visual connectors showing chronological flow of all
   - Verify comment appears nested inside expanded step details
 
 - [x] 8.4 Test pause/resume/cancel events
-  - Pause a running workflow execution
+  - Pause a running workflow run
   - Verify "workflow_paused" event appears in timeline
   - Resume workflow
   - Verify "workflow_resumed" event appears
@@ -502,7 +502,7 @@ Build vertical timeline with visual connectors showing chronological flow of all
 - Linting passed with no errors (fixed unused variable in WorkflowTimeline component)
 - All TypeScript types properly inferred from updated interfaces
 - Frontend components ready for manual testing when dev server is available
-- Manual testing tasks (8.1-8.5) require running application and creating workflow executions
+- Manual testing tasks (8.1-8.5) require running application and creating workflow runs
 - Development server configuration verified (awaiting manual UI testing)
 
 ## Testing Strategy
@@ -545,8 +545,8 @@ describe('buildTimeline', () => {
 
 ### Integration Tests
 
-Test workflow execution flow end-to-end:
-1. Create workflow execution
+Test workflow run flow end-to-end:
+1. Create workflow run
 2. Start execution (verify workflow_started event created)
 3. Advance through steps (verify step_started events created)
 4. Add comments (verify comment_added events created)
@@ -577,7 +577,7 @@ Test workflow execution flow end-to-end:
 - [ ] Phase transitions visible in timeline with phase names
 - [ ] No type errors in TypeScript compilation
 - [ ] No lint errors
-- [ ] Existing workflow execution pages work without errors
+- [ ] Existing workflow run pages work without errors
 - [ ] Timeline updates in real-time as workflow progresses
 
 ## Validation
@@ -664,7 +664,7 @@ Store event-specific data in `event_data` JSON field with consistent structure:
 
 ### 3. Timeline Performance
 
-For large workflow executions (100+ events), consider:
+For large workflow runs (100+ events), consider:
 - Pagination or virtualization (react-window)
 - Lazy loading of step details
 - Caching timeline computation results
@@ -673,7 +673,7 @@ Initial implementation assumes <100 total timeline items (reasonable for MVP).
 
 ### 4. Dual-Write Pattern
 
-Timestamps on `WorkflowExecution` (`paused_at`, `cancelled_at`, etc.) remain source of truth for state queries. Events are supplementary for historical display only. When updating state:
+Timestamps on `WorkflowRun` (`paused_at`, `cancelled_at`, etc.) remain source of truth for state queries. Events are supplementary for historical display only. When updating state:
 
 1. Update timestamp field (e.g., `paused_at = new Date()`)
 2. Create corresponding event (e.g., `event_type='workflow_paused'`)
@@ -767,13 +767,13 @@ Simply add new `event_type` values and define `event_data` structure. No schema 
 
 - ✅ MockWorkflowOrchestrator logs workflow lifecycle events: `apps/web/src/server/domain/workflow/services/MockWorkflowOrchestrator.ts:102-108, 201-208, 170-178`
 - ✅ Phase events created with phase_name in event_data: lines 125-132, 140-147
-- ✅ Step_started events created with workflow_execution_step_id relation: lines 272-282
+- ✅ Step_started events created with workflow_run_step_id relation: lines 272-282
 - ✅ Step_started uses step.started_at timestamp (dual-write pattern): line 280
 - ✅ pauseWorkflow, resumeWorkflow, cancelWorkflow create corresponding events (verified in service implementations)
 
 **Backend - Timeline Data Fetching (Task Group 4):**
 
-- ✅ getWorkflowExecutionById fetches events with all required relations: `apps/web/src/server/domain/workflow/services/getWorkflowExecutionById.ts:20-32`
+- ✅ getWorkflowRunById fetches events with all required relations: `apps/web/src/server/domain/workflow/services/getWorkflowRunById.ts:20-32`
 - ✅ Events ordered by created_at ascending: line 31
 - ✅ JSON event_data parsed automatically: lines 66-68
 - ✅ Response schema implicitly correct (TypeScript inference from service)
@@ -802,10 +802,10 @@ Simply add new `event_type` values and define `event_data` structure. No schema 
 
 **Frontend - Integration & Cleanup (Task Group 7):**
 
-- ✅ WorkflowExecutionDetail uses WorkflowTimeline: `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx:100-102`
+- ✅ WorkflowRunDetail uses WorkflowTimeline: `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx:100-102`
 - ✅ buildTimeline called with execution.steps and execution.events: line 101
-- ✅ Old WorkflowExecutionComments.tsx deleted (verified in git status)
-- ✅ Old WorkflowExecutionStepsList.tsx deleted (verified in git status)
+- ✅ Old WorkflowRunComments.tsx deleted (verified in git status)
+- ✅ Old WorkflowRunStepsList.tsx deleted (verified in git status)
 - ✅ Hook types automatically infer from updated interface (no changes needed)
 
 **Testing & Validation (Task Group 8):**
@@ -867,7 +867,7 @@ Simply add new `event_type` values and define `event_data` structure. No schema 
 1. ✅ Type checking: passing
 2. ✅ Linting: passing
 3. ⏳ Manual testing: Start dev server with `pnpm dev` and test the timeline UI
-4. ⏳ Integration testing: Verify workflow execution creates events correctly
+4. ⏳ Integration testing: Verify workflow run creates events correctly
 5. ⏳ User acceptance testing: Have stakeholders review the new timeline interface
 
 **Optional manual testing checklist** (from spec section 8):

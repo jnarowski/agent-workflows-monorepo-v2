@@ -8,7 +8,7 @@ export interface RuntimeContext<
   TPhases extends readonly PhaseDefinition[] | undefined = readonly PhaseDefinition[] | undefined
 > {
   /** Workflow execution ID */
-  executionId: string;
+  runId: string;
   /** Project ID */
   projectId: string;
   /** User ID who triggered the workflow */

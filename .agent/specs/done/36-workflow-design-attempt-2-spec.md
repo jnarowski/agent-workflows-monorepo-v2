@@ -17,7 +17,7 @@ So that I can manage complex multi-step AI tasks, resume from failures, and moni
 
 ## Technical Approach
 
-**Architecture**: Separate workflow definitions (templates) from workflow executions (tasks). Templates define phases and steps; executions track state as they progress through phases.
+**Architecture**: Separate workflow definitions (templates) from workflow runs (tasks). Templates define phases and steps; executions track state as they progress through phases.
 
 **Storage Strategy**:
 - Database: Execution state, step status, comments, artifact metadata
@@ -33,7 +33,7 @@ So that I can manage complex multi-step AI tasks, resume from failures, and moni
 
 1. **Hybrid Code/YAML Support**: Developers use TypeScript for complex conditional workflows, YAML for simple linear pipelines. Both compile to same execution model.
 
-2. **Template vs Execution Separation**: WorkflowDefinition (reusable template) vs WorkflowExecution (specific run with args). Same template can be run many times with different inputs.
+2. **Template vs Execution Separation**: WorkflowDefinition (reusable template) vs WorkflowRun (specific run with args). Same template can be run many times with different inputs.
 
 3. **DB-First State Management**: Current phase, status, step progress stored in database for fast kanban queries. Filesystem only for large files and checkpoints.
 
@@ -76,11 +76,11 @@ apps/
         domain/
           workflow/             # NEW DOMAIN
             services/
-              createWorkflowExecution.ts
+              createWorkflowRun.ts
               executeWorkflow.ts
               pauseWorkflow.ts
               resumeWorkflow.ts
-              getWorkflowExecutions.ts
+              getWorkflowRuns.ts
             schemas/
               index.ts
             types/
@@ -119,7 +119,7 @@ apps/
                 CommentsList.tsx
                 ArtifactsList.tsx
               hooks/
-                useWorkflowExecutions.ts
+                useWorkflowRuns.ts
                 useWorkflowWebSocket.ts
               stores/
                 workflowStore.ts
@@ -141,7 +141,7 @@ apps/
 ### Integration Points
 
 **Database (Prisma)**:
-- `prisma/schema.prisma` - Add 7 new models: WorkflowDefinition, WorkflowExecution, WorkflowExecutionStep, WorkflowComment, WorkflowArtifact, plus updates to Project, User, AgentSession
+- `prisma/schema.prisma` - Add 7 new models: WorkflowDefinition, WorkflowRun, WorkflowRunStep, WorkflowComment, WorkflowArtifact, plus updates to Project, User, AgentSession
 
 **Backend API**:
 - `server/routes/workflows.ts` - Workflow CRUD, start/pause/resume/cancel
@@ -155,7 +155,7 @@ apps/
 
 **Existing Integrations**:
 - `@repo/agent-cli-sdk` - Used by workflow engine to execute agent steps
-- `AgentSession` model - Linked to WorkflowExecutionStep for full logs
+- `AgentSession` model - Linked to WorkflowRunStep for full logs
 
 ## Implementation Details
 
@@ -165,9 +165,9 @@ Complete schema with 7 new models and updates to 3 existing models.
 
 **New Models**:
 - **WorkflowDefinition**: Template/blueprint (name, type, path, phases, is_template)
-- **WorkflowExecution**: Task instance (name, args, current_phase, status, current_step_index)
-- **WorkflowExecutionStep**: Step instance (step_id, name, phase, status, log_directory_path, agent_session_id)
-- **WorkflowComment**: Comments on workflows/steps (text, comment_type, created_by, workflow_execution_step_id nullable)
+- **WorkflowRun**: Task instance (name, args, current_phase, status, current_step_index)
+- **WorkflowRunStep**: Step instance (step_id, name, phase, status, log_directory_path, agent_session_id)
+- **WorkflowComment**: Comments on workflows/steps (text, comment_type, created_by, workflow_run_step_id nullable)
 - **WorkflowArtifact**: File metadata (name, file_path, file_type, mime_type, size_bytes, workflow_comment_id nullable)
 
 **Key Points**:
@@ -230,7 +230,7 @@ React components for workflow visualization.
 
 **Key Points**:
 - Columns = phases (user-defined in template)
-- Cards = WorkflowExecution instances
+- Cards = WorkflowRun instances
 - Drag-and-drop to move between phases
 - Real-time updates via WebSocket
 - Click card to see step details, logs, artifacts, comments
@@ -258,13 +258,13 @@ React components for workflow visualization.
 14. `apps/web/prisma/migrations/xxx_add_workflows.sql` - Migration
 
 **Backend - Domain Services**
-15. `apps/web/src/server/domain/workflow/services/createWorkflowExecution.ts`
+15. `apps/web/src/server/domain/workflow/services/createWorkflowRun.ts`
 16. `apps/web/src/server/domain/workflow/services/executeWorkflow.ts`
 17. `apps/web/src/server/domain/workflow/services/pauseWorkflow.ts`
 18. `apps/web/src/server/domain/workflow/services/resumeWorkflow.ts`
 19. `apps/web/src/server/domain/workflow/services/cancelWorkflow.ts`
-20. `apps/web/src/server/domain/workflow/services/getWorkflowExecutions.ts`
-21. `apps/web/src/server/domain/workflow/services/getWorkflowExecutionById.ts`
+20. `apps/web/src/server/domain/workflow/services/getWorkflowRuns.ts`
+21. `apps/web/src/server/domain/workflow/services/getWorkflowRunById.ts`
 22. `apps/web/src/server/domain/workflow/services/index.ts`
 23. `apps/web/src/server/domain/workflow/schemas/index.ts`
 24. `apps/web/src/server/domain/workflow/types/index.ts`
@@ -295,7 +295,7 @@ React components for workflow visualization.
 43. `apps/web/src/client/pages/projects/workflows/components/ArtifactsList.tsx`
 
 **Frontend - Hooks & Store**
-44. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowExecutions.ts`
+44. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowRuns.ts`
 45. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowWebSocket.ts`
 46. `apps/web/src/client/pages/projects/workflows/stores/workflowStore.ts`
 
@@ -317,7 +317,7 @@ React components for workflow visualization.
 
 <!-- prettier-ignore -->
 - [ ] WF-001 Create Prisma schema models
-  - Add WorkflowDefinition, WorkflowExecution, WorkflowExecutionStep, WorkflowComment, WorkflowArtifact models
+  - Add WorkflowDefinition, WorkflowRun, WorkflowRunStep, WorkflowComment, WorkflowArtifact models
   - Update Project, User, AgentSession with new relations
   - File: `apps/web/prisma/schema.prisma`
   - Use snake_case for all columns
@@ -438,9 +438,9 @@ React components for workflow visualization.
   - Directory: `apps/web/src/server/domain/workflow/services/`
   - Directory: `apps/web/src/server/domain/workflow/schemas/`
   - Directory: `apps/web/src/server/domain/workflow/types/`
-- [ ] WF-017 Implement createWorkflowExecution service
-  - File: `apps/web/src/server/domain/workflow/services/createWorkflowExecution.ts`
-  - Create WorkflowExecution in DB
+- [ ] WF-017 Implement createWorkflowRun service
+  - File: `apps/web/src/server/domain/workflow/services/createWorkflowRun.ts`
+  - Create WorkflowRun in DB
   - Set initial state: status=running, current_phase=first_phase
   - Return execution record
 - [ ] WF-018 Implement executeWorkflow service
@@ -462,13 +462,13 @@ React components for workflow visualization.
   - File: `apps/web/src/server/domain/workflow/services/cancelWorkflow.ts`
   - Update status to 'cancelled'
   - Set cancelled_at timestamp
-- [ ] WF-022 Implement getWorkflowExecutions service
-  - File: `apps/web/src/server/domain/workflow/services/getWorkflowExecutions.ts`
+- [ ] WF-022 Implement getWorkflowRuns service
+  - File: `apps/web/src/server/domain/workflow/services/getWorkflowRuns.ts`
   - Query executions by project_id, status
   - Include: steps, workflow_definition, _count for comments/artifacts
   - Order by started_at desc
-- [ ] WF-023 Implement getWorkflowExecutionById service
-  - File: `apps/web/src/server/domain/workflow/services/getWorkflowExecutionById.ts`
+- [ ] WF-023 Implement getWorkflowRunById service
+  - File: `apps/web/src/server/domain/workflow/services/getWorkflowRunById.ts`
   - Get single execution with all relations
   - Include: steps, comments, artifacts (via steps), workflow_definition
 - [ ] WF-024 Create domain barrel export
@@ -578,8 +578,8 @@ React components for workflow visualization.
 ### Task Group 11: Frontend - Hooks
 
 <!-- prettier-ignore -->
-- [ ] WF-040 Create useWorkflowExecutions hook
-  - File: `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowExecutions.ts`
+- [ ] WF-040 Create useWorkflowRuns hook
+  - File: `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowRuns.ts`
   - Use TanStack Query to fetch executions
   - Query key: ['workflow-executions', projectId, filters]
   - Support filtering by status
@@ -599,7 +599,7 @@ React components for workflow visualization.
 - [ ] WF-042 Create KanbanBoard component
   - File: `apps/web/src/client/pages/projects/workflows/components/KanbanBoard.tsx`
   - Columns = phases from workflow definition
-  - Cards = WorkflowExecution grouped by current_phase
+  - Cards = WorkflowRun grouped by current_phase
   - Use react-beautiful-dnd or @dnd-kit for drag-and-drop
   - Real-time updates via useWorkflowWebSocket
 - [ ] WF-043 Create WorkflowCard component
@@ -673,7 +673,7 @@ React components for workflow visualization.
   - Test: YAML parser, code parser, WorkflowContext, CheckpointManager
   - Run: `cd packages/workflow-engine && pnpm test`
 - [ ] WF-053 Write backend integration tests
-  - Test: createWorkflowExecution, executeWorkflow, pause/resume
+  - Test: createWorkflowRun, executeWorkflow, pause/resume
   - Test: artifact upload/download, comments
 - [ ] WF-054 Write workflow engine README
   - File: `packages/workflow-engine/README.md`
@@ -806,14 +806,14 @@ cd apps/web && pnpm prisma migrate dev
 12. Attach to comment: Artifact shows inline with comment
 13. Pause execution: Verify status changes to "paused"
 14. Resume execution: Verify continues from checkpoint
-15. Check database: Query WorkflowExecution, WorkflowExecutionStep tables
+15. Check database: Query WorkflowRun, WorkflowRunStep tables
 
 **Feature-Specific Checks:**
 
 - Verify checkpoint files created in `.agent/workflows/executions/{id}/checkpoints/`
 - Verify artifacts saved to `.agent/workflows/executions/{id}/artifacts/{stepId}/`
 - Verify logs saved to `.agent/workflows/executions/{id}/logs/{stepId}/`
-- Verify AgentSession linked to WorkflowExecutionStep
+- Verify AgentSession linked to WorkflowRunStep
 - Verify cascading deletes work (delete step → artifacts/comments deleted)
 - Test YAML and TypeScript workflows both work
 - Test conditional logic in TypeScript workflows
@@ -863,7 +863,7 @@ Artifacts uploaded via multipart form data. Server saves to filesystem, creates 
 
 ### 5. Agent Session Integration
 
-When executing agent step, create AgentSession first, then create WorkflowExecutionStep with agent_session_id. This links step to full agent logs (JSONL session file).
+When executing agent step, create AgentSession first, then create WorkflowRunStep with agent_session_id. This links step to full agent logs (JSONL session file).
 
 ## Dependencies
 

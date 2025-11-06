@@ -16,8 +16,8 @@ export async function uploadArtifact(
   fileBuffer: Buffer
 ): Promise<WorkflowArtifact | null> {
   // Get the execution to access the project
-  const execution = await prisma.workflowExecution.findUnique({
-    where: { id: data.workflow_execution_id },
+  const execution = await prisma.workflowRun.findUnique({
+    where: { id: data.workflow_run_id },
     include: {
       project: true,
     },
@@ -45,7 +45,7 @@ export async function uploadArtifact(
   // Create artifact record
   const artifact = await prisma.workflowArtifact.create({
     data: {
-      workflow_execution_id: data.workflow_execution_id,
+      workflow_run_id: data.workflow_run_id,
       name: data.name,
       file_path: data.file_path, // Store relative path
       file_type: data.file_type,

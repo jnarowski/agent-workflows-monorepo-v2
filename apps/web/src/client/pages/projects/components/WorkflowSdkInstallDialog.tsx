@@ -62,7 +62,7 @@ export function WorkflowSdkInstallDialog({
           <DialogDescription>
             {!checkResult?.hasPackageJson
               ? 'No package.json found. The installation will create one for you.'
-              : 'Install workflow-sdk to enable workflow execution in this project.'}
+              : 'Install workflow-sdk to enable workflow run in this project.'}
           </DialogDescription>
         </DialogHeader>
 

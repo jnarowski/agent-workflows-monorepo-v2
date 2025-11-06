@@ -34,7 +34,7 @@ describe("updateStepStatus", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -44,9 +44,9 @@ describe("updateStepStatus", () => {
         status: "running",
       },
     });
-    const step = await prisma.workflowExecutionStep.create({
+    const step = await prisma.workflowRunStep.create({
       data: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         inngest_step_id: "test-step",
         name: "Test Step",
         phase: "test-phase",
@@ -56,7 +56,7 @@ describe("updateStepStatus", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -68,7 +68,7 @@ describe("updateStepStatus", () => {
     await updateStepStatus(context, step.id, "completed");
 
     // Assert
-    const updatedStep = await prisma.workflowExecutionStep.findUnique({
+    const updatedStep = await prisma.workflowRunStep.findUnique({
       where: { id: step.id },
     });
     expect(updatedStep?.status).toBe("completed");
@@ -100,7 +100,7 @@ describe("updateStepStatus", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -110,9 +110,9 @@ describe("updateStepStatus", () => {
         status: "running",
       },
     });
-    const step = await prisma.workflowExecutionStep.create({
+    const step = await prisma.workflowRunStep.create({
       data: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         inngest_step_id: "test-step",
         name: "Test Step",
         phase: "test-phase",
@@ -122,7 +122,7 @@ describe("updateStepStatus", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -140,7 +140,7 @@ describe("updateStepStatus", () => {
     );
 
     // Assert
-    const updatedStep = await prisma.workflowExecutionStep.findUnique({
+    const updatedStep = await prisma.workflowRunStep.findUnique({
       where: { id: step.id },
     });
     expect(updatedStep?.status).toBe("failed");
@@ -149,7 +149,7 @@ describe("updateStepStatus", () => {
 
     expect(mockCreateWorkflowEvent).toHaveBeenCalledWith(
       expect.objectContaining({
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         event_type: "step_failed",
       })
     );
@@ -176,7 +176,7 @@ describe("updateStepStatus", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -186,9 +186,9 @@ describe("updateStepStatus", () => {
         status: "running",
       },
     });
-    const step = await prisma.workflowExecutionStep.create({
+    const step = await prisma.workflowRunStep.create({
       data: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         inngest_step_id: "test-step",
         name: "Test Step",
         phase: "test-phase",
@@ -197,7 +197,7 @@ describe("updateStepStatus", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -209,7 +209,7 @@ describe("updateStepStatus", () => {
     await updateStepStatus(context, step.id, "running");
 
     // Assert
-    const updatedStep = await prisma.workflowExecutionStep.findUnique({
+    const updatedStep = await prisma.workflowRunStep.findUnique({
       where: { id: step.id },
     });
     expect(updatedStep?.status).toBe("running");

@@ -7,7 +7,7 @@ import type { WorkflowStatus } from "@/shared/schemas/workflow.schemas";
 import { WorkflowKanbanColumn } from "./components/WorkflowKanbanColumn";
 import { WorkflowDefinitionsList } from "./components/WorkflowDefinitionsList";
 import { NewWorkflowModal } from "./components/NewWorkflowModal";
-import { useWorkflowExecutions } from "./hooks/useWorkflowExecutions";
+import { useWorkflowRuns } from "./hooks/useWorkflowRuns";
 import { useWorkflowDefinitions } from "./hooks/useWorkflowDefinitions";
 import { useWorkflowWebSocket } from "./hooks/useWorkflowWebSocket";
 import { useCreateWorkflow } from "./hooks/useWorkflowMutations";
@@ -29,7 +29,7 @@ export function ProjectWorkflowsView({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Hooks
-  const { data: executions, isLoading } = useWorkflowExecutions(projectId, {
+  const { data: runs, isLoading } = useWorkflowRuns(projectId, {
     search,
     definitionId: definitionFilter,
   });
@@ -43,12 +43,12 @@ export function ProjectWorkflowsView({
   // const resumeWorkflow = useResumeWorkflow();
   // const cancelWorkflow = useCancelWorkflow();
 
-  const handleExecutionClick = (execution: any) => {
-    // Navigate to execution detail page
-    const definitionId = execution.workflow_definition_id;
-    const executionId = execution.id;
+  const handleExecutionClick = (run: any) => {
+    // Navigate to run detail page
+    const definitionId = run.workflow_definition_id;
+    const runId = run.id;
     navigate(
-      `/projects/${projectId}/workflows/${definitionId}/executions/${executionId}`
+      `/projects/${projectId}/workflows/${definitionId}/runs/${runId}`
     );
   };
 
@@ -61,13 +61,13 @@ export function ProjectWorkflowsView({
     });
   };
 
-  // Group executions by status
-  const executionsByStatus = (executions || []).reduce(
-    (acc, execution) => {
-      if (!acc[execution.status]) {
-        acc[execution.status] = [];
+  // Group runs by status
+  const runsByStatus = (runs || []).reduce(
+    (acc, run) => {
+      if (!acc[run.status]) {
+        acc[run.status] = [];
       }
-      acc[execution.status].push(execution);
+      acc[run.status].push(run);
       return acc;
     },
     {} as Record<WorkflowStatus, any[]>
@@ -127,7 +127,7 @@ export function ProjectWorkflowsView({
       <WorkflowDefinitionsList
         projectId={projectId}
         definitions={definitions || []}
-        executions={executions || []}
+        runs={runs || []}
       />
 
       {/* Kanban Board */}
@@ -143,7 +143,7 @@ export function ProjectWorkflowsView({
             <div key={status} className="w-80">
               <WorkflowKanbanColumn
                 status={status}
-                executions={executionsByStatus[status] || []}
+                runs={runsByStatus[status] || []}
                 onExecutionClick={handleExecutionClick}
               />
             </div>

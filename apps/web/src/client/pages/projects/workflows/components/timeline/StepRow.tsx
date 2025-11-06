@@ -6,10 +6,10 @@ import {
   XCircle,
   MinusCircle,
 } from "lucide-react";
-import type { WorkflowExecutionStep } from "../../types";
+import type { WorkflowRunStep } from "../../types";
 
 interface StepRowProps {
-  step: WorkflowExecutionStep;
+  step: WorkflowRunStep;
   projectId: string;
 }
 

@@ -11,7 +11,7 @@ export type WorkflowStatus =
 export type StepStatus = 'pending' | 'running' | 'completed' | 'failed' | 'skipped';
 
 // Workflow execution input for creation
-export interface CreateWorkflowExecutionInput {
+export interface CreateWorkflowRunInput {
   project_id: string;
   user_id: string;
   workflow_definition_id: string;
@@ -26,7 +26,7 @@ export interface CreateWorkflowExecutionInput {
 }
 
 // Workflow execution filters for querying
-export interface WorkflowExecutionFilters {
+export interface WorkflowRunFilters {
   project_id?: string;
   user_id?: string;
   status?: WorkflowStatus;

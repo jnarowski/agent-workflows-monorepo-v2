@@ -3,9 +3,9 @@ import { prisma } from "@/shared/prisma";
 import { cleanTestDB } from "@/server/test-utils/db";
 import { createPhaseStep } from "./createPhaseStep";
 import type { RuntimeContext } from "../../../types/engine.types";
-import * as updateWorkflowExecutionModule from "../../executions/updateWorkflowExecution";
+import * as updateWorkflowRunModule from "../../runs/updateWorkflowRun";
 
-vi.mock("../../executions/updateWorkflowExecution");
+vi.mock("../../runs/updateWorkflowRun");
 vi.mock("@/server/websocket/infrastructure/subscriptions", () => ({
   broadcast: vi.fn(),
 }));
@@ -18,8 +18,8 @@ describe("createPhaseStep", () => {
 
   it("updates execution current_phase and creates phase events", async () => {
     // Arrange
-    const mockUpdateWorkflowExecution = vi.mocked(
-      updateWorkflowExecutionModule.updateWorkflowExecution
+    const mockUpdateWorkflowRun = vi.mocked(
+      updateWorkflowRunModule.updateWorkflowRun
     );
 
     const user = await prisma.user.create({
@@ -41,7 +41,7 @@ describe("createPhaseStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -53,7 +53,7 @@ describe("createPhaseStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -75,7 +75,7 @@ describe("createPhaseStep", () => {
 
     // Assert
     expect(result).toBe("build complete");
-    expect(mockUpdateWorkflowExecution).toHaveBeenCalledWith(
+    expect(mockUpdateWorkflowRun).toHaveBeenCalledWith(
       execution.id,
       { current_phase: "build" },
       expect.anything()
@@ -84,7 +84,7 @@ describe("createPhaseStep", () => {
     // Verify phase_started and phase_completed events created
     const events = await prisma.workflowEvent.findMany({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         phase: "build",
       },
       orderBy: { created_at: "asc" },
@@ -98,7 +98,7 @@ describe("createPhaseStep", () => {
     // Arrange
     const user = await prisma.user.create({
       data: {
-        email: "test@example.com",
+        email: "test2@example.com",
         password_hash: "hash",
       },
     });
@@ -115,7 +115,7 @@ describe("createPhaseStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -127,7 +127,7 @@ describe("createPhaseStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -157,7 +157,7 @@ describe("createPhaseStep", () => {
     // Arrange
     const user = await prisma.user.create({
       data: {
-        email: "test@example.com",
+        email: "test3@example.com",
         password_hash: "hash",
       },
     });
@@ -174,7 +174,7 @@ describe("createPhaseStep", () => {
         phases: [] 
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -186,7 +186,7 @@ describe("createPhaseStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -211,7 +211,7 @@ describe("createPhaseStep", () => {
     // Verify phase_failed event created
     const failedEvent = await prisma.workflowEvent.findFirst({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         event_type: "phase_failed",
         phase: "build",
       },
@@ -224,13 +224,13 @@ describe("createPhaseStep", () => {
 
   it("accepts sentence case idOrName and converts to kebab-case for IDs", async () => {
     // Arrange
-    const mockUpdateWorkflowExecution = vi.mocked(
-      updateWorkflowExecutionModule.updateWorkflowExecution
+    const mockUpdateWorkflowRun = vi.mocked(
+      updateWorkflowRunModule.updateWorkflowRun
     );
 
     const user = await prisma.user.create({
       data: {
-        email: "test@example.com",
+        email: "test4@example.com",
         password_hash: "hash",
       },
     });
@@ -247,7 +247,7 @@ describe("createPhaseStep", () => {
         phases: []
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -259,7 +259,7 @@ describe("createPhaseStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -284,8 +284,8 @@ describe("createPhaseStep", () => {
     // Assert
     expect(result).toBe("tests passed");
 
-    // Verify updateWorkflowExecution called with kebab-case ID
-    expect(mockUpdateWorkflowExecution).toHaveBeenCalledWith(
+    // Verify updateWorkflowRun called with kebab-case ID
+    expect(mockUpdateWorkflowRun).toHaveBeenCalledWith(
       execution.id,
       { current_phase: "run-tests" },
       expect.anything()
@@ -294,7 +294,7 @@ describe("createPhaseStep", () => {
     // Verify events created with kebab-case phase ID
     const events = await prisma.workflowEvent.findMany({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         phase: "run-tests", // Stored with kebab-case ID
       },
       orderBy: { created_at: "asc" },
@@ -310,13 +310,13 @@ describe("createPhaseStep", () => {
 
   it("accepts kebab-case idOrName and uses as-is", async () => {
     // Arrange
-    const mockUpdateWorkflowExecution = vi.mocked(
-      updateWorkflowExecutionModule.updateWorkflowExecution
+    const mockUpdateWorkflowRun = vi.mocked(
+      updateWorkflowRunModule.updateWorkflowRun
     );
 
     const user = await prisma.user.create({
       data: {
-        email: "test@example.com",
+        email: "test5@example.com",
         password_hash: "hash",
       },
     });
@@ -333,7 +333,7 @@ describe("createPhaseStep", () => {
         phases: []
       },
     });
-    const execution = await prisma.workflowExecution.create({
+    const execution = await prisma.workflowRun.create({
       data: {
         project_id: project.id,
         user_id: user.id,
@@ -345,7 +345,7 @@ describe("createPhaseStep", () => {
     });
 
     const context: RuntimeContext = {
-      executionId: execution.id,
+      runId: execution.id,
       projectId: "project-123",
       projectPath: "/tmp/test",
       userId: "user-123",
@@ -368,7 +368,7 @@ describe("createPhaseStep", () => {
 
     // Assert
     expect(result).toBe("deployed");
-    expect(mockUpdateWorkflowExecution).toHaveBeenCalledWith(
+    expect(mockUpdateWorkflowRun).toHaveBeenCalledWith(
       execution.id,
       { current_phase: "deploy" },
       expect.anything()
@@ -376,7 +376,7 @@ describe("createPhaseStep", () => {
 
     const events = await prisma.workflowEvent.findMany({
       where: {
-        workflow_execution_id: execution.id,
+        workflow_run_id: execution.id,
         phase: "deploy",
       },
       orderBy: { created_at: "asc" },

@@ -1,15 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/client/utils/api-client';
-import type { WorkflowExecutionListItem, WorkflowFilter } from '../types';
+import type { WorkflowRunListItem, WorkflowFilter } from '../types';
 
-interface WorkflowExecutionsResponse {
-  data: WorkflowExecutionListItem[];
+interface WorkflowRunsResponse {
+  data: WorkflowRunListItem[];
 }
 
-async function fetchWorkflowExecutions(
+async function fetchWorkflowRuns(
   projectId: string,
   filter?: WorkflowFilter
-): Promise<WorkflowExecutionListItem[]> {
+): Promise<WorkflowRunListItem[]> {
   const params = new URLSearchParams();
   params.append('project_id', projectId);
 
@@ -23,19 +23,19 @@ async function fetchWorkflowExecutions(
     params.append('definition_id', filter.definitionId);
   }
 
-  const response = await api.get<WorkflowExecutionsResponse>(
-    `/api/workflow-executions?${params.toString()}`
+  const response = await api.get<WorkflowRunsResponse>(
+    `/api/workflow-runs?${params.toString()}`
   );
   return response.data;
 }
 
-export function useWorkflowExecutions(
+export function useWorkflowRuns(
   projectId: string,
   filter?: WorkflowFilter
 ) {
   return useQuery({
-    queryKey: ['workflow-executions', projectId, filter],
-    queryFn: () => fetchWorkflowExecutions(projectId, filter),
+    queryKey: ['workflow-runs', projectId, filter],
+    queryFn: () => fetchWorkflowRuns(projectId, filter),
     refetchInterval: 10000, // 10 seconds as fallback if WebSocket disconnects
     enabled: !!projectId,
   });

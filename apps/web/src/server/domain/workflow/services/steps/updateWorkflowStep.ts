@@ -1,5 +1,5 @@
 import { prisma } from '@/shared/prisma';
-import type { WorkflowExecutionStep } from '@prisma/client';
+import type { WorkflowRunStep } from '@prisma/client';
 import type { FastifyBaseLogger } from 'fastify';
 
 export type StepStatus = 'pending' | 'running' | 'completed' | 'failed';
@@ -21,7 +21,7 @@ export interface UpdateWorkflowStepParams {
  */
 export async function updateWorkflowStep(
   params: UpdateWorkflowStepParams
-): Promise<WorkflowExecutionStep> {
+): Promise<WorkflowRunStep> {
   const { stepId, status, errorMessage, startedAt, completedAt, agentSessionId, logger } = params;
 
   logger?.debug(
@@ -29,7 +29,7 @@ export async function updateWorkflowStep(
     'Updating workflow step'
   );
 
-  const step = await prisma.workflowExecutionStep.update({
+  const step = await prisma.workflowRunStep.update({
     where: { id: stepId },
     data: {
       ...(status !== undefined && { status }),

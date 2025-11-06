@@ -5,7 +5,7 @@ interface SlashCommandBlockProps {
 }
 
 /**
- * Renders slash command execution blocks
+ * Renders slash command run blocks
  * SDK extracts these from user messages with <command-name> tags
  */
 export function SlashCommandBlock({ command, message, args }: SlashCommandBlockProps) {

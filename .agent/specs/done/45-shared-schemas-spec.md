@@ -23,11 +23,11 @@ So that frontend and backend use identical validation logic without coupling imp
 4. Update backend routes to import schemas from shared
 5. Update frontend to import only enum types from shared (not full interfaces)
 6. Fix critical type mismatches (step field names, artifact schema)
-7. Keep complex types domain-specific (WorkflowExecution stays in frontend/backend separately)
+7. Keep complex types domain-specific (WorkflowRun stays in frontend/backend separately)
 
 ## Key Design Decisions
 
-1. **Schemas in shared, complex types stay separate**: Zod schemas are shared for validation. Complex model interfaces (WorkflowExecution, etc.) stay domain-specific to avoid coupling.
+1. **Schemas in shared, complex types stay separate**: Zod schemas are shared for validation. Complex model interfaces (WorkflowRun, etc.) stay domain-specific to avoid coupling.
 2. **Hybrid approach**: Share enums and validation, keep models separate. Frontend defines interfaces with UI needs, backend uses Prisma types directly.
 3. **Frontend can optionally validate**: Sharing schemas enables client-side form validation using same rules as backend.
 4. **No coupling between layers**: Backend uses Prisma-generated types (111 usages). Frontend uses custom interfaces (12 definitions). Only enums are shared.
@@ -74,15 +74,15 @@ apps/web/src/
 
 **Frontend Types (1 file)**:
 - `types.ts` - Import only enum types (`WorkflowStatus`, `StepStatus`) from shared
-- Keep `WorkflowExecution` interface (frontend extends with UI needs)
-- Keep `WorkflowExecutionStep` interface (but fix field names)
+- Keep `WorkflowRun` interface (frontend extends with UI needs)
+- Keep `WorkflowRunStep` interface (but fix field names)
 - Fix `step_name`/`phase_name` → `name`/`phase` to match Prisma
 - Remove duplicate enum definitions
 
 **Backend Domain Types (MINIMAL CHANGES)**:
 - Backend uses Prisma-generated types directly (no manual interfaces needed)
-- No changes required - backend doesn't define WorkflowExecution interface
-- Domain service types (CreateWorkflowExecutionInput) can stay in domain
+- No changes required - backend doesn't define WorkflowRun interface
+- Domain service types (CreateWorkflowRunInput) can stay in domain
 
 ## Implementation Details
 
@@ -100,7 +100,7 @@ Create shared schema file with validation logic and derived enum types.
 **What to share:**
 ```typescript
 // ✅ SHARE - Validation schemas
-export const createWorkflowExecutionSchema = z.object({...});
+export const createWorkflowRunSchema = z.object({...});
 export const workflowExecutionResponseSchema = z.object({...});
 
 // ✅ SHARE - Enum types (derived from schemas)
@@ -108,7 +108,7 @@ export const workflowStatusSchema = z.enum(['pending', 'running', ...]);
 export type WorkflowStatus = z.infer<typeof workflowStatusSchema>;
 
 // ❌ DON'T SHARE - Complex model interfaces
-// WorkflowExecution interface stays in frontend types.ts
+// WorkflowRun interface stays in frontend types.ts
 // Backend uses Prisma-generated types directly
 ```
 
@@ -131,7 +131,7 @@ export type WorkflowStatus = z.infer<typeof workflowStatusSchema>;
 // Frontend model (apps/web/src/client/pages/projects/workflows/types.ts)
 import type { WorkflowStatus } from '@/shared/schemas';
 
-export interface WorkflowExecution {
+export interface WorkflowRun {
   id: string;
   status: WorkflowStatus; // ← Uses shared enum
   // ... other fields frontend needs
@@ -143,7 +143,7 @@ export interface WorkflowExecution {
 Fix type mismatches discovered in audit.
 
 **Key Points**:
-- Frontend `WorkflowExecutionStep`: Change `step_name` → `name`, `phase_name` → `phase`
+- Frontend `WorkflowRunStep`: Change `step_name` → `name`, `phase_name` → `phase`
 - Artifact schema: Change `workflow_comment_id` → `workflow_event_id`
 - Response schemas: Add optional relation fields (`steps?`, `events?`, `workflow_definition?`)
 
@@ -193,7 +193,7 @@ Only validation-related imports change.
   - Consolidate all schemas from backend domain
   - File: `apps/web/src/shared/schemas/workflow.schemas.ts`
   - Include: workflowStatusSchema, stepStatusSchema, artifactTypeSchema, commentTypeSchema
-  - Include: createWorkflowExecutionSchema, workflowExecutionFiltersSchema
+  - Include: createWorkflowRunSchema, workflowExecutionFiltersSchema
   - Include: workflowExecutionResponseSchema, artifactResponseSchema, commentResponseSchema
   - Export derived types for all schemas using `z.infer<>`
 - [x] schema-3 Fix artifact schema field name
@@ -225,7 +225,7 @@ Only validation-related imports change.
 - [x] backend-1 Update workflows.ts route imports
   - Change import from `@/server/domain/workflow/schemas` to `@/shared/schemas`
   - File: `apps/web/src/server/routes/workflows.ts`
-  - Update: createWorkflowExecutionSchema, workflowExecutionFiltersSchema, workflowExecutionResponseSchema
+  - Update: createWorkflowRunSchema, workflowExecutionFiltersSchema, workflowExecutionResponseSchema
 - [x] backend-2 Update workflow-artifacts.ts route imports
   - Change import from `@/server/domain/workflow/schemas` to `@/shared/schemas`
   - File: `apps/web/src/server/routes/workflow-artifacts.ts`
@@ -248,7 +248,7 @@ Only validation-related imports change.
 - [x] frontend-1 Import only enum types from shared schemas
   - Add imports: `WorkflowStatus`, `StepStatus` from `@/shared/schemas`
   - File: `apps/web/src/client/pages/projects/workflows/types.ts`
-  - Do NOT import WorkflowExecution or other model interfaces
+  - Do NOT import WorkflowRun or other model interfaces
 - [x] frontend-2 Remove duplicate WorkflowStatus definition
   - Delete `export const WorkflowStatus = { PENDING: 'pending', ... } as const`
   - Delete `export type WorkflowStatus = typeof WorkflowStatus[keyof typeof WorkflowStatus]`
@@ -257,12 +257,12 @@ Only validation-related imports change.
   - Delete `export const StepStatus = { PENDING: 'pending', ... } as const`
   - Delete `export type StepStatus = typeof StepStatus[keyof typeof StepStatus]`
   - File: `apps/web/src/client/pages/projects/workflows/types.ts`
-- [x] frontend-4 Fix WorkflowExecutionStep field names
+- [x] frontend-4 Fix WorkflowRunStep field names
   - Change `step_name: string` to `name: string`
   - Change `phase_name: string` to `phase: string`
   - File: `apps/web/src/client/pages/projects/workflows/types.ts`
-  - Matches Prisma schema WorkflowExecutionStep model
-- [x] frontend-5 Keep WorkflowExecution interface in frontend types
+  - Matches Prisma schema WorkflowRunStep model
+- [x] frontend-5 Keep WorkflowRun interface in frontend types
   - Do NOT move to shared
   - Frontend interface has UI-specific needs (optional relations, computed fields)
   - Use imported WorkflowStatus and StepStatus enums
@@ -275,8 +275,8 @@ Only validation-related imports change.
 #### Completion Notes
 
 - Replaced duplicate enum definitions with imports from `@/shared/schemas`
-- Fixed WorkflowExecutionStep field names: `name` and `phase` (were `step_name` and `phase_name`)
-- Kept WorkflowExecution interface in frontend (not shared, as intended)
+- Fixed WorkflowRunStep field names: `name` and `phase` (were `step_name` and `phase_name`)
+- Kept WorkflowRun interface in frontend (not shared, as intended)
 - Updated shared types index to re-export schemas
 - Frontend now uses shared enum types while maintaining custom interfaces
 
@@ -347,7 +347,7 @@ describe('Workflow API', () => {
 
 ### Manual Testing
 
-1. Create workflow execution via API - verify validation works
+1. Create workflow run via API - verify validation works
 2. Fetch execution with relations - verify optional fields present
 3. Check frontend workflow list - verify field names correct
 4. Check frontend workflow detail - verify step data displays
@@ -359,7 +359,7 @@ describe('Workflow API', () => {
 - [ ] Backend routes import validation schemas from `@/shared/schemas` (3 files)
 - [ ] Frontend imports only enum types from shared schemas (not full interfaces)
 - [ ] No duplicate enum definitions between frontend and backend
-- [ ] Frontend `WorkflowExecution` interface stays in frontend types (not shared)
+- [ ] Frontend `WorkflowRun` interface stays in frontend types (not shared)
 - [ ] Backend continues using Prisma-generated types (no manual interfaces)
 - [ ] Step field names fixed: `name` and `phase` (not `step_name`/`phase_name`)
 - [ ] Artifact schema field fixed: `workflow_event_id` (not `workflow_comment_id`)
@@ -399,9 +399,9 @@ cd apps/web && pnpm build
 1. Start application: `cd apps/web && pnpm dev`
 2. Navigate to: Project → Workflows
 3. Verify: Workflow list displays correctly
-4. Create new workflow execution
+4. Create new workflow run
 5. Verify: Validation works (try invalid input)
-6. View workflow execution detail
+6. View workflow run detail
 7. Verify: Step data displays with correct field names
 8. Check browser console: No errors or warnings
 9. Check server logs: Validation errors logged properly
@@ -410,7 +410,7 @@ cd apps/web && pnpm build
 
 - Verify `apps/web/src/shared/schemas/workflow.schemas.ts` exists and exports all schemas
 - Verify old schema files deleted from `server/domain/workflow/schemas/`
-- Verify frontend `WorkflowExecutionStep` uses `name` and `phase` fields
+- Verify frontend `WorkflowRunStep` uses `name` and `phase` fields
 - Verify backend routes import from `@/shared/schemas`
 - Verify no duplicate type definitions in codebase
 - Run: `grep -r "export type WorkflowStatus" apps/web/src/` - should only find shared schemas
@@ -444,14 +444,14 @@ export type WorkflowStatus = z.infer<typeof workflowStatusSchema>;
 // ✅ GOOD - Frontend uses shared enum in custom interface
 import type { WorkflowStatus } from '@/shared/schemas';
 
-export interface WorkflowExecution {
+export interface WorkflowRun {
   id: string;
   status: WorkflowStatus; // ← Uses shared enum
   // ... other fields frontend needs
 }
 
 // ❌ BAD - Don't share full model interfaces
-export interface WorkflowExecution extends z.infer<typeof workflowExecutionResponseSchema> {
+export interface WorkflowRun extends z.infer<typeof workflowExecutionResponseSchema> {
   // This couples frontend to backend response shape
 }
 ```
@@ -459,15 +459,15 @@ export interface WorkflowExecution extends z.infer<typeof workflowExecutionRespo
 ### 3. What to Share vs Keep Separate
 
 **✅ SHARE (Low Coupling Risk):**
-- Validation schemas (createWorkflowExecutionSchema, etc.)
+- Validation schemas (createWorkflowRunSchema, etc.)
 - Enum schemas and derived types (WorkflowStatus, StepStatus)
 - Request/response schemas for API contracts
 
 **❌ DON'T SHARE (High Coupling Risk):**
-- Model interfaces (WorkflowExecution, WorkflowExecutionStep)
+- Model interfaces (WorkflowRun, WorkflowRunStep)
 - Prisma-generated types (backend only)
 - Frontend UI types (filters, computed fields)
-- Backend service types (CreateWorkflowExecutionInput)
+- Backend service types (CreateWorkflowRunInput)
 
 **Evidence from codebase:**
 - Backend: 111 Prisma client usages → uses generated types

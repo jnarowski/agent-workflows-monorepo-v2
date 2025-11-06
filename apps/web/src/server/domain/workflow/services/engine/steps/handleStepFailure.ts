@@ -16,7 +16,7 @@ export async function handleStepFailure(
   const { logger } = context;
 
   logger.error(
-    { executionId: context.executionId, stepId, error: error.message },
+    { runId: context.runId, stepId, error: error.message },
     "Step failed"
   );
 

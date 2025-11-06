@@ -667,7 +667,7 @@ No new files required.
 
 ### Unit Tests
 
-No new unit tests required. Existing tests use domain types (`WorkflowEvent`, `WorkflowExecution`) not WebSocket message types.
+No new unit tests required. Existing tests use domain types (`WorkflowEvent`, `WorkflowRun`) not WebSocket message types.
 
 **Existing Tests (No Changes Required)**:
 - `buildTimelineModel.test.ts` - Uses mock events, not WebSocket messages
@@ -677,7 +677,7 @@ No new unit tests required. Existing tests use domain types (`WorkflowEvent`, `W
 ### Integration Tests
 
 Manual integration testing via browser:
-1. Start workflow execution
+1. Start workflow run
 2. Observe real-time updates in UI
 3. Pause workflow, verify UI updates immediately
 4. Resume workflow, verify UI updates immediately
@@ -698,7 +698,7 @@ Not applicable - no E2E tests exist for workflow WebSocket events.
 - [ ] `useWorkflowWebSocket.ts` accesses all event data via `event.data.*` pattern
 - [ ] No `as any` type assertions in `useWorkflowWebSocket.ts`
 - [ ] TypeScript compilation succeeds with no errors (`pnpm check-types`)
-- [ ] Workflow execution shows real-time updates in UI
+- [ ] Workflow run shows real-time updates in UI
 - [ ] Pause/resume/cancel operations trigger immediate UI updates
 - [ ] No console errors in browser DevTools
 - [ ] Documentation added to `apps/web/CLAUDE.md`
@@ -740,7 +740,7 @@ grep -r "executionId:" apps/web/src/server/domain/workflow/services/ | grep -v "
 2. Navigate to: `http://localhost:5173`
 3. Log in with credentials
 4. Navigate to a project's Workflows tab
-5. Start a workflow execution
+5. Start a workflow run
 6. Verify: Real-time step updates appear in UI without page refresh
 7. Pause the workflow using pause button
 8. Verify: UI immediately shows "Paused" status

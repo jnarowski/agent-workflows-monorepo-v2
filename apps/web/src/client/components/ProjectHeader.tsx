@@ -23,7 +23,7 @@ import { Badge } from "@/client/components/ui/badge";
 import type { SessionResponse } from "@/shared/types";
 import { SessionHeader } from "@/client/components/SessionHeader";
 import { GitOperationsModal } from "@/client/components/GitOperationsModal";
-import { useWorkflowExecutions } from "@/client/pages/projects/workflows/hooks/useWorkflowExecutions";
+import { useWorkflowRuns } from "@/client/pages/projects/workflows/hooks/useWorkflowRuns";
 
 interface ProjectHeaderProps {
   projectId: string;
@@ -41,8 +41,8 @@ export function ProjectHeader({ projectId, projectName, projectPath, currentBran
   const [gitModalOpen, setGitModalOpen] = useState(false);
 
   // Fetch running workflow count for badge
-  const { data: executions } = useWorkflowExecutions(projectId, { status: 'running' });
-  const runningCount = executions?.length || 0;
+  const { data: runs } = useWorkflowRuns(projectId, { status: 'running' });
+  const runningCount = runs?.length || 0;
 
   // Define navigation items
   const navItems = useMemo(

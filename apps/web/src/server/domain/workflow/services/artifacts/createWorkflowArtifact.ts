@@ -5,7 +5,7 @@ import type { FastifyBaseLogger } from 'fastify';
 export type ArtifactFileType = 'text' | 'file' | 'image';
 
 export interface CreateWorkflowArtifactData {
-  workflow_execution_id: string;
+  workflow_run_id: string;
   name: string;
   file_type: ArtifactFileType;
   file_path: string;
@@ -31,7 +31,7 @@ export async function createWorkflowArtifact(
 
   const artifact = await prisma.workflowArtifact.create({
     data: {
-      workflow_execution_id: data.workflow_execution_id,
+      workflow_run_id: data.workflow_run_id,
       name: data.name,
       file_type: data.file_type,
       file_path: data.file_path,

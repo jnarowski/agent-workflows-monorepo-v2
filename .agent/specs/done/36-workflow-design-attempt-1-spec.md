@@ -26,7 +26,7 @@ So that I can execute multi-step development tasks with full traceability and ob
 **Key characteristics:**
 - Workflows defined as TypeScript files in `.agent/workflows/templates/`
 - Auto-discovery on app startup
-- State stored as JSON on WorkflowExecution
+- State stored as JSON on WorkflowRun
 - Steps create separate rows for iterative workflows
 - Agent sessions linked to steps with names
 - All file paths relative to project.path
@@ -35,7 +35,7 @@ So that I can execute multi-step development tasks with full traceability and ob
 ## Key Design Decisions
 
 1. **Separate table for steps**: Provides granular progress tracking, retry capability, and organization for comments/artifacts/agent sessions
-2. **State as JSON field**: Simple key-value storage on WorkflowExecution for ctx.set()/ctx.get() with in-memory caching during execution
+2. **State as JSON field**: Simple key-value storage on WorkflowRun for ctx.set()/ctx.get() with in-memory caching during execution
 3. **Allow duplicate step names**: Supports iterative workflows where steps like "review" and "implement" can run multiple times
 4. **Agent session naming**: Add `name` field to distinguish multiple agent calls within a single step
 5. **File paths relative to project**: All workflow data lives inside the project directory for portability
@@ -116,7 +116,7 @@ Add 4 new models to Prisma schema with snake_case naming convention.
 
 **Key Points**:
 - `WorkflowDefinition` - Template metadata (name, file_path, config)
-- `WorkflowExecution` - Execution instance (status, input/output, state, current_step)
+- `WorkflowRun` - Execution instance (status, input/output, state, current_step)
 - `WorkflowStep` - Individual steps (step_number, name, status, timing, output)
 - `WorkflowComment` - Audit trail comments (can attach to execution or step)
 - Extend `AgentSession` with `workflow_step_id` and `name` fields
@@ -131,7 +131,7 @@ TypeScript package for defining and executing workflows.
 - `createWorkflow()` - Define workflows with config and execute function
 - `WorkflowContext` - Provides ctx.run(), ctx.runCli(), ctx.git.*, ctx.files.*, ctx.shell()
 - `ctx.comment()` - Add audit trail comments to current step
-- `ctx.set()` / `ctx.get()` - In-memory state cache, persisted to WorkflowExecution.state
+- `ctx.set()` / `ctx.get()` - In-memory state cache, persisted to WorkflowRun.state
 - Integration with @repo/agent-cli-sdk for CLI agent execution
 - Automatic step tracking and current_workflow_step_id updates
 - Artifact storage with proper file path generation
@@ -205,7 +205,7 @@ Real-time execution updates via existing WebSocket infrastructure.
 
 ### Modified Files (6)
 
-1. `apps/web/prisma/schema.prisma` - Add WorkflowDefinition, WorkflowExecution, WorkflowStep, WorkflowComment models, extend AgentSession
+1. `apps/web/prisma/schema.prisma` - Add WorkflowDefinition, WorkflowRun, WorkflowStep, WorkflowComment models, extend AgentSession
 2. `apps/web/src/server/routes/index.ts` - Register workflow routes
 3. `apps/web/src/server/routes/workflows.ts` - Create workflow endpoints
 4. `apps/web/src/server/websocket/handlers/index.ts` - Register workflow handler
@@ -221,7 +221,7 @@ Real-time execution updates via existing WebSocket infrastructure.
   - Fields: id, name (unique), description, version, file_path, config (Json), is_active, created_at, updated_at
   - Index: [name, is_active]
   - File: `apps/web/prisma/schema.prisma`
-- [ ] wf-db-2 Create WorkflowExecution model in schema.prisma
+- [ ] wf-db-2 Create WorkflowRun model in schema.prisma
   - Fields: id, workflow_def_id, project_id, run_id (unique), status, current_workflow_step_id, started_at, completed_at, duration, branch_name, commit_sha, pr_url, input (Json), output (Json), error, state (Json), log_file_path, created_at, updated_at
   - Relations: workflow_def (onDelete: Restrict), project (onDelete: Cascade), current_step (onDelete: SetNull), steps, artifacts, comments
   - Indexes: [workflow_def_id, status], [project_id, status], [current_workflow_step_id], [branch_name], [started_at]
@@ -364,7 +364,7 @@ Real-time execution updates via existing WebSocket infrastructure.
   - Return configured context
   - File: `apps/web/src/server/domain/workflow/services/createWorkflowContext.ts`
 - [ ] wf-srv-5 Implement executeWorkflow.ts
-  - Create WorkflowExecution record with PENDING status
+  - Create WorkflowRun record with PENDING status
   - Create WorkflowContext via createWorkflowContext
   - Execute workflow.execute() function
   - Update execution status (RUNNING → COMPLETED/FAILED)
@@ -373,7 +373,7 @@ Real-time execution updates via existing WebSocket infrastructure.
   - Broadcast WebSocket events
   - File: `apps/web/src/server/domain/workflow/services/executeWorkflow.ts`
 - [ ] wf-srv-6 Implement getExecution.ts
-  - Query WorkflowExecution with includes (current_step, steps, comments, artifacts)
+  - Query WorkflowRun with includes (current_step, steps, comments, artifacts)
   - Return full execution details
   - File: `apps/web/src/server/domain/workflow/services/getExecution.ts`
 - [ ] wf-srv-7 Implement listExecutions.ts
@@ -541,8 +541,8 @@ Real-time execution updates via existing WebSocket infrastructure.
   - Test git operations (mock simple-git)
   - Test file operations
   - File: `packages/workflow-sdk/tests/workflow.test.ts`
-- [ ] wf-test-2 Create integration tests for workflow execution
-  - Test full workflow execution end-to-end
+- [ ] wf-test-2 Create integration tests for workflow run
+  - Test full workflow run end-to-end
   - Verify database records created correctly
   - Verify step tracking and current_workflow_step_id updates
   - Verify state persistence
@@ -631,7 +631,7 @@ describe('executeWorkflow', () => {
 
 ### Integration Tests
 
-**`packages/workflow-sdk/tests/executor.test.ts`** - End-to-end workflow execution:
+**`packages/workflow-sdk/tests/executor.test.ts`** - End-to-end workflow run:
 - Create test workflow with multiple steps
 - Verify database records (execution, steps, comments, artifacts)
 - Verify state persistence
@@ -725,7 +725,7 @@ cd apps/web && pnpm prisma:generate
      -d '{"projectId": "...", "input": {"featureName": "test", "specPath": "..."}}'
    ```
 4. Verify WebSocket events: Connect WebSocket client and subscribe to execution
-5. Check database: Verify WorkflowExecution, WorkflowStep, WorkflowComment records created
+5. Check database: Verify WorkflowRun, WorkflowStep, WorkflowComment records created
 6. Check filesystem: Verify logs and artifacts in `.agent/workflows/executions/{id}/`
 7. Verify step progression: Check current_workflow_step_id updates in database
 8. Check agent sessions: Verify workflow_step_id and name populated correctly
@@ -756,7 +756,7 @@ Future: Consider worker queue (Bull, BullMQ) for production deployments.
 ### 2. State Management Strategy
 
 State uses in-memory cache during execution, flushed to database on completion:
-- Fast reads during workflow execution (no DB queries)
+- Fast reads during workflow run (no DB queries)
 - Durable storage after completion
 - Lost if server crashes mid-execution (acceptable for MVP)
 

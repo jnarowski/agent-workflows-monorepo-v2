@@ -17,9 +17,10 @@ export async function listSpecFiles(projectPath: string): Promise<string[]> {
       .filter((dirent) => dirent.isFile() && dirent.name.endsWith(".md"))
       .map((dirent) => {
         // Get relative path from specsDir
-        // In Node.js 20.1+, dirent.path contains the parent directory
-        const relativePath = dirent.path
-          ? join(dirent.path.replace(specsDir, ""), dirent.name)
+        // In Node.js 20.1+, dirent has path property (not in all TS types)
+        const direntPath = (dirent as { path?: string }).path;
+        const relativePath = direntPath
+          ? join(direntPath.replace(specsDir, ""), dirent.name)
           : dirent.name;
 
         // Remove leading slash if present

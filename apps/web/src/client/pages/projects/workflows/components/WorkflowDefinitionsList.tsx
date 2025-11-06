@@ -5,18 +5,18 @@ import { ChevronRight, Layers } from 'lucide-react';
 interface WorkflowDefinitionsListProps {
   projectId: string;
   definitions: any[];
-  executions: any[];
+  runs: any[];
 }
 
 export function WorkflowDefinitionsList({
   projectId,
   definitions,
-  executions,
+  runs,
 }: WorkflowDefinitionsListProps) {
   const navigate = useNavigate();
 
-  // Count executions per definition
-  const executionCounts = executions.reduce(
+  // Count runs per definition
+  const runCounts = runs.reduce(
     (acc, exec) => {
       const defId = exec.workflow_definition_id;
       acc[defId] = (acc[defId] || 0) + 1;
@@ -42,7 +42,7 @@ export function WorkflowDefinitionsList({
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {definitions.map((def) => {
-            const execCount = executionCounts[def.id] || 0;
+            const execCount = runCounts[def.id] || 0;
             const phaseCount = def.phases?.length || 0;
 
             return (
@@ -61,7 +61,7 @@ export function WorkflowDefinitionsList({
                     </span>
                     <span>•</span>
                     <span>
-                      {execCount} execution{execCount !== 1 ? 's' : ''}
+                      {execCount} run{execCount !== 1 ? 's' : ''}
                     </span>
                   </div>
                   {def.description && (

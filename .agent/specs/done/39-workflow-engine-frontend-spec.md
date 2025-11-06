@@ -12,7 +12,7 @@ Build a complete frontend UI for the workflow orchestration system with a Kanban
 ## User Story
 
 As a developer using the agent workflow system
-I want to visualize, create, and manage workflow executions in a Kanban board interface
+I want to visualize, create, and manage workflow runs in a Kanban board interface
 So that I can track multiple workflows, see real-time progress, and interact with steps, comments, and artifacts
 
 ## Technical Approach
@@ -25,7 +25,7 @@ This implementation focuses on **frontend design and mock workflow orchestration
 4. Build a Kanban board UI with drag-and-drop for workflow status changes
 5. Implement real-time WebSocket updates using room-based broadcasting (not per-execution event names)
 6. Add a project-level mode switcher to toggle between "Development" and "Workflows" modes
-7. Create detailed workflow execution view with phase timeline, step cards, comments, and artifacts
+7. Create detailed workflow run view with phase timeline, step cards, comments, and artifacts
 
 ## Key Design Decisions
 
@@ -37,7 +37,7 @@ This implementation focuses on **frontend design and mock workflow orchestration
 
 4. **Auto-Progression with Liteque**: Real job queue processing using Liteque (SQLite-based queue). MockWorkflowOrchestrator processes workflows sequentially through steps with realistic delays and mock logs.
 
-5. **Zustand for Real-Time State**: Store workflow executions in Zustand store, update via WebSocket events. TanStack Query for initial data fetching and invalidation after mutations.
+5. **Zustand for Real-Time State**: Store workflow runs in Zustand store, update via WebSocket events. TanStack Query for initial data fetching and invalidation after mutations.
 
 6. **Component Library**: Reuse existing shadcn/ui components. Create new `SegmentedControl` component for mode switching. Use `dnd-kit` for drag-and-drop (better accessibility than react-dnd).
 
@@ -82,7 +82,7 @@ apps/web/
 │                   ├── types.ts                     # Frontend types
 │                   │
 │                   ├── components/
-│                   │   ├── WorkflowExecutionCard.tsx
+│                   │   ├── WorkflowRunCard.tsx
 │                   │   ├── WorkflowKanbanColumn.tsx
 │                   │   ├── WorkflowStatusBadge.tsx
 │                   │   ├── WorkflowPhaseTimeline.tsx
@@ -92,8 +92,8 @@ apps/web/
 │                   │   └── NewWorkflowModal.tsx
 │                   │
 │                   ├── hooks/
-│                   │   ├── useWorkflowExecutions.ts
-│                   │   ├── useWorkflowExecution.ts
+│                   │   ├── useWorkflowRuns.ts
+│                   │   ├── useWorkflowRun.ts
 │                   │   ├── useWorkflowDefinitions.ts
 │                   │   ├── useWorkflowMutations.ts
 │                   │   └── useWorkflowWebSocket.ts
@@ -167,7 +167,7 @@ export function getQueue(): Liteque {
 Create a queue-based orchestrator that auto-progresses workflows through steps.
 
 **Key Points**:
-- Enqueues workflow executions to Liteque
+- Enqueues workflow runs to Liteque
 - Processes steps sequentially with 3-5 second delays
 - 90% success rate (10% random failures)
 - Generates realistic mock logs per step
@@ -192,8 +192,8 @@ Create comprehensive mock data for testing and demo.
 
 **Key Points**:
 - 3 WorkflowDefinition templates with different phases/steps
-- 10-12 WorkflowExecution instances across different statuses
-- 30-40 WorkflowExecutionStep records with realistic logs
+- 10-12 WorkflowRun instances across different statuses
+- 30-40 WorkflowRunStep records with realistic logs
 - 20-25 WorkflowComment records (user, system, agent types)
 - 12-15 WorkflowArtifact records with mock files
 - Link some steps to existing AgentSession records
@@ -299,7 +299,7 @@ Define frontend types and utility functions.
 
 ### 8. Zustand Workflow Store
 
-Central state management for workflow executions.
+Central state management for workflow runs.
 
 **Key Points**:
 - Store executions in Map (keyed by ID for O(1) lookups)
@@ -311,14 +311,14 @@ Central state management for workflow executions.
 **Store Interface**:
 ```typescript
 interface WorkflowStore {
-  executions: Map<string, WorkflowExecution>;
+  executions: Map<string, WorkflowRun>;
   activeExecutionId: string | null;
   filter: { status?: WorkflowStatus; search?: string };
   isConnected: boolean;
 
   // Actions
-  setExecutions(executions: WorkflowExecution[]): void;
-  updateExecution(id: string, updates: Partial<WorkflowExecution>): void;
+  setExecutions(executions: WorkflowRun[]): void;
+  updateExecution(id: string, updates: Partial<WorkflowRun>): void;
 
   // Event handlers
   handleStepStarted(event: WorkflowStepStartedEvent): void;
@@ -371,7 +371,7 @@ Full execution details with timeline, steps, comments, artifacts.
 Reusable components for workflow UI.
 
 **Components**:
-- `WorkflowExecutionCard` - Draggable card with name, progress, status, metadata
+- `WorkflowRunCard` - Draggable card with name, progress, status, metadata
 - `WorkflowKanbanColumn` - Column with header, count badge, drop zone
 - `WorkflowStatusBadge` - Color-coded status indicator (with pulse animation for running)
 - `WorkflowPhaseTimeline` - Horizontal stepper showing phases
@@ -385,8 +385,8 @@ Reusable components for workflow UI.
 Data fetching and mutations for workflow API.
 
 **Query Hooks**:
-- `useWorkflowExecutions(projectId, filters)` - List executions
-- `useWorkflowExecution(executionId)` - Single execution with steps/comments/artifacts
+- `useWorkflowRuns(projectId, filters)` - List executions
+- `useWorkflowRun(executionId)` - Single execution with steps/comments/artifacts
 - `useWorkflowDefinitions()` - List workflow templates
 
 **Mutation Hooks**:
@@ -456,7 +456,7 @@ export function useWorkflowWebSocket(projectId: string) {
 
 **Frontend Components (9 files)**:
 5. `apps/web/src/client/components/ui/segmented-control.tsx` - Mode switcher component
-6. `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionCard.tsx` - Execution card
+6. `apps/web/src/client/pages/projects/workflows/components/WorkflowRunCard.tsx` - Execution card
 7. `apps/web/src/client/pages/projects/workflows/components/WorkflowKanbanColumn.tsx` - Kanban column
 8. `apps/web/src/client/pages/projects/workflows/components/WorkflowStatusBadge.tsx` - Status badge
 9. `apps/web/src/client/pages/projects/workflows/components/WorkflowPhaseTimeline.tsx` - Phase timeline
@@ -470,8 +470,8 @@ export function useWorkflowWebSocket(projectId: string) {
 15. `apps/web/src/client/pages/projects/workflows/WorkflowDetail.tsx` - Detail page
 
 **Frontend Hooks (5 files)**:
-16. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowExecutions.ts` - List query
-17. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowExecution.ts` - Single query
+16. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowRuns.ts` - List query
+17. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowRun.ts` - Single query
 18. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowDefinitions.ts` - Definitions query
 19. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowMutations.ts` - Mutations
 20. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowWebSocket.ts` - WebSocket integration
@@ -635,13 +635,13 @@ export function useWorkflowWebSocket(projectId: string) {
   - Code Review: 4 phases, 10 steps
   - Include phases JSON array and args_schema JSON
   - File: `apps/web/prisma/seed-workflows.ts`
-- [x] wf-seed-3 Create 10-12 WorkflowExecution records
+- [x] wf-seed-3 Create 10-12 WorkflowRun records
   - Distribute across existing projects
   - Status distribution: 2 pending, 3 running, 2 paused, 3 completed, 2 failed
   - Link to workflow definitions
   - Realistic names and timestamps
   - File: `apps/web/prisma/seed-workflows.ts`
-- [x] wf-seed-4 Create 30-40 WorkflowExecutionStep records
+- [x] wf-seed-4 Create 30-40 WorkflowRunStep records
   - Link to executions
   - Realistic step names and phases
   - Status distribution matches execution status
@@ -668,13 +668,13 @@ export function useWorkflowWebSocket(projectId: string) {
 #### Completion Notes
 
 - Seed script `seed-workflows.ts` already existed but had schema mismatches that were fixed
-- Fixed WorkflowArtifact schema: removed `workflow_execution_id` and `metadata` fields, changed `file_size` to `size_bytes`
+- Fixed WorkflowArtifact schema: removed `workflow_run_id` and `metadata` fields, changed `file_size` to `size_bytes`
 - Fixed WorkflowComment schema: changed `user_id` to `created_by` to match actual schema
 - Added auto-clear of existing data before seeding to allow re-seeding
 - Successfully created:
   - 3 workflow definitions (Feature Implementation, Bug Fix, Code Review)
-  - 12 workflow executions (2 pending, 3 running, 2 paused, 3 completed, 2 failed)
-  - 51 workflow execution steps with realistic logs
+  - 12 workflow runs (2 pending, 3 running, 2 paused, 3 completed, 2 failed)
+  - 51 workflow run steps with realistic logs
   - 20 workflow comments (user, system, agent types)
   - 12 workflow artifacts with various file types
 - Seed script command `pnpm prisma:seed` was already present in package.json
@@ -685,7 +685,7 @@ export function useWorkflowWebSocket(projectId: string) {
 <!-- prettier-ignore -->
 - [x] wf-types-1 Create workflow types file
   - Define WorkflowStatus, StepStatus enums
-  - Define WorkflowExecution, WorkflowStep, WorkflowComment, WorkflowArtifact interfaces
+  - Define WorkflowRun, WorkflowStep, WorkflowComment, WorkflowArtifact interfaces
   - Match backend Prisma schema
   - File: `apps/web/src/client/pages/projects/workflows/types.ts`
 - [x] wf-utils-1 Create workflow status utilities
@@ -717,7 +717,7 @@ export function useWorkflowWebSocket(projectId: string) {
   - Import create from zustand
   - File: `apps/web/src/client/pages/projects/workflows/stores/workflowStore.ts`
 - [x] wf-store-2 Define store state interface
-  - executions: Map<string, WorkflowExecution>
+  - executions: Map<string, WorkflowRun>
   - activeExecutionId: string | null
   - filter: { status?, search?, definitionId? }
   - isConnected: boolean
@@ -771,20 +771,20 @@ export function useWorkflowWebSocket(projectId: string) {
   - Add pulse animation for 'running' status
   - Use STATUS_CONFIG for colors
   - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowStatusBadge.tsx`
-- [x] wf-ui-3 Create WorkflowExecutionCard component
+- [x] wf-ui-3 Create WorkflowRunCard component
   - Accept execution prop
   - Accept onClick handler
   - Make draggable using dnd-kit
   - Render name, progress bar, status badge, user avatar, time
   - Show quick actions on hover (view, pause, cancel)
-  - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionCard.tsx`
+  - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowRunCard.tsx`
 - [x] wf-ui-4 Create WorkflowKanbanColumn component
   - Accept status prop
   - Accept executions array
   - Accept onDrop handler
   - Render header with count badge
   - Implement drop zone using dnd-kit
-  - Render WorkflowExecutionCard for each execution
+  - Render WorkflowRunCard for each execution
   - Show empty state if no executions
   - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowKanbanColumn.tsx`
 
@@ -793,7 +793,7 @@ export function useWorkflowWebSocket(projectId: string) {
 - Created SegmentedControl component with smooth sliding background animation
 - Implemented full keyboard navigation (arrow keys, Home, End) with ARIA radiogroup pattern
 - Created WorkflowStatusBadge with size variants and running status pulse animation
-- Built WorkflowExecutionCard with dnd-kit sortable integration and quick action buttons on hover
+- Built WorkflowRunCard with dnd-kit sortable integration and quick action buttons on hover
 - Implemented WorkflowKanbanColumn with droppable zone and empty state UI
 - All components follow shadcn/ui design patterns with proper Tailwind styling
 
@@ -852,20 +852,20 @@ export function useWorkflowWebSocket(projectId: string) {
 ### Task Group 9: Frontend - Hooks
 
 <!-- prettier-ignore -->
-- [x] wf-hooks-1 Create useWorkflowExecutions hook
+- [x] wf-hooks-1 Create useWorkflowRuns hook
   - Accept projectId and filters props
   - Use TanStack Query to fetch executions
   - Query key: ['workflow-executions', projectId, filters]
   - API: GET /api/workflow-executions?project_id={projectId}&status={status}
   - Refetch interval: 10s (fallback)
-  - File: `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowExecutions.ts`
-- [x] wf-hooks-2 Create useWorkflowExecution hook
+  - File: `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowRuns.ts`
+- [x] wf-hooks-2 Create useWorkflowRun hook
   - Accept executionId prop
   - Use TanStack Query to fetch execution details
   - Query key: ['workflow-execution', executionId]
   - API: GET /api/workflow-executions/{executionId}
   - Refetch interval: 5s (more frequent for detail view)
-  - File: `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowExecution.ts`
+  - File: `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowRun.ts`
 - [x] wf-hooks-3 Create useWorkflowDefinitions hook
   - Use TanStack Query to fetch workflow templates
   - Query key: ['workflow-definitions']
@@ -906,7 +906,7 @@ export function useWorkflowWebSocket(projectId: string) {
 <!-- prettier-ignore -->
 - [x] wf-pages-1 Create ProjectWorkflowsView page
   - Accept projectId prop
-  - Call useWorkflowExecutions hook
+  - Call useWorkflowRuns hook
   - Call useWorkflowWebSocket hook
   - Render search bar, filter dropdown, "New Workflow" button
   - Render 5 WorkflowKanbanColumn components
@@ -917,7 +917,7 @@ export function useWorkflowWebSocket(projectId: string) {
   - File: `apps/web/src/client/pages/projects/workflows/ProjectWorkflowsView.tsx`
 - [x] wf-pages-2 Create WorkflowDetail page
   - Accept executionId from route params
-  - Call useWorkflowExecution hook
+  - Call useWorkflowRun hook
   - Call useWorkflowWebSocket hook
   - Render header with name, status, control buttons
   - Left panel: Progress bar, WorkflowPhaseTimeline, step cards grouped by phase
@@ -1011,7 +1011,7 @@ export function useWorkflowWebSocket(projectId: string) {
   - Escape to close modals
   - File: Components
 - [x] wf-a11y-2 Add ARIA labels
-  - Cards: "Workflow execution {name}, status {status}, progress {percent}%"
+  - Cards: "Workflow run {name}, status {status}, progress {percent}%"
   - Buttons: "Pause workflow", "Resume workflow", "Cancel workflow"
   - Status badges: "Status: Running"
   - File: Components
@@ -1256,7 +1256,7 @@ socket.on('workflow:completed', (data) => {
 ### 6. Mock Data Realism
 
 Generate realistic mock data:
-- Execution names: "Feature: User Authentication", "Bug Fix: Login Error", "Review: PR #123"
+- Run names: "Feature: User Authentication", "Bug Fix: Login Error", "Review: PR #123"
 - Step names: "Clone repository", "Install dependencies", "Run tests", "Build application", "Deploy to staging"
 - Logs: Timestamped, multi-line, realistic output (e.g., "Fetching objects: 100% (1234/1234)")
 - Artifacts: Real file extensions and mime types (e.g., test-results.json → application/json)

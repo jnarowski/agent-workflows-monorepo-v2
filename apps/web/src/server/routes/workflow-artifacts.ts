@@ -17,13 +17,13 @@ const artifactIdSchema = z.object({
 
 export async function workflowArtifactRoutes(fastify: FastifyInstance) {
   /**
-   * POST /api/workflow-executions/:id/artifacts
+   * POST /api/workflow-runs/:id/artifacts
    * Upload an artifact (multipart form data)
    */
   fastify.post<{
     Params: { id: string };
   }>(
-    "/api/workflow-executions/:id/artifacts",
+    "/api/workflow-runs/:id/artifacts",
     {
       preHandler: fastify.authenticate,
     },
@@ -57,12 +57,12 @@ export async function workflowArtifactRoutes(fastify: FastifyInstance) {
       const buffer = await data.toBuffer();
 
       // Generate relative file path
-      const executionId = request.params.id;
-      const filePath = `.agent/workflows/executions/${executionId}/artifacts/${phase}/${data.filename}`;
+      const runId = request.params.id;
+      const filePath = `.agent/workflows/runs/${runId}/artifacts/${phase}/${data.filename}`;
 
       const artifact = await uploadArtifact(
         {
-          workflow_execution_id: executionId,
+          workflow_run_id: runId,
           phase,
           name,
           file_path: filePath,
@@ -74,7 +74,7 @@ export async function workflowArtifactRoutes(fastify: FastifyInstance) {
       );
 
       if (!artifact) {
-        throw new NotFoundError("Workflow execution not found");
+        throw new NotFoundError("Workflow run not found");
       }
 
       return reply.code(201).send({ data: artifact });
@@ -148,7 +148,7 @@ export async function workflowArtifactRoutes(fastify: FastifyInstance) {
 
       if (!artifact) {
         throw new NotFoundError(
-          "Artifact or event not found, or they do not belong to the same workflow execution"
+          "Artifact or event not found, or they do not belong to the same workflow run"
         );
       }
 
