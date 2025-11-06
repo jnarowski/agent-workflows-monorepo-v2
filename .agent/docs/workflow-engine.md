@@ -16,7 +16,7 @@ The Workflow Engine is a hybrid code/YAML workflow orchestration system for mana
 2. **Durable Execution**: Persist execution state to enable pause/resume across system restarts
 3. **Real-Time Monitoring**: Provide live updates on workflow progress via WebSocket events
 4. **AI Agent Integration**: Seamlessly integrate with AI CLI tools (Claude, Codex, Gemini) via `@repo/agent-cli-sdk`
-5. **Kanban Visualization**: Track workflow executions on a visual kanban board grouped by phase
+5. **Kanban Visualization**: Track workflow runs on a visual kanban board grouped by phase
 6. **Rich Context**: Support comments and artifacts at both workflow and step levels
 7. **Developer Experience**: Simple API for defining workflows, intuitive UI for monitoring
 
@@ -56,8 +56,8 @@ The Workflow Engine is a hybrid code/YAML workflow orchestration system for mana
 │  │  │  ┌───────────────────────────────────────────┐    │ │   │
 │  │  │  │  SQLite Database                          │    │ │   │
 │  │  │  │  - WorkflowDefinition (templates)         │    │ │   │
-│  │  │  │  - WorkflowExecution (task instances)     │    │ │   │
-│  │  │  │  - WorkflowExecutionStep (step tracking)  │    │ │   │
+│  │  │  │  - WorkflowRun (task instances)     │    │ │   │
+│  │  │  │  - WorkflowRunStep (step tracking)  │    │ │   │
 │  │  │  │  - WorkflowComment (annotations)          │    │ │   │
 │  │  │  │  - WorkflowArtifact (file metadata)       │    │ │   │
 │  │  │  └───────────────────────────────────────────┘    │ │   │
@@ -112,7 +112,7 @@ The system uses a hybrid storage approach:
 
 1. **Template vs Execution Separation**
    - `WorkflowDefinition` = reusable template (blueprint)
-   - `WorkflowExecution` = specific run with arguments (task instance)
+   - `WorkflowRun` = specific run with arguments (task instance)
    - One template can be executed many times with different inputs
 
 2. **Phase-Based Organization**
@@ -155,7 +155,7 @@ The system uses a hybrid storage approach:
            │
            ▼
 ┌─────────────────────────┐
-│  WorkflowExecution      │
+│  WorkflowRun      │
 │  (Task Instance)        │
 ├─────────────────────────┤
 │ id: String (PK)         │
@@ -180,11 +180,11 @@ The system uses a hybrid storage approach:
            │                  │   │
            ▼                  │   │
 ┌─────────────────────────┐   │   │
-│ WorkflowExecutionStep   │   │   │
+│ WorkflowRunStep   │   │   │
 │ (Step Instance)         │   │   │
 ├─────────────────────────┤   │   │
 │ id: String (PK)         │   │   │
-│ workflow_execution_id   │   │   │
+│ workflow_run_id   │   │   │
 │ step_id: String         │   │   │ (identifier from template)
 │ name: String            │   │   │
 │ phase: String           │   │   │
@@ -223,7 +223,7 @@ The system uses a hybrid storage approach:
 │  (Annotations)          │   │   │  │  │
 ├─────────────────────────┤   │   │  │  │
 │ id: String (PK)         │◄──┘   │  │  │
-│ workflow_execution_id   │       │  │  │
+│ workflow_run_id   │       │  │  │
 │ workflow_execution_     │       │  │  │
 │   step_id: String? (FK) │       │  │  │
 │ text: String            │       │  │  │
@@ -258,7 +258,7 @@ The system uses a hybrid storage approach:
 
 ### Status Enums
 
-**WorkflowExecution.status:**
+**WorkflowRun.status:**
 
 - `pending` - Created but not started
 - `running` - Currently executing
@@ -267,7 +267,7 @@ The system uses a hybrid storage approach:
 - `failed` - Finished with error
 - `cancelled` - Stopped by user
 
-**WorkflowExecutionStep.status:**
+**WorkflowRunStep.status:**
 
 - `pending` - Not started yet
 - `running` - Currently executing
@@ -362,7 +362,7 @@ interface FunctionStepConfig {
   fn: (ctx: WorkflowContext) => Promise<any>;
 }
 
-// Workflow execution context
+// Workflow run context
 interface WorkflowContext {
   executionId: string;
   projectPath: string;
@@ -521,11 +521,11 @@ steps:
 
 ## API Endpoints
 
-### Workflow Execution Endpoints
+### Workflow Run Endpoints
 
 #### `POST /api/workflow-executions`
 
-Create and start a workflow execution.
+Create and start a workflow run.
 
 **Request:**
 
@@ -563,7 +563,7 @@ Create and start a workflow execution.
 
 #### `GET /api/workflow-executions?project_id={id}&status={status}`
 
-List workflow executions for a project.
+List workflow runs for a project.
 
 **Response (200):**
 
@@ -729,7 +729,7 @@ Upload an artifact (multipart form).
 {
   "data": {
     "id": "cuid",
-    "workflow_execution_step_id": "cuid",
+    "workflow_run_step_id": "cuid",
     "name": "screenshot.png",
     "file_path": ".agent/workflows/executions/{id}/artifacts/{stepId}/screenshot.png",
     "file_type": "image",
@@ -808,8 +808,8 @@ Create a comment.
 {
   "data": {
     "id": "cuid",
-    "workflow_execution_id": "cuid",
-    "workflow_execution_step_id": "cuid",
+    "workflow_run_id": "cuid",
+    "workflow_run_step_id": "cuid",
     "text": "This step looks good!",
     "comment_type": "user",
     "created_by": "cuid",
@@ -1059,9 +1059,9 @@ Backend business logic organized by domain following the functional architecture
 
 **Services:**
 
-- `createWorkflowExecution.ts` - Create execution record
-- `getWorkflowExecutionById.ts` - Get single execution with relations
-- `getWorkflowExecutions.ts` - Query executions with filters
+- `createWorkflowRun.ts` - Create execution record
+- `getWorkflowRunById.ts` - Get single execution with relations
+- `getWorkflowRuns.ts` - Query executions with filters
 - `executeWorkflow.ts` - Execute workflow (currently stubbed)
 - `pauseWorkflow.ts` - Pause running workflow
 - `resumeWorkflow.ts` - Resume from checkpoint (currently stubbed)
@@ -1106,7 +1106,7 @@ Backend business logic organized by domain following the functional architecture
 
 **What was stubbed:**
 
-- Workflow execution logic (`executeWorkflow` creates 'pending' record only)
+- Workflow run logic (`executeWorkflow` creates 'pending' record only)
 - Workflow resume logic (`resumeWorkflow` just updates status)
 - Step log streaming (endpoint returns placeholder)
 
@@ -1198,7 +1198,7 @@ No new environment variables required. Uses existing:
 ### Runtime Configuration
 
 Workflow templates location: `.agent/workflows/definitions/`
-Workflow executions location: `.agent/workflows/executions/`
+Workflow runs location: `.agent/workflows/executions/`
 
 ## Migration Guide
 
@@ -1232,7 +1232,7 @@ pnpm prisma studio
 
 ### Common Issues
 
-**Issue:** Workflow execution stuck in 'pending' status
+**Issue:** Workflow run stuck in 'pending' status
 **Cause:** Phase 2 not implemented (execution engine stubbed)
 **Solution:** Wait for Phase 2 completion
 

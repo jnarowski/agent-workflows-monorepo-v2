@@ -9,7 +9,7 @@
 
 ## Overview
 
-Phase 1 establishes the backend foundation for the workflow orchestration system. This phase focuses on database schema, domain services, API routes, and WebSocket infrastructure - everything needed to store, query, and manage workflow executions via API.
+Phase 1 establishes the backend foundation for the workflow orchestration system. This phase focuses on database schema, domain services, API routes, and WebSocket infrastructure - everything needed to store, query, and manage workflow runs via API.
 
 **What's Included**:
 - Database schema (5 new models, 3 updated models)
@@ -20,7 +20,7 @@ Phase 1 establishes the backend foundation for the workflow orchestration system
 
 **What's Deferred**:
 - Workflow engine package (@repo/workflow-engine)
-- Actual workflow execution logic (stubbed)
+- Actual workflow run logic (stubbed)
 - Checkpoint/resume functionality
 - Frontend UI (kanban board, components)
 - Step log streaming (stubbed)
@@ -79,7 +79,7 @@ domain/workflow/
 - Barrel exports maintain simple import paths
 
 ### 3. AgentSession Bidirectional Relation
-**Decision**: Add `WorkflowExecutionStep.agent_session_id` (nullable) with bidirectional relation
+**Decision**: Add `WorkflowRunStep.agent_session_id` (nullable) with bidirectional relation
 
 **Rationale**:
 - Links agent steps to full agent session logs (JSONL files)
@@ -89,13 +89,13 @@ domain/workflow/
 
 **Schema**:
 ```prisma
-model WorkflowExecutionStep {
+model WorkflowRunStep {
   agent_session_id String?
   session          AgentSession? @relation(fields: [agent_session_id], references: [id], onDelete: Cascade)
 }
 
 model AgentSession {
-  workflowSteps WorkflowExecutionStep[]
+  workflowSteps WorkflowRunStep[]
 }
 ```
 
@@ -194,7 +194,7 @@ model WorkflowDefinition {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  executions WorkflowExecution[]
+  executions WorkflowRun[]
 
   @@index([type])
   @@index([is_template])
@@ -202,11 +202,11 @@ model WorkflowDefinition {
 }
 ```
 
-#### WorkflowExecution
+#### WorkflowRun
 Task instance - specific run of a workflow with arguments.
 
 ```prisma
-model WorkflowExecution {
+model WorkflowRun {
   id                     String    @id @default(cuid())
   project_id             String
   user_id                String
@@ -227,24 +227,24 @@ model WorkflowExecution {
   project             Project            @relation(fields: [project_id], references: [id], onDelete: Cascade)
   user                User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
   workflow_definition WorkflowDefinition @relation(fields: [workflow_definition_id], references: [id], onDelete: Cascade)
-  steps               WorkflowExecutionStep[]
+  steps               WorkflowRunStep[]
   comments            WorkflowComment[]
 
   @@index([project_id, status])
   @@index([user_id, status])
   @@index([workflow_definition_id])
   @@index([status])
-  @@map("workflow_executions")
+  @@map("workflow_runs")
 }
 ```
 
-#### WorkflowExecutionStep
+#### WorkflowRunStep
 Step instance - tracks execution of individual steps.
 
 ```prisma
-model WorkflowExecutionStep {
+model WorkflowRunStep {
   id                    String    @id @default(cuid())
-  workflow_execution_id String
+  workflow_run_id String
   step_id               String    // Step identifier from workflow definition
   name                  String    // Step name
   phase                 String    // Phase this step belongs to
@@ -257,15 +257,15 @@ model WorkflowExecutionStep {
   created_at            DateTime  @default(now())
   updated_at            DateTime  @updatedAt
 
-  workflow_execution WorkflowExecution @relation(fields: [workflow_execution_id], references: [id], onDelete: Cascade)
+  workflow_execution WorkflowRun @relation(fields: [workflow_run_id], references: [id], onDelete: Cascade)
   session            AgentSession?     @relation(fields: [agent_session_id], references: [id], onDelete: Cascade)
   artifacts          WorkflowArtifact[]
   comments           WorkflowComment[]
 
-  @@index([workflow_execution_id, status])
+  @@index([workflow_run_id, status])
   @@index([agent_session_id])
   @@index([status])
-  @@map("workflow_execution_steps")
+  @@map("workflow_run_steps")
 }
 ```
 
@@ -275,21 +275,21 @@ Comments on workflows or steps.
 ```prisma
 model WorkflowComment {
   id                        String    @id @default(cuid())
-  workflow_execution_id     String
-  workflow_execution_step_id String?   // Nullable - workflow-level comments have no step
+  workflow_run_id     String
+  workflow_run_step_id String?   // Nullable - workflow-level comments have no step
   text                      String
   comment_type              String    @default("user") // 'user', 'system', 'agent'
   created_by                String    // User ID
   created_at                DateTime  @default(now())
   updated_at                DateTime  @updatedAt
 
-  workflow_execution WorkflowExecution      @relation(fields: [workflow_execution_id], references: [id], onDelete: Cascade)
-  step               WorkflowExecutionStep? @relation(fields: [workflow_execution_step_id], references: [id], onDelete: Cascade)
+  workflow_execution WorkflowRun      @relation(fields: [workflow_run_id], references: [id], onDelete: Cascade)
+  step               WorkflowRunStep? @relation(fields: [workflow_run_step_id], references: [id], onDelete: Cascade)
   creator            User                   @relation(fields: [created_by], references: [id], onDelete: Cascade)
   artifacts          WorkflowArtifact[]
 
-  @@index([workflow_execution_id])
-  @@index([workflow_execution_step_id])
+  @@index([workflow_run_id])
+  @@index([workflow_run_step_id])
   @@index([created_by])
   @@map("workflow_comments")
 }
@@ -301,7 +301,7 @@ File metadata - artifacts always belong to a step, optionally attached to a comm
 ```prisma
 model WorkflowArtifact {
   id                        String    @id @default(cuid())
-  workflow_execution_step_id String
+  workflow_run_step_id String
   workflow_comment_id       String?   // Nullable - can attach artifact to comment
   name                      String
   file_path                 String    // Relative to project root
@@ -311,10 +311,10 @@ model WorkflowArtifact {
   created_at                DateTime  @default(now())
   updated_at                DateTime  @updatedAt
 
-  step    WorkflowExecutionStep @relation(fields: [workflow_execution_step_id], references: [id], onDelete: Cascade)
+  step    WorkflowRunStep @relation(fields: [workflow_run_step_id], references: [id], onDelete: Cascade)
   comment WorkflowComment?      @relation(fields: [workflow_comment_id], references: [id], onDelete: SetNull)
 
-  @@index([workflow_execution_step_id])
+  @@index([workflow_run_step_id])
   @@index([workflow_comment_id])
   @@map("workflow_artifacts")
 }
@@ -323,22 +323,22 @@ model WorkflowArtifact {
 ### Updated Models (3)
 
 #### Project
-Add workflow executions relation.
+Add workflow runs relation.
 
 ```prisma
 model Project {
   // ... existing fields ...
-  workflow_executions WorkflowExecution[]
+  workflow_runs WorkflowRun[]
 }
 ```
 
 #### User
-Add workflow executions and comments relations.
+Add workflow runs and comments relations.
 
 ```prisma
 model User {
   // ... existing fields ...
-  workflow_executions WorkflowExecution[]
+  workflow_runs WorkflowRun[]
   workflow_comments   WorkflowComment[]
 }
 ```
@@ -349,7 +349,7 @@ Add workflow steps relation.
 ```prisma
 model AgentSession {
   // ... existing fields ...
-  workflowSteps WorkflowExecutionStep[]
+  workflowSteps WorkflowRunStep[]
 }
 ```
 
@@ -360,9 +360,9 @@ model AgentSession {
 ```
 apps/web/src/server/domain/workflow/
 ├── services/
-│   ├── createWorkflowExecution.ts
-│   ├── getWorkflowExecutionById.ts
-│   ├── getWorkflowExecutions.ts
+│   ├── createWorkflowRun.ts
+│   ├── getWorkflowRunById.ts
+│   ├── getWorkflowRuns.ts
 │   ├── executeWorkflow.ts           # STUB
 │   ├── pauseWorkflow.ts
 │   ├── resumeWorkflow.ts            # STUB
@@ -388,27 +388,27 @@ apps/web/src/server/domain/workflow/
 
 ### Service Descriptions
 
-#### Workflow Execution Services
+#### Workflow Run Services
 
-**createWorkflowExecution.ts**
+**createWorkflowRun.ts**
 ```typescript
-export async function createWorkflowExecution(data: CreateWorkflowExecutionInput): Promise<WorkflowExecution>
+export async function createWorkflowRun(data: CreateWorkflowRunInput): Promise<WorkflowRun>
 ```
 - Creates new execution record
 - Sets initial state: status='pending', current_phase=first_phase, current_step_index=0
 - Returns execution with relations
 
-**getWorkflowExecutionById.ts**
+**getWorkflowRunById.ts**
 ```typescript
-export async function getWorkflowExecutionById(id: string): Promise<WorkflowExecution | null>
+export async function getWorkflowRunById(id: string): Promise<WorkflowRun | null>
 ```
 - Gets single execution with all relations (steps, comments, artifacts via steps)
 - Includes session relation for agent steps
 - Returns null if not found
 
-**getWorkflowExecutions.ts**
+**getWorkflowRuns.ts**
 ```typescript
-export async function getWorkflowExecutions(filters: WorkflowExecutionFilters): Promise<WorkflowExecution[]>
+export async function getWorkflowRuns(filters: WorkflowRunFilters): Promise<WorkflowRun[]>
 ```
 - Query executions by project_id, status, user_id
 - Includes: steps, workflow_definition, _count for comments/artifacts
@@ -425,7 +425,7 @@ export async function executeWorkflow(executionId: string): Promise<void>
 
 **pauseWorkflow.ts**
 ```typescript
-export async function pauseWorkflow(executionId: string): Promise<WorkflowExecution>
+export async function pauseWorkflow(executionId: string): Promise<WorkflowRun>
 ```
 - Updates status to 'paused'
 - Sets paused_at timestamp
@@ -433,7 +433,7 @@ export async function pauseWorkflow(executionId: string): Promise<WorkflowExecut
 
 **resumeWorkflow.ts** (STUB)
 ```typescript
-export async function resumeWorkflow(executionId: string): Promise<WorkflowExecution>
+export async function resumeWorkflow(executionId: string): Promise<WorkflowRun>
 ```
 - Updates status to 'running'
 - Logs "resume not implemented" warning
@@ -441,7 +441,7 @@ export async function resumeWorkflow(executionId: string): Promise<WorkflowExecu
 
 **cancelWorkflow.ts**
 ```typescript
-export async function cancelWorkflow(executionId: string): Promise<WorkflowExecution>
+export async function cancelWorkflow(executionId: string): Promise<WorkflowRun>
 ```
 - Updates status to 'cancelled'
 - Sets cancelled_at timestamp
@@ -502,10 +502,10 @@ export async function getComments(executionId: string, stepId?: string): Promise
 
 ## API Endpoints
 
-### Workflow Execution Routes
+### Workflow Run Routes
 
 #### POST /api/workflow-executions
-Create and start a workflow execution.
+Create and start a workflow run.
 
 **Auth**: Required (`fastify.authenticate`)
 
@@ -544,7 +544,7 @@ Create and start a workflow execution.
 - 404: Project or workflow definition not found
 
 #### GET /api/workflow-executions
-List workflow executions for a project.
+List workflow runs for a project.
 
 **Auth**: Required
 
@@ -609,7 +609,7 @@ Get detailed execution information.
 - 403: User doesn't own execution
 
 #### POST /api/workflow-executions/:id/pause
-Pause a running workflow execution.
+Pause a running workflow run.
 
 **Auth**: Required
 
@@ -631,7 +631,7 @@ Pause a running workflow execution.
 - 400: Execution not in 'running' state
 
 #### POST /api/workflow-executions/:id/resume
-Resume a paused workflow execution.
+Resume a paused workflow run.
 
 **Auth**: Required
 
@@ -652,7 +652,7 @@ Resume a paused workflow execution.
 - 400: Execution not in 'paused' state
 
 #### POST /api/workflow-executions/:id/cancel
-Cancel a workflow execution.
+Cancel a workflow run.
 
 **Auth**: Required
 
@@ -740,7 +740,7 @@ Upload an artifact (multipart form data).
 {
   data: {
     id: string;
-    workflow_execution_step_id: string;
+    workflow_run_step_id: string;
     name: string;
     file_path: string;
     file_type: string;
@@ -836,8 +836,8 @@ Create a comment on a workflow or step.
 {
   data: {
     id: string;
-    workflow_execution_id: string;
-    workflow_execution_step_id: string | null;
+    workflow_run_id: string;
+    workflow_run_step_id: string | null;
     text: string;
     comment_type: string;
     created_by: string;
@@ -853,7 +853,7 @@ Create a comment on a workflow or step.
 - 404: Execution or step not found
 
 #### GET /api/workflow-executions/:id/comments
-List comments for a workflow execution.
+List comments for a workflow run.
 
 **Auth**: Required
 
@@ -896,7 +896,7 @@ All workflow events follow this structure:
 }
 ```
 
-### Workflow Execution Events
+### Workflow Run Events
 
 #### workflow.execution.status_changed
 Emitted when execution status changes (pause/resume/cancel/complete).
@@ -1061,7 +1061,7 @@ Emitted when an artifact is attached to a comment.
 ## Implementation Checklist
 
 ### Task Group 1: Database Schema
-- [x] **WF-P1-001**: Add 5 new Prisma models (WorkflowDefinition, WorkflowExecution, WorkflowExecutionStep, WorkflowComment, WorkflowArtifact) to schema.prisma
+- [x] **WF-P1-001**: Add 5 new Prisma models (WorkflowDefinition, WorkflowRun, WorkflowRunStep, WorkflowComment, WorkflowArtifact) to schema.prisma
 - [x] **WF-P1-002**: Update 3 existing models (Project, User, AgentSession) with workflow relations
 - [x] **WF-P1-003**: Generate and apply migration: `pnpm prisma migrate dev --name add_workflow_orchestration`
 
@@ -1090,10 +1090,10 @@ Emitted when an artifact is attached to a comment.
 - All types properly exported via barrel exports
 - Zod schemas cover all request/response validation needs
 
-### Task Group 3: Domain Services - Workflow Execution
-- [x] **WF-P1-007**: Implement `createWorkflowExecution.ts`
-- [x] **WF-P1-008**: Implement `getWorkflowExecutionById.ts`
-- [x] **WF-P1-009**: Implement `getWorkflowExecutions.ts`
+### Task Group 3: Domain Services - Workflow Run
+- [x] **WF-P1-007**: Implement `createWorkflowRun.ts`
+- [x] **WF-P1-008**: Implement `getWorkflowRunById.ts`
+- [x] **WF-P1-009**: Implement `getWorkflowRuns.ts`
 - [x] **WF-P1-010**: Implement `executeWorkflow.ts` (stub)
 - [x] **WF-P1-011**: Implement `pauseWorkflow.ts`
 - [x] **WF-P1-012**: Implement `resumeWorkflow.ts` (stub)
@@ -1143,7 +1143,7 @@ Emitted when an artifact is attached to a comment.
 - [x] **WF-P1-031**: Test migration applies cleanly
 - [x] **WF-P1-032**: Manual API testing (create execution, add comment, upload artifact) - DEFERRED
 - [x] **WF-P1-033**: Verify WebSocket events emit correctly - DEFERRED
-- [x] **WF-P1-034**: Test cascade deletes (delete AgentSession → WorkflowExecutionSteps cleaned up) - DEFERRED
+- [x] **WF-P1-034**: Test cascade deletes (delete AgentSession → WorkflowRunSteps cleaned up) - DEFERRED
 
 #### Completion Notes
 
@@ -1162,14 +1162,14 @@ Emitted when an artifact is attached to a comment.
 
 ## Success Criteria
 
-- ✅ Database schema created with 5 new models (WorkflowDefinition, WorkflowExecution, WorkflowExecutionStep, WorkflowComment, WorkflowArtifact)
-- ✅ AgentSession ↔ WorkflowExecutionStep bidirectional relation working
+- ✅ Database schema created with 5 new models (WorkflowDefinition, WorkflowRun, WorkflowRunStep, WorkflowComment, WorkflowArtifact)
+- ✅ AgentSession ↔ WorkflowRunStep bidirectional relation working
 - ✅ Migration applies cleanly without errors (20251102182310_add_workflow_orchestration)
 - ✅ All domain services compile without TypeScript errors (13 service files)
 - ✅ Schemas and types organized by subdomain (workflow/artifact/comment with barrel exports)
 - ✅ All routes registered and protected with authentication (4 route files: workflows, workflow-steps, workflow-artifacts, workflow-comments)
-- ✅ Can create workflow executions via POST /api/workflow-executions
-- ✅ Can list workflow executions via GET /api/workflow-executions
+- ✅ Can create workflow runs via POST /api/workflow-executions
+- ✅ Can list workflow runs via GET /api/workflow-executions
 - ✅ Can pause/resume/cancel executions (3 lifecycle endpoints)
 - ✅ Can query workflow steps with their linked agent sessions
 - ✅ Can upload artifacts (100MB limit) via multipart form
@@ -1191,9 +1191,9 @@ Emitted when an artifact is attached to a comment.
 - Migration file: `apps/web/prisma/migrations/xxx_add_workflow_orchestration/migration.sql`
 
 **Domain Services** (21 files):
-- `apps/web/src/server/domain/workflow/services/createWorkflowExecution.ts`
-- `apps/web/src/server/domain/workflow/services/getWorkflowExecutionById.ts`
-- `apps/web/src/server/domain/workflow/services/getWorkflowExecutions.ts`
+- `apps/web/src/server/domain/workflow/services/createWorkflowRun.ts`
+- `apps/web/src/server/domain/workflow/services/getWorkflowRunById.ts`
+- `apps/web/src/server/domain/workflow/services/getWorkflowRuns.ts`
 - `apps/web/src/server/domain/workflow/services/executeWorkflow.ts`
 - `apps/web/src/server/domain/workflow/services/pauseWorkflow.ts`
 - `apps/web/src/server/domain/workflow/services/resumeWorkflow.ts`
@@ -1240,7 +1240,7 @@ Emitted when an artifact is attached to a comment.
 - FileSystemStorage utilities
 
 ### Execution Logic
-- Actual workflow execution (executeWorkflow just creates 'pending' record)
+- Actual workflow run (executeWorkflow just creates 'pending' record)
 - Step-by-step execution loop
 - Agent step execution (via @repo/agent-cli-sdk)
 - Script step execution (child_process)
@@ -1266,7 +1266,7 @@ Emitted when an artifact is attached to a comment.
 - StepDetailModal component
 - CommentsList component
 - ArtifactsList component
-- useWorkflowExecutions hook
+- useWorkflowRuns hook
 - useWorkflowWebSocket hook
 - workflowStore (Zustand)
 
@@ -1336,7 +1336,7 @@ After Phase 1 is complete:
   - **Actual:** Services throw generic `Error` objects directly (e.g., `throw new Error(\`Artifact ${id} not found\`)`)
   - **Impact:** Violates the project pattern where services return null and routes use custom error classes (NotFoundError, ValidationError)
   - **Fix:** Update services to return `null` for not-found cases:
-    - `createWorkflowExecution.ts:18` - return null instead of throwing
+    - `createWorkflowRun.ts:18` - return null instead of throwing
     - `createComment.ts:16,26` - return null instead of throwing  
     - `uploadArtifact.ts:30` - return null instead of throwing
     - `downloadArtifact.ts:28` - return null instead of throwing
@@ -1354,7 +1354,7 @@ After Phase 1 is complete:
     }
     
     // Let route handler throw:
-    const execution = await createWorkflowExecution(data);
+    const execution = await createWorkflowRun(data);
     if (!execution) {
       throw new NotFoundError('Workflow definition not found');
     }
@@ -1414,7 +1414,7 @@ After Phase 1 is complete:
    - User ownership validation in routes (checks `execution.user_id !== userId`)
 
 4. **Database Design**: Well-structured schema with proper relations
-   - Bidirectional AgentSession ↔ WorkflowExecutionStep relation working
+   - Bidirectional AgentSession ↔ WorkflowRunStep relation working
    - Cascade deletes configured correctly
    - Proper indexes on frequently queried columns
    - Nullable fields appropriately marked (agent_session_id, workflow_comment_id)
@@ -1450,7 +1450,7 @@ After Phase 1 is complete:
 ### Fixes Applied (Iteration 2)
 
 **1. Error Handling Pattern Consistency (MEDIUM)**
-- ✅ Updated `createWorkflowExecution.ts` - returns `null` instead of throwing Error
+- ✅ Updated `createWorkflowRun.ts` - returns `null` instead of throwing Error
 - ✅ Updated `createComment.ts` - returns `null` for all validation failures
 - ✅ Updated `uploadArtifact.ts` - returns `null` when step not found
 - ✅ Updated `downloadArtifact.ts` - returns `null` when artifact not found

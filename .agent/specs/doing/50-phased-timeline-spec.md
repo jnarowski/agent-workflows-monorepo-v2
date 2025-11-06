@@ -7,11 +7,11 @@
 
 ## Overview
 
-Redesign workflow execution timeline to group steps, events, and artifacts by phase instead of showing a flat chronological list. This improves readability and aligns the UI with the workflow engine's phase-based execution model.
+Redesign workflow run timeline to group steps, events, and artifacts by phase instead of showing a flat chronological list. This improves readability and aligns the UI with the workflow engine's phase-based execution model.
 
 ## User Story
 
-As a user viewing workflow execution history
+As a user viewing workflow run history
 I want to see timeline items organized by phase
 So that I can understand the phase structure and quickly navigate to specific phases
 
@@ -191,7 +191,7 @@ Remove phase metadata from step header since it's now redundant in phase card co
 - Updated `createWorkflowArtifact` service to store phase in database
 - Modified `createArtifactStep` to extract `currentPhase` from RuntimeContext
 - Updated all three artifact creation paths (text, file, directory) to pass phase
-- Phase is automatically captured from workflow execution context
+- Phase is automatically captured from workflow run context
 
 ### Task Group 3: Frontend Phase Grouping Utility
 
@@ -275,7 +275,7 @@ Remove phase metadata from step header since it's now redundant in phase card co
   - Call `element.scrollIntoView({ behavior: 'smooth', block: 'start' })`
 - [x] timeline-empty-state Handle empty timeline state
   - Show message if `grouped.phases.length === 0`
-  - Message: "No workflow execution history to display"
+  - Message: "No workflow run history to display"
 
 #### Completion Notes
 
@@ -284,7 +284,7 @@ Remove phase metadata from step header since it's now redundant in phase card co
 - Phase cards rendered using `PhaseCard` component (mapped from grouped.phases)
 - Auto-scroll to active phase implemented with useRef and useEffect
 - Active phase identified by `status === 'running'`
-- Empty state shows "No workflow execution history to display" when no phases or events
+- Empty state shows "No workflow run history to display" when no phases or events
 - Removed old flat timeline rendering logic
 - Component now uses phase-grouped structure exclusively
 
@@ -365,7 +365,7 @@ describe('groupTimelineByPhase', () => {
 ### Integration Tests
 
 Manual testing of phase-grouped timeline:
-1. Create workflow execution with multiple phases
+1. Create workflow run with multiple phases
 2. Verify phases render as collapsible cards
 3. Check phase metadata (start time, duration, retry count)
 4. Verify active phase auto-expands and has highlight border
@@ -423,7 +423,7 @@ cd apps/web && pnpm prisma migrate status
 **Manual Verification:**
 
 1. Start application: `cd apps/web && pnpm dev`
-2. Navigate to: Workflow execution detail page
+2. Navigate to: Workflow run detail page
 3. Verify: Timeline shows phase cards instead of flat list
 4. Test phase interaction:
    - Click phase header to expand/collapse

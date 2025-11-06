@@ -130,7 +130,7 @@ packages/workflow-engine/
 │
 ├── tests/
 │   └── e2e/
-│       ├── basic-execution.test.ts      # Basic workflow execution
+│       ├── basic-execution.test.ts      # Basic workflow run
 │       ├── checkpoint-resume.test.ts    # Checkpoint/resume flow
 │       └── agent-integration.test.ts    # Integration with agent-cli-sdk
 │
@@ -200,7 +200,7 @@ Following agent-cli-sdk conventions exactly:
 **vitest.e2e.config.ts**:
 
 - Sequential execution (singleFork: true)
-- 180s timeout for workflow execution
+- 180s timeout for workflow run
 - Include only tests/e2e/\*_/_.test.ts
 
 ### 2. Type Definitions
@@ -222,7 +222,7 @@ Following agent-cli-sdk conventions exactly:
 
 **src/types/context.ts**:
 
-- `WorkflowContext` - Interface for workflow execution context
+- `WorkflowContext` - Interface for workflow run context
   - `executionId`, `projectPath`, `args` - Execution metadata
   - `step(id, config)` - Execute step
   - `checkpoint()` - Save checkpoint
@@ -377,7 +377,7 @@ export default defineWorkflow({
 
 **src/storage/FileSystemStorage.ts**:
 
-- `FileSystemStorage` - Handles filesystem operations for workflow execution
+- `FileSystemStorage` - Handles filesystem operations for workflow run
 - Constructor: executionId, projectPath
 - `initialize()` - Create directory structure
   - `.agent/workflows/executions/{executionId}/`
@@ -459,8 +459,8 @@ export async function executeWorkflow(executionId: string): Promise<void> {
 ```typescript
 export async function resumeWorkflow(
   executionId: string
-): Promise<WorkflowExecution> {
-  const execution = await getWorkflowExecutionById(executionId);
+): Promise<WorkflowRun> {
+  const execution = await getWorkflowRunById(executionId);
   if (!execution) throw new Error("Execution not found");
 
   const executor = new WorkflowExecutor({
@@ -907,7 +907,7 @@ Following agent-cli-sdk pattern:
 **`tests/e2e/basic-execution.test.ts`**:
 
 ```typescript
-describe('Basic Workflow Execution', () => {
+describe('Basic Workflow Run', () => {
   it('should execute simple YAML workflow', async () => {
     const yaml = `
       name: Test Workflow

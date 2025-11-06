@@ -533,4 +533,4 @@ function toDisplayName(id: string): string {
 5. Update all step function tests to use new API
 6. Update workflow definitions in `.agent/workflows/definitions/` to use new syntax
 7. Run full test suite and verify no regressions
-8. Manual testing with live workflow execution
+8. Manual testing with live workflow run

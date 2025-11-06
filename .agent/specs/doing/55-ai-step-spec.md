@@ -240,7 +240,7 @@ describe('createAiStep', () => {
 
 ### Integration Tests
 
-**Manual workflow execution:**
+**Manual workflow run:**
 
 Create test workflow in `.agent/workflows/definitions/ai-step-test-workflow.ts`:
 
@@ -332,7 +332,7 @@ pnpm lint
 
 **Feature-Specific Checks:**
 
-- AI step appears in workflow execution UI
+- AI step appears in workflow run UI
 - Step duration reasonable (< 60s for simple prompts)
 - Errors logged with helpful context (provider, model, prompt length)
 - Database tracks step with correct phase prefix in inngest_id

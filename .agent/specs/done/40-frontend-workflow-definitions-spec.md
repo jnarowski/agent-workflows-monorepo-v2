@@ -23,7 +23,7 @@ This refactor primarily involves:
 1. Adding a new API endpoint to fetch workflow definitions by ID
 2. Creating a new React hook for fetching definitions
 3. Renaming and refactoring `WorkflowDetail.tsx` to `WorkflowDefinitionView.tsx`
-4. Creating a new `WorkflowExecutionDetail.tsx` page component
+4. Creating a new `WorkflowRunDetail.tsx` page component
 5. Updating route definitions and navigation
 
 ## Key Design Decisions
@@ -55,11 +55,11 @@ apps/web/
 │       ├── App.tsx                            # MODIFIED - Update route structure
 │       └── pages/projects/workflows/
 │           ├── WorkflowDefinitionView.tsx     # RENAMED from WorkflowDetail.tsx
-│           ├── WorkflowExecutionDetail.tsx    # NEW - Execution detail page
+│           ├── WorkflowRunDetail.tsx    # NEW - Execution detail page
 │           ├── components/
-│           │   ├── WorkflowExecutionHeader.tsx      # NEW - Execution header component
-│           │   ├── WorkflowExecutionStepsList.tsx   # NEW - Steps list component
-│           │   └── WorkflowExecutionComments.tsx    # NEW - Comments component
+│           │   ├── WorkflowRunHeader.tsx      # NEW - Execution header component
+│           │   ├── WorkflowRunStepsList.tsx   # NEW - Steps list component
+│           │   └── WorkflowRunComments.tsx    # NEW - Comments component
 │           └── hooks/
 │               └── useWorkflowDefinition.ts   # NEW - Fetch single definition
 ```
@@ -73,7 +73,7 @@ apps/web/
 **Frontend**:
 - `apps/web/src/client/App.tsx` - Update route definitions
 - `apps/web/src/client/pages/projects/workflows/WorkflowDefinitionView.tsx` - Refactored from WorkflowDetail.tsx
-- `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx` - New execution detail page
+- `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx` - New execution detail page
 - `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowDefinition.ts` - New hook
 
 ## Implementation Details
@@ -113,14 +113,14 @@ Returns a single workflow definition by ID. This is needed because the current i
 **New**:
 ```tsx
 <Route path="workflows/:definitionId" element={<WorkflowDefinitionView />} />
-<Route path="workflows/:definitionId/executions/:executionId" element={<WorkflowExecutionDetail />} />
+<Route path="workflows/:definitionId/executions/:executionId" element={<WorkflowRunDetail />} />
 ```
 
 ### 3. WorkflowDefinitionView Component
 
 **Key Changes**:
 - Change route param from `executionId` to `definitionId`
-- Use `useWorkflowDefinition(definitionId)` instead of `useWorkflowExecution(executionId)`
+- Use `useWorkflowDefinition(definitionId)` instead of `useWorkflowRun(executionId)`
 - Update `handleExecutionClick` to navigate to: `/projects/${projectId}/workflows/${definitionId}/executions/${executionId}`
 - Remove unused execution-specific logic (progress, duration calculations for single execution)
 
@@ -128,10 +128,10 @@ Returns a single workflow definition by ID. This is needed because the current i
 ```typescript
 const { definitionId } = useParams();
 const { data: definition } = useWorkflowDefinition(definitionId);
-const { data: executions } = useWorkflowExecutions(projectId, { definitionId });
+const { data: executions } = useWorkflowRuns(projectId, { definitionId });
 ```
 
-### 4. WorkflowExecutionDetail Component
+### 4. WorkflowRunDetail Component
 
 **New Page Component** that displays:
 
@@ -143,7 +143,7 @@ const { data: executions } = useWorkflowExecutions(projectId, { definitionId });
 - Control buttons (pause/resume/cancel)
 
 **Steps Section**:
-- List of `WorkflowExecutionStep` records
+- List of `WorkflowRunStep` records
 - For each step:
   - Step name and phase
   - Status badge
@@ -167,10 +167,10 @@ const { data: executions } = useWorkflowExecutions(projectId, { definitionId });
 
 1. `apps/web/src/server/domain/workflow/services/getWorkflowDefinitionById.ts` - Service function to fetch workflow definition
 2. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowDefinition.ts` - React Query hook
-3. `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx` - Execution detail page
-4. `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionHeader.tsx` - Execution header component
-5. `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionStepsList.tsx` - Steps list component
-6. `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionComments.tsx` - Comments section component
+3. `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx` - Execution detail page
+4. `apps/web/src/client/pages/projects/workflows/components/WorkflowRunHeader.tsx` - Execution header component
+5. `apps/web/src/client/pages/projects/workflows/components/WorkflowRunStepsList.tsx` - Steps list component
+6. `apps/web/src/client/pages/projects/workflows/components/WorkflowRunComments.tsx` - Comments section component
 
 ### Modified Files (5)
 
@@ -243,7 +243,7 @@ const { data: executions } = useWorkflowExecutions(projectId, { definitionId });
   - File: `apps/web/src/client/App.tsx`
   - Change `workflows/:executionId` to `workflows/:definitionId`
   - Add new route: `workflows/:definitionId/executions/:executionId`
-  - Import new component: `WorkflowExecutionDetail` (will create next)
+  - Import new component: `WorkflowRunDetail` (will create next)
   - Keep existing `WorkflowLayout` wrapper
 - [x] routing-2 Update ProjectWorkflowsView navigation
   - File: `apps/web/src/client/pages/projects/workflows/ProjectWorkflowsView.tsx`
@@ -253,7 +253,7 @@ const { data: executions } = useWorkflowExecutions(projectId, { definitionId });
 
 #### Completion Notes
 
-- Updated App.tsx route imports to use WorkflowDefinitionView and WorkflowExecutionDetail
+- Updated App.tsx route imports to use WorkflowDefinitionView and WorkflowRunDetail
 - Changed route path from `workflows/:executionId` to `workflows/:definitionId`
 - Added new nested route for execution detail: `workflows/:definitionId/executions/:executionId`
 - Updated handleExecutionClick in ProjectWorkflowsView to navigate to definition view using workflow_definition_id
@@ -269,10 +269,10 @@ const { data: executions } = useWorkflowExecutions(projectId, { definitionId });
   - Change `const { executionId }` to `const { definitionId }`
   - Update type: `useParams<{ projectId: string; definitionId: string }>()`
 - [x] definition-view-3 Replace data fetching logic
-  - Remove: `const { data: execution } = useWorkflowExecution(executionId)`
+  - Remove: `const { data: execution } = useWorkflowRun(executionId)`
   - Remove: `const workflowDefinitionId = execution?.workflow_definition_id`
   - Add: `const { data: definition, isLoading: definitionLoading } = useWorkflowDefinition(definitionId)`
-  - Update executions query: `useWorkflowExecutions(projectId!, { definitionId })`
+  - Update executions query: `useWorkflowRuns(projectId!, { definitionId })`
   - Remove execution-specific progress/duration calculations
 - [x] definition-view-4 Update header display
   - Replace `execution.workflow_definition?.name` with `definition?.name`
@@ -291,7 +291,7 @@ const { data: executions } = useWorkflowExecutions(projectId, { definitionId });
 
 - Created new WorkflowDefinitionView.tsx component (kept old file for reference)
 - Updated route params to use definitionId instead of executionId
-- Replaced useWorkflowExecution with useWorkflowDefinition hook
+- Replaced useWorkflowRun with useWorkflowDefinition hook
 - Removed execution-specific imports (progress/duration calculations, mutation hooks)
 - Updated header to display definition name and phase count
 - Updated handleExecutionClick to navigate to new nested route with execution ID
@@ -300,9 +300,9 @@ const { data: executions } = useWorkflowExecutions(projectId, { definitionId });
 ### Task Group 5: Create Execution Detail Components
 
 <!-- prettier-ignore -->
-- [x] components-1 Create WorkflowExecutionHeader component
-  - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionHeader.tsx`
-  - Props: `{ execution: WorkflowExecution; onPause: () => void; onResume: () => void; onCancel: () => void }`
+- [x] components-1 Create WorkflowRunHeader component
+  - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowRunHeader.tsx`
+  - Props: `{ execution: WorkflowRun; onPause: () => void; onResume: () => void; onCancel: () => void }`
   - Display: Execution name, status badge, timestamps (started_at, completed_at)
   - Show progress: `Phase: {current_phase} | Step: {current_step_index}`
   - Conditional buttons based on status:
@@ -311,9 +311,9 @@ const { data: executions } = useWorkflowExecutions(projectId, { definitionId });
     - Show "Cancel" if status === 'running' || status === 'paused'
   - Use existing `WorkflowStatusBadge` component
   - Use Lucide icons: `Pause`, `Play`, `X` for buttons
-- [x] components-2 Create WorkflowExecutionStepsList component
-  - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionStepsList.tsx`
-  - Props: `{ steps: WorkflowExecutionStep[]; projectId: string }`
+- [x] components-2 Create WorkflowRunStepsList component
+  - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowRunStepsList.tsx`
+  - Props: `{ steps: WorkflowRunStep[]; projectId: string }`
   - Display each step with:
     - Step name and phase badge
     - Status badge (pending, running, completed, failed, skipped)
@@ -324,36 +324,36 @@ const { data: executions } = useWorkflowExecutions(projectId, { definitionId });
     - Error message (if status === 'failed' and error_message exists)
   - Use collapsible/accordion UI for step details
   - Sort steps by `created_at` or step order
-- [x] components-3 Create WorkflowExecutionComments component
-  - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionComments.tsx`
+- [x] components-3 Create WorkflowRunComments component
+  - File: `apps/web/src/client/pages/projects/workflows/components/WorkflowRunComments.tsx`
   - Props: `{ comments: WorkflowComment[]; executionId: string }`
   - Display each comment with:
     - Comment text
     - Comment type badge (user, system, agent)
     - Created timestamp
     - Created by (user ID or system)
-    - Attached step (if workflow_execution_step_id exists)
+    - Attached step (if workflow_run_step_id exists)
   - Sort comments by `created_at` descending (newest first)
   - Use card/list UI pattern similar to chat messages
   - Add placeholder for "No comments yet" if empty
 
 #### Completion Notes
 
-- Created WorkflowExecutionHeader with status badge, timestamps, and conditional control buttons
-- Created WorkflowExecutionStepsList with step cards showing all relevant info (status, timestamps, duration, session link, logs, errors)
-- Created WorkflowExecutionComments with comment cards sorted by date (newest first)
+- Created WorkflowRunHeader with status badge, timestamps, and conditional control buttons
+- Created WorkflowRunStepsList with step cards showing all relevant info (status, timestamps, duration, session link, logs, errors)
+- Created WorkflowRunComments with comment cards sorted by date (newest first)
 - All components follow existing design patterns and use WorkflowStatusBadge for consistency
 - Added copy-to-clipboard functionality for log paths
 - Used Lucide icons for visual elements
 
-### Task Group 6: Create WorkflowExecutionDetail Page
+### Task Group 6: Create WorkflowRunDetail Page
 
 <!-- prettier-ignore -->
-- [x] execution-detail-1 Create WorkflowExecutionDetail page component
-  - File: `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx`
+- [x] execution-detail-1 Create WorkflowRunDetail page component
+  - File: `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx`
   - Extract route params: `const { projectId, definitionId, executionId } = useParams()`
   - Fetch data using hooks:
-    - `const { data: execution } = useWorkflowExecution(executionId)`
+    - `const { data: execution } = useWorkflowRun(executionId)`
     - `const { data: definition } = useWorkflowDefinition(definitionId)`
   - Subscribe to WebSocket updates: `useWorkflowWebSocket(projectId!)`
   - Import mutation hooks: `usePauseWorkflow`, `useResumeWorkflow`, `useCancelWorkflow`
@@ -361,15 +361,15 @@ const { data: executions } = useWorkflowExecutions(projectId, { definitionId });
   - Create back button with `ArrowLeft` icon
   - Navigate to: `/projects/${projectId}/workflows/${definitionId}`
   - Display: "← Back to {definition?.name || 'Workflow'}"
-- [x] execution-detail-3 Render WorkflowExecutionHeader
+- [x] execution-detail-3 Render WorkflowRunHeader
   - Pass execution data and mutation callbacks
   - Handle loading state (show spinner while execution is loading)
-- [x] execution-detail-4 Render WorkflowExecutionStepsList
+- [x] execution-detail-4 Render WorkflowRunStepsList
   - Pass: `execution.steps` (Prisma includes steps automatically)
   - Pass: `projectId` for session links
   - Add heading: "Execution Steps"
   - Show message if no steps: "No steps have been executed yet."
-- [x] execution-detail-5 Render WorkflowExecutionComments
+- [x] execution-detail-5 Render WorkflowRunComments
   - Pass: `execution.comments` (Prisma includes comments automatically)
   - Pass: `executionId`
   - Add heading: "Comments"
@@ -381,7 +381,7 @@ const { data: executions } = useWorkflowExecutions(projectId, { definitionId });
 
 #### Completion Notes
 
-- Created WorkflowExecutionDetail page with breadcrumb navigation
+- Created WorkflowRunDetail page with breadcrumb navigation
 - Integrated all three child components (Header, Steps, Comments)
 - Added proper loading and error states
 - Wired up mutation hooks for pause/resume/cancel actions
@@ -393,7 +393,7 @@ const { data: executions } = useWorkflowExecutions(projectId, { definitionId });
 
 <!-- prettier-ignore -->
 - [x] prisma-1 Verify execution query includes steps and comments
-  - File: `apps/web/src/server/domain/workflow/services/getWorkflowExecutionById.ts`
+  - File: `apps/web/src/server/domain/workflow/services/getWorkflowRunById.ts`
   - Ensure Prisma query includes:
     ```typescript
     include: {
@@ -410,7 +410,7 @@ const { data: executions } = useWorkflowExecutions(projectId, { definitionId });
 
 #### Completion Notes
 
-- Verified that getWorkflowExecutionById already includes all required relations
+- Verified that getWorkflowRunById already includes all required relations
 - Steps are included with agent sessions, artifacts, and step comments
 - Execution comments are included with creator info and artifacts
 - Both steps and comments are properly ordered by created_at
@@ -528,7 +528,7 @@ pnpm build
    - URL should be: `/projects/{projectId}/workflows/{definitionId}`
 
 7. **Test WebSocket updates**:
-   - Start a workflow execution
+   - Start a workflow run
    - Watch execution move through phases on Kanban
    - Navigate to execution detail
    - Watch steps update in real-time
@@ -552,7 +552,7 @@ pnpm build
 **Already Available**:
 - `WorkflowStatusBadge` - Status badge component
 - `WorkflowPhaseKanbanColumn` - Kanban column component
-- `WorkflowExecutionPhaseCard` - Execution card in Kanban
+- `WorkflowRunPhaseCard` - Execution card in Kanban
 - `BaseDialog` - Modal wrapper (not used in this refactor, but available)
 
 **Can Be Reused**:
@@ -563,7 +563,7 @@ pnpm build
 
 ### 2. Prisma Includes
 
-The `getWorkflowExecutionById` service function should already include:
+The `getWorkflowRunById` service function should already include:
 - `workflow_definition` (for breadcrumb display)
 - `steps` (for steps list)
 - `comments` (for comments section)
@@ -631,7 +631,7 @@ No new dependencies required - using existing packages:
 3. Update route definitions in `App.tsx`
 4. Refactor `WorkflowDetail.tsx` to `WorkflowDefinitionView.tsx`
 5. Create execution detail components (header, steps, comments)
-6. Create `WorkflowExecutionDetail.tsx` page
+6. Create `WorkflowRunDetail.tsx` page
 7. Test navigation flow end-to-end
 8. Verify WebSocket updates work on both pages
 9. Fix any TypeScript or runtime errors

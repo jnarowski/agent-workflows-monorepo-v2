@@ -1,4 +1,4 @@
-# AI Naming Service for Workflow Executions
+# AI Naming Service for Workflow Runs
 
 **Status**: draft
 **Created**: 2025-11-06
@@ -19,11 +19,11 @@
 
 ## Overview
 
-Add AI-powered name generation for workflow executions by analyzing spec file contents. When a user selects a spec file, automatically generate a descriptive execution name and git branch name using Claude Sonnet 4.5, improving UX and reducing manual input.
+Add AI-powered name generation for workflow runs by analyzing spec file contents. When a user selects a spec file, automatically generate a descriptive execution name and git branch name using Claude Sonnet 4.5, improving UX and reducing manual input.
 
 ## User Story
 
-As a workflow execution creator
+As a workflow run creator
 I want the system to automatically suggest execution and branch names from spec files
 So that I don't have to manually come up with names and can start executions faster
 

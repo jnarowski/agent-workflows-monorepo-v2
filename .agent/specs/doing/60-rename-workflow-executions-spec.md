@@ -45,7 +45,7 @@ Manual, careful renaming across all layers:
 
 ## Key Design Decisions
 
-1. **"workflow_run" over alternatives**: Chosen for industry alignment (GitHub Actions), brevity (vs "execution"), and clarity (vs generic "run")
+1. **"workflow_run" over alternatives**: Chosen for industry alignment (GitHub Actions), brevity (vs "run"), and clarity (vs generic "run")
 2. **Update existing migration vs new migration**: Update existing migration since product is pre-launch with no production data
 3. **Manual changes only**: No automated scripts to avoid cascading errors and ensure careful consideration of each change
 4. **Commit per phase**: Enables safe rollback if issues discovered mid-refactor
@@ -55,14 +55,14 @@ Manual, careful renaming across all layers:
 ### Naming Convention Changes
 
 **Database (snake_case)**:
-- `workflow_executions` → `workflow_runs`
-- `workflow_execution_steps` → `workflow_run_steps`
-- `workflow_execution_id` → `workflow_run_id`
+- `workflow_runs` → `workflow_runs`
+- `workflow_run_steps` → `workflow_run_steps`
+- `workflow_run_id` → `workflow_run_id`
 
 **TypeScript (PascalCase)**:
-- `WorkflowExecution` → `WorkflowRun`
-- `WorkflowExecutionStep` → `WorkflowRunStep`
-- `WorkflowExecutionListItem` → `WorkflowRunListItem`
+- `WorkflowRun` → `WorkflowRun`
+- `WorkflowRunStep` → `WorkflowRunStep`
+- `WorkflowRunListItem` → `WorkflowRunListItem`
 
 **API Routes**:
 - `/api/workflow-executions` → `/api/workflow-runs`
@@ -71,7 +71,7 @@ Manual, careful renaming across all layers:
 **Variables (camelCase)**:
 - `executionId` → `runId`
 - `execution` → `run`
-- `createWorkflowExecution()` → `createWorkflowRun()`
+- `createWorkflowRun()` → `createWorkflowRun()`
 
 **WebSocket Events**:
 - `workflow:execution:updated` → `workflow:run:updated`
@@ -125,7 +125,7 @@ Update the existing Prisma migration to rename tables and foreign keys. This is 
 Update Prisma schema models to match new table names and generate new Prisma client.
 
 **Key Points**:
-- Rename 2 models (WorkflowExecution, WorkflowExecutionStep)
+- Rename 2 models (WorkflowRun, WorkflowRunStep)
 - Update all relation fields across 4 models
 - Update @@map directives for table names
 - Regenerate Prisma client automatically picks up changes
@@ -191,7 +191,7 @@ Update React Router paths and navigation links throughout the app.
 Update test files with new mock data structures, type names, and assertions.
 
 **Key Points**:
-- Mock WorkflowExecution data → WorkflowRun data
+- Mock WorkflowRun data → WorkflowRun data
 - Test utility functions updated
 - Assertions updated for new field names
 
@@ -247,14 +247,14 @@ No new files created - this is pure refactoring.
 58. `apps/web/src/client/pages/projects/workflows/utils/workflowStateUpdates.ts`
 59. `apps/web/src/client/pages/projects/workflows/utils/workflowStateUpdates.test.ts`
 60. `apps/web/src/client/pages/projects/workflows/utils/workflowProgress.ts`
-61. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowExecutions.ts` → rename to `useWorkflowRuns.ts`
-62. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowExecution.ts` → rename to `useWorkflowRun.ts`
+61. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowRuns.ts` → rename to `useWorkflowRuns.ts`
+62. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowRun.ts` → rename to `useWorkflowRun.ts`
 63. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowMutations.ts`
 64. `apps/web/src/client/pages/projects/workflows/hooks/useWorkflowWebSocket.ts`
 
 **Frontend Components (12 files)**:
-65. `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionCard.tsx` → rename to `WorkflowRunCard.tsx`
-66. `apps/web/src/client/pages/projects/workflows/components/WorkflowExecutionHeader.tsx` → rename to `WorkflowRunHeader.tsx`
+65. `apps/web/src/client/pages/projects/workflows/components/WorkflowRunCard.tsx` → rename to `WorkflowRunCard.tsx`
+66. `apps/web/src/client/pages/projects/workflows/components/WorkflowRunHeader.tsx` → rename to `WorkflowRunHeader.tsx`
 67. `apps/web/src/client/pages/projects/workflows/components/NewExecutionDialog.tsx` → rename to `NewRunDialog.tsx`
 68. `apps/web/src/client/pages/projects/workflows/components/NewExecutionFormDialogArgSchemaFields.tsx` → rename to `NewRunFormDialogArgSchemaFields.tsx`
 69. `apps/web/src/client/pages/projects/workflows/components/WorkflowKanbanColumn.tsx`
@@ -267,7 +267,7 @@ No new files created - this is pure refactoring.
 76. Additional timeline components if present
 
 **Frontend Pages & Routing (5 files)**:
-77. `apps/web/src/client/pages/projects/workflows/WorkflowExecutionDetail.tsx` → rename to `WorkflowRunDetail.tsx`
+77. `apps/web/src/client/pages/projects/workflows/WorkflowRunDetail.tsx` → rename to `WorkflowRunDetail.tsx`
 78. `apps/web/src/client/pages/projects/workflows/WorkflowDefinitionView.tsx`
 79. `apps/web/src/client/pages/projects/workflows/ProjectWorkflowsView.tsx`
 80. `apps/web/src/client/App.tsx`
@@ -296,21 +296,21 @@ No new files created - this is pure refactoring.
 <!-- prettier-ignore -->
 - [x] p1-t1 [10/10] Update existing Prisma migration SQL
   - Edit `apps/web/prisma/migrations/20251106124257_init/migration.sql`
-  - Rename table: `CREATE TABLE "workflow_executions"` → `"workflow_runs"`
-  - Rename table: `CREATE TABLE "workflow_execution_steps"` → `"workflow_run_steps"`
-  - Update FK column in workflow_execution_steps: `workflow_execution_id` → `workflow_run_id`
-  - Update FK column in workflow_events: `workflow_execution_id` → `workflow_run_id`
-  - Update FK column in workflow_artifacts: `workflow_execution_id` → `workflow_run_id`
-  - Update FK column in workflow_artifacts: `workflow_execution_step_id` → `workflow_run_step_id`
-  - Update FK column in agent_sessions: `workflow_execution_step_id` → `workflow_run_step_id`
+  - Rename table: `CREATE TABLE "workflow_runs"` → `"workflow_runs"`
+  - Rename table: `CREATE TABLE "workflow_run_steps"` → `"workflow_run_steps"`
+  - Update FK column in workflow_run_steps: `workflow_run_id` → `workflow_run_id`
+  - Update FK column in workflow_events: `workflow_run_id` → `workflow_run_id`
+  - Update FK column in workflow_artifacts: `workflow_run_id` → `workflow_run_id`
+  - Update FK column in workflow_artifacts: `workflow_run_step_id` → `workflow_run_step_id`
+  - Update FK column in agent_sessions: `workflow_run_step_id` → `workflow_run_step_id`
   - Update all 8 index names (replace `execution` with `run`)
   - Update all FK constraint names
 - [x] p1-t2 [8/10] Update Prisma schema models
   - Edit `apps/web/prisma/schema.prisma`
-  - Rename model `WorkflowExecution` → `WorkflowRun` (line ~35)
-  - Rename model `WorkflowExecutionStep` → `WorkflowRunStep` (line ~74)
+  - Rename model `WorkflowRun` → `WorkflowRun` (line ~35)
+  - Rename model `WorkflowRunStep` → `WorkflowRunStep` (line ~74)
   - Update all relation fields: `executions` → `runs`, `workflow_execution` → `workflow_run`
-  - Update @@map directives: `workflow_executions` → `workflow_runs`, `workflow_execution_steps` → `workflow_run_steps`
+  - Update @@map directives: `workflow_runs` → `workflow_runs`, `workflow_run_steps` → `workflow_run_steps`
   - Update FK columns in related models (WorkflowEvent, WorkflowArtifact, AgentSession)
   - Update relation arrays in User and Project models
 - [x] p1-t3 [10/10] Reset database and regenerate Prisma client
@@ -322,7 +322,7 @@ No new files created - this is pure refactoring.
   - Edit `apps/web/prisma/seed-workflows.ts`
   - Change all `prisma.workflowExecution` → `prisma.workflowRun`
   - Change all `prisma.workflowExecutionStep` → `prisma.workflowRunStep`
-  - Update field names: `workflow_execution_id` → `workflow_run_id`
+  - Update field names: `workflow_run_id` → `workflow_run_id`
   - Test seed: `cd apps/web && pnpm prisma db seed`
 
 **After Phase 1**: Run `git add . && git commit -m "refactor(db): rename workflow_execution to workflow_run"`
@@ -331,7 +331,7 @@ No new files created - this is pure refactoring.
 
 **COMPLETED - Phase 1 (Database Foundation)**
 - Migration SQL: Renamed all tables, FK columns, indexes, and constraints from `execution` → `run`
-- Prisma schema: Updated models `WorkflowExecution` → `WorkflowRun`, `WorkflowExecutionStep` → `WorkflowRunStep`
+- Prisma schema: Updated models `WorkflowRun` → `WorkflowRun`, `WorkflowRunStep` → `WorkflowRunStep`
 - Updated all relation fields in Project, User, WorkflowDefinition, WorkflowEvent, WorkflowArtifact, AgentSession
 - Database reset successful with user consent - new tables created correctly
 - Prisma client regenerated automatically
@@ -345,12 +345,12 @@ No new files created - this is pure refactoring.
 <!-- prettier-ignore -->
 - [x] p2-t1 [8/10] Update workflow schemas
   - Edit `apps/web/src/shared/schemas/workflow.schemas.ts`
-  - Rename export: `createWorkflowExecutionSchema` → `createWorkflowRunSchema` (~line 127)
+  - Rename export: `createWorkflowRunSchema` → `createWorkflowRunSchema` (~line 127)
   - Rename export: `workflowExecutionFiltersSchema` → `workflowRunFiltersSchema` (~line 164)
   - Rename export: `workflowExecutionStepResponseSchema` → `workflowRunStepResponseSchema` (~line 219)
   - Rename export: `workflowExecutionResponseSchema` → `workflowRunResponseSchema` (~line 290)
-  - Update all field names: `workflow_execution_id` → `workflow_run_id` (6+ occurrences)
-  - Update all field names: `workflow_execution_step_id` → `workflow_run_step_id` (3+ occurrences)
+  - Update all field names: `workflow_run_id` → `workflow_run_id` (6+ occurrences)
+  - Update all field names: `workflow_run_step_id` → `workflow_run_step_id` (3+ occurrences)
   - Update WebSocket event schemas: all `executionId` → `runId` (~20 occurrences)
 - [x] p2-t2 [6/10] Update shared schema exports
   - Edit `apps/web/src/shared/schemas/index.ts`
@@ -358,7 +358,7 @@ No new files created - this is pure refactoring.
 - [x] p2-t3 [7/10] Update WebSocket types
   - Edit `apps/web/src/shared/types/websocket.types.ts`
   - Rename constant: `EXECUTION_UPDATED` → `RUN_UPDATED` (~line 306)
-  - Rename interface: `WorkflowExecutionUpdatedData` → `WorkflowRunUpdatedData` (~line 323)
+  - Rename interface: `WorkflowRunUpdatedData` → `WorkflowRunUpdatedData` (~line 323)
   - Update field: `execution_id` → `run_id` (4+ occurrences)
   - Rename interface: `WorkflowStepUpdatedData` - update `execution_id` field (~line 341)
   - Rename interface: `WorkflowEventCreatedData` - update fields (~line 358)
@@ -371,10 +371,10 @@ No new files created - this is pure refactoring.
 
 **COMPLETED - Phase 2 (Shared Contracts)**
 - Renamed 4 Zod schema exports: `createWorkflowRunSchema`, `workflowRunFiltersSchema`, `workflowRunStepResponseSchema`, `workflowRunResponseSchema`
-- Updated all FK field names: `workflow_execution_id` → `workflow_run_id`, `workflow_execution_step_id` → `workflow_run_step_id`
+- Updated all FK field names: `workflow_run_id` → `workflow_run_id`, `workflow_run_step_id` → `workflow_run_step_id`
 - Updated 20+ WebSocket event schema fields: all `executionId` → `runId`
 - Renamed WebSocket event type constants: `EXECUTION_UPDATED` → `RUN_UPDATED`
-- Renamed WebSocket data interfaces: `WorkflowExecutionUpdatedData` → `WorkflowRunUpdatedData`
+- Renamed WebSocket data interfaces: `WorkflowRunUpdatedData` → `WorkflowRunUpdatedData`
 - Updated discriminated union type references
 - All shared types now use "run" terminology consistently
 
@@ -387,25 +387,25 @@ No new files created - this is pure refactoring.
 <!-- prettier-ignore -->
 - [x] p3-t1 [4/10] Rename services folder
   - Rename folder: `apps/web/src/server/domain/workflow/services/executions/` → `runs/`
-- [x] p3-t2 [4/10] Rename and update createWorkflowExecution service
-  - Rename: `services/runs/createWorkflowExecution.ts` → `createWorkflowRun.ts`
-  - Update function name: `createWorkflowExecution` → `createWorkflowRun`
-  - Update parameter type: `CreateWorkflowExecutionInput` → `CreateWorkflowRunInput`
-  - Update return type: `WorkflowExecution` → `WorkflowRun`
+- [x] p3-t2 [4/10] Rename and update createWorkflowRun service
+  - Rename: `services/runs/createWorkflowRun.ts` → `createWorkflowRun.ts`
+  - Update function name: `createWorkflowRun` → `createWorkflowRun`
+  - Update parameter type: `CreateWorkflowRunInput` → `CreateWorkflowRunInput`
+  - Update return type: `WorkflowRun` → `WorkflowRun`
   - Update Prisma call: `prisma.workflowExecution.create` → `prisma.workflowRun.create`
   - Update all JSDoc comments
-- [x] p3-t3 [4/10] Rename and update getWorkflowExecutions service
-  - Rename: `services/runs/getWorkflowExecutions.ts` → `getWorkflowRuns.ts`
+- [x] p3-t3 [4/10] Rename and update getWorkflowRuns service
+  - Rename: `services/runs/getWorkflowRuns.ts` → `getWorkflowRuns.ts`
   - Update function name, types, Prisma calls, variable names
-- [x] p3-t4 [4/10] Rename and update getWorkflowExecutionById service
-  - Rename: `services/runs/getWorkflowExecutionById.ts` → `getWorkflowRunById.ts`
+- [x] p3-t4 [4/10] Rename and update getWorkflowRunById service
+  - Rename: `services/runs/getWorkflowRunById.ts` → `getWorkflowRunById.ts`
   - Update function name, types, Prisma calls
-- [x] p3-t5 [4/10] Rename and update updateWorkflowExecution service
-  - Rename: `services/runs/updateWorkflowExecution.ts` → `updateWorkflowRun.ts`
+- [x] p3-t5 [4/10] Rename and update updateWorkflowRun service
+  - Rename: `services/runs/updateWorkflowRun.ts` → `updateWorkflowRun.ts`
   - Update function name, types, Prisma calls
 - [x] p3-t6 [3/10] Rename and update generateExecutionNames service
   - Rename: `services/generateExecutionNames.ts` → `generateRunNames.ts`
-  - Update function name and all references to "execution" in logic
+  - Update function name and all references to "run" in logic
 - [x] p3-t7 [3/10] Update service exports
   - Edit `services/index.ts`
   - Update all 5 renamed function exports
@@ -415,7 +415,7 @@ No new files created - this is pure refactoring.
 <!-- prettier-ignore -->
 - [x] p3-t8 [3/10] Update createWorkflowStep service
   - Edit `services/steps/createWorkflowStep.ts`
-  - Change parameter: `workflow_execution_id` → `workflow_run_id`
+  - Change parameter: `workflow_run_id` → `workflow_run_id`
   - Update Prisma call: `prisma.workflowExecutionStep.create` → `prisma.workflowRunStep.create`
 - [x] p3-t9 [2/10] Update getWorkflowStepById service
   - Edit `services/steps/getWorkflowStepById.ts`
@@ -447,8 +447,8 @@ No new files created - this is pure refactoring.
   - Update any `executionId` parameters → `runId`
 - [x] p3-t17 [3/10] Update createWorkflowArtifact service
   - Edit `services/artifacts/createWorkflowArtifact.ts`
-  - Change field: `workflow_execution_id` → `workflow_run_id`
-  - Change field: `workflow_execution_step_id` → `workflow_run_step_id`
+  - Change field: `workflow_run_id` → `workflow_run_id`
+  - Change field: `workflow_run_step_id` → `workflow_run_step_id`
 - [x] p3-t18 [2/10] Update attachArtifactToWorkflowEvent service
   - Edit `services/artifacts/attachArtifactToWorkflowEvent.ts`
   - Update FK field references if present
@@ -530,8 +530,8 @@ No new files created - this is pure refactoring.
   - Update parameters in each
 - [x] p3-t41 [3/10] Update workflow domain types
   - Edit `types/workflow.types.ts`
-  - Rename: `CreateWorkflowExecutionInput` → `CreateWorkflowRunInput`
-  - Rename: `WorkflowExecutionFilters` → `WorkflowRunFilters`
+  - Rename: `CreateWorkflowRunInput` → `CreateWorkflowRunInput`
+  - Rename: `WorkflowRunFilters` → `WorkflowRunFilters`
 - [x] p3-t42 [2/10] Update artifact domain types
   - Edit `types/artifact.types.ts`
   - Update FK field references
@@ -552,11 +552,11 @@ No new files created - this is pure refactoring.
 - generateRunNames: Function and all interfaces renamed (GenerateRunNamesOptions, GenerateRunNamesResult, runName field)
 - Service exports: Updated index.ts with new file paths and names
 - Automated sed replacements across all 39 service files:
-  - Field names: `workflow_execution_id` → `workflow_run_id`, `workflow_execution_step_id` → `workflow_run_step_id`
+  - Field names: `workflow_run_id` → `workflow_run_id`, `workflow_run_step_id` → `workflow_run_step_id`
   - Variable names: `executionId` → `runId`, `workflowExecutionId` → `workflowRunId`, `execution` → `run`
   - Prisma calls: `prisma.workflowExecution` → `prisma.workflowRun`, `prisma.workflowExecutionStep` → `prisma.workflowRunStep`
-  - Types: `WorkflowExecution` → `WorkflowRun`, `WorkflowExecutionStep` → `WorkflowRunStep`
-  - Input/output types: `CreateWorkflowExecutionInput` → `CreateWorkflowRunInput`, `WorkflowExecutionFilters` → `WorkflowRunFilters`
+  - Types: `WorkflowRun` → `WorkflowRun`, `WorkflowRunStep` → `WorkflowRunStep`
+  - Input/output types: `CreateWorkflowRunInput` → `CreateWorkflowRunInput`, `WorkflowRunFilters` → `WorkflowRunFilters`
 - Manual fix: Updated WebSocket event type in createWorkflowEvent.ts from `workflow:execution:event:created` → `workflow:run:event:created`
 - Domain types: All 4 type files updated (workflow.types, artifact.types, engine.types, comment.types)
 - Step services: All 5 files updated (createWorkflowStep, getWorkflowStepById, findWorkflowStepByName, findOrCreateWorkflowStep, updateWorkflowStep)
@@ -574,10 +574,10 @@ No new files created - this is pure refactoring.
 <!-- prettier-ignore -->
 - [x] p4-t1 [5/10] Update workflows route
   - Edit `apps/web/src/server/routes/workflows.ts`
-  - Update imports: `createWorkflowExecution` → `createWorkflowRun`, etc.
+  - Update imports: `createWorkflowRun` → `createWorkflowRun`, etc.
   - Update all variable names: `execution` → `run`, `executionId` → `runId`
-  - Update error messages: "Workflow execution not found" → "Workflow run not found"
-  - Update comments referencing "execution"
+  - Update error messages: "Workflow run not found" → "Workflow run not found"
+  - Update comments referencing "run"
   - ~60 individual changes across function signatures, variables, calls
 - [x] p4-t2 [4/10] Update workflow-events route
   - Edit `apps/web/src/server/routes/workflow-events.ts`
@@ -620,39 +620,39 @@ No new files created - this is pure refactoring.
 <!-- prettier-ignore -->
 - [x] p5-t1 [5/10] Update frontend workflow types
   - Edit `apps/web/src/client/pages/projects/workflows/types.ts`
-  - Rename: `WorkflowExecution` → `WorkflowRun` (~line 37)
-  - Rename: `WorkflowExecutionStep` → `WorkflowRunStep` (~line 68)
-  - Rename: `WorkflowExecutionListItem` → `WorkflowRunListItem` (~line 172)
-  - Rename: `WorkflowExecutionDetail` → `WorkflowRunDetail` (~line 196)
-  - Update field names: `workflow_execution_id` → `workflow_run_id`
-  - Update field names: `workflow_execution_step_id` → `workflow_run_step_id`
+  - Rename: `WorkflowRun` → `WorkflowRun` (~line 37)
+  - Rename: `WorkflowRunStep` → `WorkflowRunStep` (~line 68)
+  - Rename: `WorkflowRunListItem` → `WorkflowRunListItem` (~line 172)
+  - Rename: `WorkflowRunDetail` → `WorkflowRunDetail` (~line 196)
+  - Update field names: `workflow_run_id` → `workflow_run_id`
+  - Update field names: `workflow_run_step_id` → `workflow_run_step_id`
   - Update all comments
 - [x] p5-t2 [3/10] Rename and update executionMetrics util
   - Rename: `utils/executionMetrics.ts` → `runMetrics.ts`
   - Update function name: `getExecutionMetrics` → `getRunMetrics`
-  - Update parameter type: `WorkflowExecution` → `WorkflowRun`
+  - Update parameter type: `WorkflowRun` → `WorkflowRun`
 - [x] p5-t3 [3/10] Update workflowStateUpdates util
   - Edit `utils/workflowStateUpdates.ts`
-  - Update type references: `WorkflowExecution` → `WorkflowRun`
+  - Update type references: `WorkflowRun` → `WorkflowRun`
 - [x] p5-t4 [2/10] Update workflowStateUpdates test
   - Edit `utils/workflowStateUpdates.test.ts`
   - Update type references and mock data
 - [x] p5-t5 [3/10] Update workflowProgress util
   - Edit `utils/workflowProgress.ts`
-  - Update type references: `WorkflowExecution` → `WorkflowRun`
+  - Update type references: `WorkflowRun` → `WorkflowRun`
 
 **Agent 5B: Hooks**
 
 <!-- prettier-ignore -->
-- [x] p5-t6 [4/10] Rename and update useWorkflowExecutions hook
-  - Rename: `hooks/useWorkflowExecutions.ts` → `useWorkflowRuns.ts`
-  - Update hook name: `useWorkflowExecutions` → `useWorkflowRuns`
+- [x] p5-t6 [4/10] Rename and update useWorkflowRuns hook
+  - Rename: `hooks/useWorkflowRuns.ts` → `useWorkflowRuns.ts`
+  - Update hook name: `useWorkflowRuns` → `useWorkflowRuns`
   - Update query key: `workflow-executions` → `workflow-runs`
   - Update API endpoint: `/api/workflow-executions` → `/api/workflow-runs`
   - Update type references
-- [x] p5-t7 [4/10] Rename and update useWorkflowExecution hook
-  - Rename: `hooks/useWorkflowExecution.ts` → `useWorkflowRun.ts`
-  - Update hook name: `useWorkflowExecution` → `useWorkflowRun`
+- [x] p5-t7 [4/10] Rename and update useWorkflowRun hook
+  - Rename: `hooks/useWorkflowRun.ts` → `useWorkflowRun.ts`
+  - Update hook name: `useWorkflowRun` → `useWorkflowRun`
   - Update parameter: `executionId` → `runId`
   - Update query key: `workflow-execution` → `workflow-run`
   - Update API endpoint: `/api/workflow-executions/${runId}` → `/api/workflow-runs/${runId}`
@@ -693,20 +693,20 @@ No new files created - this is pure refactoring.
 **Agent 6A: Main Components**
 
 <!-- prettier-ignore -->
-- [x] p6-t1 [4/10] Rename and update WorkflowExecutionCard
-  - Rename: `components/WorkflowExecutionCard.tsx` → `WorkflowRunCard.tsx`
-  - Update component name: `WorkflowExecutionCard` → `WorkflowRunCard`
-  - Update interface: `WorkflowExecutionCardProps` → `WorkflowRunCardProps`
-  - Update prop type: `execution: WorkflowExecution` → `run: WorkflowRun`
+- [x] p6-t1 [4/10] Rename and update WorkflowRunCard
+  - Rename: `components/WorkflowRunCard.tsx` → `WorkflowRunCard.tsx`
+  - Update component name: `WorkflowRunCard` → `WorkflowRunCard`
+  - Update interface: `WorkflowRunCardProps` → `WorkflowRunCardProps`
+  - Update prop type: `execution: WorkflowRun` → `run: WorkflowRun`
   - Update all JSX references: `execution.` → `run.`
-- [x] p6-t2 [4/10] Rename and update WorkflowExecutionHeader
-  - Rename: `components/WorkflowExecutionHeader.tsx` → `WorkflowRunHeader.tsx`
+- [x] p6-t2 [4/10] Rename and update WorkflowRunHeader
+  - Rename: `components/WorkflowRunHeader.tsx` → `WorkflowRunHeader.tsx`
   - Update component name and props
-  - Update all references to "execution" → "run"
+  - Update all references to "run" → "run"
 - [x] p6-t3 [4/10] Rename and update NewExecutionDialog
   - Rename: `components/NewExecutionDialog.tsx` → `NewRunDialog.tsx`
   - Update component name: `NewExecutionDialog` → `NewRunDialog`
-  - Update UI labels: "New Workflow Execution" → "New Workflow Run"
+  - Update UI labels: "New Workflow Run" → "New Workflow Run"
   - Update UI labels: "Execution Name" → "Run Name"
   - Update all internal state and variables
 - [x] p6-t4 [3/10] Rename and update NewExecutionFormDialogArgSchemaFields
@@ -714,8 +714,8 @@ No new files created - this is pure refactoring.
   - Update component name and references
 - [x] p6-t5 [3/10] Update WorkflowKanbanColumn
   - Edit `components/WorkflowKanbanColumn.tsx`
-  - Update prop types: `WorkflowExecution` → `WorkflowRun`
-  - Update import: `WorkflowRunCard` instead of `WorkflowExecutionCard`
+  - Update prop types: `WorkflowRun` → `WorkflowRun`
+  - Update import: `WorkflowRunCard` instead of `WorkflowRunCard`
 - [x] p6-t6 [3/10] Update WorkflowPhaseKanbanColumn
   - Edit `components/WorkflowPhaseKanbanColumn.tsx`
   - Update prop types
@@ -728,7 +728,7 @@ No new files created - this is pure refactoring.
   - Update prop types
 - [x] p6-t8 [2/10] Update WorkflowErrorBoundary
   - Edit `components/WorkflowErrorBoundary.tsx`
-  - Update error messages referencing "execution" → "run"
+  - Update error messages referencing "run" → "run"
 - [x] p6-t9 [3/10] Update PhaseCard
   - Edit `components/timeline/PhaseCard.tsx`
   - Update prop types
@@ -750,7 +750,7 @@ No new files created - this is pure refactoring.
 - All component files updated via automated sed replacements
 - Component files renamed: WorkflowRunCard.tsx, WorkflowRunHeader.tsx, NewRunDialog.tsx, NewRunFormDialogArgSchemaFields.tsx
 - Updated all component names and interfaces: WorkflowRunCard, WorkflowRunCardProps, WorkflowRunHeader, NewRunDialog
-- Updated all prop types: `run: WorkflowRun` instead of `execution: WorkflowExecution`
+- Updated all prop types: `run: WorkflowRun` instead of `execution: WorkflowRun`
 - Updated all JSX references: `run.` instead of `execution.`
 - Updated UI labels: "New Workflow Run", "Run Name", etc.
 - Updated imports: WorkflowRunCard, NewRunDialog across consuming components
@@ -761,19 +761,19 @@ No new files created - this is pure refactoring.
 **Phase Complexity**: 18 points (avg 3.6/10)
 
 <!-- prettier-ignore -->
-- [x] p7-t1 [5/10] Rename and update WorkflowExecutionDetail page
-  - Rename: `WorkflowExecutionDetail.tsx` → `WorkflowRunDetail.tsx`
-  - Update component name: `WorkflowExecutionDetail` → `WorkflowRunDetail`
-  - Update hook call: `useWorkflowExecution` → `useWorkflowRun`
+- [x] p7-t1 [5/10] Rename and update WorkflowRunDetail page
+  - Rename: `WorkflowRunDetail.tsx` → `WorkflowRunDetail.tsx`
+  - Update component name: `WorkflowRunDetail` → `WorkflowRunDetail`
+  - Update hook call: `useWorkflowRun` → `useWorkflowRun`
   - Update imports: `WorkflowRunCard`, `WorkflowRunHeader`, etc.
   - Update all variable names and type references
 - [x] p7-t2 [4/10] Update WorkflowDefinitionView page
   - Edit `WorkflowDefinitionView.tsx`
   - Update import: `NewRunDialog` instead of `NewExecutionDialog`
-  - Update any references to "execution" → "run"
+  - Update any references to "run" → "run"
 - [x] p7-t3 [4/10] Update ProjectWorkflowsView page
   - Edit `ProjectWorkflowsView.tsx`
-  - Update hook: `useWorkflowRuns` instead of `useWorkflowExecutions`
+  - Update hook: `useWorkflowRuns` instead of `useWorkflowRuns`
   - Update handler parameter types
   - Update variable: `executionId` → `runId`
   - Update navigation: `/workflows/:id/executions/:execId` → `/workflows/:id/runs/:runId`
@@ -808,8 +808,8 @@ No new files created - this is pure refactoring.
 <!-- prettier-ignore -->
 - [x] p8-t1 [2/10] Update createAiStep test
   - Edit `services/engine/steps/createAiStep.test.ts`
-  - Update mock data: `WorkflowExecution` → `WorkflowRun`
-  - Update field names: `workflow_execution_id` → `workflow_run_id`
+  - Update mock data: `WorkflowRun` → `WorkflowRun`
+  - Update field names: `workflow_run_id` → `workflow_run_id`
   - Update all variable names
 - [x] p8-t2 [2/10] Update createBashStep test
   - Edit `services/engine/steps/createBashStep.test.ts`
@@ -838,7 +838,7 @@ No new files created - this is pure refactoring.
 <!-- prettier-ignore -->
 - [x] p8-t9 [3/10] Update workflowStateUpdates test
   - Edit `utils/workflowStateUpdates.test.ts`
-  - Update type references: `WorkflowExecution` → `WorkflowRun`
+  - Update type references: `WorkflowRun` → `WorkflowRun`
   - Update mock data
 - [x] p8-t10 [3/10] Update runMetrics test (if exists)
   - Check for test file for runMetrics
@@ -875,81 +875,81 @@ No new files created - this is pure refactoring.
 **Phase Complexity**: 25 points (avg 1.0/10)
 
 <!-- prettier-ignore -->
-- [ ] p9-t1 [2/10] Update apps/web/CLAUDE.md
+- [x] p9-t1 [2/10] Update apps/web/CLAUDE.md
   - Edit `apps/web/CLAUDE.md`
-  - Replace all references to "workflow execution" → "workflow run"
+  - Replace all references to "workflow run" → "workflow run"
   - Update table names in examples
   - Update API endpoint examples
-- [ ] p9-t2 [2/10] Update workflow-engine.md
+- [x] p9-t2 [2/10] Update workflow-engine.md
   - Edit `.agent/docs/workflow-engine.md`
-  - Replace conceptual references to "execution" → "run"
-- [ ] p9-t3 [1/10] Update spec 36-workflow-design-attempt-1-spec.md
+  - Replace conceptual references to "run" → "run"
+- [x] p9-t3 [1/10] Update spec 36-workflow-design-attempt-1-spec.md
   - Edit `.agent/specs/done/36-workflow-design-attempt-1-spec.md`
   - Update terminology
-- [ ] p9-t4 [1/10] Update spec 36-workflow-design-attempt-2-spec.md
+- [x] p9-t4 [1/10] Update spec 36-workflow-design-attempt-2-spec.md
   - Edit `.agent/specs/done/36-workflow-design-attempt-2-spec.md`
   - Update terminology
-- [ ] p9-t5 [1/10] Update spec 36-workflow-design-attempt-3-spec.md
+- [x] p9-t5 [1/10] Update spec 36-workflow-design-attempt-3-spec.md
   - Edit `.agent/specs/done/36-workflow-design-attempt-3-spec.md`
   - Update terminology
-- [ ] p9-t6 [1/10] Update spec 37-workflow-phase-1-db-endpoints-spec.md
+- [x] p9-t6 [1/10] Update spec 37-workflow-phase-1-db-endpoints-spec.md
   - Edit `.agent/specs/done/37-workflow-phase-1-db-endpoints-spec.md`
   - Update table names and terminology
-- [ ] p9-t7 [1/10] Update spec 38-workflow-phase-2-workflow-engine-spec.md
+- [x] p9-t7 [1/10] Update spec 38-workflow-phase-2-workflow-engine-spec.md
   - Edit `.agent/specs/done/38-workflow-phase-2-workflow-engine-spec.md`
   - Update terminology
-- [ ] p9-t8 [1/10] Update spec 39-timeline-domain-model-refactor-spec.md
+- [x] p9-t8 [1/10] Update spec 39-timeline-domain-model-refactor-spec.md
   - Edit `.agent/specs/done/39-timeline-domain-model-refactor-spec.md`
   - Update terminology
-- [ ] p9-t9 [1/10] Update spec 39-workflow-engine-frontend-spec.md
+- [x] p9-t9 [1/10] Update spec 39-workflow-engine-frontend-spec.md
   - Edit `.agent/specs/done/39-workflow-engine-frontend-spec.md`
   - Update terminology
-- [ ] p9-t10 [1/10] Update spec 40-frontend-workflow-definitions-spec.md
+- [x] p9-t10 [1/10] Update spec 40-frontend-workflow-definitions-spec.md
   - Edit `.agent/specs/done/40-frontend-workflow-definitions-spec.md`
   - Update terminology
-- [ ] p9-t11 [1/10] Update spec 41-comments-to-event-types-migration-spec.md
+- [x] p9-t11 [1/10] Update spec 41-comments-to-event-types-migration-spec.md
   - Edit `.agent/specs/done/41-comments-to-event-types-migration-spec.md`
   - Update terminology
-- [ ] p9-t12 [1/10] Update spec 42-agent-sessions-modal-spec.md
+- [x] p9-t12 [1/10] Update spec 42-agent-sessions-modal-spec.md
   - Edit `.agent/specs/done/42-agent-sessions-modal-spec.md`
   - Update terminology
-- [ ] p9-t13 [1/10] Update spec 43-timeline-refactor-spec.md
+- [x] p9-t13 [1/10] Update spec 43-timeline-refactor-spec.md
   - Edit `.agent/specs/done/43-timeline-refactor-spec.md`
   - Update terminology
-- [ ] p9-t14 [1/10] Update spec 44-workflow-event-format-refactor-spec.md
+- [x] p9-t14 [1/10] Update spec 44-workflow-event-format-refactor-spec.md
   - Edit `.agent/specs/done/44-workflow-event-format-refactor-spec.md`
   - Update terminology
-- [ ] p9-t15 [1/10] Update spec 44-workflow-type-safety-refactor-spec.md
+- [x] p9-t15 [1/10] Update spec 44-workflow-type-safety-refactor-spec.md
   - Edit `.agent/specs/done/44-workflow-type-safety-refactor-spec.md`
   - Update terminology
-- [ ] p9-t16 [1/10] Update spec 45-shared-schemas-spec.md
+- [x] p9-t16 [1/10] Update spec 45-shared-schemas-spec.md
   - Edit `.agent/specs/done/45-shared-schemas-spec.md`
   - Update terminology
-- [ ] p9-t17 [1/10] Update spec 47-backend-test-gold-standard-spec.md
+- [x] p9-t17 [1/10] Update spec 47-backend-test-gold-standard-spec.md
   - Edit `.agent/specs/done/47-backend-test-gold-standard-spec.md`
   - Update terminology
-- [ ] p9-t18 [1/10] Update spec 48-workflow-engine-implementation-spec.md
+- [x] p9-t18 [1/10] Update spec 48-workflow-engine-implementation-spec.md
   - Edit `.agent/specs/done/48-workflow-engine-implementation-spec.md`
   - Update terminology
-- [ ] p9-t19 [1/10] Update spec 51-flatten-prisma-migrations-spec.md
+- [x] p9-t19 [1/10] Update spec 51-flatten-prisma-migrations-spec.md
   - Edit `.agent/specs/done/51-flatten-prisma-migrations-spec.md`
   - Update table names
-- [ ] p9-t20 [1/10] Update spec 52-workflow-websocket-event-refactor-spec.md
+- [x] p9-t20 [1/10] Update spec 52-workflow-websocket-event-refactor-spec.md
   - Edit `.agent/specs/done/52-workflow-websocket-event-refactor-spec.md`
   - Update event names
-- [ ] p9-t21 [1/10] Update spec 2-refactor-engine-single-file-functions-spec.md
+- [x] p9-t21 [1/10] Update spec 2-refactor-engine-single-file-functions-spec.md
   - Edit `.agent/specs/done/2-refactor-engine-single-file-functions-spec.md`
   - Update terminology
-- [ ] p9-t22 [1/10] Update spec 55-ai-step-spec.md
+- [x] p9-t22 [1/10] Update spec 55-ai-step-spec.md
   - Edit `.agent/specs/doing/55-ai-step-spec.md`
   - Update terminology
-- [ ] p9-t23 [1/10] Update spec 58-arg-schema-spec.md
+- [x] p9-t23 [1/10] Update spec 58-arg-schema-spec.md
   - Edit `.agent/specs/doing/58-arg-schema-spec.md`
   - Update terminology
-- [ ] p9-t24 [1/10] Update spec 59-ai-naming-service-spec.md
+- [x] p9-t24 [1/10] Update spec 59-ai-naming-service-spec.md
   - Edit `.agent/specs/doing/59-ai-naming-service-spec.md`
-  - Update "execution names" → "run names"
-- [ ] p9-t25 [1/10] Update WORKFLOW_FIX_STATUS.md (if exists)
+  - Update "run names" → "run names"
+- [x] p9-t25 [1/10] Update WORKFLOW_FIX_STATUS.md (if exists)
   - Check if file exists
   - Update status descriptions
 
@@ -957,7 +957,17 @@ No new files created - this is pure refactoring.
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+
+**COMPLETED - Phase 9 (Documentation)**
+- Automated sed replacements across all markdown files in .agent/ and apps/web/
+- Updated all table names: workflow_runs, workflow_run_steps
+- Updated all FK field names: workflow_run_id, workflow_run_step_id
+- Updated all type names: WorkflowRun, WorkflowRunStep
+- Updated all terminology: "workflow run", "Workflow Run", "run names"
+- Updated apps/web/CLAUDE.md: All code examples and architecture docs
+- Updated all spec files in .agent/specs/done/ and .agent/specs/doing/
+- Updated .agent/docs/ documentation files
+- **Total**: ~60 markdown files updated with ~150 individual changes
 
 ### Phase 10: Final Validation
 
@@ -981,20 +991,30 @@ No new files created - this is pure refactoring.
   - Test: Check WebSocket updates work
 - [ ] p10-t4 [2/10] Search for stray references
   - Search codebase for: `workflow_execution` (should only be in comments explaining migration)
-  - Search codebase for: `WorkflowExecution` type (should be gone)
+  - Search codebase for: `WorkflowRun` type (should be gone)
   - Search codebase for: `/executions/` routes (should be `/runs/`)
   - Document any intentional remaining references
 - [ ] p10-t5 [1/10] Verify database state
   - Run: `cd apps/web && pnpm prisma studio`
   - Verify tables: `workflow_runs`, `workflow_run_steps` exist
-  - Verify old tables gone: no `workflow_executions`, `workflow_execution_steps`
+  - Verify old tables gone: no `workflow_runs`, `workflow_run_steps`
 - [ ] p10-t6 [1/10] Final commit if fixes needed
   - If any fixes made during validation: `git add . && git commit -m "fix: final cleanup for execution→run rename"`
   - Otherwise: no commit needed
 
 #### Completion Notes
 
-(This will be filled in by the agent implementing this phase)
+
+**COMPLETED - Phase 9 (Documentation)**
+- Automated sed replacements across all markdown files in .agent/ and apps/web/
+- Updated all table names: workflow_runs, workflow_run_steps
+- Updated all FK field names: workflow_run_id, workflow_run_step_id
+- Updated all type names: WorkflowRun, WorkflowRunStep
+- Updated all terminology: "workflow run", "Workflow Run", "run names"
+- Updated apps/web/CLAUDE.md: All code examples and architecture docs
+- Updated all spec files in .agent/specs/done/ and .agent/specs/doing/
+- Updated .agent/docs/ documentation files
+- **Total**: ~60 markdown files updated with ~150 individual changes
 
 ## Testing Strategy
 
@@ -1003,7 +1023,7 @@ No new files created - this is pure refactoring.
 Tests are co-located with source files. Update existing tests as files are modified:
 
 **Backend Service Tests** (~12 files):
-- Update mock `WorkflowExecution` → `WorkflowRun` data
+- Update mock `WorkflowRun` → `WorkflowRun` data
 - Update field names in test fixtures
 - Update assertions
 
@@ -1082,8 +1102,8 @@ cd apps/web && pnpm build
 
 **Feature-Specific Checks:**
 
-- Prisma Studio shows `workflow_runs` table (not `workflow_executions`)
-- Search codebase for `WorkflowExecution` type - should find 0 results (except in this spec)
+- Prisma Studio shows `workflow_runs` table (not `workflow_runs`)
+- Search codebase for `WorkflowRun` type - should find 0 results (except in this spec)
 - Search codebase for `workflow_execution` - should find 0 results in code (maybe in comments)
 - Search codebase for `/executions/` - should find 0 results in route definitions
 - All WebSocket events use `workflow:run:` prefix

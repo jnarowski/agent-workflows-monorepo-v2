@@ -148,7 +148,7 @@ This is a **Turborepo monorepo** for agent workflow tools. The `web` app is a fu
    - Always type as `| null`, never `| undefined` or `| null | undefined`
    - Example:
      ```typescript
-     interface WorkflowExecution {
+     interface WorkflowRun {
        id: string;
        started_at: Date | null;       // ✅ Database field
        completed_at: Date | null;     // ✅ Database field
@@ -243,7 +243,7 @@ This is a **Turborepo monorepo** for agent workflow tools. The `web` app is a fu
 
 **What NOT to Share (High Coupling Risk):**
 
-- ❌ **Model interfaces** - WorkflowExecution, WorkflowExecutionStep, etc.
+- ❌ **Model interfaces** - WorkflowRun, WorkflowRunStep, etc.
 - ❌ **Prisma-generated types** - Backend only
 - ❌ **Frontend UI types** - Filters, computed fields, display state
 - ❌ **Backend service types** - Service-specific input/output types
@@ -269,7 +269,7 @@ export type WorkflowStatus = z.infer<typeof workflowStatusSchema>;
 // ✅ GOOD - Frontend uses shared enum in custom interface (apps/web/src/client/pages/projects/workflows/types.ts)
 import type { WorkflowStatus } from '@/shared/schemas';
 
-export interface WorkflowExecution {
+export interface WorkflowRun {
   id: string;
   status: WorkflowStatus; // ← Uses shared enum
   // ... other fields frontend needs (custom)
@@ -283,7 +283,7 @@ const execution = await prisma.workflowExecution.findUnique({ where: { id } });
 // Prisma types are used for database operations, schemas validate API responses
 
 // ❌ BAD - Don't derive full model interfaces from schemas
-export interface WorkflowExecution extends z.infer<typeof workflowExecutionResponseSchema> {
+export interface WorkflowRun extends z.infer<typeof workflowExecutionResponseSchema> {
   // This couples frontend to backend response shape
 }
 ```
@@ -292,7 +292,7 @@ export interface WorkflowExecution extends z.infer<typeof workflowExecutionRespo
 
 ```typescript
 // ✅ Backend routes - Import schemas for validation
-import { createWorkflowExecutionSchema, workflowExecutionFiltersSchema } from '@/shared/schemas';
+import { createWorkflowRunSchema, workflowExecutionFiltersSchema } from '@/shared/schemas';
 
 // ✅ Frontend types - Import only enum types
 import type { WorkflowStatus, StepStatus } from '@/shared/schemas';
@@ -987,7 +987,7 @@ import { ChatPromptInput } from "./ChatPromptInput";
 3. **Database Models** (Prisma):
    - `User` - User authentication
    - `Project` - Project management
-   - `Workflow` - Workflow execution tracking
+   - `Workflow` - Workflow run tracking
    - `WorkflowStep` - Individual workflow steps
 
 4. **API Routes**:

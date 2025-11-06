@@ -7,7 +7,7 @@
 
 ## Overview
 
-Add JSON Schema-based `argsSchema` field to workflow definitions with full TypeScript type inference and runtime validation. Users define workflow arguments using JSON Schema, and TypeScript automatically infers types for `event.data.args` without requiring `as const` annotations. Runtime validation prevents invalid arguments from reaching workflow execution.
+Add JSON Schema-based `argsSchema` field to workflow definitions with full TypeScript type inference and runtime validation. Users define workflow arguments using JSON Schema, and TypeScript automatically infers types for `event.data.args` without requiring `as const` annotations. Runtime validation prevents invalid arguments from reaching workflow run.
 
 ## User Story
 
@@ -84,7 +84,7 @@ Update `defineWorkflow` to capture entire config as const, matching how phases c
 
 ### 3. Runtime Validation (apps/web)
 
-Add Ajv-based JSON Schema validation at workflow execution trigger point.
+Add Ajv-based JSON Schema validation at workflow run trigger point.
 
 **Key Points**:
 - Compile schema once per workflow definition (can cache)
@@ -200,7 +200,7 @@ No new files required.
   - File: `apps/web/src/server/domain/workflow/services/workflow/executeWorkflow.ts`
   - Wrap validation in try-catch
   - Return meaningful error message to API caller
-  - Update workflow execution status to 'failed' if validation fails
+  - Update workflow run status to 'failed' if validation fails
 
 #### Completion Notes
 
@@ -294,11 +294,11 @@ describe('defineWorkflow argsSchema type inference', () => {
 
 ### Integration Tests
 
-**Runtime validation in apps/web**: Create integration test that verifies Ajv validation rejects invalid args before workflow execution.
+**Runtime validation in apps/web**: Create integration test that verifies Ajv validation rejects invalid args before workflow run.
 
 ### E2E Tests
 
-**Full workflow execution with typed args**: Create example workflow with argsSchema, trigger via API with valid/invalid args, verify validation behavior.
+**Full workflow run with typed args**: Create example workflow with argsSchema, trigger via API with valid/invalid args, verify validation behavior.
 
 ## Success Criteria
 
@@ -316,7 +316,7 @@ After extensive attempts, automatic TypeScript type inference from JSON Schema p
 **Problem**: `json-schema-to-ts`'s `FromSchema<T>` type causes infinite type recursion when used as a generic parameter default. Even with careful conditional types, TypeScript's compiler cannot handle the complexity.
 
 **Solution**: Pragmatic two-layer approach:
-1. **Runtime validation**: Ajv validates args against argsSchema before workflow execution (✅ works perfectly)
+1. **Runtime validation**: Ajv validates args against argsSchema before workflow run (✅ works perfectly)
 2. **Compile-time types**: Users define TypeScript interfaces and cast: `event.data.args as unknown as MyInterface`
 
 **Benefits of this approach**:
